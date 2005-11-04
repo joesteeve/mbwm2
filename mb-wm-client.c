@@ -85,8 +85,7 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   };
 
   MBWMCookie       cookies[N_COOKIES];
-
-  Atom             actual_type_return;
+  Atom             actual_type_return, *result_atom = NULL;
   int              actual_format_return;
   unsigned long    nitems_return;
   unsigned long    bytes_after_return;
@@ -118,8 +117,24 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 			&actual_format_return, 
 			&nitems_return, 
 			&bytes_after_return, 
-			(unsigned char **)&win->net_type,
+			(unsigned char **)&result_atom,
 			&x_error_code);
+
+  if (x_error_code
+      || actual_type_return != XA_ATOM
+      || actual_format_return != 32
+      || nitems_return != 1
+      || result_atom == NULL)
+    {
+      MBWM_DBG("### Warning net type prop failed ###");
+    }
+  else
+    win->net_type = result_atom[0];
+
+  if (result_atom) 
+    XFree(result_atom);
+  
+  result_atom = NULL;
 
   xwin_attr = mb_wm_xwin_get_attributes_reply (wm,
 					       cookies[COOKIE_WIN_ATTR],
@@ -212,7 +227,7 @@ mb_wm_client_init (MBWindowManager             *wm,
   if (client->init)
     client->init(wm, client, win);
   else
-    mb_wm_client_base_init (wm, client, win);    
+    mb_wm_client_base_init (wm, client, win);      
 }
 
 void
@@ -244,7 +259,7 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 
   attr.override_redirect = True;
   attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
-  attr.event_mask = /*ChildMask|ButtonMask|*/ExposureMask;
+  attr.event_mask = MBWMChildMask|MBWMButtonMask|ExposureMask;
   
   client->xwin_frame 
     = XCreateWindow(wm->xdpy, wm->xwin_root, 
@@ -275,7 +290,9 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 		  client->window->geometry.x - client->frame_geometry.x,
 		  client->window->geometry.y  -client->frame_geometry.y);
 
-
+  XSelectInput(wm->xdpy, 
+	       MBWM_CLIENT_XWIN(client),
+	       PropertyChangeMask);
 }
 
 /* ## Stacking ## */
@@ -377,37 +394,53 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   MBWM_MARK();
 
+  mb_wm_util_trap_x_errors();  
+
   if (mb_wm_client_needs_geometry_sync (client))
     {
-      XMoveResizeWindow(wm->xdpy, 
-			client->xwin_frame,
-			client->frame_geometry.x,
-			client->frame_geometry.y,
-			client->frame_geometry.width,
-			client->frame_geometry.height);
-
+      if (client->xwin_frame)
+	XMoveResizeWindow(wm->xdpy, 
+			  client->xwin_frame,
+			  client->frame_geometry.x,
+			  client->frame_geometry.y,
+			  client->frame_geometry.width,
+			  client->frame_geometry.height);
+      
       XMoveResizeWindow(wm->xdpy, 
 			MBWM_CLIENT_XWIN(client),
-			client->window->geometry.x,
-			client->window->geometry.y,
+			client->window->geometry.x - client->frame_geometry.x,
+			client->window->geometry.y - client->frame_geometry.y,
 			client->window->geometry.width,
 			client->window->geometry.height);
       
       /* FIXME: need flags to handle other stuff like confugre events etc */
+
     }
 
   if (mb_wm_client_needs_visibility_sync (client))
     {
+
       if (mb_wm_client_is_mapped (client))
 	{
-	  XMapWindow(wm->xdpy, client->xwin_frame); 
-	  XMapSubwindows(wm->xdpy, client->xwin_frame);
+	  if (client->xwin_frame)
+	    {
+	      XMapWindow(wm->xdpy, client->xwin_frame); 
+	      XMapSubwindows(wm->xdpy, client->xwin_frame);
+	    }
+	  else
+	    XMapWindow(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
 	}
       else
 	{
-	  XUnmapWindow(wm->xdpy, client->xwin_frame); 
+	  if (client->xwin_frame)
+	    XUnmapWindow(wm->xdpy, client->xwin_frame); 
+	  else
+	    XMapWindow(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
 	}
     }
+
+  XSync(wm->xdpy, False);
+  mb_wm_util_untrap_x_errors();  
 }
 
 void
@@ -428,6 +461,7 @@ mb_wm_client_destroy (MBWindowManagerClient *client)
 
   client->destroy(client);
 
+  mb_wm_display_sync_queue (client->wmref);
 }
 
 static void
@@ -436,14 +470,14 @@ mb_wm_client_base_destroy (MBWindowManagerClient *client)
   MBWindowManager *wm = client->wmref;
 
   MBWM_MARK();
-  /* free everything up */
-  /* XXX - what about handling transients */
+
+  mb_wm_util_trap_x_errors();  
+
   XDestroyWindow(wm->xdpy, client->xwin_frame);
-  
+
+  XSync(wm->xdpy, False);
+  mb_wm_util_untrap_x_errors();  
 }
-
-
-/* possible methods */
 
 static Bool
 mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
@@ -478,7 +512,6 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
       client->frame_geometry.width = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
 
-      /* FIXME: go else where... */
       client->window->geometry.x = client->frame_geometry.x + 4;
       client->window->geometry.y = client->frame_geometry.y + 4;
       client->window->geometry.width  = client->frame_geometry.width - 8;
@@ -501,6 +534,20 @@ mb_wm_client_request_geometry (MBWindowManagerClient *client,
 
   return client->geometry(client, new_geometry, flags); 
 }
+
+MBWMClientLayoutHints
+mb_wm_client_get_layout_hints (MBWindowManagerClient *client)
+{
+  return client->layout_hints;
+}
+
+void
+mb_wm_client_set_layout_hints (MBWindowManagerClient *client,
+			       MBWMClientLayoutHints  hints)
+{
+  client->layout_hints = hints;
+}
+
 
 void  /* needs to be boolean, client may not have any coverage */
 mb_wm_client_get_coverage (MBWindowManagerClient *client,

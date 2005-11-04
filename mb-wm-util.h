@@ -36,6 +36,11 @@
 #define strcaseeq(a,b)  (strcasecmp(a,b) == 0)
 #define unless(x)       if (!(x))
 
+#define MBWMChildMask (SubstructureRedirectMask|SubstructureNotifyMask)
+#define MBWMButtonMask (ButtonPressMask|ButtonReleaseMask)
+#define MBWMMouseMask (ButtonMask|PointerMotionMask)
+#define MBWMKeyMask (KeyPressMask|KeyReleaseMask)
+
 void*
 mb_wm_util_malloc0(int size);
 

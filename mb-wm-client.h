@@ -231,5 +231,20 @@ void
 mb_wm_client_get_coverage (MBWindowManagerClient *client,
                            MBGeometry            *coverage);
 
+MBWMClientLayoutHints
+mb_wm_client_get_layout_hints (MBWindowManagerClient *client);
+
+void
+mb_wm_client_set_layout_hints (MBWindowManagerClient *client,
+                               MBWMClientLayoutHints  hints);
+
+void
+mb_wm_client_stacking_mark_dirty (MBWindowManagerClient *client);
+
+void
+mb_wm_client_geometry_mark_dirty (MBWindowManagerClient *client);
+
+void
+mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client);
 
 #endif

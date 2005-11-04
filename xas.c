@@ -545,6 +545,9 @@ xas_async_handler (Display *dpy,
 
   XAS_ASSERT(ctx->xdpy == dpy);
 
+  if (!ctx->tasks_pending)
+    return False;
+
   task = xas_find_task_for_request_seq(ctx, 
 				       ctx->tasks_pending, 
 				       dpy->last_request_read);

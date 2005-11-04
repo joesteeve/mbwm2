@@ -14,6 +14,8 @@ error_handler(Display     *xdpy,
 void
 mb_wm_util_trap_x_errors(void)
 {
+  MBWM_DBG("### X Errors Trapped ###");
+
   TrappedErrorCode  = 0;
   old_error_handler = XSetErrorHandler(error_handler);
 }
@@ -21,9 +23,12 @@ mb_wm_util_trap_x_errors(void)
 int
 mb_wm_util_untrap_x_errors(void)
 {
+  MBWM_DBG("### X Errors Untrapped (%i) ###", TrappedErrorCode);
+
   XSetErrorHandler(old_error_handler);
   return TrappedErrorCode;
 }
+
 
 void*
 mb_wm_util_malloc0(int size)
@@ -45,7 +50,7 @@ mb_wm_util_malloc0(int size)
 void
 mb_wm_util_fatal_error(char *msg)
 {
-  fprintf(stderr, "matchbox-xcb: *Error*  %s\n", msg);
+  fprintf(stderr, "matchbox-window-manager: *Error*  %s\n", msg);
   exit(1);
 }
 

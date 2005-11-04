@@ -1,0 +1,26 @@
+2005-11-04  Matthew Allum  <mallum@openedhand.com>
+
+	* Makefile:
+	* matchbox-window-manager-2.c:
+	(test_panel_client_request_geometry), (test_panel_client_new),
+	(test_client_new), (client_new), (main):
+	* mb-wm-client.c: (mb_wm_client_window_new),
+	(mb_wm_client_base_init), (mb_wm_client_init),
+	(mb_wm_client_is_realized), (mb_wm_client_base_realize),
+	(mb_wm_client_needs_sync), (mb_wm_client_is_mapped),
+	(mb_wm_client_base_display_sync), (mb_wm_client_display_sync),
+	(mb_wm_client_destroy), (mb_wm_client_base_destroy),
+	(mb_wm_client_base_request_geometry),
+	(mb_wm_client_request_geometry):
+	* mb-wm-client.h:
+	* mb-wm-core.c: (mb_wm_init):
+	* mb-wm-layout-manager.c:
+	* mb-wm-layout-manager.h:
+	* mb-wm-layout.c: (maximise_geometry),
+	(mb_wm_layout_manager_get_edge_offset),
+	(mb_wm_layout_manager_update):
+	* mb-wm-util.c: (mb_wm_util_trap_x_errors), (mb_wm_util_malloc0):
+	* mb-wm-util.h:
+	* mb-wm.h:
+	* xas.c: (xas_async_handler):
+	Fix up layout manager and add some layout support for panels.

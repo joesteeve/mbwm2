@@ -304,9 +304,13 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
   
   if (!wm->xdpy)
     {
+      /* FIXME: Error codes */
       mb_wm_util_fatal_error("Display connection failed");
       return False;
     }
+
+  if (getenv("MB_SYNC")) 
+    XSynchronize (wm->xdpy, True);
   
   /* FIXME: Multiple screen handling */
   
@@ -317,27 +321,36 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
   
   wm->xas_context = xas_context_new(wm->xdpy);
   
-  /* FIXME: trap wm already running here */
-
   sattr.event_mask =  SubstructureRedirectMask
                       |SubstructureNotifyMask
                       |StructureNotifyMask
                       |PropertyChangeMask;
 
-   XChangeWindowAttributes(wm->xdpy, wm->xwin_root, CWEventMask, &sattr);
+  mb_wm_util_trap_x_errors();  
 
-   XSelectInput(wm->xdpy, wm->xwin_root, sattr.event_mask);
+  XChangeWindowAttributes(wm->xdpy, wm->xwin_root, CWEventMask, &sattr);
 
-   wm->new_client_from_window_func = mb_wm_client_new;
+  XSync(wm->xdpy, False);
 
-   wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
+  if (mb_wm_util_untrap_x_errors())
+    {
+      /* FIXME: Error codes */
+      mb_wm_util_fatal_error("Unable to manage display - another window manager already active?");
+      return False;
+    }
 
-   wm->event_funcs->map_request = test_map_request;
-   wm->event_funcs->destroy_notify = test_destroy_notify;
+  XSelectInput(wm->xdpy, wm->xwin_root, sattr.event_mask);
 
-   mb_wm_atoms_init(wm);
+  wm->new_client_from_window_func = mb_wm_client_new;
 
-   return True;
+  wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
+
+  wm->event_funcs->map_request = test_map_request;
+  wm->event_funcs->destroy_notify = test_destroy_notify;
+
+  mb_wm_atoms_init(wm);
+
+  return True;
 }
 	   
 
