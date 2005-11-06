@@ -43,6 +43,16 @@ static const char *MBWMDEBUGEvents[] = {
 #endif
 
 void
+test_key_press (MBWindowManager *wm,
+		XKeyEvent       *xev,
+		void            *userdata)
+{
+  mb_wm_keys_press (wm, 
+		    XKeycodeToKeysym(wm->xdpy, xev->keycode, 0),
+		    xev->state);
+}
+
+void
 test_destroy_notify (MBWindowManager      *wm,
 		     XDestroyWindowEvent  *xev,
 		     void                 *userdata)
@@ -254,6 +264,14 @@ mb_wm_run(MBWindowManager *wm)
 					 xev_funcs->user_data);
 
 	  break;
+	case KeyPress:
+	  if (xev_funcs->key_press)
+	    xev_funcs->key_press(wm, 
+				 (XKeyEvent*)&xev.xkey, 
+				 xev_funcs->user_data);
+
+	  break;
+
 
 	default:
 
@@ -345,10 +363,12 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
 
   wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
 
-  wm->event_funcs->map_request = test_map_request;
+  wm->event_funcs->map_request    = test_map_request;
   wm->event_funcs->destroy_notify = test_destroy_notify;
+  wm->event_funcs->key_press      = test_key_press;
 
   mb_wm_atoms_init(wm);
+  mb_wm_keys_init(wm);
 
   return True;
 }

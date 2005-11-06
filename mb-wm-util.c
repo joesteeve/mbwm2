@@ -1,4 +1,5 @@
 #include "mb-wm.h"
+#include <stdarg.h>
 
 static int TrappedErrorCode = 0;
 static int (*old_error_handler) (Display *, XErrorEvent *);
@@ -48,10 +49,25 @@ mb_wm_util_malloc0(int size)
 }
 
 void
-mb_wm_util_fatal_error(char *msg)
+mb_wm_util_fatal_error (char *msg)
 {
   fprintf(stderr, "matchbox-window-manager: *Error*  %s\n", msg);
   exit(1);
+}
+
+void
+mb_wm_util_warn (const char *format, ...)
+{
+  va_list ap;
+  char    *msg = NULL;
+
+  va_start(ap, format);
+  vasprintf(&msg, format, ap);
+  va_end(ap);
+
+  fprintf(stderr, "*Warning*  %s\n", msg);
+
+  if (msg) free(msg);
 }
 
 MBList*
@@ -114,8 +130,6 @@ mb_wm_util_list_get_nth_data(MBList *list, int n)
   return (void *)list->data;
 }
 
-
-
 MBList*
 mb_wm_util_list_append(MBList *list, void *data)
 {
@@ -126,14 +140,23 @@ mb_wm_util_list_append(MBList *list, void *data)
     }
   else
     {
-      list = mb_wm_util_list_get_last(list);
+      MBList *last;
 
-      list->next = mb_wm_util_list_alloc_item();
-      list->next->prev = list;
-      list->next->data = data;
+      last = mb_wm_util_list_get_last(list);
+
+      last->next = mb_wm_util_list_alloc_item();
+      last->next->prev = last;
+      last->next->data = data;
     }
 
   return list;
+}
+
+MBList*
+mb_wm_util_list_remove(MBList *list, void *data)
+{
+  /* FIXME: Implement */
+  return NULL;
 }
 
 void

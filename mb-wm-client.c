@@ -548,6 +548,16 @@ mb_wm_client_set_layout_hints (MBWindowManagerClient *client,
   client->layout_hints = hints;
 }
 
+void
+mb_wm_client_set_layout_hint (MBWindowManagerClient *client,
+			      MBWMClientLayoutHints  hint,
+			      Bool                   state)
+{
+  if (state)
+    client->layout_hints |= hint;
+  else
+    client->layout_hints &= ~hint;
+}
 
 void  /* needs to be boolean, client may not have any coverage */
 mb_wm_client_get_coverage (MBWindowManagerClient *client,

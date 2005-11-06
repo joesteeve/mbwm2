@@ -156,6 +156,30 @@ typedef enum MBWMAtom
 
 } MBWMAtom;
 
+/* Keys */
+
+typedef struct MBWMKeyBinding MBWMKeyBinding;
+typedef struct MBWMKeys       MBWMKeys;
+
+typedef void (*MBWMKeyPressedFunc) (MBWindowManager   *wm,
+				    MBWMKeyBinding    *binding,
+				    void              *userdata);
+
+typedef void (*MBWMKeyDestroyFunc) (MBWindowManager   *wm,
+				    MBWMKeyBinding    *binding,
+				    void              *userdata);
+
+struct MBWMKeyBinding
+{
+  KeySym                   keysym;
+  int                      modifier_mask;
+  MBWMKeyPressedFunc       pressed;
+  MBWMKeyDestroyFunc       destroy;
+  void                    *userdata;
+  /* FIXME: free func */
+};
+
+
 /* Hookage */
 
 typedef  MBWindowManagerClient* (*MBWindowManagerNewClientFunc)
@@ -195,6 +219,11 @@ typedef void (*MBWindowManagerConfigureRequestFunc)
       XConfigureRequestEvent  *xev,
       void                    *userdata);
 
+typedef void (*MBWindowManagerKeyPressFunc) 
+     (MBWindowManager         *wm,
+      XKeyEvent               *xev,
+      void                    *userdata);
+
 
 typedef struct MBWindowManagerEventFuncs
 {
@@ -204,8 +233,9 @@ typedef struct MBWindowManagerEventFuncs
   MBWindowManagerDestroyNotifyFunc    destroy_notify;
   MBWindowManagerConfigureRequestFunc configure_request;
   MBWindowManagerConfigureNotifyFunc  configure_notify;
+  MBWindowManagerKeyPressFunc         key_press;
 
-  void                            *user_data;
+  void                               *user_data;
 } 
 MBWindowManagerEventFuncs;
 
@@ -220,6 +250,8 @@ struct MBWindowManager
 
 
   Atom                         atoms[MBWM_ATOM_COUNT];
+
+  MBWMKeys                    *keys; /* Keybindings etc */
   
 
   MBWindowManagerNewClientFunc new_client_from_window_func;

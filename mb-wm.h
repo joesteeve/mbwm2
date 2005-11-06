@@ -21,12 +21,15 @@
 #ifndef _HAVE_MB_WM_H
 #define _HAVE_MB_WM_H
 
+#define _GNU_SOURCE 		/* For vasprintf */
+
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xatom.h>          /* for XA_ATOM etc */
+#include <X11/keysym.h>         /* key mask defines */
 
 #include "xas.h"    		/* async stuff not needed for xlib on xcb */
 
@@ -62,6 +65,7 @@
 #include "mb-wm-props.h"
 #include "mb-wm-util.h"
 #include "mb-wm-core.h"
+#include "mb-wm-keys.h"
 #include "mb-wm-client.h"
 #include "mb-wm-layout.h"
 #include "mb-wm-stack.h"

@@ -96,6 +96,14 @@ client_new(MBWindowManager *wm, MBWindowManagerClientWindow *win)
     return test_client_new(wm, win);
 }
 
+void
+test_key_func (MBWindowManager   *wm,
+	       MBWMKeyBinding    *binding,
+	       void              *userdata)
+{
+  printf(" ### got key press ### \n");
+}
+
 int 
 main(int argc, char **argv)
 {
@@ -112,6 +120,12 @@ main(int argc, char **argv)
   mb_wm_init(wm, NULL, NULL);
 
   wm->new_client_from_window_func = client_new;
+
+  mb_wm_keys_binding_add_with_spec (wm,
+				    "<alt>d",
+				    test_key_func,
+				    NULL,
+				    NULL);
 
   mb_wm_run(wm);
 

@@ -239,6 +239,11 @@ mb_wm_client_set_layout_hints (MBWindowManagerClient *client,
                                MBWMClientLayoutHints  hints);
 
 void
+mb_wm_client_set_layout_hint (MBWindowManagerClient *client,
+			      MBWMClientLayoutHints  hint,
+                              Bool                   state);
+
+void
 mb_wm_client_stacking_mark_dirty (MBWindowManagerClient *client);
 
 void

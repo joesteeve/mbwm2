@@ -47,6 +47,9 @@ mb_wm_util_malloc0(int size);
 void
 mb_wm_util_fatal_error(char *msg);
 
+void
+mb_wm_util_warn (const char *format, ...);
+
 /* XErrors */
 
 void
