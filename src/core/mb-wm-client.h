@@ -84,11 +84,11 @@ MBWMClientReqGeomType;
 /* Methods */
 
 typedef  void (*MBWMClientNewMethod) (MBWindowManager       *wm, 
-				      MBWindowManagerClientWindow *win);
+				      MBWMWindow            *win);
 
 typedef  void (*MBWMClientInitMethod) (MBWindowManager       *wm, 
 				       MBWindowManagerClient *client,
-				       MBWindowManagerClientWindow *win);
+				       MBWMWindow            *win);
 
 typedef  void (*MBWMClientRealizeMethod) (MBWindowManagerClient *client);
 
@@ -108,16 +108,6 @@ typedef  void (*MBWMClientHideMethod) (MBWindowManagerClient *client);
 typedef  void (*MBWMClientSyncMethod) (MBWindowManagerClient *client);
 
 
-struct MBWindowManagerClientWindow
-{
-  MBGeometry   geometry;
-  unsigned int depth;
-  char        *name;
-  Window       xwindow;
-
-  Atom         net_type;
-};
-
 struct MBWindowManagerClient
 {
   int                          type;
@@ -125,7 +115,7 @@ struct MBWindowManagerClient
 
   MBWindowManager             *wmref;
   char                        *name;
-  MBWindowManagerClientWindow *window;
+  MBWMWindow                  *window;
   Window                       xwin_frame;
   unsigned long                stacking_hints;
 
@@ -182,16 +172,16 @@ struct MBWindowManagerClient
 
 
 
-MBWindowManagerClientWindow*
+MBWMWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window window);
 
 MBWindowManagerClient*
-mb_wm_client_new (MBWindowManager *wm, MBWindowManagerClientWindow *win);
+mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win);
 
 void
 mb_wm_client_init (MBWindowManager             *wm, 
 		   MBWindowManagerClient       *client,
-                   MBWindowManagerClientWindow *win);
+                   MBWMWindow *win);
 
 void
 mb_wm_client_realize (MBWindowManagerClient *client);

@@ -49,7 +49,7 @@ test_panel_client_request_geometry (MBWindowManagerClient *client,
 }
 
 MBWindowManagerClient*
-test_panel_client_new(MBWindowManager *wm, MBWindowManagerClientWindow *win)
+test_panel_client_new(MBWindowManager *wm, MBWMWindow *win)
 {
   TestPanelClient *pc = NULL;
 
@@ -71,7 +71,7 @@ test_panel_client_new(MBWindowManager *wm, MBWindowManagerClientWindow *win)
 
 
 MBWindowManagerClient*
-test_client_new(MBWindowManager *wm, MBWindowManagerClientWindow *win)
+test_client_new(MBWindowManager *wm, MBWMWindow *win)
 {
   TestClient *tc = NULL;
 
@@ -88,7 +88,7 @@ test_client_new(MBWindowManager *wm, MBWindowManagerClientWindow *win)
 }
 
 MBWindowManagerClient*
-client_new(MBWindowManager *wm, MBWindowManagerClientWindow *win)
+client_new(MBWindowManager *wm, MBWMWindow *win)
 {
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     return test_panel_client_new(wm, win);

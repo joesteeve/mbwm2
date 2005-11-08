@@ -54,7 +54,7 @@ typedef struct MBWindowManagerPriv   MBWindowManagerPriv;
 typedef struct MBWindowManagerClient MBWindowManagerClient;
 
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
-typedef struct MBWindowManagerClientWindow MBWindowManagerClientWindow;
+typedef struct MBWMWindow MBWMWindow;
 
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;
@@ -184,7 +184,7 @@ struct MBWMKeyBinding
 
 typedef  MBWindowManagerClient* (*MBWindowManagerNewClientFunc)
      (MBWindowManager             *wm,
-      MBWindowManagerClientWindow *w);
+      MBWMWindow                  *w);
 
 typedef  void (*MBWindowManagerDestroyClientFunc)
      (MBWindowManager             *wm,

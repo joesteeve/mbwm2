@@ -85,7 +85,7 @@ test_map_request (MBWindowManager   *wm,
 
   if (!client)
     {
-      MBWindowManagerClientWindow *win = NULL; 
+      MBWMWindow *win = NULL; 
 
       if (wm->new_client_from_window_func == NULL)
 	{
@@ -223,10 +223,11 @@ mb_wm_run(MBWindowManager *wm)
       XEvent xev;
       XNextEvent(wm->xdpy, &xev);
 
-      MBWM_DBG("@ XEvent: '%s:%i' for %lx", 
+      MBWM_DBG("@ XEvent: '%s:%i' for %lx %s", 
 	       MBWMDEBUGEvents[xev.type], 
 	       xev.type, 
-	       xev.xany.window
+	       xev.xany.window,
+	       xev.xany.window == wm->xwin_root ? "(root)"  : ""
 	       );
 
       switch (xev.type)
@@ -262,26 +263,19 @@ mb_wm_run(MBWindowManager *wm)
 	    xev_funcs->configure_request(wm, 
 					 (XConfigureRequestEvent*)&xev.xconfigurerequest, 
 					 xev_funcs->user_data);
-
 	  break;
 	case KeyPress:
 	  if (xev_funcs->key_press)
 	    xev_funcs->key_press(wm, 
 				 (XKeyEvent*)&xev.xkey, 
 				 xev_funcs->user_data);
-
 	  break;
-
-
 	default:
-
-
 	  break;
 	}
 
       if (wm->need_display_sync)
 	mb_wm_core_sync (wm);
-
     }
 }
 

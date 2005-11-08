@@ -21,7 +21,7 @@ struct MBWindowManagerClientPriv
 static void
 mb_wm_client_base_init (MBWindowManager             *wm, 
 			MBWindowManagerClient       *client,
-			MBWindowManagerClientWindow *win);
+			MBWMWindow                  *win);
 static void
 mb_wm_client_base_realize (MBWindowManagerClient *client);
 
@@ -72,10 +72,11 @@ mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client)
 
 /* Window new */
 
-MBWindowManagerClientWindow*
+#if 0
+MBWMWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 {
-  MBWindowManagerClientWindow *win = NULL;
+  MBWMWindow *win = NULL;
 
   enum {
     COOKIE_WIN_TYPE = 0,
@@ -176,10 +177,12 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   return NULL;
 }
 
+#endif
+
 /* base methods */
 
 MBWindowManagerClient* 	/* FIXME: rename to mb_wm_client_base/class_new ? */
-mb_wm_client_new (MBWindowManager *wm, MBWindowManagerClientWindow *win)
+mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win)
 {
   MBWindowManagerClient *client = NULL;
 
@@ -195,7 +198,7 @@ mb_wm_client_new (MBWindowManager *wm, MBWindowManagerClientWindow *win)
 void
 mb_wm_client_base_init (MBWindowManager             *wm, 
 			MBWindowManagerClient       *client,
-			MBWindowManagerClientWindow *win)
+			MBWMWindow *win)
 {
   client->wmref  = wm;   
   client->window = win; 
@@ -222,7 +225,7 @@ mb_wm_client_base_init (MBWindowManager             *wm,
 void
 mb_wm_client_init (MBWindowManager             *wm, 
 		   MBWindowManagerClient       *client,
-		   MBWindowManagerClientWindow *win)
+		   MBWMWindow                  *win)
 {
   if (client->init)
     client->init(wm, client, win);

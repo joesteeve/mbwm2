@@ -1,3 +1,45 @@
+2005-11-08  Matthew Allum  <mallum@openedhand.com>
+
+	* Makefile:
+	* Makefile.am:
+	* autogen.sh:
+	* configure.ac:
+	* matchbox-window-manager-2.c:
+	* mb-wm-atoms.c:
+	* mb-wm-atoms.h:
+	* mb-wm-client.c:
+	* mb-wm-client.h:
+	* mb-wm-core.c:
+	* mb-wm-core.h:
+	* mb-wm-keys.c:
+	* mb-wm-keys.h:
+	* mb-wm-layout.c:
+	* mb-wm-layout.h:
+	* mb-wm-props.c:
+	* mb-wm-props.h:
+	* mb-wm-stack.c:
+	* mb-wm-stack.h:
+	* mb-wm-types.h:
+	* mb-wm-util.c:
+	* mb-wm-util.h:
+	* mb-wm.h:
+	* src/Makefile.am:
+	* src/core/Makefile.am:
+	* src/core/mb-wm-client.c: (mb_wm_client_window_new),
+	(mb_wm_client_new), (mb_wm_client_base_init):
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c: (test_map_request), (mb_wm_run):
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-window.c:
+	* src/core/mb-wm-window.h:
+	* src/core/mb-wm.h:
+	* src/matchbox-window-manager-2.c:
+	(test_panel_client_request_geometry), (test_client_new):
+	* xas.c:
+	* xas.h:
+	Autofooify. Split Window 'wrapper' code into its own file
+        and rejig a little.
+
 2005-11-06  Matthew Allum  <mallum@openedhand.com>
 
 	* Makefile:
