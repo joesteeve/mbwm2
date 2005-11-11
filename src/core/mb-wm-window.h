@@ -26,15 +26,14 @@
 #define MBWM_WINDOW_PROP_ATTR       (1<<3)
 #define MBWM_WINDOW_PROP_NAME       (1<<4)
 #define MBWM_WINDOW_PROP_SIZE_HINTS (1<<5)
-#define MBWM_WINDOW_PROP_ICON       (1<<6)
-#define MBWM_WINDOW_PROP_URGENCY    (1<<7)
-#define MBWM_WINDOW_PROP_GROUP      (1<<8)
-#define MBWM_WINDOW_PROP_PID        (1<<9)
-#define MBWM_WINDOW_PROP_PROTOS     (1<<10)
-#define MBWM_WINDOW_PROP_TRANSIENCY (1<<11)
-#define MBWM_WINDOW_PROP_STATE      (1<<12)
-#define MBWM_WINDOW_PROP_NET_STATE  (1<<13)
-#define MBWM_WINDOW_PROP_STARTUP_ID (1<<14)
+#define MBWM_WINDOW_PROP_WM_HINTS   (1<<6)
+#define MBWM_WINDOW_PROP_RGBA_ICON  (1<<7)
+#define MBWM_WINDOW_PROP_PID        (1<<10)
+#define MBWM_WINDOW_PROP_PROTOS     (1<<11)
+#define MBWM_WINDOW_PROP_TRANSIENCY (1<<12)
+#define MBWM_WINDOW_PROP_STATE      (1<<13)
+#define MBWM_WINDOW_PROP_NET_STATE  (1<<14)
+#define MBWM_WINDOW_PROP_STARTUP_ID (1<<15)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
@@ -46,6 +45,15 @@ struct MBWMWindow
   Window       xwindow;
 
   Atom         net_type;
+  Bool         want_key_input;
+  Window       xwin_group;
+  Pixmap       icon_pixmap, icon_pixmap_mask;
+
+  /* WithdrawnState 0, NormalState 1, IconicState 3 */
+  int          initial_state ;
+
+  Window       xwin_transient_for;
+
 };
 
 

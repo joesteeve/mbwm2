@@ -40,6 +40,14 @@ mb_wm_property_reply (MBWindowManager  *wm,
 		      unsigned char   **prop_return,
 		      int              *x_error_code);
 
+void*
+mb_wm_property_get_reply_and_validate (MBWindowManager  *wm,
+				       MBWMCookie        cookie,
+				       Atom              expected_type, 
+				       int               expected_format,
+				       int               expected_n_items,
+				       int              *n_items_ret,
+				       int              *x_error_code);
 Bool
 mb_wm_property_have_reply (MBWindowManager     *wm,
 			   MBWMCookie           cookie);

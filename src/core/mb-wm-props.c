@@ -44,6 +44,56 @@ mb_wm_property_reply (MBWindowManager  *wm,
 				 x_error_code);
 }
 
+void*
+mb_wm_property_get_reply_and_validate (MBWindowManager  *wm,
+				       MBWMCookie        cookie,
+				       Atom              expected_type, 
+				       int               expected_format,
+				       int               expected_n_items,
+				       int              *n_items_ret,
+				       int              *x_error_code)
+{
+  Atom             actual_type_return;
+  int              actual_format_return; 
+  unsigned long    nitems_return;
+  unsigned long    bytes_after_return;
+  unsigned char   *prop_data;
+
+  *x_error_code = 0;
+
+  xas_get_property_reply(wm->xas_context, 
+			 (XasCookie)cookie,
+			 &actual_type_return, 
+			 &actual_format_return, 
+			 &nitems_return, 
+			 &bytes_after_return, 
+			 &prop_data,
+			 x_error_code);
+
+  if (*x_error_code || prop_data == NULL)
+    goto fail;
+
+  if (expected_format && actual_format_return != expected_format)
+    goto fail;
+
+  if (expected_n_items && nitems_return != expected_n_items)
+    goto fail;
+
+  if (n_items_ret)
+    *n_items_ret = nitems_return;
+  
+  return prop_data;
+
+ fail:
+
+  if (prop_data)
+    XFree(prop_data);
+
+  return NULL;
+}
+
+
+
 Bool
 mb_wm_property_have_reply (MBWindowManager     *wm,
 			   MBWMCookie           cookie)

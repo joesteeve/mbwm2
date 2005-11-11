@@ -11,7 +11,9 @@ mb_wm_atoms_init(MBWindowManager *wm)
 
   char *atom_names[] = {
 
+    "WM_NAME",
     "WM_STATE",
+    "WM_HINTS",
     "WM_CHANGE_STATE",
     "WM_PROTOCOLS",
     "WM_DELETE_WINDOW",

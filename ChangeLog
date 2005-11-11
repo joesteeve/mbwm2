@@ -1,3 +1,25 @@
+2005-11-11  Matthew Allum  <mallum@openedhand.com>
+
+	reviewed by: <delete if not using a buddy>
+
+	* src/core/mb-wm-atoms.c: (mb_wm_atoms_init):
+	* src/core/mb-wm-props.c: (mb_wm_property_reply):
+	* src/core/mb-wm-props.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-window.c: (mb_wm_window_sync_properties):
+	* src/core/mb-wm-window.h:
+
+2005-11-10  Matthew Allum  <mallum@openedhand.com>
+
+	reviewed by: <delete if not using a buddy>
+
+	* src/core/mb-wm-atoms.c: (mb_wm_atoms_init):
+	* src/core/mb-wm-props.c: (mb_wm_property_reply):
+	* src/core/mb-wm-props.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-window.c: (mb_wm_window_sync_properties):
+	* src/core/mb-wm-window.h:
+
 2005-11-08  Matthew Allum  <mallum@openedhand.com>
 
 	* Makefile:
