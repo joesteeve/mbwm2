@@ -37,22 +37,40 @@
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
+typedef enum MBWMWindowEWMHState
+  {
+    MBWMWindowEWMHStateModal            = (1<<1),
+    MBWMWindowEWMHStateSticky           = (1<<2),
+    MBWMWindowEWMHStateMaximisedVert    = (1<<3),
+    MBWMWindowEWMHStateMaximisedHorz    = (1<<4),
+    MBWMWindowEWMHStateShaded           = (1<<5),
+    MBWMWindowEWMHStateSkipTaskbar      = (1<<6),
+    MBWMWindowEWMHStateSkipPager        = (1<<7),
+    MBWMWindowEWMHStateHidden           = (1<<8),
+    MBWMWindowEWMHStateFullscreen       = (1<<9),
+    MBWMWindowEWMHStateAbove            = (1<<10),
+    MBWMWindowEWMHStateBelow            = (1<<11),
+    MBWMWindowEWMHStateDemandsAttention = (1<<12)
+  }
+MBWMWindowEWMHState;
+
 struct MBWMWindow
 {
-  MBGeometry   geometry;
-  unsigned int depth;
-  char        *name;
-  Window       xwindow;
+  MBGeometry          geometry;
+  unsigned int        depth;
+  char               *name;
+  Window              xwindow;
 
-  Atom         net_type;
-  Bool         want_key_input;
-  Window       xwin_group;
-  Pixmap       icon_pixmap, icon_pixmap_mask;
+  Atom                net_type;
+  Bool                want_key_input;
+  Window              xwin_group;
+  Pixmap              icon_pixmap, icon_pixmap_mask;
 
   /* WithdrawnState 0, NormalState 1, IconicState 3 */
-  int          initial_state ;
+  int                 initial_state ;
 
-  Window       xwin_transient_for;
+  MBWMWindowEWMHState ewmh_state;
+  Window              xwin_transient_for;
 
 };
 

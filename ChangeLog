@@ -1,3 +1,29 @@
+2005-11-17  Matthew Allum  <mallum@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/client-types/Makefile.am:
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-app.h:
+	* src/client-types/mb-wm-client-panel.c:
+	* src/client-types/mb-wm-client-panel.h:
+	* src/core/Makefile.am:
+	* src/core/mb-wm-atoms.c: (mb_wm_atoms_init):
+	* src/core/mb-wm-client-base.c:
+	* src/core/mb-wm-client-base.h:
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-decor.c:
+	* src/core/mb-wm-decor.h:
+	* src/core/mb-wm-props.c: (mb_wm_xwin_get_geometry_reply):
+	* src/core/mb-wm-props.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-window.h:
+	* src/core/mb-wm.h:
+	* src/managers/Makefile.am:
+	* src/matchbox-window-manager-2.c:
+	More refactoring. Add initial decoration framework code
+
 2005-11-11  Matthew Allum  <mallum@openedhand.com>
 
 	reviewed by: <delete if not using a buddy>

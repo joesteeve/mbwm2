@@ -68,6 +68,7 @@
 #include "mb-wm-keys.h"
 #include "mb-wm-window.h"
 #include "mb-wm-client.h"
+#include "mb-wm-client-base.h"
 #include "mb-wm-layout.h"
 #include "mb-wm-stack.h"
 

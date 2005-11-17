@@ -28,6 +28,14 @@ typedef void (*MBWindowManagerClientInitMethod) (MBWindowManagerClient *client);
 
 typedef unsigned int MBWMClientType;
 
+
+typedef enum MBWMClientStackFlags
+  {
+    MBWMClientStackFlagAbove,
+    MBWMClientStackFlagBelow,
+  }
+MBWMClientStackFlags
+
 typedef enum MBWMClientStackHints
   {
 
