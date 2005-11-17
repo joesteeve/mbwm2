@@ -31,5 +31,7 @@ mb_wm_client_panel_register_type (MBWindowManager *wm);
 int
 mb_wm_client_panel_get_type ();
 
+MBWindowManagerClient*
+mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win);
 
 #endif

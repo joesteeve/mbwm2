@@ -17,7 +17,7 @@ AC_CHECK_FUNCS([memset strdup strncasecmp])
 PKG_CHECK_MODULES(MBWM, x11,,
 	         AC_MSG_ERROR([*** You need to install modern xlibs ***]))
 
-MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/ -I-I$(top_srcdir)/src/core/client-types/'
+MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types'
 MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
 

@@ -1,6 +1,20 @@
 2005-11-17  Matthew Allum  <mallum@openedhand.com>
 
 	* configure.ac:
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-app.h:
+	* src/client-types/mb-wm-client-panel.c: (mb_wm_client_panel_new):
+	* src/client-types/mb-wm-client-panel.h:
+	* src/core/mb-wm-client.h:
+	Make things build again.
+
+	* src/managers/matchbox-window-manager-2-simple.c: (client_new):
+	* src/matchbox-window-manager-2.c:
+	Move and rename.	
+
+2005-11-17  Matthew Allum  <mallum@openedhand.com>
+
+	* configure.ac:
 	* src/Makefile.am:
 	* src/client-types/Makefile.am:
 	* src/client-types/mb-wm-client-app.c:

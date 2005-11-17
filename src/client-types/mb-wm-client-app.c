@@ -1,4 +1,4 @@
-#include "mb-wm-client-panel.h"
+#include "mb-wm-client-app.h"
 
 struct MBWindowManagerClientApp
 {
@@ -24,12 +24,12 @@ mb_wm_client_app_get_type ()
 MBWindowManagerClient*
 mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
 {
-  TestClient *tc = NULL;
+  MBWindowManagerClientApp *tc = NULL;
 
-  if (!TestPanelAppType)
+  if (!MBWMClientAppType)
     return NULL;
 
-  tc = mb_wm_util_malloc0(sizeof(TestClient));
+  tc = mb_wm_util_malloc0(sizeof(MBWindowManagerClientApp));
 
   mb_wm_client_init (wm, MBWM_CLIENT(tc), win);
 

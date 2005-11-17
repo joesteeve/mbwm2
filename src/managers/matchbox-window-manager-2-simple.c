@@ -1,8 +1,3 @@
-/* 
- * Here we would provide wm policy
- *
- */
-
 #include "mb-wm.h"
 #include "mb-wm-client-app.h"
 #include "mb-wm-client-panel.h"
@@ -11,9 +6,9 @@ MBWindowManagerClient*
 client_new(MBWindowManager *wm, MBWMWindow *win)
 {
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
-    return test_panel_client_new(wm, win);
+    return mb_wm_client_panel_new(wm, win);
   else
-    return test_client_new(wm, win);
+    return mb_wm_client_app_new(wm, win);
 }
 
 void

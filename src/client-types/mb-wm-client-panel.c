@@ -55,14 +55,14 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win)
 {
   MBWindowManagerClientPanel *pc = NULL;
 
-  if (!TestPanelClientType)
+  if (!MBWMClientPanelType)
     return NULL;
 
-  pc = mb_wm_util_malloc0(sizeof(TestPanelClient));
+  pc = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPanel));
 
   mb_wm_client_init (wm, MBWM_CLIENT(pc), win);
 
-  pc->base_client.type = TestPanelClientType;
+  pc->base_client.type = mb_wm_client_panel_get_type ();
 
   /* overide realize method */
   pc->base_client.realize  = mb_wm_client_panel_realize;

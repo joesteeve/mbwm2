@@ -34,7 +34,7 @@ typedef enum MBWMClientStackFlags
     MBWMClientStackFlagAbove,
     MBWMClientStackFlagBelow,
   }
-MBWMClientStackFlags
+MBWMClientStackFlags;
 
 typedef enum MBWMClientStackHints
   {
