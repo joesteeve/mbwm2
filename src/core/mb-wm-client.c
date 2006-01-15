@@ -123,12 +123,12 @@ mb_wm_client_needs_stack_sync (MBWindowManagerClient *client)
   return (client->priv->sync_state & StackingNeedsSync);
 }
 
-
-
 void
 mb_wm_client_show (MBWindowManagerClient *client)
 {
   MBWM_ASSERT (client->show != NULL);
+
+  /* FIXME: Need to re-add to stack here ? */
 
   client->show(client);
 
@@ -146,6 +146,9 @@ mb_wm_client_hide (MBWindowManagerClient *client)
   client->hide(client);
 
   client->priv->mapped = False;
+
+  /* remove it from stack */
+  mb_wm_stack_remove (client);
 
   mb_wm_client_visibility_mark_dirty (client);
 }

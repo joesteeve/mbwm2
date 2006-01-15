@@ -5,21 +5,16 @@ struct MBWindowManagerClientPanel
   MBWindowManagerClient base_client;
 };
 
-static int MBWMClientPanelType = 0;
-
-void
-mb_wm_client_panel_register_type (MBWindowManager *wm)
-{
-  if (!MBWMClientPanelType)
-    MBWMClientPanelType = mb_wm_register_client_type(wm);
-}
-
 int
 mb_wm_client_panel_get_type ()
 {
-  return MBWMClientPanelType;
-}
+  static int type = 0;
 
+  if (!type)
+    type = mb_wm_register_client_type();
+
+  return type;
+}
 
 static void
 mb_wm_client_panel_realize (MBWindowManagerClient *client)
@@ -55,14 +50,11 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win)
 {
   MBWindowManagerClientPanel *pc = NULL;
 
-  if (!MBWMClientPanelType)
-    return NULL;
-
   pc = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPanel));
 
   mb_wm_client_init (wm, MBWM_CLIENT(pc), win);
 
-  pc->base_client.type = mb_wm_client_panel_get_type ();
+  pc->base_client.type     = mb_wm_client_panel_get_type ();
 
   /* overide realize method */
   pc->base_client.realize  = mb_wm_client_panel_realize;

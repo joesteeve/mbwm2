@@ -70,14 +70,14 @@ mb_wm_util_warn (const char *format, ...)
   if (msg) free(msg);
 }
 
-MBList*
+MBWMList*
 mb_wm_util_list_alloc_item(void)
 {
-  return mb_wm_util_malloc0(sizeof(MBList));
+  return mb_wm_util_malloc0(sizeof(MBWMList));
 }
 
 int
-mb_wm_util_list_length(MBList *list)
+mb_wm_util_list_length(MBWMList *list)
 {
   int result = 1;
 
@@ -89,8 +89,8 @@ mb_wm_util_list_length(MBList *list)
   return result;
 }
 
-MBList*
-mb_wm_util_list_get_last(MBList *list)
+MBWMList*
+mb_wm_util_list_get_last(MBWMList *list)
 {
   if (list == NULL) 
     return NULL;
@@ -100,8 +100,8 @@ mb_wm_util_list_get_last(MBList *list)
   return list;
 }
 
-MBList*
-mb_wm_util_list_get_first(MBList *list)
+MBWMList*
+mb_wm_util_list_get_first(MBWMList *list)
 {
   if (list == NULL) 
     return NULL;
@@ -112,7 +112,7 @@ mb_wm_util_list_get_first(MBList *list)
 }
 
 void*
-mb_wm_util_list_get_nth_data(MBList *list, int n)
+mb_wm_util_list_get_nth_data(MBWMList *list, int n)
 {
   if (list == NULL) 
     return NULL;
@@ -130,8 +130,8 @@ mb_wm_util_list_get_nth_data(MBList *list, int n)
   return (void *)list->data;
 }
 
-MBList*
-mb_wm_util_list_append(MBList *list, void *data)
+MBWMList*
+mb_wm_util_list_append(MBWMList *list, void *data)
 {
   if (list == NULL)
     {
@@ -140,7 +140,7 @@ mb_wm_util_list_append(MBList *list, void *data)
     }
   else
     {
-      MBList *last;
+      MBWMList *last;
 
       last = mb_wm_util_list_get_last(list);
 
@@ -152,15 +152,40 @@ mb_wm_util_list_append(MBList *list, void *data)
   return list;
 }
 
-MBList*
-mb_wm_util_list_remove(MBList *list, void *data)
+MBWMList*
+mb_wm_util_list_remove(MBWMList *list, void *data)
 {
-  /* FIXME: Implement */
+  MBWMList *prev, *start;
+
+  prev = NULL; 
+  start = list = mb_wm_util_list_get_first(list);
+
+  while (list)
+    {
+      if (list->data == data)
+	{
+	  if (list->next)
+	    list->next->prev = prev;
+
+	  if (prev)
+	    prev->next = list->next;
+	  else 
+	    start = list->next;
+
+	  free(list);
+
+	  return start;
+	}
+
+      prev = list;
+      list = list->next;
+    }
+
   return NULL;
 }
 
 void
-mb_wm_util_list_foreach(MBList *list, MBListForEachCB func, void *userdata)
+mb_wm_util_list_foreach(MBWMList *list, MBWMListForEachCB func, void *userdata)
 {
   while (list)
     {

@@ -34,7 +34,7 @@ MBWindowManagerClient*
 mb_wm_core_managed_client_from_xwindow(MBWindowManager *wm, Window win);
 
 int
-mb_wm_register_client_type (MBWindowManager* wm);
+mb_wm_register_client_type (void);
 
 void
 mb_wm_core_manage_client (MBWindowManager       *wm,

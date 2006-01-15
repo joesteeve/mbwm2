@@ -130,6 +130,7 @@ struct MBWindowManagerClient
   MBWMClientLayoutHints        layout_hints;
 
   MBWindowManagerClient       *stacked_above, *stacked_below;
+
   MBWindowManagerClient       *next_focused_client;
 
   MBGeometry frame_geometry;  /* FIXME: in ->priv ? */
@@ -146,25 +147,9 @@ struct MBWindowManagerClient
   MBWMClientHideMethod         hide;
   MBWMClientSyncMethod         sync;     /* sync internal changes to display */
 
-  /* focus, coverage */
+  /* To add focus, coverage */
 
-#if 0
-       new() 
-     - init()                   
-     - request_geometry()  --move resize or request_position, request_size */
-     - realize()          /* would reparent */
-     - get_coverage ()
-     - unrealize
-     - map ()
-     - unamp ()
-     - update_stack_position ()  /* just raise() or stack() ? */
-     - focus() ?
-     - paint ()
-     - destroy ()
-
-#endif
-
-  /* ### Private ? ### */
+  /* ### Private ### */
 
   MBWindowManagerClientPriv   *priv;
 };

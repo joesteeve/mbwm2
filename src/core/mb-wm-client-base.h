@@ -25,27 +25,5 @@ void
 mb_wm_client_base_init (MBWindowManager             *wm, 
 			MBWindowManagerClient       *client,
 			MBWMWindow                  *win);
-void
-mb_wm_client_base_realize (MBWindowManagerClient *client);
-
-void
-mb_wm_client_base_stack (MBWindowManagerClient *client,
-			 int                    flags);
-void
-mb_wm_client_base_show (MBWindowManagerClient *client);
-
-void
-mb_wm_client_base_hide (MBWindowManagerClient *client);
-
-void
-mb_wm_client_base_destroy (MBWindowManagerClient *client);
-
-void
-mb_wm_client_base_display_sync (MBWindowManagerClient *client);
-
-Bool
-mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
-				    MBGeometry            *new_geometry,
-				    MBWMClientReqGeomType  flags);
 
 #endif

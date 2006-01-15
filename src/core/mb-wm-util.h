@@ -5,7 +5,7 @@
 
 /* See http://rlove.org/log/2005102601 */
 #if __GNUC__ >= 3
-# define inlineinline __attribute__ ((always_inline))
+# define inline __attribute__ ((always_inline))
 # define __pure__attribute__ ((pure))
 # define __const__attribute__ ((const))
 # define __noreturn__attribute__ ((noreturn))
@@ -60,13 +60,13 @@ mb_wm_util_untrap_x_errors(void);
 
 /* List */
 
-typedef struct MBList MBList;
+typedef struct MBWMList MBWMList;
 
-typedef void (*MBListForEachCB) (void *data, void *userdata);
+typedef void (*MBWMListForEachCB) (void *data, void *userdata);
 
-struct MBList 
+struct MBWMList 
 {
-  MBList *next, *prev;
+  MBWMList *next, *prev;
   void *data;
 };
 
@@ -74,26 +74,29 @@ struct MBList
 #define mb_wm_util_list_prev(list) (list)->prev
 #define mb_wm_util_list_data(data) (list)->data
 
-MBList *
+MBWMList*
 mb_wm_util_list_alloc_item(void);
 
+MBWMList*
+mb_wm_util_list_remove(MBWMList *list, void *data);
+
 int
-mb_wm_util_list_length(MBList *list);
+mb_wm_util_list_length(MBWMList *list);
 
-MBList*
-mb_wm_util_list_get_last(MBList *list);
+MBWMList*
+mb_wm_util_list_get_last(MBWMList *list);
 
-MBList*
-mb_wm_util_list_get_first(MBList *list);
+MBWMList*
+mb_wm_util_list_get_first(MBWMList *list);
 
 void*
-mb_wm_util_list_get_nth_data(MBList *list, int n);
+mb_wm_util_list_get_nth_data(MBWMList *list, int n);
 
-MBList*
-mb_wm_util_list_append(MBList *list, void *data);
+MBWMList*
+mb_wm_util_list_append(MBWMList *list, void *data);
 
 void
-mb_wm_util_list_foreach(MBList *list, MBListForEachCB func, void *userdata);
+mb_wm_util_list_foreach(MBWMList *list, MBWMListForEachCB func, void *userdata);
 
 #endif
 

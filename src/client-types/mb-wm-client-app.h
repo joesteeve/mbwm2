@@ -23,13 +23,12 @@
 
 #include "mb-wm.h"
 
+#define MB_WM_CLIENT_TYPE_APP mb_wm_client_app_get_type()
+
 typedef struct MBWindowManagerClientApp MBWindowManagerClientApp;
 
-void
-mb_wm_client_panel_register_type (MBWindowManager *wm);
-
 int
-mb_wm_client_panel_get_type ();
+mb_wm_client_app_get_type ();
 
 MBWindowManagerClient*
 mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win);

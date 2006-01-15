@@ -28,6 +28,8 @@ typedef struct MBGeometry
 
 } MBGeometry;
 
+
+
 typedef struct MBWMWindowAttributes /* Needs to be sorted */
 {
   Visual *visual;         
@@ -66,7 +68,6 @@ typedef enum MBWMAtom
   MBWM_ATOM_WM_NAME = 0,
   MBWM_ATOM_WM_STATE,
   MBWM_ATOM_WM_HINTS,
-  MBWM_ATOM_WM_TRANSIENCY,
   MBWM_ATOM_WM_CHANGE_STATE,
   MBWM_ATOM_WM_PROTOCOLS,
   MBWM_ATOM_WM_DELETE_WINDOW,
@@ -258,14 +259,14 @@ struct MBWindowManager
   int                          xscreen;
   Window                       xwin_root;
   MBWindowManagerEventFuncs   *event_funcs;
-  MBWindowManagerClient       *stack_top, *stack_bottom;
 
+  MBWindowManagerClient       *stack_top, *stack_bottom;
+  MBWMList                    *clients;
 
   Atom                         atoms[MBWM_ATOM_COUNT];
 
   MBWMKeys                    *keys; /* Keybindings etc */
   
-
   MBWindowManagerNewClientFunc new_client_from_window_func;
 
   XasContext                   *xas_context;

@@ -20,6 +20,29 @@
 
 #include "mb-wm.h"
 
+static void
+mb_wm_client_base_realize (MBWindowManagerClient *client);
+
+static void
+mb_wm_client_base_stack (MBWindowManagerClient *client,
+			 int                    flags);
+static void
+mb_wm_client_base_show (MBWindowManagerClient *client);
+
+static void
+mb_wm_client_base_hide (MBWindowManagerClient *client);
+
+static void
+mb_wm_client_base_destroy (MBWindowManagerClient *client);
+
+static void
+mb_wm_client_base_display_sync (MBWindowManagerClient *client);
+
+static Bool
+mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
+				    MBGeometry            *new_geometry,
+				    MBWMClientReqGeomType  flags);
+
 void
 mb_wm_client_base_init (MBWindowManager             *wm, 
 			MBWindowManagerClient       *client,
@@ -46,7 +69,7 @@ mb_wm_client_base_init (MBWindowManager             *wm,
   client->frame_geometry.height = client->window->geometry.height;
 }
 
-void
+static void
 mb_wm_client_base_realize (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
@@ -95,24 +118,22 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 	       PropertyChangeMask);
 }
 
-void
+static void
 mb_wm_client_base_stack (MBWindowManagerClient *client,
 			 int                    flags)
 {
   /* Stack to highest/lowest possible possition in stack */
 
-  /* then mark stacking dirty */
-
-  /* maybe we need to call a stack manager ? */
+  mb_wm_stack_append_top (client);
 }
 
-void
+static void
 mb_wm_client_base_show (MBWindowManagerClient *client)
 {
   /* mark dirty somehow */
 }
 
-void
+static void
 mb_wm_client_base_hide (MBWindowManagerClient *client)
 {
   
@@ -120,7 +141,7 @@ mb_wm_client_base_hide (MBWindowManagerClient *client)
 
 }
 
-void
+static void
 mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
@@ -176,7 +197,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
   mb_wm_util_untrap_x_errors();  
 }
 
-void
+static void
 mb_wm_client_base_destroy (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
@@ -191,7 +212,7 @@ mb_wm_client_base_destroy (MBWindowManagerClient *client)
   mb_wm_util_untrap_x_errors();  
 }
 
-Bool
+static Bool
 mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 				    MBGeometry            *new_geometry,
 				    MBWMClientReqGeomType  flags)

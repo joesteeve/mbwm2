@@ -1,3 +1,40 @@
+2006-01-15  Matthew Allum  <mallum@openedhand.com>
+
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-app.h:
+	* src/client-types/mb-wm-client-panel.c: (mb_wm_client_panel_new):
+	* src/client-types/mb-wm-client-panel.h:
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_init),
+	(mb_wm_client_base_realize), (mb_wm_client_base_stack),
+	(mb_wm_client_base_show), (mb_wm_client_base_hide),
+	(mb_wm_client_base_display_sync), (mb_wm_client_base_destroy):
+	* src/core/mb-wm-client-base.h:
+	* src/core/mb-wm-client.c: (mb_wm_client_needs_stack_sync),
+	(mb_wm_client_hide):
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c: (test_destroy_notify),
+	(mb_wm_core_handle_map_request), (stack_get_window_list),
+	(mb_wm_core_sync), (mb_wm_core_manage_client),
+	(mb_wm_core_unmanage_client), (mb_wm_run),
+	(mb_wm_get_display_geometry), (mb_wm_display_sync_queue),
+	(mb_wm_init):
+	* src/core/mb-wm-core.h:
+	* src/core/mb-wm-keys.c: (mb_wm_keys_press):
+	* src/core/mb-wm-stack.c: (mb_wm_stack_insert_above_client),
+	(mb_wm_stack_prepend_bottom):
+	* src/core/mb-wm-stack.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-util.c: (mb_wm_util_warn),
+	(mb_wm_util_list_length), (mb_wm_util_list_get_last),
+	(mb_wm_util_list_get_first), (mb_wm_util_list_get_nth_data),
+	(mb_wm_util_list_append):
+	* src/core/mb-wm-util.h:
+	* src/core/mb-wm-window.c: (mb_wm_window_sync_properties):
+	* src/core/mb-wm.h:
+	* src/managers/matchbox-window-manager-2-simple.c:
+	(key_binding_func), (main):
+	Various minor tweaks.
+
 2005-11-17  Matthew Allum  <mallum@openedhand.com>
 
 	* configure.ac:

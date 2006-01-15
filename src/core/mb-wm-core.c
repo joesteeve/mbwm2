@@ -72,10 +72,27 @@ test_destroy_notify (MBWindowManager      *wm,
 
 }
 
-void 
-test_map_request (MBWindowManager   *wm,
-		  XMapRequestEvent  *xev,
-		  void              *userdata)
+static void 
+mb_wm_core_handle_config_request (MBWindowManager        *wm,
+				  XConfigureRequestEvent *xev,
+				  void                   *userdata)
+{
+  MBWindowManagerClient *client;
+
+  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+
+  if (!client)
+    {
+      MBWM_DBG("### No client found for configure event ###");
+      return;
+    }
+
+}
+
+static void 
+mb_wm_core_handle_map_request (MBWindowManager   *wm,
+			       XMapRequestEvent  *xev,
+			       void              *userdata)
 {
   MBWindowManagerClient *client = NULL;
 
@@ -118,7 +135,6 @@ stack_get_window_list (MBWindowManager *wm)
 
   if (!wm->stack_n_clients) return NULL;
 
-  /* FIXME: could avoid this malloc with a static-ish arr */
   win_list = malloc(sizeof(Window)*(wm->stack_n_clients));
 
   mb_wm_stack_enumerate_reverse(wm, client)
@@ -178,13 +194,12 @@ mb_wm_core_manage_client (MBWindowManager       *wm,
 {
   /* FIXME: set a managed flag in client object ? */
 
-  mb_wm_stack_append_top (client);
+  wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
   mb_wm_client_stack(client, 0); /* move to top of stack */
 
   mb_wm_client_show(client); /* set flags to map - should this go elsewhere? */
 
-  /* Call show() and activate here or whatver :/ */
 }
 
 void
@@ -192,6 +207,8 @@ mb_wm_core_unmanage_client (MBWindowManager       *wm,
 			    MBWindowManagerClient *client)
 {
   /* FIXME: set a managed flag in client object ? */
+
+  wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
 
   mb_wm_stack_remove (client);
 
@@ -296,9 +313,10 @@ mb_wm_display_sync_queue (MBWindowManager* wm)
 }
 
 int
-mb_wm_register_client_type (MBWindowManager* wm)
+mb_wm_register_client_type (void)
 {
-  return wm->client_type_cnt++;
+  static int type_cnt = 0;
+  return ++type_cnt;
 }
 
 MBWindowManager*
@@ -357,9 +375,12 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
 
   wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
 
-  wm->event_funcs->map_request    = test_map_request;
+  wm->event_funcs->map_request       = mb_wm_core_handle_map_request;
+  wm->event_funcs->configure_request = mb_wm_core_handle_config_request;
+
   wm->event_funcs->destroy_notify = test_destroy_notify;
   wm->event_funcs->key_press      = test_key_press;
+
 
   mb_wm_atoms_init(wm);
   mb_wm_keys_init(wm);

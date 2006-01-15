@@ -25,12 +25,10 @@
 
 typedef struct MBWindowManagerClientPanel MBWindowManagerClientPanel;
 
-void
-mb_wm_client_panel_register_type (MBWindowManager *wm);
+#define MB_WM_CLIENT_TYPE_PANEL (mb_wm_client_panel_get_type())
 
 int
 mb_wm_client_panel_get_type ();
-
 
 MBWindowManagerClient*
 mb_wm_client_panel_new (MBWindowManager *wm, MBWMWindow *win);

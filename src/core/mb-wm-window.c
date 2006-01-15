@@ -129,7 +129,8 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  || actual_type_return != XA_ATOM
 	  || actual_format_return != 32
 	  || nitems_return != 1
-	  || result_atom == NULL)
+	  || result_atom == NULL
+	  )
 	{
 	  MBWM_DBG("### Warning net type prop failed ###");
 	}

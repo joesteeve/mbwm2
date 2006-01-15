@@ -3,7 +3,7 @@
 
 struct MBWMKeys /* FIXME: Probably do want to hide these here */
 {
-  MBList *bindings;  /* Always points to first binding */
+  MBWMList *bindings;  /* Always points to first binding */
 
   int MetaMask;
   int HyperMask;
@@ -264,7 +264,7 @@ mb_wm_keys_press (MBWindowManager *wm,
 		  KeySym           keysym,
 		  int              modifier_mask)
 {
-  MBList         *iter;
+  MBWMList       *iter;
   MBWMKeyBinding *binding;
 
   if (!wm->keys)
