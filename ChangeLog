@@ -1,3 +1,20 @@
+2006-01-25  Matthew Allum  <mallum@openedhand.com>
+
+	* src/core/Makefile.am:
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_display_sync):
+	* src/core/mb-wm-client.c: (mb_wm_client_visibility_mark_dirty),
+	(mb_wm_client_needs_visibility_sync),
+	(mb_wm_client_needs_geometry_sync):
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c:
+	* src/core/mb-wm-decor.c: (mb_wm_decor_create),
+	(mb_wm_decor_get_x_window), (mb_wm_decor_mark_dirty),
+	(mb_wm_decor_attach), (mb_wm_decor_detach), (mb_wm_decor_unref),
+	(mb_wm_decor_ref), (mb_wm_decor_button_create):
+	* src/core/mb-wm-decor.h:
+	* src/core/mb-wm.h:
+	Add some initial infrastructure for window decorations
+
 2006-01-15  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/mb-wm-client-app.c:

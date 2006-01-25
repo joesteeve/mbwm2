@@ -66,6 +66,7 @@
 #include "mb-wm-props.h"
 #include "mb-wm-core.h"
 #include "mb-wm-keys.h"
+#include "mb-wm-decor.h"
 #include "mb-wm-window.h"
 #include "mb-wm-client.h"
 #include "mb-wm-client-base.h"

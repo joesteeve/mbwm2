@@ -169,6 +169,14 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
       
       /* FIXME: need flags to handle other stuff like confugre events etc */
 
+      /* FIXME: Handle decor resizes - decor needs rethink */
+    }
+
+  if (mb_wm_client_needs_decor_sync (client))
+    {
+      /* Paint any decoration */
+
+      /* Grep the list, call theming backend somehow */
     }
 
   if (mb_wm_client_needs_visibility_sync (client))

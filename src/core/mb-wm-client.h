@@ -130,10 +130,10 @@ struct MBWindowManagerClient
   MBWMClientLayoutHints        layout_hints;
 
   MBWindowManagerClient       *stacked_above, *stacked_below;
-
   MBWindowManagerClient       *next_focused_client;
 
   MBGeometry frame_geometry;  /* FIXME: in ->priv ? */
+  MBWMList                    *decor;
 
   /* ### Methods ### */
 
@@ -164,7 +164,6 @@ struct MBWindowManagerClient
          ((c)->window->geometry.y) - (c)->frame_geometry.y)
 
 
-
 MBWMWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window window);
 
@@ -191,6 +190,7 @@ mb_wm_client_hide (MBWindowManagerClient *client);
 void
 mb_wm_client_display_sync (MBWindowManagerClient *client);
 
+
 Bool
 mb_wm_client_is_realized (MBWindowManagerClient *client);
 
@@ -203,6 +203,9 @@ mb_wm_client_destroy (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_needs_geometry_sync (MBWindowManagerClient *client);
+
+Bool
+mb_wm_client_needs_decor_sync (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_needs_sync (MBWindowManagerClient *client);

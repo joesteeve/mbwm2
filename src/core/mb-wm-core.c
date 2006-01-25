@@ -169,21 +169,27 @@ stack_sync_to_display (MBWindowManager *wm)
 void
 mb_wm_core_sync (MBWindowManager *wm)
 {
-  /* This would sync all pending geometry and stcking changing to 
-   * this display.
-  */
+  /* Sync all changes to display */
   MBWindowManagerClient *client = NULL;
 
   MBWM_MARK();
 
+  XGrabServer(wm->xdpy);
+
   /* FIXME: optimise wm sync flags so know if this needs calling */
+  /* FIXME: Can we restack an unmapped window ? - problem of new 
+   *        clients mapping below existing ones.
+  */
   stack_sync_to_display (wm);
 
   mb_wm_layout_manager_update (wm); 
 
+  /* Now do updates per individual client - paints etc, main work here */
   mb_wm_stack_enumerate(wm, client)
     if (mb_wm_client_needs_sync (client))
       mb_wm_client_display_sync (client);
+
+  XUngrabServer(wm->xdpy);
 
   wm->need_display_sync = False;
 }
