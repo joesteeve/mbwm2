@@ -84,6 +84,8 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
   attr.event_mask = MBWMChildMask|MBWMButtonMask|ExposureMask;
   
+  /* This should probably be called via rather than on new clien sync() ...? */
+
   client->xwin_frame 
     = XCreateWindow(wm->xdpy, wm->xwin_root, 
 		    client->frame_geometry.x,
@@ -99,19 +101,13 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 
   XClearWindow(wm->xdpy, client->xwin_frame);
 
-  /* FIXME: below definetly belongs elsewhere ...  */
-  XMoveResizeWindow(wm->xdpy, 
-		    MBWM_CLIENT_XWIN(client),
-		    client->window->geometry.x,
-		    client->window->geometry.y,
-		    client->window->geometry.width,
-		    client->window->geometry.height);
-
+  /* Assume geomerty sync will fix this up correctly togeather with
+   * any decoration creation. Layout manager will call this
+  */
   XReparentWindow(wm->xdpy, 
 		  MBWM_CLIENT_XWIN(client), 
 		  client->xwin_frame, 
-		  client->window->geometry.x - client->frame_geometry.x,
-		  client->window->geometry.y  -client->frame_geometry.y);
+		  0, 0);
 
   XSelectInput(wm->xdpy, 
 	       MBWM_CLIENT_XWIN(client),
@@ -148,10 +144,12 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   MBWM_MARK();
 
-  mb_wm_util_trap_x_errors();  
+  /* Sync up any geometry */
 
   if (mb_wm_client_needs_geometry_sync (client))
     {
+      mb_wm_util_trap_x_errors();  
+
       if (client->xwin_frame)
 	XMoveResizeWindow(wm->xdpy, 
 			  client->xwin_frame,
@@ -166,21 +164,32 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 			client->window->geometry.y - client->frame_geometry.y,
 			client->window->geometry.width,
 			client->window->geometry.height);
-      
-      /* FIXME: need flags to handle other stuff like confugre events etc */
 
-      /* FIXME: Handle decor resizes - decor needs rethink */
+      mb_wm_util_untrap_x_errors();  
+      
+      /* FIXME: need flags to handle other stuff like configure events etc */
+
+      /* Resize any decor */
+
+      mb_wm_util_list_foreach(client->decor, 
+			      (MBWMListForEachCB)mb_wm_decor_handle_resize,
+			      NULL);
     }
+
+  /* Paint any decor */
 
   if (mb_wm_client_needs_decor_sync (client))
     {
-      /* Paint any decoration */
-
-      /* Grep the list, call theming backend somehow */
+      mb_wm_util_list_foreach(client->decor, 
+			      (MBWMListForEachCB)mb_wm_decor_handle_repaint,
+			      NULL);
     }
+
+  /* Handle any mapping */
 
   if (mb_wm_client_needs_visibility_sync (client))
     {
+      mb_wm_util_trap_x_errors();  
 
       if (mb_wm_client_is_mapped (client))
 	{
@@ -199,10 +208,11 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	  else
 	    XMapWindow(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
 	}
+
+      mb_wm_util_untrap_x_errors();  
     }
 
   XSync(wm->xdpy, False);
-  mb_wm_util_untrap_x_errors();  
 }
 
 static void
@@ -220,6 +230,7 @@ mb_wm_client_base_destroy (MBWindowManagerClient *client)
   mb_wm_util_untrap_x_errors();  
 }
 
+/* Note request geometry always called by layout manager */
 static Bool
 mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 				    MBGeometry            *new_geometry,
@@ -248,9 +259,9 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 	       new_geometry->x,
 	       new_geometry->y);
 
-      client->frame_geometry.x = new_geometry->x;
-      client->frame_geometry.y = new_geometry->y;
-      client->frame_geometry.width = new_geometry->width;
+      client->frame_geometry.x      = new_geometry->x;
+      client->frame_geometry.y      = new_geometry->y;
+      client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
 
       client->window->geometry.x = client->frame_geometry.x + 4;

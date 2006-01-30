@@ -40,6 +40,15 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 }
 
 Bool
+mb_wm_window_set_property (MBWindowManager *wm,
+			   MBWMWindow      *win
+			   /* To fill in */)
+{
+
+}
+			    
+
+Bool
 mb_wm_window_sync_properties (MBWindowManager *wm,
 			      MBWMWindow      *win,
 			      unsigned long    props_req)

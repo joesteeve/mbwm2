@@ -60,8 +60,8 @@
 #define FALSE 0
 #endif
 
-#include "mb-wm-util.h"
 #include "mb-wm-types.h"
+#include "mb-wm-util.h"
 #include "mb-wm-atoms.h"
 #include "mb-wm-props.h"
 #include "mb-wm-core.h"

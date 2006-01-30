@@ -30,20 +30,60 @@ typedef enum MBWMDecorButtonFlags
 
 } MBWMDecorButtonFlags;
 
+typedef enum MBWMDecorType
+{
+  MBWMDecorTypeNorth,
+  MBWMDecorTypeSouth,
+  MBWMDecorTypeEast,
+  MBWMDecorTypeWest,
+
+} MBWMDecorType;
+
+typedef void (*MBWMDecorResizedFunc) (MBWindowManager   *wm,
+				      MBWMDecor         *decor,
+				      void              *userdata);
+
+typedef void (*MBWMDecorRepaintFunc) (MBWindowManager   *wm,
+				      MBWMDecor         *decor,
+				      void              *userdata);
 
 MBWMDecor*
-mb_wm_decor_create (MBWindowManager *wm, 
-		    int              width,
-		    int              height);
+mb_wm_decor_create (MBWindowManager     *wm,
+		    MBWMDecorType        type,
+		    MBWMDecorResizedFunc resize,
+		    MBWMDecorResizedFunc repaint,
+		    void                *userdata);
+
+static Bool
+mb_wm_decor_reparent (MBWMDecor *decor);
+
+static void
+mb_wm_decor_calc_geometry (MBWMDecor *decor);
+
+void
+mb_wm_decor_handle_repaint (MBWMDecor *decor);
+
+void
+mb_wm_decor_handle_resize (MBWMDecor *decor);
 
 Window
 mb_wm_decor_get_x_window (MBWMDecor *decor);
 
-Bool
+MBWMDecorType
+mb_wm_decor_get_type (MBWMDecor *decor);
+
+const MBGeometry*
+mb_wm_decor_get_geometry (MBWMDecor *decor);
+
+void
+mb_wm_decor_mark_dirty (MBWMDecor *decor);
+
+void
 mb_wm_decor_attach (MBWMDecor             *decor,
-		    MBWindowManagerClient *client,
-		    int                    x,
-		    int                    y);
+		    MBWindowManagerClient *client);
+
+void
+mb_wm_decor_detach (MBWMDecor *decor);
 
 void
 mb_wm_decor_unref (MBWMDecor *decor);

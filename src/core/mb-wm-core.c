@@ -71,6 +71,19 @@ test_destroy_notify (MBWindowManager      *wm,
 
 
 }
+static void
+mb_wm_core_handle_property_notify (MBWindowManager         *wm,
+				   XPropertyEvent          *xev,
+				   void                    *userdata)
+{
+  MBWindowManagerClient *client;
+
+  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+
+  if (!client)
+    return;
+
+}
 
 static void 
 mb_wm_core_handle_config_request (MBWindowManager        *wm,
@@ -118,9 +131,10 @@ mb_wm_core_handle_map_request (MBWindowManager   *wm,
       client = wm->new_client_from_window_func(wm, win); 
       
       if (client)
+	mb_wm_core_manage_client(wm, client);
+      else
 	{
-	  mb_wm_client_realize(client); 
-	  mb_wm_core_manage_client(wm, client);
+	  /* Free up window object */
 	}
     }
 }
@@ -145,7 +159,6 @@ stack_get_window_list (MBWindowManager *wm)
   return win_list;
 }
 
-
 static void
 stack_sync_to_display (MBWindowManager *wm)
 {
@@ -165,7 +178,6 @@ stack_sync_to_display (MBWindowManager *wm)
     }
 }
 
-
 void
 mb_wm_core_sync (MBWindowManager *wm)
 {
@@ -175,6 +187,11 @@ mb_wm_core_sync (MBWindowManager *wm)
   MBWM_MARK();
 
   XGrabServer(wm->xdpy);
+
+  /* Create the actual window */
+  mb_wm_stack_enumerate(wm, client)
+    if (!mb_wm_client_is_realized (client))
+      mb_wm_client_realize (client);
 
   /* FIXME: optimise wm sync flags so know if this needs calling */
   /* FIXME: Can we restack an unmapped window ? - problem of new 
@@ -198,14 +215,17 @@ void
 mb_wm_core_manage_client (MBWindowManager       *wm,
 			  MBWindowManagerClient *client)
 {
-  /* FIXME: set a managed flag in client object ? */
+  /* Add to our list of managed clients */
 
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
-  mb_wm_client_stack(client, 0); /* move to top of stack */
+  /* move to position in stack */
 
-  mb_wm_client_show(client); /* set flags to map - should this go elsewhere? */
+  mb_wm_client_stack(client, 0);
 
+  /* set flags to map - should this go elsewhere? */
+
+  mb_wm_client_show(client);   
 }
 
 void
@@ -293,6 +313,12 @@ mb_wm_run(MBWindowManager *wm)
 				 (XKeyEvent*)&xev.xkey, 
 				 xev_funcs->user_data);
 	  break;
+	case PropertyNotify:
+	  if (xev_funcs->property_notify)
+	    xev_funcs->property_notify(wm, 
+				       (XPropertyEvent*)&xev.xproperty, 
+				       xev_funcs->user_data);
+
 	default:
 	  break;
 	}
@@ -383,6 +409,7 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
 
   wm->event_funcs->map_request       = mb_wm_core_handle_map_request;
   wm->event_funcs->configure_request = mb_wm_core_handle_config_request;
+  wm->event_funcs->property_notify = mb_wm_core_handle_property_notify;
 
   wm->event_funcs->destroy_notify = test_destroy_notify;
   wm->event_funcs->key_press      = test_key_press;

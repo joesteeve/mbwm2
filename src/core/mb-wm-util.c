@@ -48,6 +48,15 @@ mb_wm_util_malloc0(int size)
   return p;
 }
 
+Bool 				/* FIXME: define, inline ? */
+mb_geometry_compare (MBGeometry *g1, MBGeometry *g2)
+{
+  return (g1->x == g2->x 
+	  && g1->y == g2->y 
+	  && g1->width == g2->width 
+	  && g1->height == g2->height);
+}
+
 void
 mb_wm_util_fatal_error (char *msg)
 {

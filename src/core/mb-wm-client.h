@@ -154,14 +154,20 @@ struct MBWindowManagerClient
   MBWindowManagerClientPriv   *priv;
 };
 
-#define mb_wm_client_frame_east_width(c) \
-         ((c)->window->geometry.x) - (c)->frame_geometry.x)
 #define mb_wm_client_frame_west_width(c) \
+         ((c)->window->geometry.x - (c)->frame_geometry.x)
+#define mb_wm_client_frame_east_width(c) \
          (((c)->frame_geometry.x + (c)->frame_geometry.width) \
-          - ((c)->frame_geometry.x + (c)->frame_geometry.width))
-
-#define mb_wm_client_frame_size_north(c) \
-         ((c)->window->geometry.y) - (c)->frame_geometry.y)
+          - ((c)->window->geometry.x + (c)->window->geometry.width))
+#define mb_wm_client_frame_east_x(c) \
+          ((c)->window->geometry.x + (c)->window->geometry.width)
+#define mb_wm_client_frame_north_height(c) \
+         ((c)->window->geometry.y - (c)->frame_geometry.y)
+#define mb_wm_client_frame_south_y(c) \
+         ((c)->window->geometry.y + (c)->window->geometry.height)
+#define mb_wm_client_frame_south_height(c) \
+         ( ((c)->frame_geometry.y + (c)->frame_geometry.height) \
+          - ((c)->window->geometry.y + (c)->window->geometry.height) )
 
 
 MBWMWindow*

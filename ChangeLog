@@ -1,3 +1,33 @@
+2006-01-31  Matthew Allum  <mallum@openedhand.com>
+
+	* src/client-types/mb-wm-client-app.c: (mb_wm_client_app_get_type),
+	(mb_wm_client_app_request_geometry), (decor_resize),
+	(decor_repaint), (mb_wm_client_app_new):
+	* src/core/Makefile.am:
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_realize),
+	(mb_wm_client_base_display_sync), (mb_wm_client_base_destroy),
+	(mb_wm_client_base_request_geometry):
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c: (test_destroy_notify),
+	(mb_wm_core_handle_map_request), (stack_get_window_list),
+	(stack_sync_to_display), (mb_wm_core_sync),
+	(mb_wm_core_manage_client), (mb_wm_run), (mb_wm_init):
+	* src/core/mb-wm-decor.c: (mb_wm_decor_sync_window),
+	(mb_wm_decor_reparent), (mb_wm_decor_calc_geometry),
+	(mb_wm_decor_handle_map), (mb_wm_decor_handle_repaint),
+	(mb_wm_decor_handle_resize), (mb_wm_decor_create),
+	(mb_wm_decor_get_x_window), (mb_wm_decor_get_type),
+	(mb_wm_decor_get_geometry), (mb_wm_decor_mark_dirty):
+	* src/core/mb-wm-decor.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-util.c: (mb_wm_util_malloc0):
+	* src/core/mb-wm-util.h:
+	* src/core/mb-wm-window.c: (mb_wm_client_window_new):
+	* src/core/mb-wm.h:
+	Redo decor handling. 
+	Simplify syncing queue a little more.
+	Various up minor cleanups and tweaks.
+
 2006-01-25  Matthew Allum  <mallum@openedhand.com>
 
 	* src/core/Makefile.am:

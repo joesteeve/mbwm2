@@ -32,6 +32,4 @@ libmatchbox_window_manager_2_core_a_SOURCES = $(core_h) $(core_c)
 
 libmatchbox_window_manager_2_core_a_INCLUDES = @MBWM_INCS@ @MBWM_CFLAGS@
 
-
-
 MAINTAINERCLEANFILES = config.h.in Makefile.in

@@ -28,7 +28,15 @@ typedef struct MBGeometry
 
 } MBGeometry;
 
+typedef struct MBWMList MBWMList;
 
+typedef void (*MBWMListForEachCB) (void *data, void *userdata);
+
+struct MBWMList 
+{
+  MBWMList *next, *prev;
+  void *data;
+};
 
 typedef struct MBWMWindowAttributes /* Needs to be sorted */
 {
@@ -237,6 +245,11 @@ typedef void (*MBWindowManagerKeyPressFunc)
       XKeyEvent               *xev,
       void                    *userdata);
 
+typedef void (*MBWindowManagerPropertyNotifyFunc) 
+     (MBWindowManager         *wm,
+      XPropertyEvent          *xev,
+      void                    *userdata);
+
 
 typedef struct MBWindowManagerEventFuncs
 {
@@ -247,6 +260,7 @@ typedef struct MBWindowManagerEventFuncs
   MBWindowManagerConfigureRequestFunc configure_request;
   MBWindowManagerConfigureNotifyFunc  configure_notify;
   MBWindowManagerKeyPressFunc         key_press;
+  MBWindowManagerPropertyNotifyFunc   property_notify;
 
   void                               *user_data;
 } 

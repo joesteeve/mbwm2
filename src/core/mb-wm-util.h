@@ -50,6 +50,11 @@ mb_wm_util_fatal_error(char *msg);
 void
 mb_wm_util_warn (const char *format, ...);
 
+/*  Misc */
+
+Bool  /* True if matching */
+mb_geometry_compare (MBGeometry *g1, MBGeometry *g2);
+
 /* XErrors */
 
 void
@@ -58,17 +63,9 @@ mb_wm_util_trap_x_errors(void);
 int
 mb_wm_util_untrap_x_errors(void);
 
+
 /* List */
 
-typedef struct MBWMList MBWMList;
-
-typedef void (*MBWMListForEachCB) (void *data, void *userdata);
-
-struct MBWMList 
-{
-  MBWMList *next, *prev;
-  void *data;
-};
 
 #define mb_wm_util_list_next(list) (list)->next
 #define mb_wm_util_list_prev(list) (list)->prev
