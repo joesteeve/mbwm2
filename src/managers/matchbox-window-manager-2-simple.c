@@ -66,7 +66,11 @@ main(int argc, char **argv)
 
   mb_wm_init(wm, NULL, NULL);
 
+  mb_wm_theme_init (wm);
+
   wm->new_client_from_window_func = client_new;
+
+  mb_wm_manage_preexistsing_wins (wm);
 
   mb_wm_keys_binding_add_with_spec (wm,
 				    "<alt>d",
@@ -85,7 +89,6 @@ main(int argc, char **argv)
 				    key_binding_func,
 				    NULL,
 				    (void*)KEY_ACTION_PAGE_PREV);
-
 
   mb_wm_run(wm);
 

@@ -38,7 +38,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_STATE_STICKY",
     "_NET_WM_STATE_MAXIMIZED_VERT",
     "_NET_WM_STATE_MAXIMIZED_HORZ",
-    "_NET_WM_STATE_SHADED"
+    "_NET_WM_STATE_SHADED",
     "_NET_WM_STATE_SKIP_TASKBAR",
     "_NET_WM_STATE_SKIP_PAGER",
     "_NET_WM_STATE_HIDDEN",
@@ -84,6 +84,8 @@ mb_wm_atoms_init(MBWindowManager *wm)
   };
 
   /* FIXME: Error Traps */
+
+  printf("%i vs %i\n", MBWM_ATOM_COUNT, sizeof (atom_names) / sizeof (char*));
 
   XInternAtoms (wm->xdpy, 
 		atom_names, 

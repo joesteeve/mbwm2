@@ -1,3 +1,37 @@
+2006-02-11  Matthew Allum  <mallum@openedhand.com>
+
+	* configure.ac:
+	* src/Makefile.am:
+	* src/client-types/Makefile.am:
+	* src/client-types/mb-wm-client-app.c:
+	(mb_wm_client_app_request_geometry), (decor_repaint):
+	* src/core/mb-wm-atoms.c: (mb_wm_atoms_init):
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_realize),
+	(mb_wm_client_base_display_sync):
+	* src/core/mb-wm-client.c: (mb_wm_client_get_coverage):
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c: (mb_wm_core_handle_config_request),
+	(mb_wm_core_sync), (mb_wm_core_manage_client), (mb_wm_run),
+	(mb_wm_get_display_geometry), (mb_wm_display_sync_queue),
+	(mb_wm_new), (mb_wm_init):
+	* src/core/mb-wm-core.h:
+	* src/core/mb-wm-decor.c: (mb_wm_decor_sync_window),
+	(mb_wm_decor_calc_geometry), (mb_wm_decor_get_type),
+	(mb_wm_decor_unref), (mb_wm_decor_ref):
+	* src/core/mb-wm-decor.h:
+	* src/core/mb-wm-layout.c: (mb_wm_layout_manager_update):
+	* src/managers/Makefile.am:
+	* src/managers/matchbox-window-manager-2-simple.c: (main):
+	* src/theme-engines/Makefile.am:
+	* src/theme-engines/mb-wm-theme.h:
+	* src/theme-engines/theme-cairo.c:
+	* src/theme-engines/theme-simple.c:
+	Add beginning of theme code with initial optional cairo and GTK
+        support. Now paints frames.
+	Manage pre-existing windows on start up.
+	Various tweaks here and there.
+
+
 2006-01-31  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/mb-wm-client-app.c: (mb_wm_client_app_get_type),

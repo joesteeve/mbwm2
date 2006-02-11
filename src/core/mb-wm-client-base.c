@@ -109,6 +109,10 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 		  client->xwin_frame, 
 		  0, 0);
 
+  XSetWindowBorderWidth(wm->xdpy, MBWM_CLIENT_XWIN(client), 0);
+
+  XAddToSaveSet(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
+
   XSelectInput(wm->xdpy, 
 	       MBWM_CLIENT_XWIN(client),
 	       PropertyChangeMask);
@@ -157,7 +161,10 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 			  client->frame_geometry.y,
 			  client->frame_geometry.width,
 			  client->frame_geometry.height);
-      
+
+      /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask, &xwc);
+       *        here instead as can set border width = 0.
+      */
       XMoveResizeWindow(wm->xdpy, 
 			MBWM_CLIENT_XWIN(client),
 			client->window->geometry.x - client->frame_geometry.x,

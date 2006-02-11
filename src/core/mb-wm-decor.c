@@ -25,22 +25,20 @@ struct MBWMDecor
   MBWMDecorType          type;
   Window                 xwin;
   MBWindowManagerClient *parent;
-
   MBGeometry             geom;
   Bool                   dirty;
-
   MBWMDecorResizedFunc   resize;
-  MBWMDecorResizedFunc   repaint;
+  MBWMDecorRepaintFunc   repaint;
   void                  *userdata;
-
+  MBWMList              *buttons;
   int                    refcnt;
 };
 
-
 struct MBWMDecorButton
 {
-  Window  xwin;
-  int     refcnt;
+  MBWMDecor *parent;
+  Window     xwin;
+  int        refcnt;
 };
 
 static Bool
@@ -104,6 +102,8 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
       if (mb_wm_util_untrap_x_errors())
 	return False;
     }
+
+  /* Next up sort buttons */
 
   return True;
 }
@@ -186,7 +186,6 @@ mb_wm_decor_calc_geometry (MBWMDecor *decor)
 	   decor->geom.height,
 	   decor->type);
 
-
   return;
 }
 
@@ -261,6 +260,13 @@ mb_wm_decor_get_type (MBWMDecor *decor)
   return decor->type;
 }
 
+MBWindowManagerClient*
+mb_wm_decor_get_parent (MBWMDecor *decor)
+{
+  return decor->parent;
+}
+
+
 const MBGeometry*
 mb_wm_decor_get_geometry (MBWMDecor *decor)
 {
@@ -312,26 +318,20 @@ mb_wm_decor_ref (MBWMDecor *decor)
   decor->refcnt++;
 }
 
-#if 0
-
+/*
 MBWMDecorButton*
-mb_wm_decor_button_create (MBWindowManager            *wm, 
+mb_wm_decor_button_create (MBWindowManager            *wm,
+			   MBWMDecor                  *decor,
+			   int                         x,
+			   int                         y,
 			   int                         width,
 			   int                         height,
+			   MBWMDecorButtonPressedFunc  press,
+			   MBWMDecorButtonReleasedFunc release,
+			   MBWMDecorButtonPaintFunc    paint,
 			   MBWMDecorButtonFlags        flags,
-			   MBWMDecorButtonActivateFunc func,
 			   void                       *userdata)
 {
-
+  ;
 }
-
-void
-mb_wm_decor_button_add (MBWMDecor       *decor,
-			MBWMDecorButton *button,
-			int              x,
-			int              y)
-{
-
-}
-
-#endif
+*/

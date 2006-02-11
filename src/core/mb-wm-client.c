@@ -270,4 +270,33 @@ mb_wm_client_get_coverage (MBWindowManagerClient *client,
   coverage->height = geometry->height;
 }
 
+void
+mb_wm_client_add_transient (MBWindowManagerClient *client,
+			    MBWindowManagerClient *transient)
+{
+  transient->transient_for = client;
+  client->transients = mb_wm_util_list_append(client->transients, transient);
+}
 
+void
+mb_wm_client_remove_transient (MBWindowManagerClient *client,
+			       MBWindowManagerClient *transient)
+{
+  transient->transient_for = NULL;
+  client->transients = mb_wm_util_list_remove(client->transients, transient);
+}
+
+const MBWMList*
+mb_wm_client_get_transients (MBWindowManagerClient *client)
+{
+  return client->transients;
+}
+
+const char*
+mb_wm_client_get_name (MBWindowManagerClient *client)
+{
+  if (!client->window)
+    return NULL;
+
+  return client->window->name;
+}

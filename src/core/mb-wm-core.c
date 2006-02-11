@@ -91,6 +91,9 @@ mb_wm_core_handle_config_request (MBWindowManager        *wm,
 				  void                   *userdata)
 {
   MBWindowManagerClient *client;
+  unsigned long          value_mask;
+  int                    req_x, req_y, req_w, req_h;
+  MBGeometry             req_geom, *win_geom;
 
   client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
 
@@ -99,7 +102,22 @@ mb_wm_core_handle_config_request (MBWindowManager        *wm,
       MBWM_DBG("### No client found for configure event ###");
       return;
     }
+#if 0
 
+  value_mask = e->value_mask;
+  win_geom   = &client->window->gemometry; /* FIXME: func here */
+
+  reg_geom.x      = (value_mask & CWX) ? xev->x : win_geom->x;
+  reg_geom.y      = (value_mask & CWY) ? xev->y : win_geom->y;
+  reg_geom.width  = (value_mask & CWWIDTH) ? xev->width : win_geom->width;
+  reg_geom.height = (value_mask & CWHEIGHT) ? xev->height : win_geom->height;
+
+  if (mb_geometry_compare (&req_geom, win_geom))
+    {
+      /* No change in window geometry */
+    }
+#endif
+  
 }
 
 static void 
@@ -206,6 +224,10 @@ mb_wm_core_sync (MBWindowManager *wm)
     if (mb_wm_client_needs_sync (client))
       mb_wm_client_display_sync (client);
 
+  /* FIXME: New clients now managed will likely need some propertys 
+   *        synced up here.
+  */
+
   XUngrabServer(wm->xdpy);
 
   wm->need_display_sync = False;
@@ -216,6 +238,9 @@ mb_wm_core_manage_client (MBWindowManager       *wm,
 			  MBWindowManagerClient *client)
 {
   /* Add to our list of managed clients */
+
+  if (client == NULL)
+    return;
 
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
@@ -344,6 +369,42 @@ mb_wm_display_sync_queue (MBWindowManager* wm)
   wm->need_display_sync = True;
 }
 
+void
+mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
+{
+   unsigned int      nwins, i;
+   Window            foowin1, foowin2, *wins;
+   XWindowAttributes attr;
+
+   if (!wm->new_client_from_window_func)
+     return;
+
+   XQueryTree(wm->xdpy, wm->xwin_root, 
+	      &foowin1, &foowin2, &wins, &nwins);
+
+   for (i = 0; i < nwins; i++) 
+     {
+       XGetWindowAttributes(wm->xdpy, wins[i], &attr);
+
+       if (!attr.override_redirect && attr.map_state == IsViewable)
+	 {
+	   MBWMWindow            *win = NULL; 
+	   MBWindowManagerClient *client = NULL;
+
+	   win = mb_wm_client_window_new (wm, wins[i]);
+
+	   if (!win)
+	     continue; 
+
+	   client = wm->new_client_from_window_func(wm, win); 
+      
+	   if (client)
+	     mb_wm_core_manage_client(wm, client);
+	 }
+     }
+   XFree(wins);
+}
+
 int
 mb_wm_register_client_type (void)
 {
@@ -414,8 +475,8 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
   wm->event_funcs->destroy_notify = test_destroy_notify;
   wm->event_funcs->key_press      = test_key_press;
 
-
   mb_wm_atoms_init(wm);
+
   mb_wm_keys_init(wm);
 
   return True;

@@ -26,7 +26,7 @@ typedef struct MBWMDecor       MBWMDecor;
 
 typedef enum MBWMDecorButtonFlags
 {
-  MBDecorFoo
+  MB_WM_DECOR_BUTTON_INVISIBLE = (1<<1)
 
 } MBWMDecorButtonFlags;
 
@@ -46,6 +46,18 @@ typedef void (*MBWMDecorResizedFunc) (MBWindowManager   *wm,
 typedef void (*MBWMDecorRepaintFunc) (MBWindowManager   *wm,
 				      MBWMDecor         *decor,
 				      void              *userdata);
+
+typedef void (*MBWMDecorButtonRepaintFunc) (MBWindowManager   *wm,
+					    MBWMDecorButton   *button,
+					    void              *userdata);
+
+typedef void (*MBWMDecorButtonPressedFunc) (MBWindowManager   *wm,
+					    MBWMDecorButton   *button,
+					    void              *userdata);
+
+typedef void (*MBWMDecorButtonReleasedFunc) (MBWindowManager   *wm,
+					     MBWMDecorButton   *button,
+					     void              *userdata);
 
 MBWMDecor*
 mb_wm_decor_create (MBWindowManager     *wm,
@@ -74,6 +86,9 @@ mb_wm_decor_get_type (MBWMDecor *decor);
 
 const MBGeometry*
 mb_wm_decor_get_geometry (MBWMDecor *decor);
+
+MBWindowManagerClient*
+mb_wm_decor_get_parent (MBWMDecor *decor);
 
 void
 mb_wm_decor_mark_dirty (MBWMDecor *decor);

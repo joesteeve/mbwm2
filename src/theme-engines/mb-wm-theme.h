@@ -18,41 +18,35 @@
  *
  */
 
-#ifndef _HAVE_MB_WM_CORE_H
-#define _HAVE_MB_WM_CORE_H
+#ifndef _HAVE_MB_WM_THEME_H
+#define _HAVE_MB_WM_THEME_H
 
-MBWindowManager*
-mb_wm_new(void);
+#include "mb-wm.h"
 
-Status
-mb_wm_init(MBWindowManager *wm, int *argc, char ***argv);
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-void
-mb_wm_manage_preexistsing_wins (MBWindowManager* wm);
+typedef enum MBWMThemeCaps 
+{
+  MBWMThemeCapsHasSomethingOrOther = (1<<1)
 
-void
-mb_wm_run(MBWindowManager *wm);
-
-MBWindowManagerClient*
-mb_wm_core_managed_client_from_xwindow(MBWindowManager *wm, Window win);
-
-int
-mb_wm_register_client_type (void);
+} MBWMThemeCaps;
 
 void
-mb_wm_core_manage_client (MBWindowManager       *wm,
-			  MBWindowManagerClient *client);
+mb_wm_theme_paint_decor (MBWindowManager   *wm,
+			 MBWMDecor         *decor);
 
 void
-mb_wm_core_unmanage_client (MBWindowManager       *wm,
-			    MBWindowManagerClient *client);
+mb_wm_theme_paint_button (MBWindowManager   *wm,
+			  MBWMDecorButton   *button);
 
-void
-mb_wm_display_sync_queue (MBWindowManager* wm);
+Bool
+mb_wm_theme_switch (MBWindowManager   *wm,
+		    const char        *detail);
 
-void
-mb_wm_get_display_geometry (MBWindowManager  *wm, 
-			    MBGeometry       *geometry);
+Bool
+mb_wm_theme_init (MBWindowManager   *wm);
 
 
 #endif

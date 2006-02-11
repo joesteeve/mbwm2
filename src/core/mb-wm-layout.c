@@ -261,7 +261,6 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 
   /* ### Now inner reservations ### */
 
-
   /* final one */
   mb_wm_stack_enumerate(wm, client)
     if (client->layout_hints == (LayoutPrefGrowToFreeSpace|LayoutPrefVisible))
@@ -286,5 +285,7 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 					   MBWMClientReqGeomIsViaLayoutManager);
 	  }
       }
+
+  /* Dialogues too */
 }
 

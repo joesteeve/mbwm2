@@ -1,5 +1,7 @@
 #include "mb-wm-client-app.h"
 
+#include "mb-wm-theme.h"
+
 struct MBWindowManagerClientApp
 {
   MBWindowManagerClient base_client;
@@ -29,12 +31,12 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
       client->frame_geometry.y      = new_geometry->y;
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
-
+      
       client->window->geometry.x = client->frame_geometry.x + 4;
-      client->window->geometry.y = client->frame_geometry.y + 12;
+      client->window->geometry.y = client->frame_geometry.y + 20;
       client->window->geometry.width  = client->frame_geometry.width - 8;
-      client->window->geometry.height = client->frame_geometry.height - 16;
-
+      client->window->geometry.height = client->frame_geometry.height - 24;
+      
       mb_wm_client_geometry_mark_dirty (client);
 
       return True; /* Geometry accepted */
@@ -54,12 +56,18 @@ decor_repaint (MBWindowManager   *wm,
 	       MBWMDecor         *decor,
 	       void              *userdata)
 {
+  /*
   if (mb_wm_decor_get_type(decor) != MBWMDecorTypeNorth)
     return;
+  */
 
+  mb_wm_theme_paint_decor (wm, decor); 
+
+  /*
   XSetWindowBackground(wm->xdpy, 
 		       mb_wm_decor_get_x_window (decor),
 		       WhitePixel(wm->xdpy, wm->xscreen));
+  */
 }
 
 MBWindowManagerClient*

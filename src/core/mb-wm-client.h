@@ -134,6 +134,8 @@ struct MBWindowManagerClient
 
   MBGeometry frame_geometry;  /* FIXME: in ->priv ? */
   MBWMList                    *decor;
+  MBWMList                    *transients;
+  MBWindowManagerClient       *transient_for;
 
   /* ### Methods ### */
 
@@ -168,7 +170,6 @@ struct MBWindowManagerClient
 #define mb_wm_client_frame_south_height(c) \
          ( ((c)->frame_geometry.y + (c)->frame_geometry.height) \
           - ((c)->window->geometry.y + (c)->window->geometry.height) )
-
 
 MBWMWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window window);
@@ -243,5 +244,20 @@ mb_wm_client_geometry_mark_dirty (MBWindowManagerClient *client);
 
 void
 mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client);
+
+void
+mb_wm_client_add_transient (MBWindowManagerClient *client,
+			    MBWindowManagerClient *transient);
+
+void
+mb_wm_client_remove_transient (MBWindowManagerClient *client,
+			       MBWindowManagerClient *transient);
+
+const MBWMList*
+mb_wm_client_get_transients (MBWindowManagerClient *client);
+
+const char*
+mb_wm_client_get_name (MBWindowManagerClient *client);
+
 
 #endif
