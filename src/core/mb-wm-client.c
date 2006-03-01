@@ -36,6 +36,42 @@ struct MBWindowManagerClientPriv
 };
 
 void
+mb_wm_client_destroy (MBWMObject *obj)
+{
+  /* free everything up */
+#if 0
+  MBWM_ASSERT (client->destroy != NULL);
+
+  client->destroy(client);
+
+  mb_wm_display_sync_queue (client->wmref);
+#endif
+}
+
+
+int
+mb_wm_client_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWindowManagerClientClass),      
+	sizeof (MBWindowManagerClient), 
+	mb_wm_client_init,
+	mb_wm_client_destroy,
+	NULL
+      };
+
+      type = mb_wm_object_register_class (&info);
+    }
+
+  return type;
+}
+
+
+void
 mb_wm_client_stacking_mark_dirty (MBWindowManagerClient *client)
 {
   mb_wm_display_sync_queue (client->wmref);
@@ -76,33 +112,45 @@ mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win)
 {
   MBWindowManagerClient *client = NULL;
 
-  client = mb_wm_util_malloc0(sizeof(MBWindowManagerClient));
+  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT));
 
   if (!client)
     return NULL; 		/* FIXME: Handle out of memory */
+
+  client->window = win; 			
 
   return client;
 }
 
 void
-mb_wm_client_init (MBWindowManager             *wm, 
-		   MBWindowManagerClient       *client,
-		   MBWMWindow                  *win)
+mb_wm_client_init (MBWMObject *obj)
 {
+  MBWindowManagerClient *client;
+
+  MBWM_MARK();
+
+  client = MB_WM_CLIENT(obj);
+
   client->priv   = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPriv));
 
+  /*
   if (client->init)
     client->init(wm, client, win);
   else
     mb_wm_client_base_init (wm, client, win);      
+  */
 }
 
 void
 mb_wm_client_realize (MBWindowManagerClient *client)
 {
-  MBWM_ASSERT (client->realize != NULL);
+  MBWindowManagerClientClass *klass;
 
-  client->realize(client);
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->realize != NULL);
+
+  klass->realize(client);
 
   client->priv->realized = True;
 }
@@ -121,9 +169,13 @@ void
 mb_wm_client_stack (MBWindowManagerClient *client,
 		    int                    flags)
 {
-  MBWM_ASSERT (client->stack != NULL);
+  MBWindowManagerClientClass *klass;
 
-  client->stack(client, flags);
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->stack != NULL);
+
+  klass->stack(client, flags);
 
   mb_wm_client_stacking_mark_dirty (client);
 }
@@ -137,11 +189,15 @@ mb_wm_client_needs_stack_sync (MBWindowManagerClient *client)
 void
 mb_wm_client_show (MBWindowManagerClient *client)
 {
-  MBWM_ASSERT (client->show != NULL);
+  MBWindowManagerClientClass *klass;
+
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->show != NULL);
 
   /* FIXME: Need to re-add to stack here ? */
 
-  client->show(client);
+  klass->show(client);
 
   client->priv->mapped = True;
 
@@ -152,9 +208,13 @@ mb_wm_client_show (MBWindowManagerClient *client)
 void
 mb_wm_client_hide (MBWindowManagerClient *client)
 {
-  MBWM_ASSERT (client->hide != NULL);
+  MBWindowManagerClientClass *klass;
 
-  client->hide(client);
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->hide != NULL);
+
+  klass->hide(client);
 
   client->priv->mapped = False;
 
@@ -200,22 +260,15 @@ mb_wm_client_is_mapped (MBWindowManagerClient *client)
 void
 mb_wm_client_display_sync (MBWindowManagerClient *client)
 {
-  MBWM_ASSERT (client->sync != NULL);
+  MBWindowManagerClientClass *klass;
 
-  client->sync(client);
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->sync != NULL);
+
+  klass->sync(client);
 
   client->priv->sync_state = 0;
-}
-
-void
-mb_wm_client_destroy (MBWindowManagerClient *client)
-{
-  /* free everything up */
-  MBWM_ASSERT (client->destroy != NULL);
-
-  client->destroy(client);
-
-  mb_wm_display_sync_queue (client->wmref);
 }
 
 
@@ -224,9 +277,13 @@ mb_wm_client_request_geometry (MBWindowManagerClient *client,
 			       MBGeometry            *new_geometry,
 			       MBWMClientReqGeomType  flags)
 {
-  MBWM_ASSERT (client->geometry != NULL);
+  MBWindowManagerClientClass *klass;
 
-  return client->geometry(client, new_geometry, flags); 
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->geometry != NULL);
+
+  return klass->geometry(client, new_geometry, flags); 
 }
 
 MBWMClientLayoutHints

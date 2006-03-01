@@ -37,7 +37,7 @@ key_binding_func (MBWindowManager   *wm,
     {
     case KEY_ACTION_PAGE_NEXT:
       {
-	mb_wm_stack_cycle_by_type(wm, MB_WM_CLIENT_TYPE_APP );
+	mb_wm_stack_cycle_by_type(wm, MB_WM_TYPE_CLIENT_APP );
 	mb_wm_display_sync_queue (wm);
 
       }
@@ -58,6 +58,8 @@ int
 main(int argc, char **argv)
 {
   MBWindowManager     *wm;
+
+  mb_wm_object_init();
 
   wm = mb_wm_new();
 

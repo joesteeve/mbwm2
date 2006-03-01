@@ -62,7 +62,7 @@ typedef struct MBWMWindowAttributes /* Needs to be sorted */
 typedef struct MBWindowManager       MBWindowManager;
 typedef struct MBWindowManagerPriv   MBWindowManagerPriv;
 typedef struct MBWindowManagerClient MBWindowManagerClient;
-
+typedef struct MBWindowManagerClientClass MBWindowManagerClientClass;
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
 typedef struct MBWMWindow MBWMWindow;
 

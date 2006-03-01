@@ -15,8 +15,8 @@
 # define __used__attribute__ ((used))
 # define __unused__attribute__ ((unused))
 # define __packed__attribute__ ((packed))
-# define likely(x)__builtin_expect (!!(x), 1)
-# define unlikely(x)__builtin_expect (!!(x), 0)
+# define LIKELY(x)__builtin_expect (!!(x), 1)
+# define UNLIKELY(x)__builtin_expect (!!(x), 0)
 #else
 # define inline/* no inline */
 # define __pure/* no pure */
@@ -28,8 +28,8 @@
 # define __used/* no used */
 # define __unused/* no unused */
 # define __packed/* no packed */
-# define likely(x)(x)
-# define unlikely(x)(x)
+# define LIKELY(x)(x)
+# define UNLIKELY(x)(x)
 #endif
 
 #define streq(a,b)      (strcmp(a,b) == 0)

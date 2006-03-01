@@ -23,14 +23,27 @@
 
 #include "mb-wm.h"
 
-#define MB_WM_CLIENT_TYPE_APP mb_wm_client_app_get_type()
+typedef struct MBWMClientApp      MBWMClientApp;
+typedef struct MBWMClientAppClass MBWMClientAppClass;
 
-typedef struct MBWindowManagerClientApp MBWindowManagerClientApp;
+#define MB_WM_CLIENT_APP(c) ((MBWMClientApp*)(c)) 
+#define MB_WM_CLIENT_APP_CLASS(c) ((MBWMClientAppClass*)(c)) 
+#define MB_WM_TYPE_CLIENT_APP (mb_wm_client_app_class_type ())
 
-int
-mb_wm_client_app_get_type ();
+struct MBWMClientApp
+{
+  MBWMClientBase parent;
+};
+
+struct MBWMClientAppClass
+{
+  MBWMClientBaseClass parent;
+};
 
 MBWindowManagerClient*
-mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win);
+mb_wm_client_app_new(MBWindowManager *wm, MBWMWindow *win);
+
+int
+mb_wm_client_app_class_type ();
 
 #endif

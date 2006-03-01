@@ -182,3 +182,21 @@ mb_wm_props_send_x_message (MBWindowManager *wm,
   XSync(wm->xdpy, False);
 
 }
+
+void
+mb_wm_props_sync_root_props (MBWindowManager *wm)
+{
+  
+
+
+
+}
+
+void
+mb_wm_props_root_message (MBWindowManager *wm)
+{
+  
+
+
+
+}

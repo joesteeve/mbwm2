@@ -33,7 +33,7 @@ static void
 mb_wm_client_base_hide (MBWindowManagerClient *client);
 
 static void
-mb_wm_client_base_destroy (MBWindowManagerClient *client);
+mb_wm_client_base_destroy (MBWMObject *this);
 
 static void
 mb_wm_client_base_display_sync (MBWindowManagerClient *client);
@@ -43,6 +43,49 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 				    MBGeometry            *new_geometry,
 				    MBWMClientReqGeomType  flags);
 
+void
+mb_wm_client_base_class_init (MBWMObjectClass *klass) 
+{
+  MBWindowManagerClientClass *client;
+
+  client = (MBWindowManagerClientClass *)klass;
+
+  client->realize  = mb_wm_client_base_realize;
+  client->geometry = mb_wm_client_base_request_geometry;
+  client->stack    = mb_wm_client_base_stack;
+  client->show     = mb_wm_client_base_show;
+  client->hide     = mb_wm_client_base_hide;
+  client->sync     = mb_wm_client_base_display_sync;
+}
+
+void
+mb_wm_client_base_init (MBWMObject *this)
+{
+  mb_wm_client_init (this);
+}
+
+int
+mb_wm_client_base_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMClientBaseClass),      
+	sizeof (MBWMClientBase), 
+	mb_wm_client_base_init,
+	mb_wm_client_base_destroy,
+	mb_wm_client_base_class_init
+      };
+
+      type = mb_wm_object_register_class (&info);
+    }
+
+  return type;
+}
+
+#if 0
 void
 mb_wm_client_base_init (MBWindowManager             *wm, 
 			MBWindowManagerClient       *client,
@@ -68,6 +111,7 @@ mb_wm_client_base_init (MBWindowManager             *wm,
   client->frame_geometry.width  = client->window->geometry.width;
   client->frame_geometry.height = client->window->geometry.height;
 }
+#endif
 
 static void
 mb_wm_client_base_realize (MBWindowManagerClient *client)
@@ -77,6 +121,11 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   XSetWindowAttributes attr;
 
   MBWM_ASSERT(client->window != NULL);
+
+  client->frame_geometry.x      = client->window->geometry.x;
+  client->frame_geometry.y      = client->window->geometry.y;
+  client->frame_geometry.width  = client->window->geometry.width;
+  client->frame_geometry.height = client->window->geometry.height;
 
   /* create the frame window */
 
@@ -105,16 +154,16 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
    * any decoration creation. Layout manager will call this
   */
   XReparentWindow(wm->xdpy, 
-		  MBWM_CLIENT_XWIN(client), 
+		  MB_WM_CLIENT_XWIN(client), 
 		  client->xwin_frame, 
 		  0, 0);
 
-  XSetWindowBorderWidth(wm->xdpy, MBWM_CLIENT_XWIN(client), 0);
+  XSetWindowBorderWidth(wm->xdpy, MB_WM_CLIENT_XWIN(client), 0);
 
-  XAddToSaveSet(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
+  XAddToSaveSet(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
 
   XSelectInput(wm->xdpy, 
-	       MBWM_CLIENT_XWIN(client),
+	       MB_WM_CLIENT_XWIN(client),
 	       PropertyChangeMask);
 }
 
@@ -166,13 +215,13 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
        *        here instead as can set border width = 0.
       */
       XMoveResizeWindow(wm->xdpy, 
-			MBWM_CLIENT_XWIN(client),
+			MB_WM_CLIENT_XWIN(client),
 			client->window->geometry.x - client->frame_geometry.x,
 			client->window->geometry.y - client->frame_geometry.y,
 			client->window->geometry.width,
 			client->window->geometry.height);
 
-      mb_wm_util_untrap_x_errors();  
+
       
       /* FIXME: need flags to handle other stuff like configure events etc */
 
@@ -181,9 +230,13 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
       mb_wm_util_list_foreach(client->decor, 
 			      (MBWMListForEachCB)mb_wm_decor_handle_resize,
 			      NULL);
+
+      mb_wm_util_untrap_x_errors();  
     }
 
   /* Paint any decor */
+
+  mb_wm_util_trap_x_errors();  
 
   if (mb_wm_client_needs_decor_sync (client))
     {
@@ -191,6 +244,8 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 			      (MBWMListForEachCB)mb_wm_decor_handle_repaint,
 			      NULL);
     }
+
+  mb_wm_util_untrap_x_errors();  
 
   /* Handle any mapping */
 
@@ -206,28 +261,35 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	      XMapSubwindows(wm->xdpy, client->xwin_frame);
 	    }
 	  else
-	    XMapWindow(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
+	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
 	}
       else
 	{
 	  if (client->xwin_frame)
 	    XUnmapWindow(wm->xdpy, client->xwin_frame); 
 	  else
-	    XMapWindow(wm->xdpy, MBWM_CLIENT_XWIN(client)); 
+	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
 	}
 
       mb_wm_util_untrap_x_errors();  
     }
 
+  mb_wm_util_trap_x_errors();  
   XSync(wm->xdpy, False);
+  mb_wm_util_untrap_x_errors();  
 }
 
 static void
-mb_wm_client_base_destroy (MBWindowManagerClient *client)
+mb_wm_client_base_destroy (MBWMObject *this)
 {
-  MBWindowManager *wm = client->wmref;
+  MBWindowManagerClient *client;
+  MBWindowManager *wm;
 
   MBWM_MARK();
+
+  client = MB_WM_CLIENT(this);
+
+  wm = client->wmref;
 
   mb_wm_util_trap_x_errors();  
 
@@ -282,4 +344,9 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
     }
 
   return TRUE;
+}
+
+void base_foo(void)
+{
+  ; /* nasty hack to workaround linking issues WTF... */
 }

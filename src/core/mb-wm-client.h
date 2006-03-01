@@ -21,8 +21,10 @@
 #ifndef _HAVE_MB_CLIENT_H
 #define _HAVE_MB_CLIENT_H
 
-#define MBWM_CLIENT(c) ((MBWindowManagerClient*)(c)) 
-#define MBWM_CLIENT_XWIN(w) (w)->window->xwindow
+#define MB_WM_CLIENT(c) ((MBWindowManagerClient*)(c)) 
+#define MB_WM_CLIENT_CLASS(c) ((MBWindowManagerClientClass*)(c)) 
+#define MB_WM_TYPE_CLIENT (mb_wm_client_class_type ())
+#define MB_WM_CLIENT_XWIN(w) (w)->window->xwindow
 
 typedef void (*MBWindowManagerClientInitMethod) (MBWindowManagerClient *client);
 
@@ -116,9 +118,21 @@ typedef  void (*MBWMClientHideMethod) (MBWindowManagerClient *client);
 typedef  void (*MBWMClientSyncMethod) (MBWindowManagerClient *client);
 
 
+struct MBWindowManagerClientClass
+{
+  MBWMObjectClass              parent;
+
+  MBWMClientRealizeMethod      realize;	 /* create dpy resources / reparent */
+  MBWMClientGeometryMethod     geometry; /* requests a gemetry change */
+  MBWMClientStackMethod        stack;    /* positions win in stack */
+  MBWMClientShowMethod         show;
+  MBWMClientHideMethod         hide;
+  MBWMClientSyncMethod         sync;     /* sync internal changes to display */
+};
+
 struct MBWindowManagerClient
 {
-  int                          type;
+  MBWMObject                   parent;
   /* ### public ### */
 
   MBWindowManager             *wmref;
@@ -136,18 +150,6 @@ struct MBWindowManagerClient
   MBWMList                    *decor;
   MBWMList                    *transients;
   MBWindowManagerClient       *transient_for;
-
-  /* ### Methods ### */
-
-  MBWMClientNewMethod          new;
-  MBWMClientInitMethod         init;
-  MBWMClientRealizeMethod      realize;	 /* create dpy resources / reparent */
-  MBWMClientDestroyMethod      destroy;
-  MBWMClientGeometryMethod     geometry; /* requests a gemetry change */
-  MBWMClientStackMethod        stack;    /* positions win in stack */
-  MBWMClientShowMethod         show;
-  MBWMClientHideMethod         hide;
-  MBWMClientSyncMethod         sync;     /* sync internal changes to display */
 
   /* To add focus, coverage */
 
@@ -178,9 +180,7 @@ MBWindowManagerClient*
 mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win);
 
 void
-mb_wm_client_init (MBWindowManager             *wm, 
-		   MBWindowManagerClient       *client,
-                   MBWMWindow *win);
+mb_wm_client_init (MBWMObject *obj); 
 
 void
 mb_wm_client_realize (MBWindowManagerClient *client);
@@ -205,8 +205,6 @@ Bool
 mb_wm_client_request_geometry (MBWindowManagerClient *client,
                                MBGeometry            *new_geometry,
                                MBWMClientReqGeomType  flags);
-void
-mb_wm_client_destroy (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_needs_geometry_sync (MBWindowManagerClient *client);

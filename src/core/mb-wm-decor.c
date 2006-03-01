@@ -318,6 +318,12 @@ mb_wm_decor_ref (MBWMDecor *decor)
   decor->refcnt++;
 }
 
+void
+mb_wm_decor_init (MBWindowManager     *wm)
+{
+  ;
+}
+
 /*
 MBWMDecorButton*
 mb_wm_decor_button_create (MBWindowManager            *wm,

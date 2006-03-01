@@ -1,17 +1,55 @@
 #include "mb-wm-client-panel.h"
 
-struct MBWindowManagerClientPanel
+static void
+mb_wm_client_panel_realize (MBWindowManagerClient *client);
+
+static Bool
+mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
+				     MBGeometry            *new_geometry,
+				     MBWMClientReqGeomType  flags);
+
+void
+mb_wm_client_panel_class_init (MBWMObjectClass *klass) 
 {
-  MBWindowManagerClient base_client;
-};
+  MBWindowManagerClientClass *client;
+
+  mb_wm_client_base_class_init (klass); 
+
+  client = (MBWindowManagerClientClass *)klass;
+
+  client->realize  = mb_wm_client_panel_realize;
+  client->geometry = mb_wm_client_panel_request_geometry; 
+}
+
+void
+mb_wm_client_panel_init (MBWMObject *this)
+{
+  mb_wm_client_base_init (this);
+}
+
+void
+mb_wm_client_panel_destroy (MBWMObject *this)
+{
+
+}
 
 int
-mb_wm_client_panel_get_type ()
+mb_wm_client_panel_class_type ()
 {
   static int type = 0;
 
-  if (!type)
-    type = mb_wm_register_client_type();
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMClientPanelClass),      
+	sizeof (MBWMClientPanel), 
+	mb_wm_client_panel_init,
+	mb_wm_client_panel_destroy,
+	mb_wm_client_panel_class_init
+      };
+
+      type = mb_wm_object_register_class (&info);
+    }
 
   return type;
 }
@@ -48,22 +86,20 @@ mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
 MBWindowManagerClient*
 mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win)
 {
-  MBWindowManagerClientPanel *pc = NULL;
+  MBWindowManagerClient *client = NULL;
 
-  pc = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPanel));
+  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_PANEL));
 
-  mb_wm_client_init (wm, MBWM_CLIENT(pc), win);
+  if (!client)
+    return NULL; 		/* FIXME: Handle out of memory */
 
-  pc->base_client.type     = mb_wm_client_panel_get_type ();
+  client->window = win; 	
+  client->wmref  = wm;
 
-  /* overide realize method */
-  pc->base_client.realize  = mb_wm_client_panel_realize;
-  pc->base_client.geometry = mb_wm_client_panel_request_geometry; 
-
-  mb_wm_client_set_layout_hints (MBWM_CLIENT(pc),
+  mb_wm_client_set_layout_hints (client,
 				 LayoutPrefReserveEdgeSouth|LayoutPrefVisible);
 
-  return MBWM_CLIENT(pc);
+  return client;
 }
 
 

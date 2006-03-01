@@ -62,6 +62,7 @@
 
 #include "mb-wm-types.h"
 #include "mb-wm-util.h"
+#include "mb-wm-object.h"
 #include "mb-wm-atoms.h"
 #include "mb-wm-props.h"
 #include "mb-wm-core.h"
@@ -72,6 +73,5 @@
 #include "mb-wm-client-base.h"
 #include "mb-wm-layout.h"
 #include "mb-wm-stack.h"
-
 
 #endif

@@ -2,20 +2,56 @@
 
 #include "mb-wm-theme.h"
 
-struct MBWindowManagerClientApp
+static Bool
+mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
+				   MBGeometry            *new_geometry,
+				   MBWMClientReqGeomType  flags);
+
+void
+mb_wm_client_app_class_init (MBWMObjectClass *klass) 
 {
-  MBWindowManagerClient base_client;
-};
+  MBWindowManagerClientClass *client;
+
+  MBWM_MARK();
+
+  mb_wm_client_base_class_init (klass); 
+
+  client = (MBWindowManagerClientClass *)klass;
+
+  client->geometry = mb_wm_client_app_request_geometry; 
+}
+
+void
+mb_wm_client_app_destroy (MBWMObject *this)
+{
+    MBWM_MARK();
+}
+
+void
+mb_wm_client_app_init (MBWMObject *this)
+{
+  MBWM_MARK();
+
+  mb_wm_client_base_init (this);
+}
 
 int
-mb_wm_client_app_get_type ()
+mb_wm_client_app_class_type ()
 {
   static int type = 0;
 
-  printf("type: %i\n", type);
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMClientAppClass),      
+	sizeof (MBWMClientApp), 
+	mb_wm_client_app_init,
+	mb_wm_client_app_destroy,
+	mb_wm_client_app_class_init
+      };
 
-  if (type == 0)
-    type = mb_wm_register_client_type();
+      type = mb_wm_object_register_class (&info);
+    }
 
   return type;
 }
@@ -73,38 +109,36 @@ decor_repaint (MBWindowManager   *wm,
 MBWindowManagerClient*
 mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
 {
-  MBWindowManagerClientApp *tc = NULL;
+  MBWindowManagerClient    *client;
   MBWMDecor                *decor;
 
-  tc = mb_wm_util_malloc0(sizeof(MBWindowManagerClientApp));
+  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_APP));
 
-  mb_wm_client_init (wm, MBWM_CLIENT(tc), win);
+  if (!client)
+    return NULL; 		/* FIXME: Handle out of memory */
 
-  tc->base_client.type = mb_wm_client_app_get_type ();
+  client->window = win; 	
+  client->wmref  = wm;
 
-  fprintf(stderr, "XXX tc->base_client.type:%i\n", tc->base_client.type);
-
-  mb_wm_client_set_layout_hints (MBWM_CLIENT(tc),
+  mb_wm_client_set_layout_hints (client,
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeNorth, 
 			      decor_resize, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, MBWM_CLIENT(tc));
+  mb_wm_decor_attach (decor, client);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeSouth, 
 			      decor_resize, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, MBWM_CLIENT(tc));
+  mb_wm_decor_attach (decor, client);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeEast, 
 			      decor_resize, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, MBWM_CLIENT(tc));
+  mb_wm_decor_attach (decor, client);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeWest, 
 			      decor_resize, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, MBWM_CLIENT(tc));
-  
-  tc->base_client.geometry = mb_wm_client_app_request_geometry; 
+  mb_wm_decor_attach (decor, client);
 
-  return MBWM_CLIENT(tc);
+  return client;
 }
 

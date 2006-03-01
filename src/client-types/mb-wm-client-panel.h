@@ -23,15 +23,27 @@
 
 #include "mb-wm.h"
 
-typedef struct MBWindowManagerClientPanel MBWindowManagerClientPanel;
+typedef struct MBWMClientPanel      MBWMClientPanel;
+typedef struct MBWMClientPanelClass MBWMClientPanelClass;
 
-#define MB_WM_CLIENT_TYPE_PANEL (mb_wm_client_panel_get_type())
+#define MB_WM_CLIENT_PANEL(c) ((MBWMClientPanel*)(c)) 
+#define MB_WM_CLIENT_PANEL_CLASS(c) ((MBWMClientPanelClass*)(c)) 
+#define MB_WM_TYPE_CLIENT_PANEL (mb_wm_client_panel_class_type ())
 
-int
-mb_wm_client_panel_get_type ();
+struct MBWMClientPanel
+{
+  MBWMClientBase parent;
+};
+
+struct MBWMClientPanelClass
+{
+  MBWMClientBaseClass parent;
+};
 
 MBWindowManagerClient*
-mb_wm_client_panel_new (MBWindowManager *wm, MBWMWindow *win);
+mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win);
 
+int
+mb_wm_client_panel_class_type ();
 
 #endif

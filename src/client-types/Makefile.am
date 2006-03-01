@@ -1,4 +1,4 @@
-noinst_LIBRARIES = libmb-wm-client-app.a   \
+noinst_LIBRARIES = libmb-wm-client-app.a  \
 	           libmb-wm-client-panel.a 
 
 THEME_LIBS = @MBWM_THEME_LIBS@/libmb-theme.a

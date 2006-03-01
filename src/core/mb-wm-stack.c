@@ -102,7 +102,7 @@ mb_wm_stack_get_highest_by_type (MBWindowManager       *wm,
 
   mb_wm_stack_enumerate(wm,c)
     {
-      if (c->type == type)
+      if (MB_WM_OBJECT_TYPE(c) == type)
 	highest_client = c;
     }
 
@@ -116,7 +116,7 @@ mb_wm_stack_get_lowest_by_type(MBWindowManager *w, int wanted_type)
   MBWindowManagerClient *c = NULL;
 
   mb_wm_stack_enumerate(w,c)
-    if (c->type == wanted_type)
+    if (MB_WM_OBJECT_TYPE(c) == wanted_type)
       return c;
 
   return NULL;

@@ -65,11 +65,10 @@ test_destroy_notify (MBWindowManager      *wm,
 
   if (client)
     {
+      MBWM_DBG("Found client, unmanaing!");
       mb_wm_core_unmanage_client (wm, client);
       mb_wm_client_destroy (client);
     }
-
-
 }
 static void
 mb_wm_core_handle_property_notify (MBWindowManager         *wm,
@@ -271,9 +270,12 @@ mb_wm_core_managed_client_from_xwindow(MBWindowManager *wm, Window win)
 {
   MBWindowManagerClient *client = NULL;
 
+  if (win == wm->xwin_root)
+    return NULL;
+
   mb_wm_stack_enumerate(wm, client)
     if (client->window && client->window->xwindow == win)
-      return client;
+	return client;
 
   return NULL;
 }
@@ -291,12 +293,21 @@ mb_wm_run(MBWindowManager *wm)
       XEvent xev;
       XNextEvent(wm->xdpy, &xev);
 
-      MBWM_DBG("@ XEvent: '%s:%i' for %lx %s", 
-	       MBWMDEBUGEvents[xev.type], 
-	       xev.type, 
-	       xev.xany.window,
-	       xev.xany.window == wm->xwin_root ? "(root)"  : ""
-	       );
+#if (MBWM_WANT_DEBUG)
+ {
+   MBWindowManagerClient *ev_client;
+
+   ev_client = mb_wm_core_managed_client_from_xwindow(wm, xev.xany.window);
+
+   MBWM_DBG("@ XEvent: '%s:%i' for %lx %s%s", 
+	    MBWMDEBUGEvents[xev.type], 
+	    xev.type, 
+	    xev.xany.window,
+	    xev.xany.window == wm->xwin_root ? "(root)" : "",
+	    ev_client ? ev_client->name : ""
+	    );
+ }
+#endif
 
       switch (xev.type)
 	{
@@ -478,6 +489,10 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
   mb_wm_atoms_init(wm);
 
   mb_wm_keys_init(wm);
+
+  mb_wm_decor_init (wm);
+
+  base_foo (); 
 
   return True;
 }

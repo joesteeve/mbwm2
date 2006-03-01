@@ -106,5 +106,7 @@ mb_wm_decor_unref (MBWMDecor *decor);
 void
 mb_wm_decor_ref (MBWMDecor *decor);
 
+void
+mb_wm_decor_init (MBWindowManager     *wm);
 
 #endif

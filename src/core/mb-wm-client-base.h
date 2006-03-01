@@ -21,9 +21,26 @@
 #ifndef _HAVE_MB_WM_CLIENT_BASE_H
 #define _HAVE_MB_WM_CLIENT_BASE_H
 
+
+typedef struct MBWMClientBase
+{
+  MBWindowManagerClient parent;
+}
+MBWMClientBase;
+
+typedef struct MBWMClientBaseClass
+{
+  MBWindowManagerClientClass parent;
+
+}
+MBWMClientBaseClass;
+
 void
-mb_wm_client_base_init (MBWindowManager             *wm, 
-			MBWindowManagerClient       *client,
-			MBWMWindow                  *win);
+mb_wm_client_base_class_init (MBWMObjectClass *klass);
+
+void
+mb_wm_client_base_init (MBWMObject *this);
+
+void base_foo(void);
 
 #endif

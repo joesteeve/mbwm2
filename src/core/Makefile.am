@@ -1,6 +1,7 @@
 noinst_LIBRARIES = libmatchbox-window-manager-2-core.a
 
 core_h  = mb-wm.h             \
+          mb-wm-object.h      \
           mb-wm-client.h      \
           mb-wm-client-base.h \
 	  mb-wm-window.h      \
@@ -15,7 +16,8 @@ core_h  = mb-wm.h             \
           mb-wm-decor.h        \
           xas.h
 
-core_c  = mb-wm-client.c      \
+core_c  = mb-wm-object.c      \
+          mb-wm-client.c      \
           mb-wm-client-base.c \
 	  mb-wm-window.c      \
           mb-wm-stack.c       \
