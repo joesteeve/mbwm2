@@ -66,58 +66,40 @@ mb_wm_theme_paint_decor (MBWindowManager   *wm,
 
   cairo_set_line_width (cr, 1.0);
 
-  switch (type)
-    {
-    case MBWMDecorTypeNorth:
-      break;
-    case MBWMDecorTypeSouth:
-    case MBWMDecorTypeWest:
-    case MBWMDecorTypeEast:
-      break;
-    default:
-      break;
-    }
 
   w = geom->width; h = geom->height; x = geom->x; y = geom->y;
 
-  /*
-  pattern = cairo_pattern_create_radial (0.0, 0.0, 0.0, 0.0, 0.0, geom->width);
-
-  cairo_matrix_init_scale (&matrix, 1.0, w / h);
-  cairo_matrix_translate (&matrix, -(x + w), -(y + h));
-
-  cairo_pattern_set_matrix (pattern, &matrix);
-
-  cairo_pattern_add_color_stop_rgba (pattern, 0.0, 0.5, 0.1, 0.1, 0.5);
-
-  cairo_pattern_add_color_stop_rgba (pattern, 1.0, 1.0, 0.5, 1.0, 0.5);
-
-  cairo_pattern_set_extend (pattern, CAIRO_EXTEND_PAD);
-
-  cairo_set_source (cr, pattern);
-  cairo_fill (cr);
-  */
-
   cairo_set_line_width (cr, 0.04);
-  cairo_set_source_rgb (cr, 0.9, 0.9, 0.8);
 
-  cairo_stroke (cr);
-
-  pattern = cairo_pattern_create_linear (0, 0, 
-					 w > h ? 0 : w, 
-					 h > w ? 0 : h);
-
-  cairo_pattern_add_color_stop_rgb (pattern, 1, 0.2, 0.2, 0.3 );
-  cairo_pattern_add_color_stop_rgb (pattern, 0, 0.7, 0.7, 0.8 );
-
-  cairo_set_source (cr, pattern);
+  cairo_set_source_rgb (cr, 0, 0, 0);
 
   cairo_rectangle( cr, 0, 0, w, h); 
+
+  cairo_fill (cr);
+
+  cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
+
+  cairo_rectangle( cr, 1, 1, w-2, h-2); 
+
+
   cairo_fill (cr);
 
   if (mb_wm_decor_get_type(decor) == MBWMDecorTypeNorth)
     {
       cairo_font_extents_t font_extents;
+
+      pattern = cairo_pattern_create_linear (0, 0, 0, h);
+
+      cairo_pattern_add_color_stop_rgb (pattern, 0,   0.5, 0.5, 0.5 );
+      cairo_pattern_add_color_stop_rgb (pattern, 0.5, 0.25, 0.25, 0.25 );
+      cairo_pattern_add_color_stop_rgb (pattern, 0.51, 0.25, 0.25, 0.25 );
+      cairo_pattern_add_color_stop_rgb (pattern, 1,   0.4, 0.4, 0.4 );
+      
+      cairo_set_source (cr, pattern);
+      
+      cairo_rectangle( cr, 2, 2, w-4, h-3); 
+
+      cairo_fill (cr);
 
       cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
 
@@ -128,17 +110,43 @@ mb_wm_theme_paint_decor (MBWindowManager   *wm,
 			      CAIRO_FONT_SLANT_NORMAL,
 			      CAIRO_FONT_WEIGHT_NORMAL);
   
-      cairo_set_font_size (cr, h - (h/8));
+      cairo_set_font_size (cr, h - (h/6));
 
       cairo_move_to (cr, 
 		     mb_wm_client_frame_west_width (client), 
 		     (h - (font_extents.ascent + font_extents.descent)) / 2
-		     + font_extents.ascent);
+		     + font_extents.ascent + 2);
 
       cairo_show_text (cr, mb_wm_client_get_name(client));
+
+      cairo_pattern_destroy (pattern);
     }
 
-  cairo_pattern_destroy (pattern);
+  cairo_set_source_rgb (cr, 0.7, 0.7, 0.7);
+
+  /* tweak borders a little so they all 'fit' */
+
+  switch (type)
+    {
+    case MBWMDecorTypeNorth:
+      cairo_rectangle( cr, 1, h-1, 1, 1); 
+      cairo_rectangle( cr, w-2, h-1, 1, 1); 
+      break;
+    case MBWMDecorTypeSouth:
+      cairo_rectangle( cr, 1, 0, 1, 1); 
+      cairo_rectangle( cr, w-2, 0, 1, 1); 
+      break;
+    case MBWMDecorTypeWest:
+    case MBWMDecorTypeEast:
+      cairo_rectangle( cr, 1, 0, 1, 1); 
+      cairo_rectangle( cr, 1, h-1, 1, 1); 
+      break;
+    default:
+      break;
+    }
+
+  cairo_fill (cr);
+
   cairo_destroy (cr);
 
   XSetWindowBackgroundPixmap (wm->xdpy, xwin, xpxmp);

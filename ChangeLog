@@ -1,3 +1,35 @@
+2006-03-14  Matthew Allum  <mallum@openedhand.com>
+
+	* src/core/mb-wm-core.c: (test_destroy_notify),
+	(mb_wm_core_handle_config_request), (stack_sync_to_display),
+	(mb_wm_core_sync), (mb_wm_core_unmanage_client),
+	(mb_wm_core_managed_client_from_xwindow), (mb_wm_run),
+	(mb_wm_manage_preexistsing_wins), (mb_wm_register_client_type),
+	(mb_wm_new), (mb_wm_add_x_event_handler),
+	(mb_wm_remove_x_event_handler), (mb_wm_add_timeout_handler),
+	(mb_wm_handle_x_event), (mb_wm_init):
+	Begin reworking Eventing.
+
+	* src/client-types/mb-wm-client-app.c:
+	(mb_wm_client_app_request_geometry):
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_realize),
+	(mb_wm_client_base_display_sync):
+	* src/core/mb-wm-client-base.h:
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-decor.c: (mb_wm_decor_sync_window),
+	(mb_wm_decor_reparent), (mb_wm_decor_calc_geometry),
+	(mb_wm_decor_handle_map), (mb_wm_decor_handle_repaint),
+	(mb_wm_decor_handle_resize), (mb_wm_decor_create),
+	(mb_wm_decor_get_x_window), (mb_wm_decor_get_type),
+	(mb_wm_decor_get_geometry), (mb_wm_decor_mark_dirty),
+	(mb_wm_decor_attach), (mb_wm_decor_detach):
+	* src/core/mb-wm-decor.h:
+	* src/core/mb-wm-stack.c: (mb_wm_stack_insert_above_client):
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-window.c: (mb_wm_client_window_new):
+	* src/theme-engines/theme-cairo.c: (mb_wm_theme_paint_decor):
+
 2006-03-01  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/Makefile.am:

@@ -39,12 +39,25 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   return win;
 }
 
-Bool
-mb_wm_window_set_property (MBWindowManager *wm,
-			   MBWMWindow      *win
-			   /* To fill in */)
+void
+mb_wm_window_change_property (MBWindowManager *wm,
+			      MBWMWindow      *win,
+			      Atom             prop,
+			      Atom             type,
+			      int              format,
+			      void            *data,
+			      int              n_elements)
 {
-
+  /*
+  XChangeProperty (wm->xdpy, 
+		   win->xwindow, 
+		   prop, 
+		   type, 
+		   format, 
+		   PropModeReplace,
+		   (unsigned char *)data,
+		   n_elements);
+  */
 }
 			    
 

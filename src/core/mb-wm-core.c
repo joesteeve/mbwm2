@@ -67,7 +67,7 @@ test_destroy_notify (MBWindowManager      *wm,
     {
       MBWM_DBG("Found client, unmanaing!");
       mb_wm_core_unmanage_client (wm, client);
-      mb_wm_client_destroy (client);
+      mb_wm_object_unref (MB_WM_OBJECT(client));
     }
 }
 static void
@@ -101,22 +101,46 @@ mb_wm_core_handle_config_request (MBWindowManager        *wm,
       MBWM_DBG("### No client found for configure event ###");
       return;
     }
-#if 0
 
-  value_mask = e->value_mask;
-  win_geom   = &client->window->gemometry; /* FIXME: func here */
+  value_mask = xev->value_mask;
+  win_geom   = &client->window->geometry;
 
-  reg_geom.x      = (value_mask & CWX) ? xev->x : win_geom->x;
-  reg_geom.y      = (value_mask & CWY) ? xev->y : win_geom->y;
-  reg_geom.width  = (value_mask & CWWIDTH) ? xev->width : win_geom->width;
-  reg_geom.height = (value_mask & CWHEIGHT) ? xev->height : win_geom->height;
+  req_geom.x      = (value_mask & CWX) ? xev->x : win_geom->x;
+  req_geom.y      = (value_mask & CWY) ? xev->y : win_geom->y;
+  req_geom.width  = (value_mask & CWWidth) ? xev->width : win_geom->width;
+  req_geom.height = (value_mask & CWHeight) ? xev->height : win_geom->height;
+
+
+#if 0  /* stacking to sort */
+  if (value_mask & (CWSibling|CWStackMode))
+    {
+      
+    }
+#endif
 
   if (mb_geometry_compare (&req_geom, win_geom))
     {
-      /* No change in window geometry */
+      /* No change in window geometry, but needs configure request
+       * per ICCCM.
+      */
+      mb_wm_client_synthetic_config_event_queue (client);      
+      return;
     }
-#endif
-  
+
+  if (mb_wm_client_request_geometry (client,
+				     &req_geom,
+				     MBWMClientReqGeomIsViaConfigureReq))
+    {
+      if (req_geom.width == win_geom->width
+	  && req_geom.height == win_geom->height)
+	{
+	  /* ICCCM says if window only moved - not size change,
+	   * then we send a fake one too.
+	   */
+	  mb_wm_client_synthetic_config_event_queue (client);
+	}
+
+    }
 }
 
 static void 
@@ -205,6 +229,11 @@ mb_wm_core_sync (MBWindowManager *wm)
 
   XGrabServer(wm->xdpy);
 
+  /* Size stuff first assume newly managed windows unmapped ?
+   * 
+  */
+  mb_wm_layout_manager_update (wm); 
+
   /* Create the actual window */
   mb_wm_stack_enumerate(wm, client)
     if (!mb_wm_client_is_realized (client))
@@ -216,9 +245,7 @@ mb_wm_core_sync (MBWindowManager *wm)
   */
   stack_sync_to_display (wm);
 
-  mb_wm_layout_manager_update (wm); 
-
-  /* Now do updates per individual client - paints etc, main work here */
+  /* Now do updates per individual client - maps, paints etc, main work here */
   mb_wm_stack_enumerate(wm, client)
     if (mb_wm_client_needs_sync (client))
       mb_wm_client_display_sync (client);
@@ -287,7 +314,6 @@ mb_wm_run(MBWindowManager *wm)
 
   MBWM_DBG("entering event loop");
 
-  /*  change to while((evt = XCBPollForEvent(conn, 0))) */
   while (TRUE)
     {
       XEvent xev;
@@ -355,6 +381,13 @@ mb_wm_run(MBWindowManager *wm)
 				       (XPropertyEvent*)&xev.xproperty, 
 				       xev_funcs->user_data);
 
+	  break;
+	case ButtonPress:
+	  if (xev_funcs->button_press)
+	    xev_funcs->button_press(wm, 
+				    (XButtonEvent*)&xev.xbutton, 
+				    xev_funcs->user_data);
+	  break;
 	default:
 	  break;
 	}
@@ -429,8 +462,96 @@ mb_wm_new(void)
   return mb_wm_util_malloc0(sizeof(MBWindowManager));
 }
 
+void
+mb_wm_x_event_handler_userdata (MBWindowManager *wm,
+				void            *userdata)
+{
+
+}
+
+
+void
+mb_wm_add_x_event_handler (MBWindowManager *wm,
+			   int              type,
+			   MBWMXEventFunc   func)
+{
+  switch (type)
+    {
+    case Expose:
+      break;
+    case MapRequest:
+      /*
+      mb_wm_util_list_append (wm->event_funcs->map_request, 
+			      (void *)func);
+      */
+	break;
+    case MapNotify:
+      /*
+      mb_wm_util_list_append (wm->event_funcs->map_notify, 
+			      (void *)func);
+      */
+	break;
+    case DestroyNotify:
+      
+      break;
+    case ConfigureNotify:
+      
+      break;
+    case ConfigureRequest:
+      
+      break;
+    case KeyPress:
+      
+      break;
+    case PropertyNotify:
+    default:
+      break;
+    }
+}
+
+void
+mb_wm_remove_x_event_handler (MBWindowManager *wm,
+			      int              type,
+			      MBWMXEventFunc   func)
+{
+  /*  */
+}
+
+void
+mb_wm_add_timeout_handler (MBWindowManager *wm,
+			   MBWMXEventFunc   func)
+{
+
+}
+
+void
+mb_wm_handle_x_event (MBWindowManager *wm,
+		      XEvent          *xev)
+{
+  MBWMList *iter;
+
+  switch (xev->type)
+    {
+    case Expose:
+      break;
+    case MapRequest:
+      /*
+      iter = wm->event_funcs->map_request;
+
+      while (iter 
+	     && ((MBWindowManagerMapRequestFunc)(iter->data))
+	     (wm, 
+	      (XMapRequestEvent*)&xev.xmaprequest, 
+	      xev_funcs->user_data))
+	iter = iter->next;
+      */
+	break;
+    }
+
+}
+
 Status
-mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
+mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 {
   XSetWindowAttributes sattr;
 
@@ -490,7 +611,7 @@ mb_wm_init(MBWindowManager *wm, int *argc, char ***argv)
 
   mb_wm_keys_init(wm);
 
-  mb_wm_decor_init (wm);
+  /* mb_wm_decor_init (wm); */
 
   base_foo (); 
 

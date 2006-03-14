@@ -21,8 +21,22 @@
 #ifndef _HAVE_MB_WM_DECOR_H
 #define _HAVE_MB_WM_DECOR_H
 
-typedef struct MBWMDecorButton MBWMDecorButton;
+#define MB_WM_DECOR(c) ((MBWMDecor*)(c)) 
+#define MB_WM_DECOR_CLASS(c) ((MBWMDecorClass*)(c)) 
+#define MB_WM_TYPE_DECOR (mb_wm_decor_class_type ())
+
 typedef struct MBWMDecor       MBWMDecor;
+typedef struct MBWMDecorClass  MBWMDecorClass;
+
+
+#define MB_WM_DECOR_BUTTON(c) ((MBWMDecorButton*)(c)) 
+#define MB_WM_DECOR_BUTTON_CLASS(c) ((MBWMDecorButtonClass*)(c)) 
+#define MB_WM_TYPE_DECOR_BUTTON (mb_wm_decor_button_class_type ())
+
+
+typedef struct MBWMDecorButton MBWMDecorButton;
+typedef struct MBWMDecorButtonClass MBWMDecorButtonClass;
+
 
 typedef enum MBWMDecorButtonFlags
 {
@@ -58,6 +72,56 @@ typedef void (*MBWMDecorButtonPressedFunc) (MBWindowManager   *wm,
 typedef void (*MBWMDecorButtonReleasedFunc) (MBWindowManager   *wm,
 					     MBWMDecorButton   *button,
 					     void              *userdata);
+
+
+struct MBWMDecor
+{
+  MBWMObject             parent;
+  MBWMDecorType          type;
+  Window                 xwin;
+  MBWindowManagerClient *parent_client;
+  MBGeometry             geom;
+  Bool                   dirty;
+  MBWMDecorResizedFunc   resize;
+  MBWMDecorRepaintFunc   repaint;
+  void                  *userdata;
+  MBWMList              *buttons;
+};
+
+struct MBWMDecorClass
+{
+  MBWMObjectClass        parent;
+};
+
+
+struct MBWMDecorButton
+{
+  MBWMObject                  parent;
+  MBWMDecor                  *decor;
+  Window                      xwin;
+
+  MBGeometry                  geom;
+
+  /* in priv ? */
+  Bool                        visible;
+
+  MBWMDecorButtonRepaintFunc  repaint;
+  MBWMDecorButtonPressedFunc  press;
+  MBWMDecorButtonReleasedFunc release;
+  void                       *userdata;
+};
+
+struct MBWMDecorButtonClass
+{
+  MBWMObjectClass   parent;
+
+  /* 
+     show;
+     hide;
+     realize;
+  */
+};
+
 
 MBWMDecor*
 mb_wm_decor_create (MBWindowManager     *wm,

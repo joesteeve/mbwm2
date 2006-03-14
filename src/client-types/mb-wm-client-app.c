@@ -24,7 +24,8 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 void
 mb_wm_client_app_destroy (MBWMObject *this)
 {
-    MBWM_MARK();
+  MBWM_MARK();
+  mb_wm_client_base_destroy(this);
 }
 
 void
@@ -68,10 +69,10 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
       
-      client->window->geometry.x = client->frame_geometry.x + 4;
+      client->window->geometry.x = client->frame_geometry.x + 3;
       client->window->geometry.y = client->frame_geometry.y + 20;
-      client->window->geometry.width  = client->frame_geometry.width - 8;
-      client->window->geometry.height = client->frame_geometry.height - 24;
+      client->window->geometry.width  = client->frame_geometry.width - 6;
+      client->window->geometry.height = client->frame_geometry.height - 23;
       
       mb_wm_client_geometry_mark_dirty (client);
 

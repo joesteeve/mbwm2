@@ -32,8 +32,6 @@ mb_wm_client_base_show (MBWindowManagerClient *client);
 static void
 mb_wm_client_base_hide (MBWindowManagerClient *client);
 
-static void
-mb_wm_client_base_destroy (MBWMObject *this);
 
 static void
 mb_wm_client_base_display_sync (MBWindowManagerClient *client);
@@ -85,34 +83,6 @@ mb_wm_client_base_class_type ()
   return type;
 }
 
-#if 0
-void
-mb_wm_client_base_init (MBWindowManager             *wm, 
-			MBWindowManagerClient       *client,
-			MBWMWindow *win)
-{
-  client->wmref  = wm;   
-  client->window = win; 
-
-  client->new      = NULL;	             /* NOT NEEDED ? */
-  client->init     = mb_wm_client_base_init;  /* NOT NEEDED ? */
-  client->realize  = mb_wm_client_base_realize;
-  client->destroy  = mb_wm_client_base_destroy;
-  client->geometry = mb_wm_client_base_request_geometry;
-  client->stack    = mb_wm_client_base_stack;
-  client->show     = mb_wm_client_base_show;
-  client->hide     = mb_wm_client_base_hide;
-  client->sync     = mb_wm_client_base_display_sync;
-
-  /* Need to set these values for initial reparenting */
-
-  client->frame_geometry.x      = client->window->geometry.x;
-  client->frame_geometry.y      = client->window->geometry.y;
-  client->frame_geometry.width  = client->window->geometry.width;
-  client->frame_geometry.height = client->window->geometry.height;
-}
-#endif
-
 static void
 mb_wm_client_base_realize (MBWindowManagerClient *client)
 {
@@ -121,11 +91,6 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   XSetWindowAttributes attr;
 
   MBWM_ASSERT(client->window != NULL);
-
-  client->frame_geometry.x      = client->window->geometry.x;
-  client->frame_geometry.y      = client->window->geometry.y;
-  client->frame_geometry.width  = client->window->geometry.width;
-  client->frame_geometry.height = client->window->geometry.height;
 
   /* create the frame window */
 
@@ -220,13 +185,13 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 			client->window->geometry.y - client->frame_geometry.y,
 			client->window->geometry.width,
 			client->window->geometry.height);
-
-
       
       /* FIXME: need flags to handle other stuff like configure events etc */
 
-      /* Resize any decor */
+      if (mb_wm_client_needs_synthetic_config_event (client))
+	; /* TODO: send fake config event */
 
+      /* Resize any decor */
       mb_wm_util_list_foreach(client->decor, 
 			      (MBWMListForEachCB)mb_wm_decor_handle_resize,
 			      NULL);
@@ -247,7 +212,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   mb_wm_util_untrap_x_errors();  
 
-  /* Handle any mapping */
+  /* Handle any mapping - should be visible state ? */
 
   if (mb_wm_client_needs_visibility_sync (client))
     {
@@ -262,6 +227,14 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    }
 	  else
 	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+
+	  mb_wm_window_change_property (wm,
+					client->window,
+					wm->atoms[MBWM_ATOM_WM_STATE], 
+					wm->atoms[MBWM_ATOM_WM_STATE],
+					32, 
+					(void *)NormalState, 
+					1);
 	}
       else
 	{
@@ -269,6 +242,16 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    XUnmapWindow(wm->xdpy, client->xwin_frame); 
 	  else
 	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+
+	  /* FIXME: iconized state? */
+	  mb_wm_window_change_property (wm,
+					client->window,
+					wm->atoms[MBWM_ATOM_WM_STATE], 
+					wm->atoms[MBWM_ATOM_WM_STATE],
+					32, 
+					(void *)WithdrawnState, 
+					1);
+
 	}
 
       mb_wm_util_untrap_x_errors();  
@@ -279,7 +262,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
   mb_wm_util_untrap_x_errors();  
 }
 
-static void
+void
 mb_wm_client_base_destroy (MBWMObject *this)
 {
   MBWindowManagerClient *client;
@@ -297,6 +280,8 @@ mb_wm_client_base_destroy (MBWMObject *this)
 
   XSync(wm->xdpy, False);
   mb_wm_util_untrap_x_errors();  
+
+  mb_wm_client_destroy (this);
 }
 
 /* Note request geometry always called by layout manager */
@@ -343,7 +328,7 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
       return True; /* Geometry accepted */
     }
 
-  return TRUE;
+  return True;
 }
 
 void base_foo(void)

@@ -20,26 +20,32 @@
 
 #include "mb-wm.h"
 
-struct MBWMDecor
-{
-  MBWMDecorType          type;
-  Window                 xwin;
-  MBWindowManagerClient *parent;
-  MBGeometry             geom;
-  Bool                   dirty;
-  MBWMDecorResizedFunc   resize;
-  MBWMDecorRepaintFunc   repaint;
-  void                  *userdata;
-  MBWMList              *buttons;
-  int                    refcnt;
-};
+static void
+mb_wm_decor_destroy (MBWMObject *obj);
 
-struct MBWMDecorButton
+static void
+mb_wm_decor_button_sync_window (MBWMDecorButton *button);
+
+int
+mb_wm_decor_class_type ()
 {
-  MBWMDecor *parent;
-  Window     xwin;
-  int        refcnt;
-};
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMDecorClass),      
+	sizeof (MBWMDecor), 
+	NULL,
+	mb_wm_decor_destroy,
+	NULL
+      };
+
+      type = mb_wm_object_register_class (&info);
+    }
+
+  return type;
+}
 
 static Bool
 mb_wm_decor_reparent (MBWMDecor *decor);
@@ -50,10 +56,10 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
   MBWindowManager     *wm;
   XSetWindowAttributes attr;
 
-  if (decor->parent == NULL)
+  if (decor->parent_client == NULL)
     return False;
 
-  wm = decor->parent->wmref;  
+  wm = decor->parent_client->wmref;  
 
   attr.override_redirect = True;
   attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
@@ -104,6 +110,10 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
     }
 
   /* Next up sort buttons */
+  
+  mb_wm_util_list_foreach(decor->buttons, 
+			  (MBWMListForEachCB)mb_wm_decor_button_sync_window,
+			  NULL);
 
   return True;
 }
@@ -113,12 +123,12 @@ mb_wm_decor_reparent (MBWMDecor *decor)
 {
   MBWindowManager *wm;
 
-  if (decor->parent == NULL)
+  if (decor->parent_client == NULL)
     return False;
 
   MBWM_MARK();
 
-  wm = decor->parent->wmref;  
+  wm = decor->parent_client->wmref;  
 
   /* FIXME: Check if we already have a parent here */
 
@@ -126,7 +136,7 @@ mb_wm_decor_reparent (MBWMDecor *decor)
 
   XReparentWindow (wm->xdpy, 
 		   decor->xwin, 
-		   decor->parent->xwin_frame, 
+		   decor->parent_client->xwin_frame, 
 		   decor->geom.x, 
 		   decor->geom.y);
 
@@ -142,10 +152,10 @@ mb_wm_decor_calc_geometry (MBWMDecor *decor)
   MBWindowManager       *wm;
   MBWindowManagerClient *client;
 
-  if (decor->parent == NULL)
+  if (decor->parent_client == NULL)
     return;
 
-  client = decor->parent;
+  client = decor->parent_client;
   wm = client->wmref;  
 
   switch (decor->type)
@@ -199,11 +209,11 @@ mb_wm_decor_handle_map (MBWMDecor *decor)
 void
 mb_wm_decor_handle_repaint (MBWMDecor *decor)
 {
-  if (decor->parent == NULL)
+  if (decor->parent_client == NULL)
     return;
 
   if (decor->dirty && decor->repaint)
-    decor->repaint(decor->parent->wmref, decor, decor->userdata);
+    decor->repaint(decor->parent_client->wmref, decor, decor->userdata);
 
   decor->dirty = False;
 }
@@ -211,7 +221,7 @@ mb_wm_decor_handle_repaint (MBWMDecor *decor)
 void
 mb_wm_decor_handle_resize (MBWMDecor *decor)
 {
-  if (decor->parent == NULL)
+  if (decor->parent_client == NULL)
     return;
 
   mb_wm_decor_calc_geometry (decor);
@@ -220,7 +230,7 @@ mb_wm_decor_handle_resize (MBWMDecor *decor)
 
   /* Fire resize callback */
   if (decor->resize)
-    decor->resize(decor->parent->wmref, decor, decor->userdata);
+    decor->resize(decor->parent_client->wmref, decor, decor->userdata);
 
   /* Fire repaint callback */
   mb_wm_decor_mark_dirty (decor);
@@ -235,15 +245,13 @@ mb_wm_decor_create (MBWindowManager     *wm,
 {
   MBWMDecor           *decor;
 
-  decor = mb_wm_util_malloc0(sizeof(MBWMDecor));
+  decor = MB_WM_DECOR(mb_wm_object_new (MB_WM_TYPE_DECOR));
 
   decor->type    = type;
   decor->dirty   = True; 	/* Needs painting */
   decor->resize  = resize;
   decor->repaint = repaint;
   decor->userdata = userdata;
-
-  mb_wm_decor_ref (decor);
 
   return decor;
 }
@@ -263,7 +271,7 @@ mb_wm_decor_get_type (MBWMDecor *decor)
 MBWindowManagerClient*
 mb_wm_decor_get_parent (MBWMDecor *decor)
 {
-  return decor->parent;
+  return decor->parent_client;
 }
 
 
@@ -279,15 +287,15 @@ mb_wm_decor_mark_dirty (MBWMDecor *decor)
 {
   decor->dirty = True;
 
-  if (decor->parent)
-    mb_wm_client_decor_mark_dirty (decor->parent);
+  if (decor->parent_client)
+    mb_wm_client_decor_mark_dirty (decor->parent_client);
 }
 
 void
 mb_wm_decor_attach (MBWMDecor             *decor,
 		    MBWindowManagerClient *client)
 {
-  decor->parent = client;
+  decor->parent_client = client;
   client->decor = mb_wm_util_list_append(client->decor, decor);
 
   mb_wm_decor_mark_dirty (decor);
@@ -301,43 +309,160 @@ mb_wm_decor_detach (MBWMDecor *decor)
 
 }
 
-void
-mb_wm_decor_unref (MBWMDecor *decor)
+static void
+mb_wm_decor_destroy (MBWMObject* obj)
 {
- if (--decor->refcnt <= 0)
-   {
-     mb_wm_decor_detach (decor);
-     /* XDestroyWindow(wm->dpy, decor->xwin); */
-     free(decor);
-   }
+  MBWMDecor *decor = MB_WM_DECOR(obj);
+
+  mb_wm_decor_detach (decor);
+  /* XDestroyWindow(wm->dpy, decor->xwin); */
+  free(decor);
+}
+
+/* Buttons */
+
+static void
+mb_wm_decor_button_destroy (MBWMObject* obj);
+
+int
+mb_wm_decor_button_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMDecorButtonClass),      
+	sizeof (MBWMDecorButton), 
+	NULL,
+	mb_wm_decor_button_destroy,
+	NULL
+      };
+
+      type = mb_wm_object_register_class (&info);
+    }
+
+  return type;
+}
+
+static void
+mb_wm_decor_button_destroy (MBWMObject* obj)
+{
+  /*
+  MBWMDecor *decor = MB_WM_DECOR(obj);
+  */
+}
+
+static Bool
+mb_wm_decor_button_realize (MBWMDecorButton *button) 
+{
+  MBWindowManager     *wm;
+  XSetWindowAttributes attr;
+
+  wm = button->decor->parent_client->wmref;  
+
+  attr.override_redirect = True;
+  attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
+  attr.event_mask = ButtonPressMask|ButtonReleaseMask;
+  
+  if (button->xwin == None)
+    {
+      mb_wm_util_trap_x_errors();  
+
+      /* NOTE: may want input only window here if button paints 
+       *       directly onto decor.
+      */
+
+      /* FIXME: Event Mask */
+      button->xwin 
+	= XCreateWindow(wm->xdpy, 
+			wm->xwin_root, 
+			button->geom.x,
+			button->geom.y,
+			button->geom.width,
+			button->geom.height,
+			0,
+			CopyFromParent, 
+			CopyFromParent, 
+			CopyFromParent,
+			CWOverrideRedirect|CWBackPixel|CWEventMask,
+			&attr);
+
+      /* FIXME: call paint() */
+
+      if (mb_wm_util_untrap_x_errors())
+	return False;
+      }
+}
+
+static void
+mb_wm_decor_button_sync_window (MBWMDecorButton *button)
+{
+  MBWindowManager     *wm;
+
+  wm = button->decor->parent_client->wmref;  
+
+  if (button->xwin == None)
+    mb_wm_decor_button_realize (button);
+
+  /* FIXME: conditional */
+  XMoveWindow(wm->xdpy, 
+	      button->xwin,
+	      button->geom.x,
+	      button->geom.y);
+
+  if (button->visible)
+    XMapWindow(wm->xdpy, button->xwin);
+  else
+    XUnmapWindow(wm->xdpy, button->xwin);
 }
 
 void
-mb_wm_decor_ref (MBWMDecor *decor)
+mb_wm_decor_button_show (MBWMDecorButton *button)
 {
-  decor->refcnt++;
+  button->visible = True;
 }
 
 void
-mb_wm_decor_init (MBWindowManager     *wm)
+mb_wm_decor_button_hide (MBWMDecorButton *button)
 {
-  ;
+  button->visible = False;
 }
 
-/*
+void
+mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
+{
+  /* FIXME: set a sync flag so it know X movewindow is needed */
+
+  button->geom.x = x;
+  button->geom.y = y;
+}
+
+
 MBWMDecorButton*
 mb_wm_decor_button_create (MBWindowManager            *wm,
 			   MBWMDecor                  *decor,
-			   int                         x,
-			   int                         y,
 			   int                         width,
 			   int                         height,
 			   MBWMDecorButtonPressedFunc  press,
 			   MBWMDecorButtonReleasedFunc release,
-			   MBWMDecorButtonPaintFunc    paint,
+			   MBWMDecorButtonRepaintFunc  paint,
 			   MBWMDecorButtonFlags        flags,
 			   void                       *userdata)
 {
-  ;
+  MBWMDecorButton  *button;
+
+  button = MB_WM_DECOR_BUTTON(mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON));
+
+  button->press   = press;
+  button->release = release;
+  button->repaint = paint;
+
+  button->geom.width  = width;
+  button->geom.height = height;
+  button->decor  = decor;
+  decor->buttons = mb_wm_util_list_append (decor->buttons, button); 
+
+  return button;
 }
-*/
+

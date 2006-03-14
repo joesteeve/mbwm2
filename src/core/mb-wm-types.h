@@ -215,6 +215,11 @@ typedef  void (*MBWindowManagerDestroyClientFunc)
 
 /* Event Callbacks */
 
+typedef void (*MBWMXEventFunc)
+     (MBWindowManager   *wm,
+      void              *xev,
+      void              *userdata);
+
 typedef void (*MBWindowManagerMapNotifyFunc) 
      (MBWindowManager   *wm,
       XMapEvent         *xev,
@@ -250,6 +255,11 @@ typedef void (*MBWindowManagerPropertyNotifyFunc)
       XPropertyEvent          *xev,
       void                    *userdata);
 
+typedef void (*MBWindowManagerButtonPressFunc) 
+     (MBWindowManager         *wm,
+      XButtonEvent            *xev,
+      void                    *userdata);
+
 
 typedef struct MBWindowManagerEventFuncs
 {
@@ -261,13 +271,35 @@ typedef struct MBWindowManagerEventFuncs
   MBWindowManagerConfigureNotifyFunc  configure_notify;
   MBWindowManagerKeyPressFunc         key_press;
   MBWindowManagerPropertyNotifyFunc   property_notify;
-
+  MBWindowManagerButtonPressFunc      button_press;
   void                               *user_data;
 } 
 MBWindowManagerEventFuncs;
 
+/* New stuff  */
+
+typedef struct MBWindowManagerEventFuncsX
+{
+  /* FIXME: figure our X wrap / unwrap mechanism */
+  MBWMList *map_notify;
+  MBWMList *map_request;
+  MBWMList *destroy_notify;
+  MBWMList *configure_request;
+  MBWMList *configure_notify;
+  MBWMList *key_press;
+  MBWMList *property_notify;
+  MBWMList *button_press;
+
+  void     *user_data;
+} 
+MBWindowManagerEventFuncsX;
+
+
+/*********************/
+
 struct MBWindowManager
 {
+
   Display                     *xdpy;
   unsigned int                 xdpy_width, xdpy_height;
   int                          xscreen;

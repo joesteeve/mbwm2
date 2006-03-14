@@ -22,10 +22,11 @@
 
 enum
   {
-    StackingNeedsSync   = (1<<1),
-    GeometryNeedsSync   = (1<<2),
-    VisibilityNeedsSync = (1<<3),
-    DecorNeedsSync      = (1<<4)
+    StackingNeedsSync      = (1<<1),
+    GeometryNeedsSync      = (1<<2),
+    VisibilityNeedsSync    = (1<<3),
+    DecorNeedsSync         = (1<<4),
+    SyntheticConfigEvSync  = (1<<5)
   };
 
 struct MBWindowManagerClientPriv
@@ -38,14 +39,7 @@ struct MBWindowManagerClientPriv
 void
 mb_wm_client_destroy (MBWMObject *obj)
 {
-  /* free everything up */
-#if 0
-  MBWM_ASSERT (client->destroy != NULL);
-
-  client->destroy(client);
-
-  mb_wm_display_sync_queue (client->wmref);
-#endif
+  mb_wm_display_sync_queue ((MB_WM_CLIENT(obj))->wmref);
 }
 
 
@@ -94,6 +88,22 @@ mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client)
   client->priv->sync_state |= VisibilityNeedsSync;
 
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
+}
+
+void
+mb_wm_client_synthetic_config_event_queue (MBWindowManagerClient *client)
+{
+  mb_wm_display_sync_queue (client->wmref);
+
+  client->priv->sync_state |= SyntheticConfigEvSync;
+
+  MBWM_DBG(" sync state: %i", client->priv->sync_state);
+}
+
+Bool
+mb_wm_client_needs_synthetic_config_event (MBWindowManagerClient *client)
+{
+  return (client->priv->sync_state & SyntheticConfigEvSync);
 }
 
 void

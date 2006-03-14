@@ -53,6 +53,19 @@ mb_wm_stack_insert_above_client (MBWindowManagerClient *client,
   wm->stack_n_clients++;
 }
 
+void 				/* fixme */
+mb_wm_client_stack_via_hints (MBWindowManagerClient *client)
+{
+  MBWindowManager *wm = client->wmref;
+
+  if (client->stacking_hints & StackPrefAlwaysOnBottom)
+    {
+
+    }
+  
+
+}
+
 void 
 mb_wm_stack_append_top (MBWindowManagerClient *client)
 {

@@ -41,6 +41,10 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass);
 void
 mb_wm_client_base_init (MBWMObject *this);
 
+void
+mb_wm_client_base_destroy (MBWMObject *this);
+
+
 void base_foo(void);
 
 #endif
