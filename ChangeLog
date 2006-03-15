@@ -1,3 +1,11 @@
+2006-03-15  Matthew Allum  <mallum@openedhand.com>
+
+	* src/core/mb-wm-core.c: (mb_wm_run),
+	(mb_wm_remove_x_event_handler), (mb_wm_add_timeout_handler),
+	(mb_wm_handle_x_event), (mb_wm_init):
+	* src/core/mb-wm-types.h:
+	Rework X event handlers adding stacking capabilities.
+
 2006-03-14  Matthew Allum  <mallum@openedhand.com>
 
 	* src/core/mb-wm-core.c: (test_destroy_notify),

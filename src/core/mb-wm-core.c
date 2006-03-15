@@ -42,6 +42,10 @@ static const char *MBWMDEBUGEvents[] = {
 
 #endif
 
+static void
+mb_wm_handle_x_event (MBWindowManager *wm,
+		      XEvent          *xev);
+
 void
 test_key_press (MBWindowManager *wm,
 		XKeyEvent       *xev,
@@ -322,9 +326,9 @@ mb_wm_run(MBWindowManager *wm)
 #if (MBWM_WANT_DEBUG)
  {
    MBWindowManagerClient *ev_client;
-
+   
    ev_client = mb_wm_core_managed_client_from_xwindow(wm, xev.xany.window);
-
+   
    MBWM_DBG("@ XEvent: '%s:%i' for %lx %s%s", 
 	    MBWMDEBUGEvents[xev.type], 
 	    xev.type, 
@@ -335,65 +339,10 @@ mb_wm_run(MBWindowManager *wm)
  }
 #endif
 
-      switch (xev.type)
-	{
-	case Expose:
-	  break;
-	case MapRequest:
-	  if (xev_funcs->map_request)
-	    xev_funcs->map_request(wm, 
-				   (XMapRequestEvent*)&xev.xmaprequest, 
-				   xev_funcs->user_data);
-	  break;
-	case MapNotify:
-	  if (xev_funcs->map_notify)
-	    xev_funcs->map_notify(wm, 
-				  (XMapEvent*)&xev.xmap, 
-				  xev_funcs->user_data);
-	  break;
-	case DestroyNotify:
-	  if (xev_funcs->destroy_notify)
-	    xev_funcs->destroy_notify(wm, 
-				      (XDestroyWindowEvent*)&xev.xdestroywindow, 
-				      xev_funcs->user_data);
-	  break;
-	case ConfigureNotify:
-	  if (xev_funcs->configure_notify)
-	    xev_funcs->configure_notify(wm, 
-				      (XConfigureEvent*)&xev.xconfigure, 
-				      xev_funcs->user_data);
-	  break;
-	case ConfigureRequest:
-	  if (xev_funcs->configure_request)
-	    xev_funcs->configure_request(wm, 
-					 (XConfigureRequestEvent*)&xev.xconfigurerequest, 
-					 xev_funcs->user_data);
-	  break;
-	case KeyPress:
-	  if (xev_funcs->key_press)
-	    xev_funcs->key_press(wm, 
-				 (XKeyEvent*)&xev.xkey, 
-				 xev_funcs->user_data);
-	  break;
-	case PropertyNotify:
-	  if (xev_funcs->property_notify)
-	    xev_funcs->property_notify(wm, 
-				       (XPropertyEvent*)&xev.xproperty, 
-				       xev_funcs->user_data);
-
-	  break;
-	case ButtonPress:
-	  if (xev_funcs->button_press)
-	    xev_funcs->button_press(wm, 
-				    (XButtonEvent*)&xev.xbutton, 
-				    xev_funcs->user_data);
-	  break;
-	default:
-	  break;
-	}
-
-      if (wm->need_display_sync)
-	mb_wm_core_sync (wm);
+      mb_wm_handle_x_event (wm, &xev);
+ 
+     if (wm->need_display_sync)
+       mb_wm_core_sync (wm);
     }
 }
 
@@ -463,10 +412,10 @@ mb_wm_new(void)
 }
 
 void
-mb_wm_x_event_handler_userdata (MBWindowManager *wm,
-				void            *userdata)
+mb_wm_x_event_handler_set_userdata (MBWindowManager *wm,
+				    void            *userdata)
 {
-
+  wm->event_funcs->userdata = userdata;
 }
 
 
@@ -480,30 +429,45 @@ mb_wm_add_x_event_handler (MBWindowManager *wm,
     case Expose:
       break;
     case MapRequest:
-      /*
-      mb_wm_util_list_append (wm->event_funcs->map_request, 
-			      (void *)func);
-      */
-	break;
+      wm->event_funcs->map_request = 
+	mb_wm_util_list_append (wm->event_funcs->map_request, 
+				(MBWindowManagerMapRequestFunc)func);
+      break;
     case MapNotify:
-      /*
-      mb_wm_util_list_append (wm->event_funcs->map_notify, 
-			      (void *)func);
-      */
-	break;
+      wm->event_funcs->map_notify= 
+	mb_wm_util_list_append (wm->event_funcs->map_notify, 
+				(MBWindowManagerMapNotifyFunc)func);
+      break;
     case DestroyNotify:
-      
+      wm->event_funcs->destroy_notify = 
+	mb_wm_util_list_append (wm->event_funcs->destroy_notify, 
+				(MBWindowManagerDestroyNotifyFunc)func);
       break;
     case ConfigureNotify:
-      
+      wm->event_funcs->configure_notify = 
+	mb_wm_util_list_append (wm->event_funcs->configure_notify, 
+				(MBWindowManagerConfigureNotifyFunc)func);
       break;
     case ConfigureRequest:
-      
+      wm->event_funcs->configure_request = 
+	mb_wm_util_list_append (wm->event_funcs->configure_request, 
+				(MBWindowManagerConfigureRequestFunc)func);
       break;
     case KeyPress:
-      
+      wm->event_funcs->key_press =
+	mb_wm_util_list_append (wm->event_funcs->key_press, 
+				(MBWindowManagerKeyPressFunc)func);
       break;
     case PropertyNotify:
+      wm->event_funcs->property_notify = 
+	mb_wm_util_list_append (wm->event_funcs->property_notify, 
+				(MBWindowManagerPropertyNotifyFunc)func);
+      break;
+    case ButtonPress:
+      wm->event_funcs->button_press = 
+	mb_wm_util_list_append (wm->event_funcs->button_press, 
+				(MBWindowManagerButtonPressFunc)func);
+      break;
     default:
       break;
     }
@@ -514,7 +478,53 @@ mb_wm_remove_x_event_handler (MBWindowManager *wm,
 			      int              type,
 			      MBWMXEventFunc   func)
 {
-  /*  */
+  switch (type)
+    {
+    case Expose:
+      break;
+    case MapRequest:
+      wm->event_funcs->map_request = 
+	mb_wm_util_list_remove (wm->event_funcs->map_request, 
+				(MBWindowManagerMapRequestFunc)func);
+      break;
+    case MapNotify:
+      wm->event_funcs->map_notify= 
+	mb_wm_util_list_remove (wm->event_funcs->map_notify, 
+				(MBWindowManagerMapNotifyFunc)func);
+      break;
+    case DestroyNotify:
+      wm->event_funcs->destroy_notify = 
+	mb_wm_util_list_remove (wm->event_funcs->destroy_notify, 
+				(MBWindowManagerDestroyNotifyFunc)func);
+      break;
+    case ConfigureNotify:
+      wm->event_funcs->configure_notify = 
+	mb_wm_util_list_remove (wm->event_funcs->configure_notify, 
+				(MBWindowManagerConfigureNotifyFunc)func);
+      break;
+    case ConfigureRequest:
+      wm->event_funcs->configure_request = 
+	mb_wm_util_list_remove (wm->event_funcs->configure_request, 
+				(MBWindowManagerConfigureRequestFunc)func);
+      break;
+    case KeyPress:
+      wm->event_funcs->key_press =
+	mb_wm_util_list_remove (wm->event_funcs->key_press, 
+				(MBWindowManagerKeyPressFunc)func);
+      break;
+    case PropertyNotify:
+      wm->event_funcs->property_notify = 
+	mb_wm_util_list_remove (wm->event_funcs->property_notify, 
+				(MBWindowManagerPropertyNotifyFunc)func);
+      break;
+    case ButtonPress:
+      wm->event_funcs->button_press = 
+	mb_wm_util_list_remove (wm->event_funcs->button_press, 
+				(MBWindowManagerButtonPressFunc)func);
+      break;
+    default:
+      break;
+    }
 }
 
 void
@@ -524,10 +534,11 @@ mb_wm_add_timeout_handler (MBWindowManager *wm,
 
 }
 
-void
+static void
 mb_wm_handle_x_event (MBWindowManager *wm,
 		      XEvent          *xev)
 {
+  MBWindowManagerEventFuncs *xev_funcs = wm->event_funcs;
   MBWMList *iter;
 
   switch (xev->type)
@@ -535,19 +546,86 @@ mb_wm_handle_x_event (MBWindowManager *wm,
     case Expose:
       break;
     case MapRequest:
-      /*
       iter = wm->event_funcs->map_request;
 
-      while (iter 
-	     && ((MBWindowManagerMapRequestFunc)(iter->data))
-	     (wm, 
-	      (XMapRequestEvent*)&xev.xmaprequest, 
-	      xev_funcs->user_data))
-	iter = iter->next;
-      */
-	break;
-    }
+      while (iter) 
+	{
+	  ((MBWindowManagerMapRequestFunc)(iter->data))
+	    (wm, (XMapRequestEvent*)&xev->xmaprequest, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case MapNotify:
+      iter = wm->event_funcs->map_notify;
 
+      while (iter) 
+	{
+	  ((MBWindowManagerMapNotifyFunc)(iter->data))
+	    (wm, (XMapEvent*)&xev->xmap, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case DestroyNotify:
+      iter = wm->event_funcs->destroy_notify;
+
+      while (iter) 
+	{
+	  ((MBWindowManagerDestroyNotifyFunc)(iter->data))
+	    (wm, (XDestroyWindowEvent*)&xev->xdestroywindow, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case ConfigureNotify:
+      iter = wm->event_funcs->configure_notify;
+
+      while (iter) 
+	{
+	  ((MBWindowManagerConfigureNotifyFunc)(iter->data))
+	    (wm, (XConfigureEvent*)&xev->xconfigure, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case ConfigureRequest:
+      iter = wm->event_funcs->configure_request;
+
+      while (iter) 
+	{
+	  ((MBWindowManagerConfigureRequestFunc)(iter->data))
+	    (wm, (XConfigureRequestEvent*)&xev->xconfigurerequest, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case KeyPress:
+      iter = wm->event_funcs->key_press;
+
+      while (iter) 
+	{
+	  ((MBWindowManagerKeyPressFunc)(iter->data))
+	    (wm, (XKeyEvent*)&xev->xkey, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case PropertyNotify:
+      iter = wm->event_funcs->property_notify;
+
+      while (iter) 
+	{
+	  ((MBWindowManagerPropertyNotifyFunc)(iter->data))
+	    (wm, (XPropertyEvent*)&xev->xproperty, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    case ButtonPress:
+      iter = wm->event_funcs->button_press;
+
+      while (iter) 
+	{
+	  ((MBWindowManagerButtonPressFunc)(iter->data))
+	    (wm, (XButtonEvent*)&xev->xbutton, xev_funcs->userdata);
+	  iter = iter->next;
+	}
+      break;
+    }
 }
 
 Status
@@ -600,12 +678,19 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 
   wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
 
-  wm->event_funcs->map_request       = mb_wm_core_handle_map_request;
-  wm->event_funcs->configure_request = mb_wm_core_handle_config_request;
-  wm->event_funcs->property_notify = mb_wm_core_handle_property_notify;
+  mb_wm_add_x_event_handler (wm, MapRequest, 
+			     (MBWMXEventFunc)mb_wm_core_handle_map_request);
 
-  wm->event_funcs->destroy_notify = test_destroy_notify;
-  wm->event_funcs->key_press      = test_key_press;
+  mb_wm_add_x_event_handler (wm, ConfigureRequest, 
+			     (MBWMXEventFunc)mb_wm_core_handle_config_request);
+
+  mb_wm_add_x_event_handler (wm, PropertyNotify, 
+			     (MBWMXEventFunc)mb_wm_core_handle_property_notify);
+  mb_wm_add_x_event_handler (wm, DestroyNotify, 
+			     (MBWMXEventFunc)test_destroy_notify);
+
+  mb_wm_add_x_event_handler (wm, KeyPress, 
+			     (MBWMXEventFunc)test_key_press);
 
   mb_wm_atoms_init(wm);
 

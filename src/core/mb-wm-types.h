@@ -261,24 +261,9 @@ typedef void (*MBWindowManagerButtonPressFunc)
       void                    *userdata);
 
 
-typedef struct MBWindowManagerEventFuncs
-{
-  /* FIXME: figure our X wrap / unwrap mechanism */
-  MBWindowManagerMapNotifyFunc        map_notify;
-  MBWindowManagerMapRequestFunc       map_request;
-  MBWindowManagerDestroyNotifyFunc    destroy_notify;
-  MBWindowManagerConfigureRequestFunc configure_request;
-  MBWindowManagerConfigureNotifyFunc  configure_notify;
-  MBWindowManagerKeyPressFunc         key_press;
-  MBWindowManagerPropertyNotifyFunc   property_notify;
-  MBWindowManagerButtonPressFunc      button_press;
-  void                               *user_data;
-} 
-MBWindowManagerEventFuncs;
-
 /* New stuff  */
 
-typedef struct MBWindowManagerEventFuncsX
+typedef struct MBWindowManagerEventFuncs
 {
   /* FIXME: figure our X wrap / unwrap mechanism */
   MBWMList *map_notify;
@@ -290,9 +275,9 @@ typedef struct MBWindowManagerEventFuncsX
   MBWMList *property_notify;
   MBWMList *button_press;
 
-  void     *user_data;
+  void     *userdata;
 } 
-MBWindowManagerEventFuncsX;
+MBWindowManagerEventFuncs;
 
 
 /*********************/
