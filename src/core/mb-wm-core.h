@@ -31,7 +31,7 @@ void
 mb_wm_manage_preexistsing_wins (MBWindowManager* wm);
 
 void
-mb_wm_run(MBWindowManager *wm);
+mb_wm_main_loop(MBWindowManager *wm);
 
 MBWindowManagerClient*
 mb_wm_core_managed_client_from_xwindow(MBWindowManager *wm, Window win);

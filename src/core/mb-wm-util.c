@@ -15,7 +15,7 @@ error_handler(Display     *xdpy,
 void
 mb_wm_util_trap_x_errors(void)
 {
-  MBWM_DBG("### X Errors Trapped ###");
+  /* MBWM_DBG("### X Errors Trapped ###"); */
 
   TrappedErrorCode  = 0;
   old_error_handler = XSetErrorHandler(error_handler);
@@ -24,7 +24,7 @@ mb_wm_util_trap_x_errors(void)
 int
 mb_wm_util_untrap_x_errors(void)
 {
-  MBWM_DBG("### X Errors Untrapped (%i) ###", TrappedErrorCode);
+  /* MBWM_DBG("### X Errors Untrapped (%i) ###", TrappedErrorCode); */
 
   XSetErrorHandler(old_error_handler);
   return TrappedErrorCode;

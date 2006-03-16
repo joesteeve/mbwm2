@@ -53,6 +53,7 @@ typedef enum MBWMDecorType
 
 } MBWMDecorType;
 
+
 typedef void (*MBWMDecorResizedFunc) (MBWindowManager   *wm,
 				      MBWMDecor         *decor,
 				      void              *userdata);
@@ -91,35 +92,6 @@ struct MBWMDecor
 struct MBWMDecorClass
 {
   MBWMObjectClass        parent;
-};
-
-
-struct MBWMDecorButton
-{
-  MBWMObject                  parent;
-  MBWMDecor                  *decor;
-  Window                      xwin;
-
-  MBGeometry                  geom;
-
-  /* in priv ? */
-  Bool                        visible;
-
-  MBWMDecorButtonRepaintFunc  repaint;
-  MBWMDecorButtonPressedFunc  press;
-  MBWMDecorButtonReleasedFunc release;
-  void                       *userdata;
-};
-
-struct MBWMDecorButtonClass
-{
-  MBWMObjectClass   parent;
-
-  /* 
-     show;
-     hide;
-     realize;
-  */
 };
 
 
@@ -172,5 +144,64 @@ mb_wm_decor_ref (MBWMDecor *decor);
 
 void
 mb_wm_decor_init (MBWindowManager     *wm);
+
+
+typedef enum MBWMDecorButtonState 
+{
+  MBWMDecorButtonStateInactive = 0,
+  MBWMDecorButtonStatePressed
+
+} MBWMDecorButtonState ;
+
+struct MBWMDecorButton
+{
+  MBWMObject                  parent;
+  MBWMDecor                  *decor;
+  Window                      xwin;
+
+  MBGeometry                  geom;
+
+  /* in priv ? */
+  Bool                        visible;
+  Bool                        needs_sync;
+  MBWMDecorButtonState        state;
+
+  MBWMDecorButtonRepaintFunc  repaint;
+  MBWMDecorButtonPressedFunc  press;
+  MBWMDecorButtonReleasedFunc release;
+  void                       *userdata;
+};
+
+struct MBWMDecorButtonClass
+{
+  MBWMObjectClass   parent;
+
+  /* 
+     show;
+     hide;
+     realize; ??
+  */
+};
+
+void
+mb_wm_decor_button_show (MBWMDecorButton *button);
+
+void
+mb_wm_decor_button_hide (MBWMDecorButton *button);
+
+void
+mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y);
+
+MBWMDecorButton*
+mb_wm_decor_button_create (MBWindowManager            *wm,
+			   MBWMDecor                  *decor,
+			   int                         width,
+			   int                         height,
+			   MBWMDecorButtonPressedFunc  press,
+			   MBWMDecorButtonReleasedFunc release,
+			   MBWMDecorButtonRepaintFunc  paint,
+			   MBWMDecorButtonFlags        flags,
+			   void                       *userdata);
+
 
 #endif

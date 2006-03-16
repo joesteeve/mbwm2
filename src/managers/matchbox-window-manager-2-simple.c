@@ -92,7 +92,7 @@ main(int argc, char **argv)
 				    NULL,
 				    (void*)KEY_ACTION_PAGE_PREV);
 
-  mb_wm_run(wm);
+  mb_wm_main_loop(wm);
 
   return 1;
 }

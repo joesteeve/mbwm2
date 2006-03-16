@@ -215,53 +215,74 @@ typedef  void (*MBWindowManagerDestroyClientFunc)
 
 /* Event Callbacks */
 
-typedef void (*MBWMXEventFunc)
+typedef Bool (*MBWMXEventFunc)
      (MBWindowManager   *wm,
       void              *xev,
       void              *userdata);
 
-typedef void (*MBWindowManagerMapNotifyFunc) 
+typedef Bool (*MBWindowManagerMapNotifyFunc) 
      (MBWindowManager   *wm,
       XMapEvent         *xev,
       void              *userdata);
 
-typedef void (*MBWindowManagerMapRequestFunc) 
+typedef Bool (*MBWindowManagerMapRequestFunc) 
      (MBWindowManager   *wm,
       XMapRequestEvent  *xev,
       void              *userdata);
 
-typedef void (*MBWindowManagerDestroyNotifyFunc) 
+typedef Bool (*MBWindowManagerDestroyNotifyFunc) 
      (MBWindowManager      *wm,
       XDestroyWindowEvent  *xev,
       void                 *userdata);
 
-typedef void (*MBWindowManagerConfigureNotifyFunc) 
+typedef Bool (*MBWindowManagerConfigureNotifyFunc) 
      (MBWindowManager      *wm,
       XConfigureEvent      *xev,
       void                 *userdata);
 
-typedef void (*MBWindowManagerConfigureRequestFunc) 
+typedef Bool (*MBWindowManagerConfigureRequestFunc) 
      (MBWindowManager         *wm,
       XConfigureRequestEvent  *xev,
       void                    *userdata);
 
-typedef void (*MBWindowManagerKeyPressFunc) 
+typedef Bool (*MBWindowManagerKeyPressFunc) 
      (MBWindowManager         *wm,
       XKeyEvent               *xev,
       void                    *userdata);
 
-typedef void (*MBWindowManagerPropertyNotifyFunc) 
+typedef Bool (*MBWindowManagerPropertyNotifyFunc) 
      (MBWindowManager         *wm,
       XPropertyEvent          *xev,
       void                    *userdata);
 
-typedef void (*MBWindowManagerButtonPressFunc) 
+typedef Bool (*MBWindowManagerButtonPressFunc) 
      (MBWindowManager         *wm,
       XButtonEvent            *xev,
       void                    *userdata);
 
+typedef Bool (*MBWindowManagerButtonReleaseFunc) 
+     (MBWindowManager         *wm,
+      XButtonEvent            *xev,
+      void                    *userdata);
 
-/* New stuff  */
+typedef Bool (*MBWindowManagerTimeOutFunc) 
+     (MBWindowManager         *wm,
+      void                    *userdata);
+
+typedef struct MBWMXEventFuncInfo
+{
+  MBWMXEventFunc func;
+  void          *userdata;
+} 
+MBWMXEventFuncInfo;
+
+typedef struct MBWMTimeOutEventInfo
+{
+  int                        ms;
+
+  MBWindowManagerTimeOutFunc func;
+}
+MBWMTimeOutEventInfo;
 
 typedef struct MBWindowManagerEventFuncs
 {
@@ -274,8 +295,9 @@ typedef struct MBWindowManagerEventFuncs
   MBWMList *key_press;
   MBWMList *property_notify;
   MBWMList *button_press;
+  MBWMList *button_release;
 
-  void     *userdata;
+  MBWMList *timeout;
 } 
 MBWindowManagerEventFuncs;
 

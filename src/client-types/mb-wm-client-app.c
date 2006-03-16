@@ -2,6 +2,9 @@
 
 #include "mb-wm-theme.h"
 
+#define FRAME_TITLEBAR_HEIGHT 20
+#define FRAME_EDGE_SIZE 3
+
 static Bool
 mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBGeometry            *new_geometry,
@@ -69,10 +72,10 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
       
-      client->window->geometry.x = client->frame_geometry.x + 3;
-      client->window->geometry.y = client->frame_geometry.y + 20;
-      client->window->geometry.width  = client->frame_geometry.width - 6;
-      client->window->geometry.height = client->frame_geometry.height - 23;
+      client->window->geometry.x = client->frame_geometry.x + FRAME_EDGE_SIZE;
+      client->window->geometry.y = client->frame_geometry.y + FRAME_TITLEBAR_HEIGHT;
+      client->window->geometry.width  = client->frame_geometry.width - (2*FRAME_EDGE_SIZE);
+      client->window->geometry.height = client->frame_geometry.height - FRAME_EDGE_SIZE - FRAME_TITLEBAR_HEIGHT;
       
       mb_wm_client_geometry_mark_dirty (client);
 
@@ -85,7 +88,18 @@ decor_resize (MBWindowManager   *wm,
 	      MBWMDecor         *decor,
 	      void              *userdata)
 {
-  MBWM_DBG("mark");
+  const MBGeometry *geom;
+  MBWMDecorButton  *button;
+  MBWMClientApp    *client_app;
+  
+  client_app = (MBWMClientApp *)userdata; 
+
+  geom = mb_wm_decor_get_geometry (decor);
+
+  button = (MBWMDecorButton  *)decor->buttons->data;
+
+  mb_wm_decor_button_move_to (client_app->button_close, 
+			      geom->width - FRAME_TITLEBAR_HEIGHT -2 , 2);
 }
 
 static void
@@ -93,30 +107,33 @@ decor_repaint (MBWindowManager   *wm,
 	       MBWMDecor         *decor,
 	       void              *userdata)
 {
-  /*
-  if (mb_wm_decor_get_type(decor) != MBWMDecorTypeNorth)
-    return;
-  */
-
   mb_wm_theme_paint_decor (wm, decor); 
+}
 
-  /*
-  XSetWindowBackground(wm->xdpy, 
-		       mb_wm_decor_get_x_window (decor),
-		       WhitePixel(wm->xdpy, wm->xscreen));
-  */
+static void
+close_button_pressed (MBWindowManager   *wm,
+		      MBWMDecorButton   *button,
+		      void              *userdata)
+{
+  MBWindowManagerClient *client = (MBWindowManagerClient*)userdata;
+
+  XDestroyWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 }
 
 MBWindowManagerClient*
 mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
 {
   MBWindowManagerClient    *client;
+  MBWMClientApp            *client_app;
   MBWMDecor                *decor;
+  MBWMDecorButton          *button;
 
-  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_APP));
+  client_app = mb_wm_object_new (MB_WM_TYPE_CLIENT_APP);
 
-  if (!client)
+  if (!client_app)
     return NULL; 		/* FIXME: Handle out of memory */
+
+  client = MB_WM_CLIENT(client_app);
 
   client->window = win; 	
   client->wmref  = wm;
@@ -124,20 +141,38 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
 
+  /* Titlebar */
+
   decor = mb_wm_decor_create (wm, MBWMDecorTypeNorth, 
-			      decor_resize, decor_repaint, NULL);
+			      decor_resize, decor_repaint, client_app);
+
+  client_app->button_close 
+    = mb_wm_decor_button_create (wm,
+				 decor,
+				 FRAME_TITLEBAR_HEIGHT-2, 
+				 FRAME_TITLEBAR_HEIGHT-2,
+				 NULL,
+				 close_button_pressed,
+				 NULL,
+				 0,
+				 client);
+
+  mb_wm_decor_button_show (client_app->button_close);
+
+  /* Borders */
+
   mb_wm_decor_attach (decor, client);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeSouth, 
-			      decor_resize, decor_repaint, NULL);
+			      NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeEast, 
-			      decor_resize, decor_repaint, NULL);
+			      NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
   decor = mb_wm_decor_create (wm, MBWMDecorTypeWest, 
-			      decor_resize, decor_repaint, NULL);
+			      NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
   return client;
