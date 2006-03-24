@@ -341,6 +341,9 @@ void
 mb_wm_client_add_transient (MBWindowManagerClient *client,
 			    MBWindowManagerClient *transient)
 {
+  if (transient == NULL || client == NULL)
+    return;
+
   transient->transient_for = client;
   client->transients = mb_wm_util_list_append(client->transients, transient);
 }
@@ -349,6 +352,9 @@ void
 mb_wm_client_remove_transient (MBWindowManagerClient *client,
 			       MBWindowManagerClient *transient)
 {
+  if (transient == NULL || client == NULL)
+    return;
+
   transient->transient_for = NULL;
   client->transients = mb_wm_util_list_remove(client->transients, transient);
 }

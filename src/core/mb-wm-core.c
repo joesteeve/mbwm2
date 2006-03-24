@@ -207,10 +207,19 @@ stack_get_window_list (MBWindowManager *wm)
 
   win_list = malloc(sizeof(Window)*(wm->stack_n_clients));
 
+  MBWM_DBG("start");
+
   mb_wm_stack_enumerate_reverse(wm, client)
   {
-    win_list[i++] = client->xwin_frame;
+    if (client->xwin_frame)
+      win_list[i++] = client->xwin_frame;
+    else
+      win_list[i++] = MB_WM_CLIENT_XWIN(client);
+
+    MBWM_DBG("added %lx", win_list[i-1]);
   }
+
+  MBWM_DBG("end");
 
   return win_list;
 }
@@ -285,8 +294,9 @@ mb_wm_core_manage_client (MBWindowManager       *wm,
 
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
-  /* move to position in stack */
+  /* add to stack and move to position in stack */
 
+  mb_wm_stack_append_top (client);
   mb_wm_client_stack(client, 0);
 
   /* set flags to map - should this go elsewhere? */

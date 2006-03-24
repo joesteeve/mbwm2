@@ -138,7 +138,11 @@ mb_wm_client_base_stack (MBWindowManagerClient *client,
 {
   /* Stack to highest/lowest possible possition in stack */
 
-  mb_wm_stack_append_top (client);
+  mb_wm_stack_move_top(client);
+
+  mb_wm_util_list_foreach (mb_wm_client_get_transients (client),
+			   (MBWMListForEachCB)mb_wm_client_stack,
+			   (void*)flags);
 }
 
 static void
@@ -216,10 +220,14 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   if (mb_wm_client_needs_visibility_sync (client))
     {
+      MBWM_DBG("needs visibility sync");
+
       mb_wm_util_trap_x_errors();  
 
       if (mb_wm_client_is_mapped (client))
 	{
+	  MBWM_DBG("mapping...");
+
 	  if (client->xwin_frame)
 	    {
 	      XMapWindow(wm->xdpy, client->xwin_frame); 

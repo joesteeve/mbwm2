@@ -1,3 +1,19 @@
+2006-03-24  Matthew Allum  <mallum@openedhand.com>
+
+	* src/client-types/Makefile.am:
+	* src/client-types/mb-wm-client-dialog.c:
+	* src/client-types/mb-wm-client-dialog.h:
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_stack),
+	(mb_wm_client_base_display_sync):
+	* src/core/mb-wm-client.c: (mb_wm_client_add_transient),
+	(mb_wm_client_remove_transient):
+	* src/core/mb-wm-core.c: (stack_get_window_list),
+	(mb_wm_core_manage_client):
+	* src/core/mb-wm-layout.c: (mb_wm_layout_manager_update):
+	* src/managers/Makefile.am:
+	* src/managers/matchbox-window-manager-2-simple.c: (client_new):
+	Add ( broken ) dialog window support.
+	
 2006-03-16  Matthew Allum  <mallum@openedhand.com>
 
 	* src/core/mb-wm-core.c: (test_key_press), (test_destroy_notify),

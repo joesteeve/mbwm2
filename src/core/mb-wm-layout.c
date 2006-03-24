@@ -286,6 +286,14 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 	  }
       }
 
-  /* Dialogues too */
+  /* Dialogs too */
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefPositionFree|LayoutPrefVisible))
+      {
+
+
+
+      }
 }
 

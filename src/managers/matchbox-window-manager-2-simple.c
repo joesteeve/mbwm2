@@ -1,6 +1,7 @@
 #include "mb-wm.h"
 #include "mb-wm-client-app.h"
 #include "mb-wm-client-panel.h"
+#include "mb-wm-client-dialog.h"
 
 enum {
   KEY_ACTION_PAGE_NEXT,
@@ -16,6 +17,10 @@ client_new(MBWindowManager *wm, MBWMWindow *win)
     {
       printf("### is panel ###\n");
       return mb_wm_client_panel_new(wm, win);
+    }
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DIALOG])
+    {
+      return mb_wm_client_dialog_new(wm, win);
     }
   else
     {
