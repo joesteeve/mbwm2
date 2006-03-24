@@ -153,7 +153,6 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
           set min_x, max_y, min_y, max_y to current size
     repeat for next condition
 
-
     mb_wm_client_get_coverage (MBWindowManagerClient *client,
     MBGeometry            *coverage)
 
@@ -286,14 +285,5 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 	  }
       }
 
-  /* Dialogs too */
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefPositionFree|LayoutPrefVisible))
-      {
-
-
-
-      }
 }
 

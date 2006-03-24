@@ -365,6 +365,13 @@ mb_wm_client_get_transients (MBWindowManagerClient *client)
   return client->transients;
 }
 
+MBWindowManagerClient*
+mb_wm_client_get_transient_for (MBWindowManagerClient *client)
+{
+  return client->transient_for;
+}
+
+
 const char*
 mb_wm_client_get_name (MBWindowManagerClient *client)
 {

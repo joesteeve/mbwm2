@@ -25,7 +25,7 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   client = (MBWindowManagerClientClass *)klass;
 
-  /* client->geometry = mb_wm_client_dialog_request_geometry; */
+  client->geometry = mb_wm_client_dialog_request_geometry; 
   client->stack = mb_wm_client_dialog_stack;
 }
 
@@ -40,7 +40,6 @@ mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 void
 mb_wm_client_dialog_destroy (MBWMObject *this)
 {
-  MBWM_MARK();
   mb_wm_client_base_destroy(this);
 }
 
@@ -78,22 +77,24 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 				      MBGeometry            *new_geometry,
 				      MBWMClientReqGeomType  flags)
 {
-  if (flags & MBWMClientReqGeomIsViaLayoutManager)
+  if (client->window->geometry.x != new_geometry->x
+      || client->window->geometry.y != new_geometry->y
+      || client->window->geometry.width  != new_geometry->width
+      || client->window->geometry.height != new_geometry->height)
     {
       client->frame_geometry.x      = new_geometry->x;
       client->frame_geometry.y      = new_geometry->y;
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
-      
-      client->window->geometry.x = client->frame_geometry.x + FRAME_EDGE_SIZE;
-      client->window->geometry.y = client->frame_geometry.y + FRAME_TITLEBAR_HEIGHT;
-      client->window->geometry.width  = client->frame_geometry.width - (2*FRAME_EDGE_SIZE);
-      client->window->geometry.height = client->frame_geometry.height - FRAME_EDGE_SIZE - FRAME_TITLEBAR_HEIGHT;
-      
-      mb_wm_client_geometry_mark_dirty (client);
+      client->window->geometry.x = new_geometry->x;
+      client->window->geometry.y = new_geometry->y;
+      client->window->geometry.width  = new_geometry->width;
+      client->window->geometry.height = new_geometry->height;
 
-      return True; /* Geometry accepted */
+      mb_wm_client_geometry_mark_dirty (client);
     }
+
+  return True; /* Geometry accepted */
 }
 
 
@@ -127,6 +128,24 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
 				  
 				  client);
     }
+
+  /* center if window sets 0,0 */
+  if (client->window->geometry.x == 0 && client->window->geometry.y == 0)
+    {
+        MBGeometry  avail_geom;
+
+	mb_wm_get_display_geometry (wm, &avail_geom); 
+
+	client->window->geometry.x 
+	  = (avail_geom.width - client->window->geometry.width) / 2;
+	client->window->geometry.y 
+	  = (avail_geom.height - client->window->geometry.height) / 2;
+    }
+
+  client->frame_geometry.x      = client->window->geometry.x;
+  client->frame_geometry.y      = client->window->geometry.y;
+  client->frame_geometry.width  = client->window->geometry.width;
+  client->frame_geometry.height = client->window->geometry.height;
 
   return client;
 }

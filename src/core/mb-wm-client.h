@@ -260,6 +260,9 @@ mb_wm_client_remove_transient (MBWindowManagerClient *client,
 const MBWMList*
 mb_wm_client_get_transients (MBWindowManagerClient *client);
 
+MBWindowManagerClient*
+mb_wm_client_get_transient_for (MBWindowManagerClient *client);
+
 const char*
 mb_wm_client_get_name (MBWindowManagerClient *client);
 

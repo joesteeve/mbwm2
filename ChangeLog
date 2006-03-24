@@ -1,5 +1,17 @@
 2006-03-24  Matthew Allum  <mallum@openedhand.com>
 
+	* src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_class_init),
+	(mb_wm_client_dialog_request_geometry), (mb_wm_client_dialog_new):
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_realize),
+	(mb_wm_client_base_display_sync), (mb_wm_client_base_destroy):
+	* src/core/mb-wm-client.c: (mb_wm_client_get_transients):
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-layout.c: (mb_wm_layout_manager_update):
+	Dialog window support improved a tiny bit.
+
+2006-03-24  Matthew Allum  <mallum@openedhand.com>
+
 	* src/client-types/Makefile.am:
 	* src/client-types/mb-wm-client-dialog.c:
 	* src/client-types/mb-wm-client-dialog.h:

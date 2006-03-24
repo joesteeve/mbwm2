@@ -100,28 +100,29 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   
   /* This should probably be called via rather than on new clien sync() ...? */
 
-  client->xwin_frame 
-    = XCreateWindow(wm->xdpy, wm->xwin_root, 
-		    client->frame_geometry.x,
-		    client->frame_geometry.y,
-		    client->frame_geometry.width,
-		    client->frame_geometry.height,
-		    0,
-		    CopyFromParent, 
-		    CopyFromParent, 
-		    CopyFromParent,
-		    CWOverrideRedirect|CWEventMask|CWBackPixel,
-		    &attr);
-
-  XClearWindow(wm->xdpy, client->xwin_frame);
-
-  /* Assume geomerty sync will fix this up correctly togeather with
-   * any decoration creation. Layout manager will call this
-  */
-  XReparentWindow(wm->xdpy, 
-		  MB_WM_CLIENT_XWIN(client), 
-		  client->xwin_frame, 
-		  0, 0);
+  if (client->xwin_frame == None)
+    {
+      client->xwin_frame 
+	= XCreateWindow(wm->xdpy, wm->xwin_root, 
+			client->frame_geometry.x,
+			client->frame_geometry.y,
+			client->frame_geometry.width,
+			client->frame_geometry.height,
+			0,
+			CopyFromParent, 
+			CopyFromParent, 
+			CopyFromParent,
+			CWOverrideRedirect|CWEventMask|CWBackPixel,
+			&attr);
+      
+      /* Assume geomerty sync will fix this up correctly togeather with
+       * any decoration creation. Layout manager will call this
+       */
+      XReparentWindow(wm->xdpy, 
+		      MB_WM_CLIENT_XWIN(client), 
+		      client->xwin_frame, 
+		      0, 0);
+    }
 
   XSetWindowBorderWidth(wm->xdpy, MB_WM_CLIENT_XWIN(client), 0);
 
@@ -226,15 +227,16 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       if (mb_wm_client_is_mapped (client))
 	{
-	  MBWM_DBG("mapping...");
-
 	  if (client->xwin_frame)
 	    {
 	      XMapWindow(wm->xdpy, client->xwin_frame); 
 	      XMapSubwindows(wm->xdpy, client->xwin_frame);
 	    }
 	  else
-	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+	    {
+	      MBWM_DBG("mapping...");
+	      XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+	    }
 
 	  mb_wm_window_change_property (wm,
 					client->window,
@@ -273,6 +275,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 void
 mb_wm_client_base_destroy (MBWMObject *this)
 {
+  MBWindowManagerClient *parent;
   MBWindowManagerClient *client;
   MBWindowManager *wm;
 
@@ -288,6 +291,11 @@ mb_wm_client_base_destroy (MBWMObject *this)
 
   XSync(wm->xdpy, False);
   mb_wm_util_untrap_x_errors();  
+  
+  parent = mb_wm_client_get_transient_for (MB_WM_CLIENT(this));
+
+  if (parent)
+    mb_wm_client_remove_transient (parent, MB_WM_CLIENT(this));
 
   mb_wm_client_destroy (this);
 }
