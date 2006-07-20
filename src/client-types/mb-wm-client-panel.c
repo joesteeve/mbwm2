@@ -13,8 +13,6 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
 
-  mb_wm_client_base_class_init (klass); 
-
   client = (MBWindowManagerClientClass *)klass;
 
   client->realize  = mb_wm_client_panel_realize;
@@ -48,7 +46,7 @@ mb_wm_client_panel_class_type ()
 	mb_wm_client_panel_class_init
       };
 
-      type = mb_wm_object_register_class (&info);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE);
     }
 
   return type;

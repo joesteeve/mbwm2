@@ -46,6 +46,8 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
 
+  MBWM_MARK();
+
   client = (MBWindowManagerClientClass *)klass;
 
   client->realize  = mb_wm_client_base_realize;
@@ -54,6 +56,8 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass)
   client->show     = mb_wm_client_base_show;
   client->hide     = mb_wm_client_base_hide;
   client->sync     = mb_wm_client_base_display_sync;
+
+  MBWM_DBG("client->stack is %p", client->stack);
 }
 
 void
@@ -77,7 +81,7 @@ mb_wm_client_base_class_type ()
 	mb_wm_client_base_class_init
       };
 
-      type = mb_wm_object_register_class (&info);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT);
     }
 
   return type;

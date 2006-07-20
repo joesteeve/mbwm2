@@ -21,8 +21,6 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   MBWM_MARK();
 
-  mb_wm_client_base_class_init (klass); 
-
   client = (MBWindowManagerClientClass *)klass;
 
   client->geometry = mb_wm_client_dialog_request_geometry; 
@@ -66,7 +64,7 @@ mb_wm_client_dialog_class_type ()
 	mb_wm_client_dialog_class_init
       };
 
-      type = mb_wm_object_register_class (&info);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE);
     }
 
   return type;
@@ -106,7 +104,8 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
   MBWMDecor                *decor;
   MBWMDecorButton          *button;
 
-  client_dialog = MB_WM_CLIENT_DIALOG(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG));
+  client_dialog 
+    = MB_WM_CLIENT_DIALOG(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG));
 
   if (!client_dialog)
     return NULL; 		/* FIXME: Handle out of memory */
@@ -123,10 +122,10 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
       && win->xwin_transient_for != win->xwindow
       && win->xwin_transient_for != wm->xwin_root)
     {
-      mb_wm_client_add_transient (mb_wm_core_managed_client_from_xwindow (wm, 
-									  win->xwin_transient_for),
-				  
-				  client);
+      mb_wm_client_add_transient 
+	(mb_wm_core_managed_client_from_xwindow (wm, 
+						 win->xwin_transient_for),
+	 client);
     }
 
   /* center if window sets 0,0 */

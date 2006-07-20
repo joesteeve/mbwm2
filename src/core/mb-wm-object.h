@@ -27,6 +27,7 @@ typedef struct MBWMObjectClass MBWMObjectClass;
 typedef void (*MBWMObjFunc)   (MBWMObject* obj);
 typedef void (*MBWMClassFunc) (MBWMObjectClass* klass);
 
+#define MB_WM_TYPE_OBJECT 0
 #define MB_WM_OBJECT(x) ((MBWMObject*)(x))
 #define MB_WM_OBJECT_CLASS(x) ((MBWMObjectClass*)(x))
 #define MB_WM_OBJECT_TYPE(x) (((MBWMObject*)(x))->klass->type)
@@ -37,16 +38,17 @@ typedef struct MBWMObjectClassInfo
   size_t              instance_size;
   MBWMObjFunc         instance_init;
   MBWMObjFunc         instance_destroy;
-  MBWMClassFunc       klass_init;
+  MBWMClassFunc       class_init;
 }
 MBWMObjectClassInfo;
 
 struct MBWMObjectClass
 {
   int              type;
-
+  MBWMObjectClass *parent;
   MBWMObjFunc      init;
   MBWMObjFunc      destroy;
+  MBWMClassFunc    class_init;
 };
 
 struct MBWMObject
@@ -59,7 +61,7 @@ void
 mb_wm_object_init(void);
 
 int
-mb_wm_object_register_class (MBWMObjectClassInfo *info);
+mb_wm_object_register_class (MBWMObjectClassInfo *info, int parent_type);
 
 void
 mb_wm_object_ref (MBWMObject *this);

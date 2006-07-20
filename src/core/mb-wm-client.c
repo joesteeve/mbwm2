@@ -58,7 +58,7 @@ mb_wm_client_class_type ()
 	NULL
       };
 
-      type = mb_wm_object_register_class (&info);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT);
     }
 
   return type;

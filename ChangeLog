@@ -1,3 +1,17 @@
+2006-07-20  Matthew Allum  <mallum@openedhand.com>
+
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-dialog.c:
+	* src/client-types/mb-wm-client-panel.c:
+	* src/core/mb-wm-client-base.c:
+	* src/core/mb-wm-client-base.h:
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-decor.c:
+	* src/core/mb-wm-object.c:
+	* src/core/mb-wm-object.h:
+	Improve simple object system as to initiate parent classes
+	on derived classes/objects. 
+
 2006-03-24  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/mb-wm-client-dialog.c:

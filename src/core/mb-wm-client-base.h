@@ -21,6 +21,9 @@
 #ifndef _HAVE_MB_WM_CLIENT_BASE_H
 #define _HAVE_MB_WM_CLIENT_BASE_H
 
+#define MB_WM_CLIENT_BASE(c) ((MBWMClientBase*)(c)) 
+#define MB_WM_CLIENT_BASE_CLASS(c) ((MBWMClientBaseClass*)(c)) 
+#define MB_WM_TYPE_CLIENT_BASE (mb_wm_client_base_class_type ())
 
 typedef struct MBWMClientBase
 {

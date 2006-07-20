@@ -17,9 +17,9 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 
   MBWM_MARK();
 
-  mb_wm_client_base_class_init (klass); 
-
   client = (MBWindowManagerClientClass *)klass;
+
+  MBWM_DBG("client->stack is %p", client->stack);
 
   client->geometry = mb_wm_client_app_request_geometry; 
 }
@@ -53,8 +53,7 @@ mb_wm_client_app_class_type ()
 	mb_wm_client_app_destroy,
 	mb_wm_client_app_class_init
       };
-
-      type = mb_wm_object_register_class (&info);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE);
     }
 
   return type;
@@ -72,10 +71,15 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
       
-      client->window->geometry.x = client->frame_geometry.x + FRAME_EDGE_SIZE;
-      client->window->geometry.y = client->frame_geometry.y + FRAME_TITLEBAR_HEIGHT;
-      client->window->geometry.width  = client->frame_geometry.width - (2*FRAME_EDGE_SIZE);
-      client->window->geometry.height = client->frame_geometry.height - FRAME_EDGE_SIZE - FRAME_TITLEBAR_HEIGHT;
+      client->window->geometry.x 
+	= client->frame_geometry.x + FRAME_EDGE_SIZE;
+      client->window->geometry.y 
+	= client->frame_geometry.y + FRAME_TITLEBAR_HEIGHT;
+      client->window->geometry.width  
+	= client->frame_geometry.width - (2*FRAME_EDGE_SIZE);
+      client->window->geometry.height 
+	= client->frame_geometry.height 
+            - FRAME_EDGE_SIZE - FRAME_TITLEBAR_HEIGHT;
       
       mb_wm_client_geometry_mark_dirty (client);
 

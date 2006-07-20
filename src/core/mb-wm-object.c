@@ -34,7 +34,9 @@ mb_wm_object_init(void)
 }
 
 int
-mb_wm_object_register_class (MBWMObjectClassInfo *info)
+mb_wm_object_register_class (MBWMObjectClassInfo *info, 
+			     int                  parent_type,
+			     int                  flags)
 {
   MBWMObjectClass *klass;
 
@@ -44,15 +46,16 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info)
 
   ObjectClassesInfo[NObjectClasses] = info; 
   
-  klass          = mb_wm_util_malloc0(info->klass_size);
-  klass->init    = info->instance_init;
-  klass->destroy = info->instance_destroy;
-  klass->type    = NObjectClasses + 1;
+  klass             = mb_wm_util_malloc0(info->klass_size);
+  klass->init       = info->instance_init;
+  klass->destroy    = info->instance_destroy;
+  klass->class_init = info->class_init;  
+  klass->type       = NObjectClasses + 1;
+
+  if (parent_type != 0)
+    klass->parent = ObjectClasses[parent_type-1];
 
   ObjectClasses[NObjectClasses] = klass;
-
-  if (info->klass_init)
-    info->klass_init (klass);
 
   return 1 + NObjectClasses++;
 }
@@ -75,6 +78,38 @@ mb_wm_object_unref (MBWMObject *this)
     }
 }
 
+static void
+mb_wm_object_class_init_recurse (MBWMObjectClass *klass, 
+				 MBWMObjectClass *parent)
+{
+  if (parent->parent)
+    mb_wm_object_class_init_recurse (klass, parent->parent);
+
+  if (parent->class_init)
+    parent->class_init (klass);
+}
+
+static void
+mb_wm_object_class_init (MBWMObjectClass *klass)
+{
+  if (klass->parent)
+    mb_wm_object_class_init_recurse (klass, klass->parent);
+  
+  if (klass->class_init)
+    klass->class_init (klass);
+}
+
+static void
+mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent)
+{
+  if (parent->parent)
+    mb_wm_object_init_recurse (obj, parent->parent);
+
+  if (parent->init)
+    parent->init (obj);
+}
+
+
 MBWMObject*
 mb_wm_object_new (int type) 
 {
@@ -87,11 +122,13 @@ mb_wm_object_new (int type)
 
   obj->klass = MB_WM_OBJECT_CLASS(ObjectClasses[type-1]);
 
+  mb_wm_object_class_init (obj->klass);
+
+  if (obj->klass->parent)
+    mb_wm_object_init_recurse (obj, obj->klass->parent);
+
   if (obj->klass->init)
-    {
-      MBWM_DBG("calling class init");
-      obj->klass->init(obj);
-    }
+    obj->klass->init(obj);
 
   mb_wm_object_ref (obj);
 
