@@ -81,7 +81,7 @@ mb_wm_client_base_class_type ()
 	mb_wm_client_base_class_init
       };
 
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT, 0);
     }
 
   return type;
@@ -126,6 +126,8 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 		      MB_WM_CLIENT_XWIN(client), 
 		      client->xwin_frame, 
 		      0, 0);
+      /* The reparent causes an unmap we'll want to ignore */
+      client->skip_unmaps++;
     }
 
   XSetWindowBorderWidth(wm->xdpy, MB_WM_CLIENT_XWIN(client), 0);
@@ -145,9 +147,9 @@ mb_wm_client_base_stack (MBWindowManagerClient *client,
 
   mb_wm_stack_move_top(client);
 
-  mb_wm_util_list_foreach (mb_wm_client_get_transients (client),
-			   (MBWMListForEachCB)mb_wm_client_stack,
-			   (void*)flags);
+  mb_wm_util_list_foreach ( mb_wm_client_get_transients (client),
+			    (MBWMListForEachCB)mb_wm_client_stack,
+			    (void*)flags);
 }
 
 static void
@@ -353,5 +355,7 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 
 void base_foo(void)
 {
-  ; /* nasty hack to workaround linking issues WTF... */
+  ; /* nasty hack to workaround linking issues WTF... 
+     * use .la's rather than .a's ??
+    */
 }

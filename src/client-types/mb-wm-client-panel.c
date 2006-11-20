@@ -46,7 +46,7 @@ mb_wm_client_panel_class_type ()
 	mb_wm_client_panel_class_init
       };
 
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE, 0);
     }
 
   return type;
@@ -93,6 +93,7 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win)
 
   client->window = win; 	
   client->wmref  = wm;
+  client->stacking_layer = MBWMStackLayerBottomMid;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefReserveEdgeSouth|LayoutPrefVisible);

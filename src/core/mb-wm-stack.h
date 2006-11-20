@@ -50,6 +50,9 @@
  (w)->stack_n_items
 
 void
+mb_wm_stack_ensure (MBWindowManager *wm);
+
+void
 mb_wm_stack_insert_above_client (MBWindowManagerClient *client, 
 				 MBWindowManagerClient *client_below);
 
@@ -83,5 +86,8 @@ mb_wm_stack_get_lowest_by_type(MBWindowManager *w, int wanted_type);
 
 void
 mb_wm_stack_remove (MBWindowManagerClient *client);
+
+void
+mb_wm_stack_dump (MBWindowManager *wm);
 
 #endif

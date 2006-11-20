@@ -20,6 +20,7 @@ client_new(MBWindowManager *wm, MBWMWindow *win)
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DIALOG])
     {
+      printf("### is dialog ###\n");
       return mb_wm_client_dialog_new(wm, win);
     }
   else

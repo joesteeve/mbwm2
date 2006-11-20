@@ -230,6 +230,11 @@ typedef Bool (*MBWindowManagerMapRequestFunc)
       XMapRequestEvent  *xev,
       void              *userdata);
 
+typedef Bool (*MBWindowManagerUnmapNotifyFunc)
+     (MBWindowManager   *wm,
+      XUnmapEvent       *xev,
+      void              *userdata);
+
 typedef Bool (*MBWindowManagerDestroyNotifyFunc) 
      (MBWindowManager      *wm,
       XDestroyWindowEvent  *xev,
@@ -288,6 +293,7 @@ typedef struct MBWindowManagerEventFuncs
 {
   /* FIXME: figure our X wrap / unwrap mechanism */
   MBWMList *map_notify;
+  MBWMList *unmap_notify;
   MBWMList *map_request;
   MBWMList *destroy_notify;
   MBWMList *configure_request;

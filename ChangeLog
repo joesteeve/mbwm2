@@ -1,3 +1,25 @@
+2006-11-20  Matthew Allum  <mallum@openedhand.com>
+
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-dialog.c:
+	* src/client-types/mb-wm-client-dialog.h:
+	* src/client-types/mb-wm-client-panel.c:
+	* src/core/mb-wm-client-base.c: (mb_wm_client_base_class_type),
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c:
+	* src/core/mb-wm-decor.c:
+	* src/core/mb-wm-object.h:
+	* src/core/mb-wm-stack.c:
+	* src/core/mb-wm-stack.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-util.c:
+	* src/core/mb-wm-util.h:
+	* src/core/mb-wm-window.h:
+	* src/managers/matchbox-window-manager-2-simple.c:
+	Redo stacking mechanism.
+	Various other tweaks all over.
+
 2006-07-20  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/mb-wm-client-app.c:

@@ -93,7 +93,7 @@ MBWMList*
 mb_wm_util_list_append(MBWMList *list, void *data);
 
 void
-mb_wm_util_list_foreach(MBWMList *list, MBWMListForEachCB func, void *userdata);
+mb_wm_util_list_foreach (const MBWMList *list, MBWMListForEachCB func, void *userdata);
 
 #endif
 

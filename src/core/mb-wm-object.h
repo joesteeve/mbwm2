@@ -61,7 +61,9 @@ void
 mb_wm_object_init(void);
 
 int
-mb_wm_object_register_class (MBWMObjectClassInfo *info, int parent_type);
+mb_wm_object_register_class (MBWMObjectClassInfo *info, 
+			     int                  parent_type,
+			     int                  flags);
 
 void
 mb_wm_object_ref (MBWMObject *this);

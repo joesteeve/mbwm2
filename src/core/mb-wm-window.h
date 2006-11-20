@@ -21,6 +21,13 @@
 #ifndef _HAVE_MB_WM_WINDOW_H
 #define _HAVE_MB_WM_WINDOW_H
 
+/* FIXME: below limits to 32 props */
+
+/* When a property changes  
+ *    - window updates its internal values
+ *    - somehow signals client object to process with what changed.
+ */
+
 #define MBWM_WINDOW_PROP_WIN_TYPE   (1<<1)
 #define MBWM_WINDOW_PROP_GEOMETRY   (1<<2)
 #define MBWM_WINDOW_PROP_ATTR       (1<<3)

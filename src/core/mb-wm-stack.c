@@ -20,6 +20,101 @@
 
 #include "mb-wm.h"
 
+
+static void
+mb_wm_stack_ensure_trans_foreach (MBWindowManagerClient *client, void *data)
+{
+  mb_wm_stack_move_top (client);
+
+  mb_wm_util_list_foreach 
+    (mb_wm_client_get_transients (client),
+     (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach,
+     NULL);
+}
+
+void
+mb_wm_stack_dump (MBWindowManager *wm)
+{
+#if (MBWM_WANT_DEBUG)
+  MBWindowManagerClient *client;
+
+  fprintf(stderr, "\n==== window stack =====\n");
+
+  mb_wm_stack_enumerate_reverse (wm, client)
+    {
+      fprintf(stderr, "XID: %lx NAME: %s\n",
+	      MB_WM_CLIENT_XWIN(client),
+	      client->window->name ? client->window->name : "unknown" );
+    }
+
+  fprintf(stderr, "======================\n\n");
+#endif
+}
+
+void
+mb_wm_stack_ensure (MBWindowManager *wm)
+{
+  MBWindowManagerClient *client, *seen, *next;
+  int                    i;
+
+  if (wm->stack_bottom == NULL)
+    return;
+
+  /* Ensure the window stack is corrent;
+   *  - with respect to client layer types
+   *  - transients are stacked within these layers also
+   *
+   * We need to be careful here as we modify stacking list
+   * in place while enumerating it.
+   *
+   * FIXME: This isn't optimal
+  */
+
+  /* bottom -> top on layer types */
+  for (i=1; i<N_MBWMStackLayerTypes; i++)
+    {
+      /* Push each layer type to top, handling transients */
+      client = wm->stack_bottom;
+      seen   = NULL;
+
+      while (client != seen && client != NULL)
+	{
+	  /* get the next valid client ( ignore transients ) before 
+	   * modifying the list  
+	  */
+	  next = client->stacked_above;
+
+	  while (next && mb_wm_client_get_transient_for (next))
+	    next = next->stacked_above;
+
+	  if (client->stacking_layer == i 
+	      && mb_wm_client_get_transient_for (client) == NULL)
+	    {
+	      /* Keep track of the first client modified so we 
+               * know when to stop iterating.
+	      */
+	      if (seen == NULL)
+		seen = client;
+
+	      mb_wm_stack_move_top (client);
+	      
+	      /* push transients to the top also */
+	      mb_wm_util_list_foreach 
+		(mb_wm_client_get_transients (client),
+		 (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach,
+		 NULL);
+	    }
+	  client = next;
+	}
+    }
+
+  /* TODO: add a call here into clients stack method so they can overide
+   *       these rules and do specific tweaks - i.e a dialog transient to
+   *       a panel may want to be on a different layer.
+   */
+  mb_wm_stack_dump (wm);
+}
+
 void
 mb_wm_stack_insert_above_client (MBWindowManagerClient *client, 
 				 MBWindowManagerClient *client_below)
@@ -53,18 +148,6 @@ mb_wm_stack_insert_above_client (MBWindowManagerClient *client,
   wm->stack_n_clients++;
 }
 
-void 				/* fixme */
-mb_wm_client_stack_via_hints (MBWindowManagerClient *client)
-{
-  MBWindowManager *wm = client->wmref;
-
-  if (client->stacking_hints & StackPrefAlwaysOnBottom)
-    {
-
-    }
-  
-
-}
 
 void 
 mb_wm_stack_append_top (MBWindowManagerClient *client)
@@ -166,8 +249,10 @@ mb_wm_stack_remove (MBWindowManagerClient *client)
       if (client == wm->stack_bottom)
 	wm->stack_bottom = client->stacked_above;
 
-      if (client->stacked_below != NULL) client->stacked_below->stacked_above = client->stacked_above;
-      if (client->stacked_above != NULL) client->stacked_above->stacked_below = client->stacked_below;
+      if (client->stacked_below != NULL) 
+	client->stacked_below->stacked_above = client->stacked_above;
+      if (client->stacked_above != NULL) 
+	client->stacked_above->stacked_below = client->stacked_below;
     }
 
   client->stacked_above = client->stacked_below = NULL;

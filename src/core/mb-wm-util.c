@@ -194,11 +194,15 @@ mb_wm_util_list_remove(MBWMList *list, void *data)
 }
 
 void
-mb_wm_util_list_foreach(MBWMList *list, MBWMListForEachCB func, void *userdata)
+mb_wm_util_list_foreach (const MBWMList   *list, 
+			 MBWMListForEachCB func, 
+			 void             *userdata)
 {
-  while (list)
+  MBWMList *p = list;
+
+  while (p)
     {
-      func(list->data, userdata);
-      list = mb_wm_util_list_next(list);
+      func(p->data, userdata);
+      p = mb_wm_util_list_next(p);
     }
 }

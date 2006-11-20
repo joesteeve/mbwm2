@@ -42,7 +42,7 @@ struct MBWMClientDialogClass
 };
 
 MBWindowManagerClient*
-mb_wm_client_dialog_new(MBWindowManager *wm, MBWMWindow *win);
+mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win);
 
 int
 mb_wm_client_dialog_class_type ();

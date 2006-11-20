@@ -64,7 +64,7 @@ mb_wm_client_dialog_class_type ()
 	mb_wm_client_dialog_class_init
       };
 
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE, 0);
     }
 
   return type;
@@ -80,12 +80,12 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
       || client->window->geometry.width  != new_geometry->width
       || client->window->geometry.height != new_geometry->height)
     {
-      client->frame_geometry.x      = new_geometry->x;
-      client->frame_geometry.y      = new_geometry->y;
-      client->frame_geometry.width  = new_geometry->width;
-      client->frame_geometry.height = new_geometry->height;
-      client->window->geometry.x = new_geometry->x;
-      client->window->geometry.y = new_geometry->y;
+      client->frame_geometry.x        = new_geometry->x;
+      client->frame_geometry.y        = new_geometry->y;
+      client->frame_geometry.width    = new_geometry->width;
+      client->frame_geometry.height   = new_geometry->height;
+      client->window->geometry.x      = new_geometry->x;
+      client->window->geometry.y      = new_geometry->y;
       client->window->geometry.width  = new_geometry->width;
       client->window->geometry.height = new_geometry->height;
 
@@ -112,8 +112,9 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
 
   client = MB_WM_CLIENT(client_dialog);
 
-  client->window = win; 	
-  client->wmref  = wm;
+  client->window        = win; 	
+  client->wmref         = wm;
+
 
   mb_wm_client_set_layout_hints (client, 
 				 LayoutPrefPositionFree|LayoutPrefVisible);
@@ -122,10 +123,18 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
       && win->xwin_transient_for != win->xwindow
       && win->xwin_transient_for != wm->xwin_root)
     {
+      MBWM_DBG ("Adding to '%lx' transient list", 
+		win->xwin_transient_for);
       mb_wm_client_add_transient 
 	(mb_wm_core_managed_client_from_xwindow (wm, 
 						 win->xwin_transient_for),
 	 client);
+      client->stacking_layer = 0;  /* We stack with whatever transient too */
+    }
+  else
+    {
+      /* Stack with 'always on top' */
+      client->stacking_layer = MBWMStackLayerTopMid; 
     }
 
   /* center if window sets 0,0 */

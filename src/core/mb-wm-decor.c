@@ -41,7 +41,7 @@ mb_wm_decor_class_type ()
 	NULL
       };
 
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
     }
 
   return type;
@@ -347,7 +347,7 @@ mb_wm_decor_button_class_type ()
 	NULL
       };
 
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
     }
 
   return type;

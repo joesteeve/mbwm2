@@ -79,6 +79,33 @@ test_destroy_notify (MBWindowManager      *wm,
   return True;
 }
 
+Bool
+test_unmap_notify (MBWindowManager      *wm,
+		   XUnmapEvent          *xev,
+		   void                 *userdata)
+{
+  MBWindowManagerClient *client = NULL;
+
+  MBWM_MARK();
+
+  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+
+  if (client)
+    {
+      if (client->skip_unmaps)
+	{
+	  client->skip_unmaps--;
+	}
+      else
+	{
+	  mb_wm_core_unmanage_client (wm, client);
+	  mb_wm_object_unref (MB_WM_OBJECT(client));
+	}
+    }
+
+  return True;
+}
+
 static Bool
 mb_wm_core_handle_property_notify (MBWindowManager         *wm,
 				   XPropertyEvent          *xev,
@@ -205,6 +232,7 @@ stack_get_window_list (MBWindowManager *wm)
 
   if (!wm->stack_n_clients) return NULL;
 
+  /* FIXME: avoid mallocing all the time - cache the memory */
   win_list = malloc(sizeof(Window)*(wm->stack_n_clients));
 
   MBWM_DBG("start");
@@ -229,17 +257,17 @@ stack_sync_to_display (MBWindowManager *wm)
 {
   Window *win_list = NULL;
 
+  mb_wm_stack_ensure (wm);
+
   win_list = stack_get_window_list(wm);
   
   if (win_list)
     {
       mb_wm_util_trap_x_errors();
-
       XRestackWindows(wm->xdpy, win_list, wm->stack_n_clients);
+      mb_wm_util_untrap_x_errors();
 
       free(win_list);
-
-      mb_wm_util_untrap_x_errors();
     }
 }
 
@@ -441,6 +469,10 @@ mb_wm_x_event_handler_add (MBWindowManager *wm,
       wm->event_funcs->map_notify= 
 	mb_wm_util_list_append (wm->event_funcs->map_notify, func_info);
       break;
+    case UnmapNotify:
+      wm->event_funcs->unmap_notify= 
+	mb_wm_util_list_append (wm->event_funcs->unmap_notify, func_info);
+      break;
     case DestroyNotify:
       wm->event_funcs->destroy_notify = 
 	mb_wm_util_list_append (wm->event_funcs->destroy_notify, func_info);
@@ -495,6 +527,11 @@ mb_wm_x_event_handler_remove (MBWindowManager *wm,
       wm->event_funcs->map_notify= 
 	mb_wm_util_list_remove (wm->event_funcs->map_notify, 
 				(MBWindowManagerMapNotifyFunc)func);
+      break;
+    case UnmapNotify:
+      wm->event_funcs->unmap_notify= 
+	mb_wm_util_list_remove (wm->event_funcs->unmap_notify, 
+				(MBWindowManagerUnmapNotifyFunc)func);
       break;
     case DestroyNotify:
       wm->event_funcs->destroy_notify = 
@@ -613,6 +650,15 @@ mb_wm_handle_x_event (MBWindowManager *wm,
       while (iter &&
 	     ((MBWindowManagerMapNotifyFunc)XE_ITER_GET_FUNC(iter))
 	     (wm, (XMapEvent*)&xev->xmap, XE_ITER_GET_DATA(iter)))
+	iter = iter->next;
+
+      break;
+    case UnmapNotify:
+      iter = wm->event_funcs->unmap_notify;
+
+      while (iter &&
+	     ((MBWindowManagerUnmapNotifyFunc)XE_ITER_GET_FUNC(iter))
+	     (wm, (XUnmapEvent*)&xev->xunmap, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -744,6 +790,10 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 
   mb_wm_x_event_handler_add (wm, DestroyNotify, 
 			     (MBWMXEventFunc)test_destroy_notify,
+			     NULL);
+
+  mb_wm_x_event_handler_add (wm, UnmapNotify, 
+			     (MBWMXEventFunc)test_unmap_notify,
 			     NULL);
 
   mb_wm_x_event_handler_add (wm, KeyPress, 

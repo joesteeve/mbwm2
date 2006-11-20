@@ -30,40 +30,24 @@ typedef void (*MBWindowManagerClientInitMethod) (MBWindowManagerClient *client);
 
 typedef unsigned int MBWMClientType;
 
-
-typedef enum MBWMClientStackFlags
-  {
-    MBWMClientStackFlagAbove,
-    MBWMClientStackFlagBelow,
-  }
-MBWMClientStackFlags;
-
-typedef enum MBWMClientStackHints
-  {
-
-    StackPrefAlwaysOnBottom = (1<<1),
-    StackPrefAlwaysOnTop,
-    StackPrefAlwaysAboveType,
-    StackPrefAlwaysAboveTransient, 
-    StackPrefAlwaysBelowType, 
-    StackPrefAlwaysBelowClient,
-
-    StackPrefPagable  		/* FIXME: Possible ? */
-  } 
-MBWMClientStackHints;
-
-typedef struct MBWMClientStackHintValues
+/* Clients hint to what stacking layer they exist in. By default all
+ * transients to that client will also be stacked there.
+ */
+typedef enum MBWMStackLayerType
 {
-  MBWMClientType *below_types;
-  int             n_below_types;
-
-  MBWMClientType *above_types;
-  int             n_above_types;
-
-
+  MBWMStackLayerUnknown     = 0, /* Transients */
+  MBWMStackLayerBottom       , 	 /* Desktop window */
+  MBWMStackLayerBottomMid    ,	 /* Panels */
+  MBWMStackLayerMid          ,	 /* Apps */
+  MBWMStackLayerTopMid       ,	 /* Trans for root dialogs */
+  MBWMStackLayerTop          ,	 /* Something else ? */
+  N_MBWMStackLayerTypes     
 }
-MBWMClientStackHintValues;
+MBWMStackLayerType;
 
+/* Clients can also hint to as how they would like to be managed by the 
+ * layout manager.
+ */
 typedef enum MBWMClientLayoutHints
   {
     LayoutPrefReserveEdgeNorth = (1<<1), /* panels */
@@ -139,6 +123,7 @@ struct MBWindowManagerClient
   char                        *name;
   MBWMWindow                  *window;
   Window                       xwin_frame;
+  MBWMStackLayerType           stacking_layer;
   unsigned long                stacking_hints;
 
   MBWMClientLayoutHints        layout_hints;
@@ -150,6 +135,8 @@ struct MBWindowManagerClient
   MBWMList                    *decor;
   MBWMList                    *transients;
   MBWindowManagerClient       *transient_for;
+
+  int                          skip_unmaps;
 
   /* To add focus, coverage */
 

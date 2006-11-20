@@ -53,7 +53,7 @@ mb_wm_client_app_class_type ()
 	mb_wm_client_app_destroy,
 	mb_wm_client_app_class_init
       };
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE);
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE, 0);
     }
 
   return type;
@@ -132,15 +132,16 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
   MBWMDecor                *decor;
   MBWMDecorButton          *button;
 
-  client_app = mb_wm_object_new (MB_WM_TYPE_CLIENT_APP);
+  client_app = MB_WM_CLIENT_APP(mb_wm_object_new (MB_WM_TYPE_CLIENT_APP));
 
   if (!client_app)
     return NULL; 		/* FIXME: Handle out of memory */
 
   client = MB_WM_CLIENT(client_app);
 
-  client->window = win; 	
-  client->wmref  = wm;
+  client->window        = win; 	
+  client->wmref         = wm;
+  client->stacking_layer = MBWMStackLayerMid;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
