@@ -743,6 +743,8 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
   if (getenv("MB_SYNC")) 
     XSynchronize (wm->xdpy, True);
   
+  mb_wm_debug_init (getenv("MB_DEBUG"));
+
   /* FIXME: Multiple screen handling */
   
   wm->xscreen     = DefaultScreen(wm->xdpy);

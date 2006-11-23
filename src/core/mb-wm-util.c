@@ -74,7 +74,7 @@ mb_wm_util_warn (const char *format, ...)
   vasprintf(&msg, format, ap);
   va_end(ap);
 
-  fprintf(stderr, "*Warning*  %s\n", msg);
+  fprintf(stderr, "*MBWM Warning*  %s\n", msg);
 
   if (msg) free(msg);
 }

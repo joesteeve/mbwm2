@@ -1,3 +1,15 @@
+2006-11-23  Matthew Allum  <mallum@openedhand.com>
+
+	* src/client-types/mb-wm-client-dialog.c:
+	* src/core/Makefile.am:
+	* src/core/mb-wm-core.c:
+	* src/core/mb-wm-debug.c:
+	* src/core/mb-wm-debug.h:
+	* src/core/mb-wm-macros.h:
+	* src/core/mb-wm-util.c:
+	* src/core/mb-wm.h:
+	New debug messaging code + macros. 
+
 2006-11-20  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/mb-wm-client-app.c:

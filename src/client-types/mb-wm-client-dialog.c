@@ -133,6 +133,7 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
     }
   else
     {
+      MBWM_DBG ("Dialog is transient to root");
       /* Stack with 'always on top' */
       client->stacking_layer = MBWMStackLayerTopMid; 
     }

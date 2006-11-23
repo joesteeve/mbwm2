@@ -33,25 +33,6 @@
 
 #include "xas.h"    		/* async stuff not needed for xlib on xcb */
 
-#define MBWM_WANT_DEBUG 1
-
-#if (MBWM_WANT_DEBUG)
-#define MBWM_DBG(x, a...) \
- fprintf(stderr, __FILE__ ":%d,%s() " x "\n", __LINE__, __func__, ##a)
-#else
-#define MBWM_DBG(x, a...) do {} while (0)
-#endif
-#define MBWM_MARK() MBWM_DBG("--mark--");
-
-#define MBWM_WANT_ASSERT 0
-
-#if (MBWM_WANT_ASSERT)
-#include <assert.h>
-#define MBWM_ASSERT(x) assert(x)
-#else
-#define MBWM_ASSERT(x) do {} while (0)
-#endif
-
 #ifndef TRUE
 #define TRUE 1
 #endif
@@ -60,6 +41,8 @@
 #define FALSE 0
 #endif
 
+#include "mb-wm-macros.h"
+#include "mb-wm-debug.h"
 #include "mb-wm-types.h"
 #include "mb-wm-util.h"
 #include "mb-wm-object.h"
