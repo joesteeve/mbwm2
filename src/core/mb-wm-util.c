@@ -42,8 +42,8 @@ mb_wm_util_malloc0(int size)
     {
       /* hook into some kind of out of memory */
     }
-
-  memset(p, 0, size);
+  else
+    memset(p, 0, size);
 
   return p;
 }

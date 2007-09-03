@@ -39,7 +39,10 @@ struct MBWindowManagerClientPriv
 void
 mb_wm_client_destroy (MBWMObject *obj)
 {
-  mb_wm_display_sync_queue ((MB_WM_CLIENT(obj))->wmref);
+  MBWindowManagerClient * client = MB_WM_CLIENT(obj);
+  mb_wm_display_sync_queue (client->wmref);
+
+  mb_wm_client_window_free (client->window);
 }
 
 

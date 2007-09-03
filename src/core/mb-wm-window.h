@@ -28,19 +28,20 @@
  *    - somehow signals client object to process with what changed.
  */
 
-#define MBWM_WINDOW_PROP_WIN_TYPE   (1<<0)
-#define MBWM_WINDOW_PROP_GEOMETRY   (1<<1)
-#define MBWM_WINDOW_PROP_ATTR       (1<<2)
-#define MBWM_WINDOW_PROP_NAME       (1<<3)
-#define MBWM_WINDOW_PROP_SIZE_HINTS (1<<4)
-#define MBWM_WINDOW_PROP_WM_HINTS   (1<<5)
-#define MBWM_WINDOW_PROP_RGBA_ICON  (1<<6)
-#define MBWM_WINDOW_PROP_PID        (1<<7)
-#define MBWM_WINDOW_PROP_PROTOS     (1<<8)
-#define MBWM_WINDOW_PROP_TRANSIENCY (1<<9)
-#define MBWM_WINDOW_PROP_STATE      (1<<10)
-#define MBWM_WINDOW_PROP_NET_STATE  (1<<11)
-#define MBWM_WINDOW_PROP_STARTUP_ID (1<<12)
+#define MBWM_WINDOW_PROP_WIN_TYPE       (1<<0)
+#define MBWM_WINDOW_PROP_GEOMETRY       (1<<1)
+#define MBWM_WINDOW_PROP_ATTR           (1<<2)
+#define MBWM_WINDOW_PROP_NAME           (1<<3)
+#define MBWM_WINDOW_PROP_SIZE_HINTS     (1<<4)
+#define MBWM_WINDOW_PROP_WM_HINTS       (1<<5)
+#define MBWM_WINDOW_PROP_RGBA_ICON      (1<<6)
+#define MBWM_WINDOW_PROP_NET_PID        (1<<7)
+#define MBWM_WINDOW_PROP_PROTOS         (1<<8)
+#define MBWM_WINDOW_PROP_TRANSIENCY     (1<<9)
+#define MBWM_WINDOW_PROP_STATE          (1<<10)
+#define MBWM_WINDOW_PROP_NET_STATE      (1<<11)
+#define MBWM_WINDOW_PROP_STARTUP_ID     (1<<12)
+#define MBWM_WINDOW_PROP_CLIENT_MACHINE (1<<13)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
@@ -92,11 +93,16 @@ struct MBWMWindow
   Window              xwin_transient_for;
 
   MBWMWindowProtos    protos;
+  pid_t               pid;
+  char               *machine;
 };
 
 
 MBWMWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin);
+
+void
+mb_wm_client_window_free (MBWMWindow *win);
 
 Bool
 mb_wm_window_sync_properties (MBWindowManager *wm,

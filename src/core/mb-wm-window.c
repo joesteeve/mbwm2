@@ -13,6 +13,8 @@ enum {
   COOKIE_WIN_WM_HINTS,
   COOKIE_WIN_TRANSIENCY,
   COOKIE_WIN_PROTOS,
+  COOKIE_WIN_MACHINE,
+  COOKIE_WIN_PID,
   
   N_COOKIES
 };
@@ -38,6 +40,18 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   mb_wm_window_sync_properties (wm, win, MBWM_WINDOW_PROP_ALL);
 
   return win;
+}
+
+void
+mb_wm_client_window_free (MBWMWindow *win)
+{
+  if (win->name)
+    XFree (win->name);
+
+  if (win->machine)
+    XFree (win->machine);
+
+  free (win);
 }
 
 void
@@ -139,6 +153,26 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       cookies[COOKIE_WIN_PROTOS]
 	= mb_wm_property_atom_req(wm, xwin,
 				  wm->atoms[MBWM_ATOM_WM_PROTOCOLS]);
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_CLIENT_MACHINE)
+    {
+      cookies[COOKIE_WIN_MACHINE]
+	= mb_wm_property_req (wm,
+			      xwin,
+			      wm->atoms[MBWM_ATOM_WM_CLIENT_MACHINE],
+			      0,
+			      2048L,
+			      False,
+			      XA_STRING);
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_NET_PID)
+    {
+      cookies[COOKIE_WIN_PID]
+	= mb_wm_property_cardinal_req (wm,
+				       xwin,
+				       wm->atoms[MBWM_ATOM_NET_WM_PID]);
     }
 
   /* bundle all pending requests to server and wait for replys */
@@ -372,8 +406,63 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       result_atom = NULL;
     }
 
- abort:
+  if (props_req & MBWM_WINDOW_PROP_CLIENT_MACHINE)
+    {
+      if (win->machine)
+	XFree(win->machine);
+
+      win->machine
+	= mb_wm_property_get_reply_and_validate (wm,
+						 cookies[COOKIE_WIN_MACHINE],
+						 XA_STRING,
+						 8,
+						 0,
+						 NULL,
+						 &x_error_code);
+
+      if (!win->machine)
+	{
+	  MBWM_DBG("### Warning wm client machine prop failed ###");
+	}
+      else
+	{
+	  MBWM_DBG("@@@ Client machine %s @@@", win->machine);
+	}
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_NET_PID)
+    {
+      unsigned int *pid = NULL;
+
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_PID],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&pid,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_CARDINAL
+	  || actual_format_return != 32
+	  || pid == NULL
+	  )
+	{
+	  MBWM_DBG("### Warning net pid prop failed ###");
+	}
+      else
+	{
+	  win->pid = (pid_t) *pid;
+	  MBWM_DBG("@@@ pid %d @@@", win->pid);
+	}
+
+      if (pid)
+	XFree(pid);
+    }
   
+ abort:
+
   if (xwin_attr) 
     XFree(xwin_attr);
 

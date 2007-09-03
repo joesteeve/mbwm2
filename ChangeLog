@@ -1,3 +1,20 @@
+2007-09-03  Tomas Frydrych  <tf@o-hand.com>
+
+	* src/core/mb-wm-client.c:
+	(mb_wm_client_destroy):
+	Free client window.
+	
+	* src/core/mb-wm-core.c:
+	(mb_wm_core_handle_map_request):
+	(mb_wm_manage_preexistsing_wins):
+	Free client window.
+	
+	* src/core/mb-wm-window.c:
+	* src/core/mb-wm-window.h:
+	(mb_wm_window_sync_properties):
+	Handling of _NET_WM_PID and WM_CLIENT_MACHINE properties.
+	(mb_wm_client_window_free): Added.
+
 2007-09-03  Matthew Allum  <mallum@openedhand.com>
 
 	* src/core/mb-wm-core.c: (mb_wm_core_manage_client),
@@ -7,8 +24,8 @@
 	Add some object types.
 	* src/core/mb-wm-stack.c: (mb_wm_stack_dump):
 	More debug info.
-
-2007-09-03  Tomas Frydrych  <tf@o-hand.com:
+	
+2007-09-03  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-atoms.c:
 	* src/core/mb-wm-types.h:
