@@ -320,6 +320,8 @@ mb_wm_core_manage_client (MBWindowManager       *wm,
   if (client == NULL)
     return;
 
+  mb_wm_object_ref(MB_WM_OBJECT(client));
+
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
   /* add to stack and move to position in stack */
@@ -341,6 +343,8 @@ mb_wm_core_unmanage_client (MBWindowManager       *wm,
   wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
 
   mb_wm_stack_remove (client);
+
+  mb_wm_object_unref (MB_WM_OBJECT(client));
 
   /* Call show() and activate here or whatver :/ */
 }

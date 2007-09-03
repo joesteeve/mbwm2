@@ -1,4 +1,4 @@
-
+#include "mb-wm-theme.h"
 
 typedef struct ThemeSimple
 {
@@ -37,7 +37,6 @@ theme_simple_paint_decor (MBWindowManager   *wm,
     default:
       break;
     }
-
 }
 
 void

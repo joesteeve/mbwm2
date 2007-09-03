@@ -42,7 +42,23 @@ mb_wm_stack_dump (MBWindowManager *wm)
 
   mb_wm_stack_enumerate_reverse (wm, client)
     {
-      fprintf(stderr, "XID: %lx NAME: %s\n",
+      MBWindowManagerClient *trans_client = client;
+      int                    i = 0, j = 0;
+      char                   prefix[128] = {0};
+
+      while (trans_client = mb_wm_client_get_transient_for(trans_client))
+	i++;
+
+      if (i)
+	{
+	  for (j=0;j<=i*2;j+=2)
+	    { prefix[j] = ' '; prefix[j+1] = ' '; }
+
+	  strcpy(&prefix[i*2], " +--");
+	}
+
+      fprintf(stderr, "%s XID: %lx NAME: %s\n",
+	      prefix,
 	      MB_WM_CLIENT_XWIN(client),
 	      client->window->name ? client->window->name : "unknown" );
     }

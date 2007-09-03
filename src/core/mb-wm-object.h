@@ -32,6 +32,14 @@ typedef void (*MBWMClassFunc) (MBWMObjectClass* klass);
 #define MB_WM_OBJECT_CLASS(x) ((MBWMObjectClass*)(x))
 #define MB_WM_OBJECT_TYPE(x) (((MBWMObject*)(x))->klass->type)
 
+typedef enum  MBWMObjectClassType
+{
+  MB_WM_OBJECT_TYPE_CLASS     = 0,
+  MB_WM_OBJECT_TYPE_ABSTRACT,
+  MB_WM_OBJECT_TYPE_SINGLETON
+}
+MBWMObjectClassType;
+
 typedef struct MBWMObjectClassInfo
 {
   size_t              klass_size;
