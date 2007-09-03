@@ -28,38 +28,50 @@
  *    - somehow signals client object to process with what changed.
  */
 
-#define MBWM_WINDOW_PROP_WIN_TYPE   (1<<1)
-#define MBWM_WINDOW_PROP_GEOMETRY   (1<<2)
-#define MBWM_WINDOW_PROP_ATTR       (1<<3)
-#define MBWM_WINDOW_PROP_NAME       (1<<4)
-#define MBWM_WINDOW_PROP_SIZE_HINTS (1<<5)
-#define MBWM_WINDOW_PROP_WM_HINTS   (1<<6)
-#define MBWM_WINDOW_PROP_RGBA_ICON  (1<<7)
-#define MBWM_WINDOW_PROP_PID        (1<<10)
-#define MBWM_WINDOW_PROP_PROTOS     (1<<11)
-#define MBWM_WINDOW_PROP_TRANSIENCY (1<<12)
-#define MBWM_WINDOW_PROP_STATE      (1<<13)
-#define MBWM_WINDOW_PROP_NET_STATE  (1<<14)
-#define MBWM_WINDOW_PROP_STARTUP_ID (1<<15)
+#define MBWM_WINDOW_PROP_WIN_TYPE   (1<<0)
+#define MBWM_WINDOW_PROP_GEOMETRY   (1<<1)
+#define MBWM_WINDOW_PROP_ATTR       (1<<2)
+#define MBWM_WINDOW_PROP_NAME       (1<<3)
+#define MBWM_WINDOW_PROP_SIZE_HINTS (1<<4)
+#define MBWM_WINDOW_PROP_WM_HINTS   (1<<5)
+#define MBWM_WINDOW_PROP_RGBA_ICON  (1<<6)
+#define MBWM_WINDOW_PROP_PID        (1<<7)
+#define MBWM_WINDOW_PROP_PROTOS     (1<<8)
+#define MBWM_WINDOW_PROP_TRANSIENCY (1<<9)
+#define MBWM_WINDOW_PROP_STATE      (1<<10)
+#define MBWM_WINDOW_PROP_NET_STATE  (1<<11)
+#define MBWM_WINDOW_PROP_STARTUP_ID (1<<12)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
 typedef enum MBWMWindowEWMHState
   {
-    MBWMWindowEWMHStateModal            = (1<<1),
-    MBWMWindowEWMHStateSticky           = (1<<2),
-    MBWMWindowEWMHStateMaximisedVert    = (1<<3),
-    MBWMWindowEWMHStateMaximisedHorz    = (1<<4),
-    MBWMWindowEWMHStateShaded           = (1<<5),
-    MBWMWindowEWMHStateSkipTaskbar      = (1<<6),
-    MBWMWindowEWMHStateSkipPager        = (1<<7),
-    MBWMWindowEWMHStateHidden           = (1<<8),
-    MBWMWindowEWMHStateFullscreen       = (1<<9),
-    MBWMWindowEWMHStateAbove            = (1<<10),
-    MBWMWindowEWMHStateBelow            = (1<<11),
-    MBWMWindowEWMHStateDemandsAttention = (1<<12)
+    MBWMWindowEWMHStateModal            = (1<<0),
+    MBWMWindowEWMHStateSticky           = (1<<1),
+    MBWMWindowEWMHStateMaximisedVert    = (1<<2),
+    MBWMWindowEWMHStateMaximisedHorz    = (1<<3),
+    MBWMWindowEWMHStateShaded           = (1<<4),
+    MBWMWindowEWMHStateSkipTaskbar      = (1<<5),
+    MBWMWindowEWMHStateSkipPager        = (1<<6),
+    MBWMWindowEWMHStateHidden           = (1<<7),
+    MBWMWindowEWMHStateFullscreen       = (1<<8),
+    MBWMWindowEWMHStateAbove            = (1<<9),
+    MBWMWindowEWMHStateBelow            = (1<<10),
+    MBWMWindowEWMHStateDemandsAttention = (1<<11)
   }
 MBWMWindowEWMHState;
+
+typedef enum MBWMWindowProtos
+  {
+    MBWMWindowProtosFocus         = (1<<0),
+    MBWMWindowProtosDelete        = (1<<1),
+    MBWMWindowProtosContextHelp   = (1<<2),
+    MBWMWindowProtosContextAccept = (1<<3),
+    MBWMWindowProtosContextCustom = (1<<4),
+    MBWMWindowProtosPing          = (1<<5),
+    MBWMWindowProtosSyncRequest   = (1<<6),
+  }
+MBWMWindowProtos;
 
 struct MBWMWindow
 {
@@ -79,6 +91,7 @@ struct MBWMWindow
   MBWMWindowEWMHState ewmh_state;
   Window              xwin_transient_for;
 
+  MBWMWindowProtos    protos;
 };
 
 

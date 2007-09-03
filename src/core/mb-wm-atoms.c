@@ -20,6 +20,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "WM_COLORMAP_WINDOWS",
     "WM_CLIENT_MACHINE",
     "WM_TRANSIENT_FOR",
+    "WM_TAKE_FOCUS",
 
     "_NET_WM_WINDOW_TYPE",
     "_NET_WM_WINDOW_TYPE_NORMAL",
@@ -81,6 +82,11 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "UTF8_STRING",
     "MOTIF_WM_HINTS",
     "WIN_SUPPORTING_WM_CHECK",
+
+    "_NET_WM_CONTEXT_HELP",
+    "_NET_WM_CONTEXT_ACCEPT",
+    "_NET_WM_CONTEXT_CUSTOM",
+    "_NET_WM_SYNC_REQUEST",
   };
 
   /* FIXME: Error Traps */

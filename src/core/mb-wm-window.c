@@ -12,6 +12,7 @@ enum {
   COOKIE_WIN_SIZE_HINTS,
   COOKIE_WIN_WM_HINTS,
   COOKIE_WIN_TRANSIENCY,
+  COOKIE_WIN_PROTOS,
   
   N_COOKIES
 };
@@ -133,6 +134,13 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 			      XA_WINDOW);
     }
 
+  if (props_req & MBWM_WINDOW_PROP_PROTOS)
+    {
+      cookies[COOKIE_WIN_PROTOS]
+	= mb_wm_property_atom_req(wm, xwin,
+				  wm->atoms[MBWM_ATOM_WM_PROTOCOLS]);
+    }
+
   /* bundle all pending requests to server and wait for replys */
   XSync(wm->xdpy, False); 
 
@@ -146,7 +154,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 			    &bytes_after_return, 
 			    (unsigned char **)&result_atom,
 			    &x_error_code);
-      
+
       if (x_error_code
 	  || actual_type_return != XA_ATOM
 	  || actual_format_return != 32
@@ -306,6 +314,62 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  XFree(trans_win);
 	}
       else MBWM_DBG("@@@ Window transient for nothing @@@");
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_PROTOS)
+    {
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_PROTOS],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&result_atom,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_ATOM
+	  || actual_format_return != 32
+	  || result_atom == NULL
+	  )
+	{
+	  MBWM_DBG("### Warning wm protocols prop failed ###");
+	}
+      else
+	{
+	  int i;
+
+	  for (i = 0; i < nitems_return; ++i)
+	    {
+	      if (result_atom[i] == wm->atoms[MBWM_ATOM_WM_TAKE_FOCUS])
+		win->protos |= MBWMWindowProtosFocus;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_WM_DELETE_WINDOW])
+		win->protos |= MBWMWindowProtosDelete;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP])
+		win->protos |= MBWMWindowProtosContextHelp;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT])
+		win->protos |= MBWMWindowProtosContextAccept;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_CUSTOM])
+		win->protos |= MBWMWindowProtosContextCustom;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_PING])
+		win->protos |= MBWMWindowProtosPing;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_SYNC_REQUEST])
+		win->protos |= MBWMWindowProtosSyncRequest;
+	      else
+		MBWM_DBG("Unhandled WM Protocol %d", result_atom[i]);
+	    }
+	}
+
+      if (result_atom)
+	XFree(result_atom);
+
+      result_atom = NULL;
     }
 
  abort:
