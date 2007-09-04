@@ -95,6 +95,12 @@ mb_wm_util_list_append(MBWMList *list, void *data);
 void
 mb_wm_util_list_foreach (const MBWMList *list, MBWMListForEachCB func, void *userdata);
 
+MBWMRgbaIcon *
+mb_wm_rgba_icon_new ();
+
+void
+mb_wm_rgba_icon_free (MBWMRgbaIcon *icon);
+
 #endif
 
 

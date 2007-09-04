@@ -1,5 +1,19 @@
 2007-09-04  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-util.c:
+	* src/core/mb-wm-util.h:
+
+	Added MBWMRgbaIcon type; stripped trailing whitespace.
+	
+	* src/core/mb-wm-window.c:
+	* src/core/mb-wm-window.h:
+	(mb_wm_window_sync_properties):
+	
+	Handling of _NET_WM_ICON property; stripped trailing whitespace.
+	
+2007-09-04  Tomas Frydrych  <tf@o-hand.com>
+
 	* src/core/mb-wm-object.c:
 	(mb_wm_object_register_class):
 	Reallocate object storage space as needed.

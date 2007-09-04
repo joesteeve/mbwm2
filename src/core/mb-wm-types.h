@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -21,10 +21,10 @@
 #ifndef _HAVE_MB_WM_TYPES_H
 #define _HAVE_MB_WM_TYPES_H
 
-typedef struct MBGeometry 
-{ 
+typedef struct MBGeometry
+{
   int          x,y;
-  unsigned int width,height; 
+  unsigned int width,height;
 
 } MBGeometry;
 
@@ -32,7 +32,7 @@ typedef struct MBWMList MBWMList;
 
 typedef void (*MBWMListForEachCB) (void *data, void *userdata);
 
-struct MBWMList 
+struct MBWMList
 {
   MBWMList *next, *prev;
   void *data;
@@ -40,12 +40,12 @@ struct MBWMList
 
 typedef struct MBWMWindowAttributes /* Needs to be sorted */
 {
-  Visual *visual;         
-  Window root;            
-  int class;              
-  int bit_gravity;        
-  int win_gravity;        
-  int backing_store;      
+  Visual *visual;
+  Window root;
+  int class;
+  int bit_gravity;
+  int win_gravity;
+  int backing_store;
   unsigned long backing_planes;
   unsigned long backing_pixel;
   Bool save_under;
@@ -59,6 +59,13 @@ typedef struct MBWMWindowAttributes /* Needs to be sorted */
 
 } MBWMWindowAttributes ;
 
+typedef struct MBWMRgbaIcon
+{
+  int width;
+  int height;
+  unsigned long *pixels;
+} MBWMRgbaIcon;
+
 typedef struct MBWindowManager       MBWindowManager;
 typedef struct MBWindowManagerPriv   MBWindowManagerPriv;
 typedef struct MBWindowManagerClient MBWindowManagerClient;
@@ -69,7 +76,7 @@ typedef struct MBWMWindow MBWMWindow;
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;
 
-typedef enum MBWMAtom 
+typedef enum MBWMAtom
 {
   /* ICCCM */
 
@@ -223,12 +230,12 @@ typedef Bool (*MBWMXEventFunc)
       void              *xev,
       void              *userdata);
 
-typedef Bool (*MBWindowManagerMapNotifyFunc) 
+typedef Bool (*MBWindowManagerMapNotifyFunc)
      (MBWindowManager   *wm,
       XMapEvent         *xev,
       void              *userdata);
 
-typedef Bool (*MBWindowManagerMapRequestFunc) 
+typedef Bool (*MBWindowManagerMapRequestFunc)
      (MBWindowManager   *wm,
       XMapRequestEvent  *xev,
       void              *userdata);
@@ -238,42 +245,42 @@ typedef Bool (*MBWindowManagerUnmapNotifyFunc)
       XUnmapEvent       *xev,
       void              *userdata);
 
-typedef Bool (*MBWindowManagerDestroyNotifyFunc) 
+typedef Bool (*MBWindowManagerDestroyNotifyFunc)
      (MBWindowManager      *wm,
       XDestroyWindowEvent  *xev,
       void                 *userdata);
 
-typedef Bool (*MBWindowManagerConfigureNotifyFunc) 
+typedef Bool (*MBWindowManagerConfigureNotifyFunc)
      (MBWindowManager      *wm,
       XConfigureEvent      *xev,
       void                 *userdata);
 
-typedef Bool (*MBWindowManagerConfigureRequestFunc) 
+typedef Bool (*MBWindowManagerConfigureRequestFunc)
      (MBWindowManager         *wm,
       XConfigureRequestEvent  *xev,
       void                    *userdata);
 
-typedef Bool (*MBWindowManagerKeyPressFunc) 
+typedef Bool (*MBWindowManagerKeyPressFunc)
      (MBWindowManager         *wm,
       XKeyEvent               *xev,
       void                    *userdata);
 
-typedef Bool (*MBWindowManagerPropertyNotifyFunc) 
+typedef Bool (*MBWindowManagerPropertyNotifyFunc)
      (MBWindowManager         *wm,
       XPropertyEvent          *xev,
       void                    *userdata);
 
-typedef Bool (*MBWindowManagerButtonPressFunc) 
+typedef Bool (*MBWindowManagerButtonPressFunc)
      (MBWindowManager         *wm,
       XButtonEvent            *xev,
       void                    *userdata);
 
-typedef Bool (*MBWindowManagerButtonReleaseFunc) 
+typedef Bool (*MBWindowManagerButtonReleaseFunc)
      (MBWindowManager         *wm,
       XButtonEvent            *xev,
       void                    *userdata);
 
-typedef Bool (*MBWindowManagerTimeOutFunc) 
+typedef Bool (*MBWindowManagerTimeOutFunc)
      (MBWindowManager         *wm,
       void                    *userdata);
 
@@ -281,7 +288,7 @@ typedef struct MBWMXEventFuncInfo
 {
   MBWMXEventFunc func;
   void          *userdata;
-} 
+}
 MBWMXEventFuncInfo;
 
 typedef struct MBWMTimeOutEventInfo
@@ -307,7 +314,7 @@ typedef struct MBWindowManagerEventFuncs
   MBWMList *button_release;
 
   MBWMList *timeout;
-} 
+}
 MBWindowManagerEventFuncs;
 
 
@@ -328,7 +335,7 @@ struct MBWindowManager
   Atom                         atoms[MBWM_ATOM_COUNT];
 
   MBWMKeys                    *keys; /* Keybindings etc */
-  
+
   MBWindowManagerNewClientFunc new_client_from_window_func;
 
   XasContext                   *xas_context;
@@ -336,7 +343,7 @@ struct MBWindowManager
   /* ### Private ### */
   Bool                          need_display_sync;
   int                           client_type_cnt;
-  int                           stack_n_clients;     
+  int                           stack_n_clients;
 };
 
 #endif

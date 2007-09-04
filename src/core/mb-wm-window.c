@@ -15,7 +15,8 @@ enum {
   COOKIE_WIN_PROTOS,
   COOKIE_WIN_MACHINE,
   COOKIE_WIN_PID,
-  
+  COOKIE_WIN_ICON,
+
   N_COOKIES
 };
 
@@ -23,7 +24,7 @@ static Bool
 validate_reply(void)
 {
   ;
-}	  
+}
 
 MBWMWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
@@ -45,11 +46,19 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 void
 mb_wm_client_window_free (MBWMWindow *win)
 {
+  MBWMList * l = win->icons;
+
   if (win->name)
     XFree (win->name);
 
   if (win->machine)
     XFree (win->machine);
+
+  while (l)
+    {
+      mb_wm_rgba_icon_free ((MBWMRgbaIcon *)l->data);
+      l = l->next;
+    }
 
   free (win);
 }
@@ -64,17 +73,52 @@ mb_wm_window_change_property (MBWindowManager *wm,
 			      int              n_elements)
 {
   /*
-  XChangeProperty (wm->xdpy, 
-		   win->xwindow, 
-		   prop, 
-		   type, 
-		   format, 
+  XChangeProperty (wm->xdpy,
+		   win->xwindow,
+		   prop,
+		   type,
+		   format,
 		   PropModeReplace,
 		   (unsigned char *)data,
 		   n_elements);
   */
 }
-			    
+
+/*
+ * Creates MBWMIcon from raw _NET_WM_ICON property data, returning
+ * pointer to where the next icon might be in the data
+ */
+static unsigned long *
+icon_from_net_wm_icon (unsigned long * data, MBWMRgbaIcon ** mb_icon)
+{
+  MBWMRgbaIcon * icon = mb_wm_rgba_icon_new ();
+  size_t byte_len;
+
+  *mb_icon = icon;
+
+  if (!icon)
+    return data;
+
+  icon->width  = *data++;
+  icon->height = *data++;
+
+  byte_len = sizeof (unsigned long) * icon->width * icon->height;
+
+  icon->pixels = malloc (byte_len);
+
+  if (!icon->pixels)
+    {
+      mb_wm_rgba_icon_free (icon);
+      *mb_icon = NULL;
+      return (data - 2);
+    }
+
+  memcpy (icon->pixels, data, byte_len);
+
+  MBWM_DBG("@@@ Icon %d x %d @@@", icon->width, icon->height);
+
+  return (data + icon->width * icon->height);
+}
 
 Bool
 mb_wm_window_sync_properties (MBWindowManager *wm,
@@ -96,8 +140,8 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
   xwin = win->xwindow;
 
   if (props_req & MBWM_WINDOW_PROP_WIN_TYPE)
-    cookies[COOKIE_WIN_TYPE] 
-      = mb_wm_property_atom_req(wm, xwin, 
+    cookies[COOKIE_WIN_TYPE]
+      = mb_wm_property_atom_req(wm, xwin,
 				wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE]);
 
   if (props_req & MBWM_WINDOW_PROP_ATTR)
@@ -110,9 +154,9 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 
   if (props_req & MBWM_WINDOW_PROP_NAME)
     {
-      cookies[COOKIE_WIN_NAME] 
-	= mb_wm_property_req (wm,      
-			      xwin, 
+      cookies[COOKIE_WIN_NAME]
+	= mb_wm_property_req (wm,
+			      xwin,
 			      wm->atoms[MBWM_ATOM_WM_NAME],
 			      0,
 			      2048L,
@@ -120,15 +164,15 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 			      XA_STRING);
 
       cookies[COOKIE_WIN_NAME_UTF8] =
-	mb_wm_property_utf8_req(wm, xwin, 
+	mb_wm_property_utf8_req(wm, xwin,
 				wm->atoms[MBWM_ATOM_NET_WM_NAME]);
     }
 
   if (props_req & MBWM_WINDOW_PROP_WM_HINTS)
     {
-      cookies[COOKIE_WIN_WM_HINTS] 
-	= mb_wm_property_req (wm,      
-			      xwin, 
+      cookies[COOKIE_WIN_WM_HINTS]
+	= mb_wm_property_req (wm,
+			      xwin,
 			      wm->atoms[MBWM_ATOM_WM_HINTS],
 			      0,
 			      1024L,
@@ -138,9 +182,9 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 
   if (props_req & MBWM_WINDOW_PROP_TRANSIENCY)
     {
-      cookies[COOKIE_WIN_TRANSIENCY] 
-	= mb_wm_property_req (wm,      
-			      xwin, 
+      cookies[COOKIE_WIN_TRANSIENCY]
+	= mb_wm_property_req (wm,
+			      xwin,
 			      wm->atoms[MBWM_ATOM_WM_TRANSIENT_FOR],
 			      0,
 			      1L,
@@ -175,17 +219,25 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 				       wm->atoms[MBWM_ATOM_NET_WM_PID]);
     }
 
+  if (props_req & MBWM_WINDOW_PROP_NET_ICON)
+    {
+      cookies[COOKIE_WIN_ICON]
+	= mb_wm_property_cardinal_req (wm,
+				       xwin,
+				       wm->atoms[MBWM_ATOM_NET_WM_ICON]);
+    }
+
   /* bundle all pending requests to server and wait for replys */
-  XSync(wm->xdpy, False); 
+  XSync(wm->xdpy, False);
 
   if (props_req & MBWM_WINDOW_PROP_WIN_TYPE)
     {
       mb_wm_property_reply (wm,
 			    cookies[COOKIE_WIN_TYPE],
-			    &actual_type_return, 
-			    &actual_format_return, 
-			    &nitems_return, 
-			    &bytes_after_return, 
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
 			    (unsigned char **)&result_atom,
 			    &x_error_code);
 
@@ -201,9 +253,9 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       else
 	win->net_type = result_atom[0];
 
-      if (result_atom) 
+      if (result_atom)
 	XFree(result_atom);
-  
+
       result_atom = NULL;
     }
 
@@ -218,7 +270,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  MBWM_DBG("### Warning Get Attr Failed ( %i ) ###", x_error_code);
 	  goto abort;
 	}
-      
+
       if (!mb_wm_xwin_get_geometry_reply (wm,
 					  cookies[COOKIE_WIN_GEOM],
 					  &win->geometry,
@@ -230,13 +282,13 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  MBWM_DBG("###   Cookie ID was %li                ###", cookies[COOKIE_WIN_GEOM]);
 	  goto abort;
 	}
-      
+
       MBWM_DBG("@@@ New Window Obj @@@");
       MBWM_DBG("Win:  %lx", win->xwindow);
       MBWM_DBG("Type: %lx",win->net_type);
       MBWM_DBG("Geom: +%i+%i,%ix%i", win->geometry.x, win->geometry.y,
 	       win->geometry.width, win->geometry.height);
-      
+
     }
 
   if (props_req & MBWM_WINDOW_PROP_NAME)
@@ -245,7 +297,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	XFree(win->name);
 
       /* Prefer UTF8 Naming... */
-      win->name 
+      win->name
 	= mb_wm_property_get_reply_and_validate (wm,
 						 cookies[COOKIE_WIN_NAME],
 						 wm->atoms[MBWM_ATOM_UTF8_STRING],
@@ -259,7 +311,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       if (!win->name)
 	{
 	  /* FIXME: Should flag up name could be in some wacko encoding ? */
-	  win->name 
+	  win->name
 	    = mb_wm_property_get_reply_and_validate (wm,
 						     cookies[COOKIE_WIN_NAME_UTF8],
 						     XA_STRING,
@@ -287,7 +339,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 						       NumPropWMHintsElements,
 						       NULL,
 						       &x_error_code);
- 
+
       if (wmhints)
 	{
 	  MBWM_DBG("@@@ New Window WM Hints @@@");
@@ -315,7 +367,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	      win->icon_pixmap_mask = wmhints->icon_mask;
 	      MBWM_DBG("Icon Mask     : %lx", wmhints->icon_mask );
 	    }
-	  
+
 	  if (wmhints->flags & WindowGroupHint)
 	    {
 	      win->xwin_group = wmhints->window_group;
@@ -332,7 +384,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
     {
       Window *trans_win = NULL;
 
-      trans_win 
+      trans_win
 	= mb_wm_property_get_reply_and_validate (wm,
 						 cookies[COOKIE_WIN_TRANSIENCY],
 						 MBWM_ATOM_WM_TRANSIENT_FOR,
@@ -340,7 +392,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 						 1,
 						 NULL,
 						 &x_error_code);
-      
+
       if (trans_win)
 	{
 	  MBWM_DBG("@@@ Window transient for %lx @@@", *trans_win);
@@ -460,10 +512,71 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       if (pid)
 	XFree(pid);
     }
-  
+
+  if (props_req & MBWM_WINDOW_PROP_NET_ICON)
+    {
+      unsigned long *icons = NULL;
+
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_ICON],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&icons,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_CARDINAL
+	  || actual_format_return != 32
+	  || icons == NULL
+	  )
+	{
+	  MBWM_DBG("### Warning net icon prop failed ###");
+	}
+      else
+	{
+	  MBWMList *l = win->icons;
+	  MBWMList *list_end = NULL;
+	  unsigned long *p = icons;
+	  unsigned long *p_end = icons + nitems_return;
+
+	  while (l)
+	    {
+	      MBWMRgbaIcon * ic = l->data;
+
+	      mb_wm_rgba_icon_free (ic);
+
+	      l = l->next;
+	    }
+
+	  while (p < p_end)
+	    {
+	      l = mb_wm_util_malloc0 (sizeof (MBWMList));
+	      p = icon_from_net_wm_icon (p, (MBWMRgbaIcon **)&l->data);
+
+	      if (list_end)
+		{
+		  l->prev = list_end;
+		  list_end->next = l;
+		}
+	      else
+		{
+		  win->icons = l;
+		}
+
+	      list_end = l;
+	    }
+
+	}
+
+      if (icons)
+	XFree(icons);
+    }
+
  abort:
 
-  if (xwin_attr) 
+  if (xwin_attr)
     XFree(xwin_attr);
 
   return True;

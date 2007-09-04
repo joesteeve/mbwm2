@@ -51,9 +51,9 @@ mb_wm_util_malloc0(int size)
 Bool 				/* FIXME: define, inline ? */
 mb_geometry_compare (MBGeometry *g1, MBGeometry *g2)
 {
-  return (g1->x == g2->x 
-	  && g1->y == g2->y 
-	  && g1->width == g2->width 
+  return (g1->x == g2->x
+	  && g1->y == g2->y
+	  && g1->width == g2->width
 	  && g1->height == g2->height);
 }
 
@@ -101,10 +101,10 @@ mb_wm_util_list_length(MBWMList *list)
 MBWMList*
 mb_wm_util_list_get_last(MBWMList *list)
 {
-  if (list == NULL) 
+  if (list == NULL)
     return NULL;
 
-  while (list->next) 
+  while (list->next)
     list = mb_wm_util_list_next(list);
   return list;
 }
@@ -112,10 +112,10 @@ mb_wm_util_list_get_last(MBWMList *list)
 MBWMList*
 mb_wm_util_list_get_first(MBWMList *list)
 {
-  if (list == NULL) 
+  if (list == NULL)
     return NULL;
 
-  while (list->prev) 
+  while (list->prev)
     list = mb_wm_util_list_prev(list);
   return list;
 }
@@ -123,7 +123,7 @@ mb_wm_util_list_get_first(MBWMList *list)
 void*
 mb_wm_util_list_get_nth_data(MBWMList *list, int n)
 {
-  if (list == NULL) 
+  if (list == NULL)
     return NULL;
 
   list = mb_wm_util_list_get_first(list);
@@ -166,7 +166,7 @@ mb_wm_util_list_remove(MBWMList *list, void *data)
 {
   MBWMList *prev, *start;
 
-  prev = NULL; 
+  prev = NULL;
   start = list = mb_wm_util_list_get_first(list);
 
   while (list)
@@ -178,7 +178,7 @@ mb_wm_util_list_remove(MBWMList *list, void *data)
 
 	  if (prev)
 	    prev->next = list->next;
-	  else 
+	  else
 	    start = list->next;
 
 	  free(list);
@@ -194,11 +194,11 @@ mb_wm_util_list_remove(MBWMList *list, void *data)
 }
 
 void
-mb_wm_util_list_foreach (const MBWMList   *list, 
-			 MBWMListForEachCB func, 
+mb_wm_util_list_foreach (const MBWMList   *list,
+			 MBWMListForEachCB func,
 			 void             *userdata)
 {
-  MBWMList *p = list;
+  MBWMList *p = (MBWMList *) list;
 
   while (p)
     {
@@ -206,3 +206,20 @@ mb_wm_util_list_foreach (const MBWMList   *list,
       p = mb_wm_util_list_next(p);
     }
 }
+
+MBWMRgbaIcon *
+mb_wm_rgba_icon_new ()
+{
+  return mb_wm_util_malloc0 (sizeof (MBWMRgbaIcon));
+}
+
+
+void
+mb_wm_rgba_icon_free (MBWMRgbaIcon *icon)
+{
+  if (icon->pixels)
+    free (icon->pixels);
+
+  free (icon);
+}
+
