@@ -1,0 +1,36 @@
+
+In no particular order
+===
+
+ - Support missing client window props including specific mb ones (later)
+
+ - Support root window EWMH props and abstract in API accordingly.
+
+ - Simple signal mechanism for MBObject ?
+
+ - Add an extras/ dir adding optional support for;
+   + XSettings
+   + Startup Notification
+   + Composite ?
+  (both can hook into X event callbacks via an init function. Needs
+   thought on how further integration can work) (MA)
+
+ - Basic theme engine with working buttons. (MA)
+   + Add matchbox-window-manager simple implementation.
+
+ - Render picture support loading from PNG's, inline data (MA)
+ 
+ - better event loop with arbituary add_timeout(msecs, callback) style
+   support.
+   + this will then allow support for _NET_WM_PING proto.
+   + event calls should be modular enough to hook into glib main loop.
+
+ - Port mb-wm-layout, mb-wm to be MBObjects. Allow creation of MBWM
+   with alternate layout engine for example. (Stacking too?)
+
+ - Improve client types, add an input window type. 
+
+ - Image based theme engine - takes a single 'template' image and conf file
+   build Maemo like theme from this.
+
+ - Dialog dragging (+resizing?)

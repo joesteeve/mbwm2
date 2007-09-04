@@ -1,3 +1,8 @@
+2007-09-04  Matthew Allum  <mallum@openedhand.com>
+
+	* TODO:
+	Added with current feature list to implement.
+
 2007-09-04  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-window.c:
