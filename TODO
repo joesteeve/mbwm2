@@ -3,8 +3,11 @@ In no particular order
 ===
 
  - Support missing client window props including specific mb ones (later)
+   + add tracking of these props changing with some kind of signals
+     (so clients types can use them)
 
  - Support root window EWMH props and abstract in API accordingly.
+   + Also track changes.
 
  - Simple signal mechanism for MBObject ?
 

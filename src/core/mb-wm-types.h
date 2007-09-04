@@ -21,6 +21,14 @@
 #ifndef _HAVE_MB_WM_TYPES_H
 #define _HAVE_MB_WM_TYPES_H
 
+typedef struct MBWMFuncInfo
+{
+  void *func;
+  void *data;
+  void *userdata;
+
+} MBWMFuncInfo;
+
 typedef struct MBGeometry
 {
   int          x,y;

@@ -118,6 +118,8 @@ mb_wm_core_handle_property_notify (MBWindowManager         *wm,
   if (!client)
     return True;
 
+  if (xev->atom == wm->atoms[MBWM_ATOM_WM_NAME])
+    mb_wm_window_sync_properties (wm, client->window, MBWM_WINDOW_PROP_NAME);
 
   return True;
 }

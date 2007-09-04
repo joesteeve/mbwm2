@@ -119,6 +119,14 @@ mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client)
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
 }
 
+static Bool
+mb_wm_client_on_property_change (MBWindowManager         *wm,
+				 MBWMWindow              *window,
+				 int                      property,
+				 void                    *userdata)
+{
+  printf("One of my underlying properties changed - %i\n", property);
+}
 
 MBWindowManagerClient* 	/* FIXME: rename to mb_wm_client_base/class_new ? */
 mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win)
@@ -132,6 +140,10 @@ mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win)
 
   client->window = win; 			
 
+  /* Handle underlying property changes */
+  mb_wm_client_window_prop_handler_add (win,
+					mb_wm_client_on_property_change,
+					(void*)client);
   return client;
 }
 

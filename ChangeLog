@@ -1,3 +1,14 @@
+2007-09-04  Matthew Allum  <mallum@openedhand.com>
+
+	* TODO:
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-core.c:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-window.c:
+	* src/core/mb-wm-window.h:
+	Remove ALLOWED_ACTIONS.
+	Add basic callback infrastructure for window prop changes.
+
 2007-09-04  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-types.h:

@@ -66,6 +66,53 @@ mb_wm_client_window_free (MBWMWindow *win)
 }
 
 void
+mb_wm_client_window_prop_handler_add (MBWMWindow              *win,
+				      MBWMWindowPropChangeFunc func,
+				      void                    *userdata)
+{
+  MBWMFuncInfo *func_info;
+
+  mbwm_assert(func != NULL);
+
+  func_info           = mb_wm_util_malloc0(sizeof(MBWMFuncInfo));
+  func_info->func     = (void*)func;
+  func_info->userdata = userdata;
+  func_info->data     = (void*)win; /* fixme ref */
+
+  win->prop_change_funcs = 
+    mb_wm_util_list_append (win->prop_change_funcs, func_info);
+}
+
+void
+mb_wm_client_window_prop_handler_remove (MBWMWindow              *win,
+					 MBWMWindowPropChangeFunc func)
+{
+  /* FIXME - this must be called when a window dissapears */
+}
+
+static void
+mb_wm_client_window_emit_prop_changes (MBWindowManager *wm,
+				       MBWMWindow      *win,
+				       int              prop_changes)
+{
+    MBWMList  *item = win->prop_change_funcs;
+
+    while (item)
+      {
+	/* only call in window matches or call back has no win */
+	if (((MBWMFuncInfo*)(item))->data == NULL
+	    || ((MBWMFuncInfo*)(item))->data == win)
+	  ((MBWMWindowPropChangeFunc)(((MBWMFuncInfo*)(item))->func))
+	              (wm, 
+		       win,
+		       prop_changes,
+		       ((MBWMFuncInfo*)(item))->userdata);
+
+	item = item->next;
+      }
+}
+
+void
 mb_wm_window_change_property (MBWindowManager *wm,
 			      MBWMWindow      *win,
 			      Atom             prop,
@@ -135,6 +182,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
   unsigned int     foo;
   int              x_error_code;
   Window           xwin;
+  int              changes;
 
   MBWMWindowAttributes *xwin_attr = NULL;
   XWMHints             *hints     = NULL;
@@ -229,13 +277,6 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 				       wm->atoms[MBWM_ATOM_NET_WM_ICON]);
     }
 
-  if (props_req & MBWM_WINDOW_PROP_ALLOWED_ACTIONS)
-    {
-      cookies[COOKIE_WIN_ACTIONS]
-	= mb_wm_property_atom_req(wm, xwin,
-				  wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS]);
-    }
-
   if (props_req & MBWM_WINDOW_PROP_NET_USER_TIME)
     {
       cookies[COOKIE_WIN_USER_TIME]
@@ -268,7 +309,12 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  MBWM_DBG("### Warning net type prop failed ###");
 	}
       else
-	win->net_type = result_atom[0];
+	{
+	  if (win->net_type != result_atom[0])
+	    changes |= MBWM_WINDOW_PROP_WIN_TYPE;
+
+	  win->net_type = result_atom[0];
+	}
 
       if (result_atom)
 	XFree(result_atom);
@@ -306,6 +352,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       MBWM_DBG("Geom: +%i+%i,%ix%i", win->geometry.x, win->geometry.y,
 	       win->geometry.width, win->geometry.height);
 
+
     }
 
   if (props_req & MBWM_WINDOW_PROP_NAME)
@@ -342,6 +389,8 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	win->name = strdup("unknown");
 
       MBWM_DBG("@@@ New Window Name: '%s' @@@", win->name);
+
+      changes |= MBWM_WINDOW_PROP_NAME;
     }
 
   if (props_req & MBWM_WINDOW_PROP_WM_HINTS)
@@ -394,6 +443,9 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  /* NOTE: we ignore icon window stuff */
 
 	  XFree(wmhints);
+
+	  /* FIXME: should track better if thus has changed or not */
+	  changes |= MBWM_WINDOW_PROP_WM_HINTS;
 	}
     }
 
@@ -413,6 +465,10 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       if (trans_win)
 	{
 	  MBWM_DBG("@@@ Window transient for %lx @@@", *trans_win);
+
+	  if (*trans_win != win->xwin_transient_for)
+	    changes |= MBWM_WINDOW_PROP_TRANSIENCY;
+	 
 	  win->xwin_transient_for = *trans_win;
 	  XFree(trans_win);
 	}
@@ -471,6 +527,8 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 
       if (result_atom)
 	XFree(result_atom);
+
+      changes |= MBWM_WINDOW_PROP_PROTOS;
 
       result_atom = NULL;
     }
@@ -588,77 +646,9 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 
       if (icons)
 	XFree(icons);
-    }
 
-  if (props_req & MBWM_WINDOW_PROP_ALLOWED_ACTIONS)
-    {
-      mb_wm_property_reply (wm,
-			    cookies[COOKIE_WIN_ACTIONS],
-			    &actual_type_return,
-			    &actual_format_return,
-			    &nitems_return,
-			    &bytes_after_return,
-			    (unsigned char **)&result_atom,
-			    &x_error_code);
+      changes |= MBWM_WINDOW_PROP_NET_ICON;
 
-      if (x_error_code
-	  || actual_type_return != XA_ATOM
-	  || actual_format_return != 32
-	  || result_atom == NULL
-	  )
-	{
-	  MBWM_DBG("### Warning _NET_WM_ALLOWED_ACTIONS failed ###");
-	}
-      else
-	{
-	  int i;
-	  win->allowed_actions = 0;
-
-	  for (i = 0; i < nitems_return; ++i)
-	    {
-	      if (result_atom[i] == wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE])
-		win->allowed_actions |= MBWMWindowActionMove;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_RESIZE])
-		win->allowed_actions |= MBWMWindowActionResize;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_MINIMIZE])
-		win->allowed_actions |= MBWMWindowActionMinimize;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_SHADE])
-		win->allowed_actions |= MBWMWindowActionShade;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_STICK])
-		win->allowed_actions |= MBWMWindowActionStick;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_MAXIMIZE_HORZ])
-		win->allowed_actions |= MBWMWindowActionMaximizeHorz;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_MAXIMIZE_VERT])
-		win->allowed_actions |= MBWMWindowActionMaximizeVert;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_FULLSCREEN])
-		win->allowed_actions |= MBWMWindowActionFullscreen;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_CHANGE_DESKTOP])
-		win->allowed_actions |= MBWMWindowActionChangeDesktop;
-	      else if (result_atom[i] ==
-		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE])
-		win->allowed_actions |= MBWMWindowActionClose;
-	      else
-		MBWM_DBG("### Unhandled _NET_WM_ALLOWED_ACTIONS: %d ###",
-			 result_atom[i]);
-	    }
-
-	  MBWM_DBG("@@@ _NET_WM_ALLOWED_ACTIONS: 0x%x @@@",
-		   win->allowed_actions);
-
-	}
-
-      if (result_atom)
-	XFree(result_atom);
-
-      result_atom = NULL;
     }
 
   if (props_req & MBWM_WINDOW_PROP_NET_USER_TIME)
@@ -691,6 +681,10 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
       if (user_time)
 	XFree(user_time);
     }
+
+
+  if (changes)
+    mb_wm_client_window_emit_prop_changes (wm, win, changes);
 
  abort:
 

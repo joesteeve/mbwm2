@@ -91,6 +91,11 @@ typedef enum MBWMWindowAllowedActions
   }
 MBWMWindowAllowedActions;
 
+typedef Bool (*MBWMWindowPropChangeFunc) (MBWindowManager         *wm,
+					  MBWMWindow              *window,
+					  int                      property,
+					  void                    *userdata);
+
 struct MBWMWindow
 {
   MBGeometry          geometry;
@@ -118,6 +123,8 @@ struct MBWMWindow
   MBWMWindowAllowedActions allowed_actions;
 
   unsigned long       user_time;
+
+  MBWMList           *prop_change_funcs;
 };
 
 
@@ -127,9 +134,20 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin);
 void
 mb_wm_client_window_free (MBWMWindow *win);
 
+/* FIXME: rename to client_window */
 Bool
 mb_wm_window_sync_properties (MBWindowManager *wm,
 			      MBWMWindow      *win,
 			      unsigned long    props_req);
+
+void
+mb_wm_client_window_prop_handler_add (MBWMWindow              *win,
+				      MBWMWindowPropChangeFunc func,
+				      void                    *userdata);
+
+void
+mb_wm_client_window_prop_handler_remove (MBWMWindow              *win,
+					 MBWMWindowPropChangeFunc func);
+
 
 #endif
