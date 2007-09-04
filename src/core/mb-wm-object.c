@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -22,34 +22,59 @@
 
 static MBWMObjectClassInfo **ObjectClassesInfo  = NULL;
 static MBWMObjectClass     **ObjectClasses  = NULL;
+static int                   ObjectClassesAllocated = 0;
 static int                   NObjectClasses = 0;
+
+#define N_CLASSES_PREALLOC 10
+#define N_CLASSES_REALLOC_STEP  5
 
 void
 mb_wm_object_init(void)
 {
-#define N_CLASSES_PREALLOC 10
+  ObjectClasses     = mb_wm_util_malloc0 (sizeof(void*) * N_CLASSES_PREALLOC);
+  ObjectClassesInfo = mb_wm_util_malloc0 (sizeof(void*) * N_CLASSES_PREALLOC);
 
-  ObjectClasses = mb_wm_util_malloc0(sizeof(MBWMObjectClass *) * N_CLASSES_PREALLOC);
-  ObjectClassesInfo = mb_wm_util_malloc0(sizeof(MBWMObjectClassInfo *) * N_CLASSES_PREALLOC);
+  if (ObjectClasses && ObjectClassesInfo)
+    ObjectClassesAllocated = N_CLASSES_PREALLOC;
 }
 
 int
-mb_wm_object_register_class (MBWMObjectClassInfo *info, 
+mb_wm_object_register_class (MBWMObjectClassInfo *info,
 			     int                  parent_type,
 			     int                  flags)
 {
   MBWMObjectClass *klass;
 
-  /* FIXME realloc() */
-
   printf("%s() called\n", __func__);
 
-  ObjectClassesInfo[NObjectClasses] = info; 
-  
+  if (NObjectClasses >= ObjectClassesAllocated)
+    {
+      int byte_len;
+      int new_offset;
+      int new_byte_len;
+
+      new_offset = ObjectClassesAllocated;
+      ObjectClassesAllocated += N_CLASSES_REALLOC_STEP;
+
+      byte_len     = sizeof(void *) * (ObjectClassesAllocated);
+      new_byte_len = sizeof(void *) * (ObjectClassesAllocated - new_offset);
+
+      ObjectClasses     = realloc (ObjectClasses,     byte_len);
+      ObjectClassesInfo = realloc (ObjectClassesInfo, byte_len);
+
+      if (!ObjectClasses || !ObjectClassesInfo)
+	return 0;
+
+      memset (ObjectClasses + new_offset    , 0, new_byte_len);
+      memset (ObjectClassesInfo + new_offset, 0, new_byte_len);
+    }
+
+  ObjectClassesInfo[NObjectClasses] = info;
+
   klass             = mb_wm_util_malloc0(info->klass_size);
   klass->init       = info->instance_init;
   klass->destroy    = info->instance_destroy;
-  klass->class_init = info->class_init;  
+  klass->class_init = info->class_init;
   klass->type       = NObjectClasses + 1;
 
   if (parent_type != 0)
@@ -61,13 +86,13 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info,
 }
 
 void
-mb_wm_object_ref (MBWMObject *this) 
+mb_wm_object_ref (MBWMObject *this)
 {
   this->refcnt++;
 }
 
 void
-mb_wm_object_unref (MBWMObject *this) 
+mb_wm_object_unref (MBWMObject *this)
 {
   this->refcnt--;
 
@@ -79,7 +104,7 @@ mb_wm_object_unref (MBWMObject *this)
 }
 
 static void
-mb_wm_object_class_init_recurse (MBWMObjectClass *klass, 
+mb_wm_object_class_init_recurse (MBWMObjectClass *klass,
 				 MBWMObjectClass *parent)
 {
   if (parent->parent)
@@ -94,7 +119,7 @@ mb_wm_object_class_init (MBWMObjectClass *klass)
 {
   if (klass->parent)
     mb_wm_object_class_init_recurse (klass, klass->parent);
-  
+
   if (klass->class_init)
     klass->class_init (klass);
 }
@@ -111,10 +136,10 @@ mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent)
 
 
 MBWMObject*
-mb_wm_object_new (int type) 
+mb_wm_object_new (int type)
 {
   MBWMObjectClassInfo *info;
-  MBWMObject          *obj; 
+  MBWMObject          *obj;
 
   info = ObjectClassesInfo[type-1];
 
@@ -136,7 +161,7 @@ mb_wm_object_new (int type)
 }
 
 const MBWMObjectClass*
-mb_wm_object_get_class (MBWMObject *this) 
+mb_wm_object_get_class (MBWMObject *this)
 {
   return this->klass;
 }
@@ -181,7 +206,7 @@ mb_wm_foo_get_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (FooClass),      
+	sizeof (FooClass),
 	sizeof (Foo),  		/* Instance */
 	mb_wm_foo_init,
 	mb_wm_foo_destroy,
@@ -200,11 +225,11 @@ Foo*
 mb_wm_foo_new (int val)
 {
   Foo *foo;
-  
+
   foo = (Foo*)mb_wm_object_new (mb_wm_foo_get_class_type ());
 
   /* call init */
-  
+
   foo->hello = val;
 
   return foo;
