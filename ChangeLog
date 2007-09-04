@@ -1,3 +1,13 @@
+2007-09-04  Tomas Frydrych  <tf@o-hand.com>
+
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm-atoms.c:
+	* src/core/mb-wm-window.c:
+	* src/core/mb-wm-window.h:
+	(mb_wm_window_sync_properties):
+	
+	Handling of _NET_WM_USER_TIME property.
+
 2007-09-04  Matthew Allum  <mallum@openedhand.com>
 
 	* TODO:

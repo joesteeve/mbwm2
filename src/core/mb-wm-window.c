@@ -17,6 +17,7 @@ enum {
   COOKIE_WIN_PID,
   COOKIE_WIN_ICON,
   COOKIE_WIN_ACTIONS,
+  COOKIE_WIN_USER_TIME,
 
   N_COOKIES
 };
@@ -235,6 +236,13 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 				  wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS]);
     }
 
+  if (props_req & MBWM_WINDOW_PROP_NET_USER_TIME)
+    {
+      cookies[COOKIE_WIN_USER_TIME]
+	= mb_wm_property_cardinal_req (wm,
+				       xwin,
+				       wm->atoms[MBWM_ATOM_NET_WM_USER_TIME]);
+    }
 
   /* bundle all pending requests to server and wait for replys */
   XSync(wm->xdpy, False);
@@ -651,6 +659,37 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	XFree(result_atom);
 
       result_atom = NULL;
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_NET_USER_TIME)
+    {
+      unsigned long *user_time = NULL;
+
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_USER_TIME],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&user_time,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_CARDINAL
+	  || actual_format_return != 32
+	  || user_time == NULL
+	  )
+	{
+	  MBWM_DBG("### Warning _NET_WM_USER_TIME failed ###");
+	}
+      else
+	{
+	  win->user_time = *user_time;
+	  MBWM_DBG("@@@ user time %d @@@", win->user_time);
+	}
+
+      if (user_time)
+	XFree(user_time);
     }
 
  abort:

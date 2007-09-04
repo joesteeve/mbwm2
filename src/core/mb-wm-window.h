@@ -43,6 +43,7 @@
 #define MBWM_WINDOW_PROP_STARTUP_ID      (1<<12)
 #define MBWM_WINDOW_PROP_CLIENT_MACHINE  (1<<13)
 #define MBWM_WINDOW_PROP_ALLOWED_ACTIONS (1<<14)
+#define MBWM_WINDOW_PROP_NET_USER_TIME   (1<<15)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
@@ -115,6 +116,8 @@ struct MBWMWindow
   MBWMList           *icons;
 
   MBWMWindowAllowedActions allowed_actions;
+
+  unsigned long       user_time;
 };
 
 

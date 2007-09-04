@@ -53,6 +53,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_SUPPORTING_WM_CHECK",
     "_NET_CLOSE_WINDOW",
     "_NET_WM_NAME",
+    "_NET_WM_USER_TIME",
     
     "_NET_CLIENT_LIST_STACKING",
     "_NET_CURRENT_DESKTOP",
