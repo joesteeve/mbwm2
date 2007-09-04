@@ -28,20 +28,21 @@
  *    - somehow signals client object to process with what changed.
  */
 
-#define MBWM_WINDOW_PROP_WIN_TYPE       (1<<0)
-#define MBWM_WINDOW_PROP_GEOMETRY       (1<<1)
-#define MBWM_WINDOW_PROP_ATTR           (1<<2)
-#define MBWM_WINDOW_PROP_NAME           (1<<3)
-#define MBWM_WINDOW_PROP_SIZE_HINTS     (1<<4)
-#define MBWM_WINDOW_PROP_WM_HINTS       (1<<5)
-#define MBWM_WINDOW_PROP_NET_ICON       (1<<6)
-#define MBWM_WINDOW_PROP_NET_PID        (1<<7)
-#define MBWM_WINDOW_PROP_PROTOS         (1<<8)
-#define MBWM_WINDOW_PROP_TRANSIENCY     (1<<9)
-#define MBWM_WINDOW_PROP_STATE          (1<<10)
-#define MBWM_WINDOW_PROP_NET_STATE      (1<<11)
-#define MBWM_WINDOW_PROP_STARTUP_ID     (1<<12)
-#define MBWM_WINDOW_PROP_CLIENT_MACHINE (1<<13)
+#define MBWM_WINDOW_PROP_WIN_TYPE        (1<<0)
+#define MBWM_WINDOW_PROP_GEOMETRY        (1<<1)
+#define MBWM_WINDOW_PROP_ATTR            (1<<2)
+#define MBWM_WINDOW_PROP_NAME            (1<<3)
+#define MBWM_WINDOW_PROP_SIZE_HINTS      (1<<4)
+#define MBWM_WINDOW_PROP_WM_HINTS        (1<<5)
+#define MBWM_WINDOW_PROP_NET_ICON        (1<<6)
+#define MBWM_WINDOW_PROP_NET_PID         (1<<7)
+#define MBWM_WINDOW_PROP_PROTOS          (1<<8)
+#define MBWM_WINDOW_PROP_TRANSIENCY      (1<<9)
+#define MBWM_WINDOW_PROP_STATE           (1<<10)
+#define MBWM_WINDOW_PROP_NET_STATE       (1<<11)
+#define MBWM_WINDOW_PROP_STARTUP_ID      (1<<12)
+#define MBWM_WINDOW_PROP_CLIENT_MACHINE  (1<<13)
+#define MBWM_WINDOW_PROP_ALLOWED_ACTIONS (1<<14)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
@@ -74,6 +75,21 @@ typedef enum MBWMWindowProtos
   }
 MBWMWindowProtos;
 
+typedef enum MBWMWindowAllowedActions
+  {
+    MBWMWindowActionMove          = (1<<0),
+    MBWMWindowActionResize        = (1<<1),
+    MBWMWindowActionMinimize      = (1<<2),
+    MBWMWindowActionShade         = (1<<3),
+    MBWMWindowActionStick         = (1<<4),
+    MBWMWindowActionMaximizeHorz  = (1<<5),
+    MBWMWindowActionMaximizeVert  = (1<<6),
+    MBWMWindowActionFullscreen    = (1<<7),
+    MBWMWindowActionChangeDesktop = (1<<8),
+    MBWMWindowActionClose         = (1<<9),
+  }
+MBWMWindowAllowedActions;
+
 struct MBWMWindow
 {
   MBGeometry          geometry;
@@ -97,6 +113,8 @@ struct MBWMWindow
   char               *machine;
 
   MBWMList           *icons;
+
+  MBWMWindowAllowedActions allowed_actions;
 };
 
 

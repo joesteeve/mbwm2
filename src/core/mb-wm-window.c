@@ -16,6 +16,7 @@ enum {
   COOKIE_WIN_MACHINE,
   COOKIE_WIN_PID,
   COOKIE_WIN_ICON,
+  COOKIE_WIN_ACTIONS,
 
   N_COOKIES
 };
@@ -226,6 +227,14 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 				       xwin,
 				       wm->atoms[MBWM_ATOM_NET_WM_ICON]);
     }
+
+  if (props_req & MBWM_WINDOW_PROP_ALLOWED_ACTIONS)
+    {
+      cookies[COOKIE_WIN_ACTIONS]
+	= mb_wm_property_atom_req(wm, xwin,
+				  wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS]);
+    }
+
 
   /* bundle all pending requests to server and wait for replys */
   XSync(wm->xdpy, False);
@@ -567,11 +576,81 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 
 	      list_end = l;
 	    }
-
 	}
 
       if (icons)
 	XFree(icons);
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_ALLOWED_ACTIONS)
+    {
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_ACTIONS],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&result_atom,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_ATOM
+	  || actual_format_return != 32
+	  || result_atom == NULL
+	  )
+	{
+	  MBWM_DBG("### Warning _NET_WM_ALLOWED_ACTIONS failed ###");
+	}
+      else
+	{
+	  int i;
+	  win->allowed_actions = 0;
+
+	  for (i = 0; i < nitems_return; ++i)
+	    {
+	      if (result_atom[i] == wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE])
+		win->allowed_actions |= MBWMWindowActionMove;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_RESIZE])
+		win->allowed_actions |= MBWMWindowActionResize;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_MINIMIZE])
+		win->allowed_actions |= MBWMWindowActionMinimize;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_SHADE])
+		win->allowed_actions |= MBWMWindowActionShade;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_STICK])
+		win->allowed_actions |= MBWMWindowActionStick;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_MAXIMIZE_HORZ])
+		win->allowed_actions |= MBWMWindowActionMaximizeHorz;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_MAXIMIZE_VERT])
+		win->allowed_actions |= MBWMWindowActionMaximizeVert;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_FULLSCREEN])
+		win->allowed_actions |= MBWMWindowActionFullscreen;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_CHANGE_DESKTOP])
+		win->allowed_actions |= MBWMWindowActionChangeDesktop;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE])
+		win->allowed_actions |= MBWMWindowActionClose;
+	      else
+		MBWM_DBG("### Unhandled _NET_WM_ALLOWED_ACTIONS: %d ###",
+			 result_atom[i]);
+	    }
+
+	  MBWM_DBG("@@@ _NET_WM_ALLOWED_ACTIONS: 0x%x @@@",
+		   win->allowed_actions);
+
+	}
+
+      if (result_atom)
+	XFree(result_atom);
+
+      result_atom = NULL;
     }
 
  abort:
