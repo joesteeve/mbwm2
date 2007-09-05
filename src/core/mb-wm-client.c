@@ -42,7 +42,7 @@ mb_wm_client_destroy (MBWMObject *obj)
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
   mb_wm_display_sync_queue (client->wmref);
 
-  mb_wm_client_window_free (client->window);
+  mb_wm_object_unref (MB_WM_OBJECT (client->window));
 }
 
 

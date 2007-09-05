@@ -217,7 +217,7 @@ mb_wm_core_handle_map_request (MBWindowManager   *wm,
       if (client)
 	mb_wm_core_manage_client(wm, client);
       else
-	mb_wm_client_window_free (win);
+	mb_wm_object_unref (MB_WM_OBJECT (win));
     }
 
   return True;
@@ -432,7 +432,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	   if (client)
 	     mb_wm_core_manage_client(wm, client);
 	   else
-	     mb_wm_client_window_free (win);
+	     mb_wm_object_unref (MB_WM_OBJECT (win));
 	 }
      }
    XFree(wins);

@@ -28,6 +28,63 @@ validate_reply(void)
   ;
 }
 
+void
+mb_wm_client_window_class_init (MBWMObjectClass *klass)
+{
+  MBWMClientWindowClass *rw_class;
+
+  MBWM_MARK();
+
+  rw_class = (MBWMClientWindowClass *)klass;
+}
+
+void
+mb_wm_client_window_destroy (MBWMObject *this)
+{
+  MBWMClientWindow        * win  = MB_WM_CLIENT_WINDOW (this);
+  MBWMList                * l    = win->icons;
+
+  if (win->name)
+    XFree (win->name);
+
+  if (win->machine)
+    XFree (win->machine);
+
+  while (l)
+    {
+      mb_wm_rgba_icon_free ((MBWMRgbaIcon *)l->data);
+      l = l->next;
+    }
+
+  free (win);
+}
+
+void
+mb_wm_client_window_init (MBWMObject *this)
+{
+}
+
+int
+mb_wm_client_window_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMClientWindowClass),
+	sizeof (MBWMClientWindow),
+	mb_wm_client_window_init,
+	mb_wm_client_window_destroy,
+	mb_wm_client_window_class_init
+      };
+
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
+    }
+
+  return type;
+}
+
 MBWMClientWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 {
@@ -43,26 +100,6 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   mb_wm_client_window_sync_properties (wm, win, MBWM_WINDOW_PROP_ALL);
 
   return win;
-}
-
-void
-mb_wm_client_window_free (MBWMClientWindow *win)
-{
-  MBWMList * l = win->icons;
-
-  if (win->name)
-    XFree (win->name);
-
-  if (win->machine)
-    XFree (win->machine);
-
-  while (l)
-    {
-      mb_wm_rgba_icon_free ((MBWMRgbaIcon *)l->data);
-      l = l->next;
-    }
-
-  free (win);
 }
 
 void

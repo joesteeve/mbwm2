@@ -1,5 +1,15 @@
 2007-09-05  Tomas Frydrych  <tf@o-hand.com>
 	
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-core.c:
+        * src/core/mb-wm-types.h:
+
+	Objectified MBWMClientWindow.
+	
+2007-09-05  Tomas Frydrych  <tf@o-hand.com>
+	
 	* src/client-types/mb-wm-client-app.c:
 	* src/client-types/mb-wm-client-app.h:
 	* src/client-types/mb-wm-client-dialog.c:

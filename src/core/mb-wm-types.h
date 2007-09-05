@@ -79,7 +79,8 @@ typedef struct MBWindowManagerPriv   MBWindowManagerPriv;
 typedef struct MBWindowManagerClient MBWindowManagerClient;
 typedef struct MBWindowManagerClientClass MBWindowManagerClientClass;
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
-typedef struct MBWMClientWindow      MBWMClientWindow;
+typedef struct MBWMClientWindow           MBWMClientWindow;
+typedef struct MBWMClientWindowClass      MBWMClientWindowClass;
 
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;
