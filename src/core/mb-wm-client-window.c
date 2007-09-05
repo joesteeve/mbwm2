@@ -102,11 +102,12 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   return win;
 }
 
-void
+unsigned long
 mb_wm_client_window_prop_handler_add (MBWMClientWindow              *win,
 				      MBWMClientWindowPropChangeFunc func,
 				      void                          *userdata)
 {
+  static unsigned long id_counter = 0;
   MBWMFuncInfo *func_info;
 
   MBWM_ASSERT(func != NULL);
@@ -114,17 +115,48 @@ mb_wm_client_window_prop_handler_add (MBWMClientWindow              *win,
   func_info           = mb_wm_util_malloc0(sizeof(MBWMFuncInfo));
   func_info->func     = (void*)func;
   func_info->userdata = userdata;
-  func_info->data     = (void*)win; /* fixme ref */
+  func_info->data     = mb_wm_object_ref (MB_WM_OBJECT (win));
+  func_info->id       = id_counter++;
 
   win->prop_change_funcs =
     mb_wm_util_list_append (win->prop_change_funcs, func_info);
+
+  return func_info->id;
 }
 
 void
-mb_wm_client_window_prop_handler_remove (MBWMClientWindow              *win,
-					 MBWMClientWindowPropChangeFunc func)
+mb_wm_client_window_prop_handler_remove (MBWMClientWindow *win,
+					 unsigned long     id)
 {
-  /* FIXME - this must be called when a window dissapears */
+    MBWMList  *item = win->prop_change_funcs;
+
+    while (item)
+      {
+	MBWMFuncInfo* info = item->data;
+
+	if (info->id == id)
+	  {
+	    MBWMList * prev = item->prev;
+	    MBWMList * next = item->next;
+
+	    if (prev)
+	      prev->next = next;
+	    else
+	      win->prop_change_funcs = next;
+	      
+	    if (next)
+	      next->prev = prev;
+
+	    mb_wm_object_unref (MB_WM_OBJECT (info->data));
+
+	    free (info);
+	    free (item);
+	    
+	    break;
+	  }
+
+	item = item->next;
+      }
 }
 
 static void
@@ -136,14 +168,13 @@ mb_wm_client_window_emit_prop_changes (MBWindowManager  *wm,
 
     while (item)
       {
-	/* only call in window matches or call back has no win */
-	if (((MBWMFuncInfo*)(item))->data == NULL
-	    || ((MBWMFuncInfo*)(item))->data == win)
-	  ((MBWMClientWindowPropChangeFunc)(((MBWMFuncInfo*)(item))->func))
-	              (wm,
-		       win,
-		       prop_changes,
-		       ((MBWMFuncInfo*)(item))->userdata);
+	MBWMFuncInfo* info = item->data;
+
+	if (info->data == win)
+	  ((MBWMClientWindowPropChangeFunc)info->func) (wm,
+							win,
+							prop_changes,
+							info->userdata);
 
 	item = item->next;
       }

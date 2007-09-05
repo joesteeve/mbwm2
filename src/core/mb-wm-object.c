@@ -85,15 +85,28 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info,
   return 1 + NObjectClasses++;
 }
 
-void
+MBWMObject *
 mb_wm_object_ref (MBWMObject *this)
 {
+  if (!this)
+    {
+      MBWM_DBG("### Warning: called with NULL ###");
+      return this;
+    }
+
   this->refcnt++;
+  return this;
 }
 
 void
 mb_wm_object_unref (MBWMObject *this)
 {
+  if (!this)
+    {
+      MBWM_DBG("### Warning: called with NULL ###");
+      return;
+    }
+
   this->refcnt--;
 
   if (this->refcnt == 0)

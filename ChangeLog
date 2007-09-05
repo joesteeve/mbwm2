@@ -1,4 +1,28 @@
 2007-09-05  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+
+	(mb_wm_client_prop_handler_add):
+	Return numerical id for the handler to aid removal.
+
+	(mb_wm_client_prop_handler_remove):
+	Implemented.
+
+	(mb_wm_client_window_emit_prop_changes):
+	Cleaned up some casts.
+
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+	(mb_wm_object_ref):
+	Return object pointer for convenience of use; handle NULL
+	gracefully.
+	
+	(mb_wm_object_ref):
+	Handle NULL gracefully.
+	
+2007-09-05  Tomas Frydrych  <tf@o-hand.com>
 	
         * src/core/mb-wm-client-window.c:
         * src/core/mb-wm-client-window.h:

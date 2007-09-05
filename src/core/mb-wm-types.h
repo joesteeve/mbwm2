@@ -26,7 +26,7 @@ typedef struct MBWMFuncInfo
   void *func;
   void *data;
   void *userdata;
-
+  unsigned long id;
 } MBWMFuncInfo;
 
 typedef struct MBGeometry

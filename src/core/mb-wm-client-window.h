@@ -149,13 +149,13 @@ mb_wm_client_window_sync_properties (MBWindowManager  *wm,
 				     MBWMClientWindow *win,
 				     unsigned long     props_req);
 
-void
+unsigned long
 mb_wm_client_window_prop_handler_add (MBWMClientWindow              *win,
 				      MBWMClientWindowPropChangeFunc func,
 				      void                          *userdata);
 
 void
-mb_wm_client_window_prop_handler_remove (MBWMClientWindow              *win,
-					 MBWMClientWindowPropChangeFunc func);
+mb_wm_client_window_prop_handler_remove (MBWMClientWindow *win,
+					 unsigned long     id);
 
 #endif
