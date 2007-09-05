@@ -9,14 +9,14 @@ mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
 				     MBWMClientReqGeomType  flags);
 
 void
-mb_wm_client_panel_class_init (MBWMObjectClass *klass) 
+mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
 
   client = (MBWindowManagerClientClass *)klass;
 
   client->realize  = mb_wm_client_panel_realize;
-  client->geometry = mb_wm_client_panel_request_geometry; 
+  client->geometry = mb_wm_client_panel_request_geometry;
 }
 
 void
@@ -39,8 +39,8 @@ mb_wm_client_panel_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMClientPanelClass),      
-	sizeof (MBWMClientPanel), 
+	sizeof (MBWMClientPanelClass),
+	sizeof (MBWMClientPanel),
 	mb_wm_client_panel_init,
 	mb_wm_client_panel_destroy,
 	mb_wm_client_panel_class_init
@@ -82,7 +82,7 @@ mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
 
 
 MBWindowManagerClient*
-mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win)
+mb_wm_client_panel_new(MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient *client = NULL;
 
@@ -91,7 +91,7 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMWindow *win)
   if (!client)
     return NULL; 		/* FIXME: Handle out of memory */
 
-  client->window = win; 	
+  client->window = win;
   client->wmref  = wm;
   client->stacking_layer = MBWMStackLayerBottomMid;
 

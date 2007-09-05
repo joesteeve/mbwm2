@@ -28,25 +28,25 @@ validate_reply(void)
   ;
 }
 
-MBWMWindow*
+MBWMClientWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 {
-  MBWMWindow *win = NULL;
+  MBWMClientWindow *win = NULL;
 
-  win = mb_wm_util_malloc0(sizeof(MBWMWindow));
+  win = mb_wm_util_malloc0(sizeof(MBWMClientWindow));
 
   if (!win)
     return NULL; 		/* FIXME: Handle out of memory */
 
   win->xwindow = xwin;
 
-  mb_wm_window_sync_properties (wm, win, MBWM_WINDOW_PROP_ALL);
+  mb_wm_client_window_sync_properties (wm, win, MBWM_WINDOW_PROP_ALL);
 
   return win;
 }
 
 void
-mb_wm_client_window_free (MBWMWindow *win)
+mb_wm_client_window_free (MBWMClientWindow *win)
 {
   MBWMList * l = win->icons;
 
@@ -66,34 +66,34 @@ mb_wm_client_window_free (MBWMWindow *win)
 }
 
 void
-mb_wm_client_window_prop_handler_add (MBWMWindow              *win,
-				      MBWMWindowPropChangeFunc func,
-				      void                    *userdata)
+mb_wm_client_window_prop_handler_add (MBWMClientWindow              *win,
+				      MBWMClientWindowPropChangeFunc func,
+				      void                          *userdata)
 {
   MBWMFuncInfo *func_info;
 
-  mbwm_assert(func != NULL);
+  MBWM_ASSERT(func != NULL);
 
   func_info           = mb_wm_util_malloc0(sizeof(MBWMFuncInfo));
   func_info->func     = (void*)func;
   func_info->userdata = userdata;
   func_info->data     = (void*)win; /* fixme ref */
 
-  win->prop_change_funcs = 
+  win->prop_change_funcs =
     mb_wm_util_list_append (win->prop_change_funcs, func_info);
 }
 
 void
-mb_wm_client_window_prop_handler_remove (MBWMWindow              *win,
-					 MBWMWindowPropChangeFunc func)
+mb_wm_client_window_prop_handler_remove (MBWMClientWindow              *win,
+					 MBWMClientWindowPropChangeFunc func)
 {
   /* FIXME - this must be called when a window dissapears */
 }
 
 static void
-mb_wm_client_window_emit_prop_changes (MBWindowManager *wm,
-				       MBWMWindow      *win,
-				       int              prop_changes)
+mb_wm_client_window_emit_prop_changes (MBWindowManager  *wm,
+				       MBWMClientWindow *win,
+				       int               prop_changes)
 {
     MBWMList  *item = win->prop_change_funcs;
 
@@ -102,8 +102,8 @@ mb_wm_client_window_emit_prop_changes (MBWindowManager *wm,
 	/* only call in window matches or call back has no win */
 	if (((MBWMFuncInfo*)(item))->data == NULL
 	    || ((MBWMFuncInfo*)(item))->data == win)
-	  ((MBWMWindowPropChangeFunc)(((MBWMFuncInfo*)(item))->func))
-	              (wm, 
+	  ((MBWMClientWindowPropChangeFunc)(((MBWMFuncInfo*)(item))->func))
+	              (wm,
 		       win,
 		       prop_changes,
 		       ((MBWMFuncInfo*)(item))->userdata);
@@ -113,13 +113,13 @@ mb_wm_client_window_emit_prop_changes (MBWindowManager *wm,
 }
 
 void
-mb_wm_window_change_property (MBWindowManager *wm,
-			      MBWMWindow      *win,
-			      Atom             prop,
-			      Atom             type,
-			      int              format,
-			      void            *data,
-			      int              n_elements)
+mb_wm_window_change_property (MBWindowManager  *wm,
+			      MBWMClientWindow *win,
+			      Atom              prop,
+			      Atom              type,
+			      int               format,
+			      void             *data,
+			      int               n_elements)
 {
   /*
   XChangeProperty (wm->xdpy,
@@ -170,9 +170,9 @@ icon_from_net_wm_icon (unsigned long * data, MBWMRgbaIcon ** mb_icon)
 }
 
 Bool
-mb_wm_window_sync_properties (MBWindowManager *wm,
-			      MBWMWindow      *win,
-			      unsigned long    props_req)
+mb_wm_client_window_sync_properties (MBWindowManager  *wm,
+				     MBWMClientWindow *win,
+				     unsigned long     props_req)
 {
   MBWMCookie       cookies[N_COOKIES];
   Atom             actual_type_return, *result_atom = NULL;
@@ -182,9 +182,9 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
   unsigned int     foo;
   int              x_error_code;
   Window           xwin;
-  int              changes;
+  int              changes = 0;
 
-  MBWMWindowAttributes *xwin_attr = NULL;
+  MBWMClientWindowAttributes *xwin_attr = NULL;
   XWMHints             *hints     = NULL;
 
   xwin = win->xwindow;
@@ -325,8 +325,8 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
   if (props_req & MBWM_WINDOW_PROP_ATTR)
     {
       xwin_attr = mb_wm_xwin_get_attributes_reply (wm,
-					       cookies[COOKIE_WIN_ATTR],
-					       &x_error_code);
+						   cookies[COOKIE_WIN_ATTR],
+						   &x_error_code);
 
       if (!xwin_attr || x_error_code)
 	{
@@ -468,7 +468,7 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 
 	  if (*trans_win != win->xwin_transient_for)
 	    changes |= MBWM_WINDOW_PROP_TRANSIENCY;
-	 
+
 	  win->xwin_transient_for = *trans_win;
 	  XFree(trans_win);
 	}
@@ -501,25 +501,25 @@ mb_wm_window_sync_properties (MBWindowManager *wm,
 	  for (i = 0; i < nitems_return; ++i)
 	    {
 	      if (result_atom[i] == wm->atoms[MBWM_ATOM_WM_TAKE_FOCUS])
-		win->protos |= MBWMWindowProtosFocus;
+		win->protos |= MBWMClientWindowProtosFocus;
 	      else if (result_atom[i] ==
 		       wm->atoms[MBWM_ATOM_WM_DELETE_WINDOW])
-		win->protos |= MBWMWindowProtosDelete;
+		win->protos |= MBWMClientWindowProtosDelete;
 	      else if (result_atom[i] ==
 		       wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP])
-		win->protos |= MBWMWindowProtosContextHelp;
+		win->protos |= MBWMClientWindowProtosContextHelp;
 	      else if (result_atom[i] ==
 		       wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT])
-		win->protos |= MBWMWindowProtosContextAccept;
+		win->protos |= MBWMClientWindowProtosContextAccept;
 	      else if (result_atom[i] ==
 		       wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_CUSTOM])
-		win->protos |= MBWMWindowProtosContextCustom;
+		win->protos |= MBWMClientWindowProtosContextCustom;
 	      else if (result_atom[i] ==
 		       wm->atoms[MBWM_ATOM_NET_WM_PING])
-		win->protos |= MBWMWindowProtosPing;
+		win->protos |= MBWMClientWindowProtosPing;
 	      else if (result_atom[i] ==
 		       wm->atoms[MBWM_ATOM_NET_WM_SYNC_REQUEST])
-		win->protos |= MBWMWindowProtosSyncRequest;
+		win->protos |= MBWMClientWindowProtosSyncRequest;
 	      else
 		MBWM_DBG("Unhandled WM Protocol %d", result_atom[i]);
 	    }

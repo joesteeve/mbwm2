@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -26,8 +26,8 @@
 typedef struct MBWMClientApp      MBWMClientApp;
 typedef struct MBWMClientAppClass MBWMClientAppClass;
 
-#define MB_WM_CLIENT_APP(c) ((MBWMClientApp*)(c)) 
-#define MB_WM_CLIENT_APP_CLASS(c) ((MBWMClientAppClass*)(c)) 
+#define MB_WM_CLIENT_APP(c) ((MBWMClientApp*)(c))
+#define MB_WM_CLIENT_APP_CLASS(c) ((MBWMClientAppClass*)(c))
 #define MB_WM_TYPE_CLIENT_APP (mb_wm_client_app_class_type ())
 
 struct MBWMClientApp
@@ -42,7 +42,7 @@ struct MBWMClientAppClass
 };
 
 MBWindowManagerClient*
-mb_wm_client_app_new(MBWindowManager *wm, MBWMWindow *win);
+mb_wm_client_app_new(MBWindowManager *wm, MBWMClientWindow *win);
 
 int
 mb_wm_client_app_class_type ();

@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -54,8 +54,8 @@ mb_wm_client_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWindowManagerClientClass),      
-	sizeof (MBWindowManagerClient), 
+	sizeof (MBWindowManagerClientClass),
+	sizeof (MBWindowManagerClient),
 	mb_wm_client_init,
 	mb_wm_client_destroy,
 	NULL
@@ -121,7 +121,7 @@ mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client)
 
 static Bool
 mb_wm_client_on_property_change (MBWindowManager         *wm,
-				 MBWMWindow              *window,
+				 MBWMClientWindow        *window,
 				 int                      property,
 				 void                    *userdata)
 {
@@ -129,7 +129,7 @@ mb_wm_client_on_property_change (MBWindowManager         *wm,
 }
 
 MBWindowManagerClient* 	/* FIXME: rename to mb_wm_client_base/class_new ? */
-mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win)
+mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient *client = NULL;
 
@@ -138,7 +138,7 @@ mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win)
   if (!client)
     return NULL; 		/* FIXME: Handle out of memory */
 
-  client->window = win; 			
+  client->window = win;
 
   /* Handle underlying property changes */
   mb_wm_client_window_prop_handler_add (win,
@@ -162,7 +162,7 @@ mb_wm_client_init (MBWMObject *obj)
   if (client->init)
     client->init(wm, client, win);
   else
-    mb_wm_client_base_init (wm, client, win);      
+    mb_wm_client_base_init (wm, client, win);
   */
 }
 
@@ -308,7 +308,7 @@ mb_wm_client_request_geometry (MBWindowManagerClient *client,
 
   MBWM_ASSERT (klass->geometry != NULL);
 
-  return klass->geometry(client, new_geometry, flags); 
+  return klass->geometry(client, new_geometry, flags);
 }
 
 MBWMClientLayoutHints
@@ -342,7 +342,7 @@ mb_wm_client_get_coverage (MBWindowManagerClient *client,
   MBGeometry *geometry;
 
   if (client->xwin_frame)
-    geometry = &client->frame_geometry; 
+    geometry = &client->frame_geometry;
   else
     geometry = &client->window->geometry;
 

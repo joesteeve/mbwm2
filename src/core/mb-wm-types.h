@@ -46,7 +46,7 @@ struct MBWMList
   void *data;
 };
 
-typedef struct MBWMWindowAttributes /* Needs to be sorted */
+typedef struct MBWMClientWindowAttributes /* Needs to be sorted */
 {
   Visual *visual;
   Window root;
@@ -65,7 +65,7 @@ typedef struct MBWMWindowAttributes /* Needs to be sorted */
   long do_not_propagate_mask;
   Bool override_redirect;
 
-} MBWMWindowAttributes ;
+} MBWMClientWindowAttributes ;
 
 typedef struct MBWMRgbaIcon
 {
@@ -79,7 +79,7 @@ typedef struct MBWindowManagerPriv   MBWindowManagerPriv;
 typedef struct MBWindowManagerClient MBWindowManagerClient;
 typedef struct MBWindowManagerClientClass MBWindowManagerClientClass;
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
-typedef struct MBWMWindow MBWMWindow;
+typedef struct MBWMClientWindow      MBWMClientWindow;
 
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;
@@ -224,7 +224,7 @@ struct MBWMKeyBinding
 
 typedef  MBWindowManagerClient* (*MBWindowManagerNewClientFunc)
      (MBWindowManager             *wm,
-      MBWMWindow                  *w);
+      MBWMClientWindow            *w);
 
 typedef  void (*MBWindowManagerDestroyClientFunc)
      (MBWindowManager             *wm,

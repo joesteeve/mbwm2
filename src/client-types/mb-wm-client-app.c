@@ -11,7 +11,7 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBWMClientReqGeomType  flags);
 
 void
-mb_wm_client_app_class_init (MBWMObjectClass *klass) 
+mb_wm_client_app_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
 
@@ -21,7 +21,7 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 
   MBWM_DBG("client->stack is %p", client->stack);
 
-  client->geometry = mb_wm_client_app_request_geometry; 
+  client->geometry = mb_wm_client_app_request_geometry;
 }
 
 void
@@ -47,8 +47,8 @@ mb_wm_client_app_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMClientAppClass),      
-	sizeof (MBWMClientApp), 
+	sizeof (MBWMClientAppClass),
+	sizeof (MBWMClientApp),
 	mb_wm_client_app_init,
 	mb_wm_client_app_destroy,
 	mb_wm_client_app_class_init
@@ -70,17 +70,17 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
       client->frame_geometry.y      = new_geometry->y;
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
-      
-      client->window->geometry.x 
+
+      client->window->geometry.x
 	= client->frame_geometry.x + FRAME_EDGE_SIZE;
-      client->window->geometry.y 
+      client->window->geometry.y
 	= client->frame_geometry.y + FRAME_TITLEBAR_HEIGHT;
-      client->window->geometry.width  
+      client->window->geometry.width
 	= client->frame_geometry.width - (2*FRAME_EDGE_SIZE);
-      client->window->geometry.height 
-	= client->frame_geometry.height 
+      client->window->geometry.height
+	= client->frame_geometry.height
             - FRAME_EDGE_SIZE - FRAME_TITLEBAR_HEIGHT;
-      
+
       mb_wm_client_geometry_mark_dirty (client);
 
       return True; /* Geometry accepted */
@@ -95,14 +95,14 @@ decor_resize (MBWindowManager   *wm,
   const MBGeometry *geom;
   MBWMDecorButton  *button;
   MBWMClientApp    *client_app;
-  
-  client_app = (MBWMClientApp *)userdata; 
+
+  client_app = (MBWMClientApp *)userdata;
 
   geom = mb_wm_decor_get_geometry (decor);
 
   button = (MBWMDecorButton  *)decor->buttons->data;
 
-  mb_wm_decor_button_move_to (client_app->button_close, 
+  mb_wm_decor_button_move_to (client_app->button_close,
 			      geom->width - FRAME_TITLEBAR_HEIGHT -2 , 2);
 }
 
@@ -111,7 +111,7 @@ decor_repaint (MBWindowManager   *wm,
 	       MBWMDecor         *decor,
 	       void              *userdata)
 {
-  mb_wm_theme_paint_decor (wm, decor); 
+  mb_wm_theme_paint_decor (wm, decor);
 }
 
 static void
@@ -125,7 +125,7 @@ close_button_pressed (MBWindowManager   *wm,
 }
 
 MBWindowManagerClient*
-mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
+mb_wm_client_app_new (MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient    *client;
   MBWMClientApp            *client_app;
@@ -139,7 +139,7 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
 
   client = MB_WM_CLIENT(client_app);
 
-  client->window        = win; 	
+  client->window        = win;
   client->wmref         = wm;
   client->stacking_layer = MBWMStackLayerMid;
 
@@ -148,13 +148,13 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
 
   /* Titlebar */
 
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeNorth, 
+  decor = mb_wm_decor_create (wm, MBWMDecorTypeNorth,
 			      decor_resize, decor_repaint, client_app);
 
-  client_app->button_close 
+  client_app->button_close
     = mb_wm_decor_button_create (wm,
 				 decor,
-				 FRAME_TITLEBAR_HEIGHT-2, 
+				 FRAME_TITLEBAR_HEIGHT-2,
 				 FRAME_TITLEBAR_HEIGHT-2,
 				 NULL,
 				 close_button_pressed,
@@ -168,15 +168,15 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMWindow *win)
 
   mb_wm_decor_attach (decor, client);
 
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeSouth, 
+  decor = mb_wm_decor_create (wm, MBWMDecorTypeSouth,
 			      NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeEast, 
+  decor = mb_wm_decor_create (wm, MBWMDecorTypeEast,
 			      NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeWest, 
+  decor = mb_wm_decor_create (wm, MBWMDecorTypeWest,
 			      NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 

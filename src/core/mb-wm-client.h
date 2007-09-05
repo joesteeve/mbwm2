@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -21,8 +21,8 @@
 #ifndef _HAVE_MB_CLIENT_H
 #define _HAVE_MB_CLIENT_H
 
-#define MB_WM_CLIENT(c) ((MBWindowManagerClient*)(c)) 
-#define MB_WM_CLIENT_CLASS(c) ((MBWindowManagerClientClass*)(c)) 
+#define MB_WM_CLIENT(c) ((MBWindowManagerClient*)(c))
+#define MB_WM_CLIENT_CLASS(c) ((MBWindowManagerClientClass*)(c))
 #define MB_WM_TYPE_CLIENT (mb_wm_client_class_type ())
 #define MB_WM_CLIENT_XWIN(w) (w)->window->xwindow
 
@@ -41,28 +41,28 @@ typedef enum MBWMStackLayerType
   MBWMStackLayerMid          ,	 /* Apps */
   MBWMStackLayerTopMid       ,	 /* Trans for root dialogs */
   MBWMStackLayerTop          ,	 /* Something else ? */
-  N_MBWMStackLayerTypes     
+  N_MBWMStackLayerTypes
 }
 MBWMStackLayerType;
 
-/* Clients can also hint to as how they would like to be managed by the 
+/* Clients can also hint to as how they would like to be managed by the
  * layout manager.
  */
 typedef enum MBWMClientLayoutHints
   {
     LayoutPrefReserveEdgeNorth = (1<<1), /* panels */
-    LayoutPrefReserveEdgeSouth = (1<<2),  
+    LayoutPrefReserveEdgeSouth = (1<<2),
     LayoutPrefReserveEdgeEast = (1<<3),
     LayoutPrefReserveEdgeWest = (1<<4),
     LayoutPrefReserveNorth = (1<<5),     /* Input wins */
-    LayoutPrefReserveSouth = (1<<6), 
+    LayoutPrefReserveSouth = (1<<6),
     LayoutPrefReserveEast = (1<<7),
     LayoutPrefReserveWest = (1<<8),
     LayoutPrefGrowToFreeSpace  = (1<<9), /* Free space left by above   */
     LayoutPrefFullscreen  = (1<<10),      /* Fullscreen and desktop wins */
     LayoutPrefPositionFree = (1<<11),    /* Dialog, panel in titlebar */
     LayoutPrefVisible = (1<<12),         /* Flag is toggled by stacking */
-  } 
+  }
 MBWMClientLayoutHints;
 
 typedef enum MBWMClientReqGeomType
@@ -77,12 +77,12 @@ MBWMClientReqGeomType;
 
 /* Methods */
 
-typedef  void (*MBWMClientNewMethod) (MBWindowManager       *wm, 
-				      MBWMWindow            *win);
+typedef  void (*MBWMClientNewMethod) (MBWindowManager       *wm,
+				      MBWMClientWindow      *win);
 
-typedef  void (*MBWMClientInitMethod) (MBWindowManager       *wm, 
+typedef  void (*MBWMClientInitMethod) (MBWindowManager       *wm,
 				       MBWindowManagerClient *client,
-				       MBWMWindow            *win);
+				       MBWMClientWindow      *win);
 
 typedef  void (*MBWMClientRealizeMethod) (MBWindowManagerClient *client);
 
@@ -121,7 +121,7 @@ struct MBWindowManagerClient
 
   MBWindowManager             *wmref;
   char                        *name;
-  MBWMWindow                  *window;
+  MBWMClientWindow            *window;
   Window                       xwin_frame;
   MBWMStackLayerType           stacking_layer;
   unsigned long                stacking_hints;
@@ -160,14 +160,14 @@ struct MBWindowManagerClient
          ( ((c)->frame_geometry.y + (c)->frame_geometry.height) \
           - ((c)->window->geometry.y + (c)->window->geometry.height) )
 
-MBWMWindow*
+MBWMClientWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window window);
 
 MBWindowManagerClient*
-mb_wm_client_new (MBWindowManager *wm, MBWMWindow *win);
+mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win);
 
 void
-mb_wm_client_init (MBWMObject *obj); 
+mb_wm_client_init (MBWMObject *obj);
 
 void
 mb_wm_client_realize (MBWindowManagerClient *client);

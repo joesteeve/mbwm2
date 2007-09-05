@@ -12,7 +12,7 @@ mb_wm_property_req (MBWindowManager *wm,
 {
   XasCookie cookie;
 
-  cookie = xas_get_property(wm->xas_context, 
+  cookie = xas_get_property(wm->xas_context,
 			    win,
 			    property,
 			    offset,
@@ -27,19 +27,19 @@ mb_wm_property_req (MBWindowManager *wm,
 Status
 mb_wm_property_reply (MBWindowManager  *wm,
 		      MBWMCookie        cookie,
-		      Atom             *actual_type_return, 
-		      int              *actual_format_return, 
-		      unsigned long    *nitems_return, 
-		      unsigned long    *bytes_after_return, 
+		      Atom             *actual_type_return,
+		      int              *actual_format_return,
+		      unsigned long    *nitems_return,
+		      unsigned long    *bytes_after_return,
 		      unsigned char   **prop_return,
 		      int              *x_error_code)
 {
-  return  xas_get_property_reply(wm->xas_context, 
+  return  xas_get_property_reply(wm->xas_context,
 			         (XasCookie)cookie,
-				 actual_type_return, 
-				 actual_format_return, 
-				 nitems_return, 
-				 bytes_after_return, 
+				 actual_type_return,
+				 actual_format_return,
+				 nitems_return,
+				 bytes_after_return,
 				 prop_return,
 				 x_error_code);
 }
@@ -47,26 +47,26 @@ mb_wm_property_reply (MBWindowManager  *wm,
 void*
 mb_wm_property_get_reply_and_validate (MBWindowManager  *wm,
 				       MBWMCookie        cookie,
-				       Atom              expected_type, 
+				       Atom              expected_type,
 				       int               expected_format,
 				       int               expected_n_items,
 				       int              *n_items_ret,
 				       int              *x_error_code)
 {
   Atom             actual_type_return;
-  int              actual_format_return; 
+  int              actual_format_return;
   unsigned long    nitems_return;
   unsigned long    bytes_after_return;
   unsigned char   *prop_data;
 
   *x_error_code = 0;
 
-  xas_get_property_reply(wm->xas_context, 
+  xas_get_property_reply(wm->xas_context,
 			 (XasCookie)cookie,
-			 &actual_type_return, 
-			 &actual_format_return, 
-			 &nitems_return, 
-			 &bytes_after_return, 
+			 &actual_type_return,
+			 &actual_format_return,
+			 &nitems_return,
+			 &bytes_after_return,
 			 &prop_data,
 			 x_error_code);
 
@@ -81,7 +81,7 @@ mb_wm_property_get_reply_and_validate (MBWindowManager  *wm,
 
   if (n_items_ret)
     *n_items_ret = nitems_return;
-  
+
   return prop_data;
 
  fail:
@@ -116,15 +116,15 @@ mb_wm_xwin_get_geometry (MBWindowManager   *wm,
   return xas_get_geometry(wm->xas_context, d);
 }
 
-MBWMWindowAttributes*
+MBWMClientWindowAttributes*
 mb_wm_xwin_get_attributes_reply (MBWindowManager   *wm,
 				 MBWMCookie         cookie,
 				 int               *x_error_code)
 {
-  return (MBWMWindowAttributes*)
+  return (MBWMClientWindowAttributes*)
     xas_get_window_attributes_reply(wm->xas_context,
-				    cookie, 
-				    x_error_code); 
+				    cookie,
+				    x_error_code);
 }
 
 Status
@@ -186,7 +186,7 @@ mb_wm_props_send_x_message (MBWindowManager *wm,
 void
 mb_wm_props_sync_root_props (MBWindowManager *wm)
 {
-  
+
 
 
 
@@ -195,7 +195,7 @@ mb_wm_props_sync_root_props (MBWindowManager *wm)
 void
 mb_wm_props_root_message (MBWindowManager *wm)
 {
-  
+
 
 
 

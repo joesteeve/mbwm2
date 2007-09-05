@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -69,7 +69,7 @@ void
 mb_wm_object_init(void);
 
 int
-mb_wm_object_register_class (MBWMObjectClassInfo *info, 
+mb_wm_object_register_class (MBWMObjectClassInfo *info,
 			     int                  parent_type,
 			     int                  flags);
 
@@ -83,7 +83,7 @@ MBWMObject*
 mb_wm_object_new (int type);
 
 const MBWMObjectClass*
-mb_wm_object_get_class (MBWMObject *this); 
+mb_wm_object_get_class (MBWMObject *this);
 
 
 #endif

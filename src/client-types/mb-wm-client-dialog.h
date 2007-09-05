@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -26,8 +26,8 @@
 typedef struct MBWMClientDialog      MBWMClientDialog;
 typedef struct MBWMClientDialogClass MBWMClientDialogClass;
 
-#define MB_WM_CLIENT_DIALOG(c) ((MBWMClientDialog*)(c)) 
-#define MB_WM_CLIENT_DIALOG_CLASS(c) ((MBWMClientDialogClass*)(c)) 
+#define MB_WM_CLIENT_DIALOG(c) ((MBWMClientDialog*)(c))
+#define MB_WM_CLIENT_DIALOG_CLASS(c) ((MBWMClientDialogClass*)(c))
 #define MB_WM_TYPE_CLIENT_DIALOG (mb_wm_client_dialog_class_type ())
 
 struct MBWMClientDialog
@@ -42,7 +42,7 @@ struct MBWMClientDialogClass
 };
 
 MBWindowManagerClient*
-mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win);
+mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win);
 
 int
 mb_wm_client_dialog_class_type ();

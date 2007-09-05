@@ -15,7 +15,7 @@ mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 			   int                    flags);
 
 void
-mb_wm_client_dialog_class_init (MBWMObjectClass *klass) 
+mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
 
@@ -23,7 +23,7 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   client = (MBWindowManagerClientClass *)klass;
 
-  client->geometry = mb_wm_client_dialog_request_geometry; 
+  client->geometry = mb_wm_client_dialog_request_geometry;
   client->stack = mb_wm_client_dialog_stack;
 }
 
@@ -57,8 +57,8 @@ mb_wm_client_dialog_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMClientDialogClass),      
-	sizeof (MBWMClientDialog), 
+	sizeof (MBWMClientDialogClass),
+	sizeof (MBWMClientDialog),
 	mb_wm_client_dialog_init,
 	mb_wm_client_dialog_destroy,
 	mb_wm_client_dialog_class_init
@@ -97,14 +97,14 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 
 
 MBWindowManagerClient*
-mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
+mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient    *client;
   MBWMClientDialog         *client_dialog;
   MBWMDecor                *decor;
   MBWMDecorButton          *button;
 
-  client_dialog 
+  client_dialog
     = MB_WM_CLIENT_DIALOG(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG));
 
   if (!client_dialog)
@@ -112,21 +112,21 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
 
   client = MB_WM_CLIENT(client_dialog);
 
-  client->window        = win; 	
+  client->window        = win;
   client->wmref         = wm;
 
 
-  mb_wm_client_set_layout_hints (client, 
+  mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);
 
   if (win->xwin_transient_for
       && win->xwin_transient_for != win->xwindow
       && win->xwin_transient_for != wm->xwin_root)
     {
-      MBWM_DBG ("Adding to '%lx' transient list", 
+      MBWM_DBG ("Adding to '%lx' transient list",
 		win->xwin_transient_for);
-      mb_wm_client_add_transient 
-	(mb_wm_core_managed_client_from_xwindow (wm, 
+      mb_wm_client_add_transient
+	(mb_wm_core_managed_client_from_xwindow (wm,
 						 win->xwin_transient_for),
 	 client);
       client->stacking_layer = 0;  /* We stack with whatever transient too */
@@ -135,7 +135,7 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
     {
       MBWM_DBG ("Dialog is transient to root");
       /* Stack with 'always on top' */
-      client->stacking_layer = MBWMStackLayerTopMid; 
+      client->stacking_layer = MBWMStackLayerTopMid;
     }
 
   /* center if window sets 0,0 */
@@ -143,11 +143,11 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMWindow *win)
     {
         MBGeometry  avail_geom;
 
-	mb_wm_get_display_geometry (wm, &avail_geom); 
+	mb_wm_get_display_geometry (wm, &avail_geom);
 
-	client->window->geometry.x 
+	client->window->geometry.x
 	  = (avail_geom.width - client->window->geometry.width) / 2;
-	client->window->geometry.y 
+	client->window->geometry.y
 	  = (avail_geom.height - client->window->geometry.height) / 2;
     }
 

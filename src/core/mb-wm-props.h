@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -33,17 +33,17 @@ mb_wm_property_req (MBWindowManager *wm,
 Status
 mb_wm_property_reply (MBWindowManager  *wm,
 		      MBWMCookie        cookie,
-		      Atom             *actual_type_return, 
-		      int              *actual_format_return, 
-		      unsigned long    *nitems_return, 
-		      unsigned long    *bytes_after_return, 
+		      Atom             *actual_type_return,
+		      int              *actual_format_return,
+		      unsigned long    *nitems_return,
+		      unsigned long    *bytes_after_return,
 		      unsigned char   **prop_return,
 		      int              *x_error_code);
 
 void*
 mb_wm_property_get_reply_and_validate (MBWindowManager  *wm,
 				       MBWMCookie        cookie,
-				       Atom              expected_type, 
+				       Atom              expected_type,
 				       int               expected_format,
 				       int               expected_n_items,
 				       int              *n_items_ret,
@@ -62,7 +62,7 @@ MBWMCookie
 mb_wm_xwin_get_geometry (MBWindowManager   *wm,
 			 Drawable            d);
 
-MBWMWindowAttributes*
+MBWMClientWindowAttributes*
 mb_wm_xwin_get_attributes_reply (MBWindowManager   *wm,
 				 MBWMCookie         cookie,
 				 int               *x_error_code);

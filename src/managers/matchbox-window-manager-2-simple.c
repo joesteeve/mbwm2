@@ -11,7 +11,7 @@ enum {
 };
 
 MBWindowManagerClient*
-client_new(MBWindowManager *wm, MBWMWindow *win)
+client_new(MBWindowManager *wm, MBWMClientWindow *win)
 {
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     {
@@ -60,7 +60,7 @@ key_binding_func (MBWindowManager   *wm,
     }
 }
 
-int 
+int
 main(int argc, char **argv)
 {
   MBWindowManager     *wm;

@@ -1,3 +1,27 @@
+2007-09-05  Tomas Frydrych  <tf@o-hand.com>
+	
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-app.h:
+	* src/client-types/mb-wm-client-dialog.c:
+	* src/client-types/mb-wm-client-dialog.h:
+	* src/client-types/mb-wm-client-panel.c:
+	* src/client-types/mb-wm-client-panel.h:
+	* src/core/Makefile.am:
+	* src/core/mb-wm-client-window.c:
+	* src/core/mb-wm-client-window.h:
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-core.c:
+	* src/core/mb-wm-object.h:
+	* src/core/mb-wm-props.c:
+	* src/core/mb-wm-props.h:
+	* src/core/mb-wm-types.h:
+	* src/core/mb-wm.h:
+	* src/managers/matchbox-window-manager-2-simple.c:
+
+	Namespace cleanup: renamed MBWMWindow to MBWMClientWindow; moved
+	mb-wm-window.h/c accordingly; stripped trailing whitespace.
+	
 2007-09-04  Matthew Allum  <mallum@openedhand.com>
 
 	* TODO:
