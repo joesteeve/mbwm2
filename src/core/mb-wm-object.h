@@ -80,7 +80,7 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info,
 			     int                  parent_type,
 			     int                  flags);
 
-MBWMObject *
+void *
 mb_wm_object_ref (MBWMObject *this);
 
 void

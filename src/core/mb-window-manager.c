@@ -1,46 +1,61 @@
 #include "mb-wm.h"
 
-#ifdef MBWM_WANT_DEBUG
+static void
+mb_wm_class_init (MBWMObjectClass *klass)
+{
+  MBWindowManagerClass *wm_class;
 
-static const char *MBWMDEBUGEvents[] = {
-    "error",
-    "reply",
-    "KeyPress",
-    "KeyRelease",
-    "ButtonPress",
-    "ButtonRelease",
-    "MotionNotify",
-    "EnterNotify",
-    "LeaveNotify",
-    "FocusIn",
-    "FocusOut",
-    "KeymapNotify",
-    "Expose",
-    "GraphicsExpose",
-    "NoExpose",
-    "VisibilityNotify",
-    "CreateNotify",
-    "DestroyNotify",
-    "UnmapNotify",
-    "MapNotify",
-    "MapRequest",
-    "ReparentNotify",
-    "ConfigureNotify",
-    "ConfigureRequest",
-    "GravityNotify",
-    "ResizeRequest",
-    "CirculateNotify",
-    "CirculateRequest",
-    "PropertyNotify",
-    "SelectionClear",
-    "SelectionRequest",
-    "SelectionNotify",
-    "ColormapNotify",
-    "ClientMessage",
-    "MappingNotify",
-};
+  MBWM_MARK();
 
-#endif
+  wm_class = (MBWindowManagerClass *)klass;
+}
+
+static void
+mb_wm_destroy (MBWMObject *this)
+{
+}
+
+/* Name clash with the public mb_wm_init() */
+static void
+mb_wm_init_object (MBWMObject *this)
+{
+  MBWM_MARK();
+}
+
+int
+mb_wm_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWindowManagerClass),
+	sizeof (MBWindowManager),
+	mb_wm_init_object,
+	mb_wm_destroy,
+	mb_wm_class_init
+      };
+
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
+    }
+
+  return type;
+}
+
+MBWindowManager*
+mb_wm_new ()
+{
+  MBWindowManager *window_manager;
+
+  window_manager
+    = MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER));
+
+  if (!window_manager)
+    return window_manager;
+
+  return window_manager;
+}
 
 static void
 mb_wm_handle_x_event (MBWindowManager *wm,
@@ -67,12 +82,12 @@ test_destroy_notify (MBWindowManager      *wm,
 
   MBWM_MARK();
 
-  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (client)
     {
       MBWM_DBG("Found client, unmanaing!");
-      mb_wm_core_unmanage_client (wm, client);
+      mb_wm_unmanage_client (wm, client);
       mb_wm_object_unref (MB_WM_OBJECT(client));
     }
 
@@ -88,7 +103,7 @@ test_unmap_notify (MBWindowManager      *wm,
 
   MBWM_MARK();
 
-  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (client)
     {
@@ -98,7 +113,7 @@ test_unmap_notify (MBWindowManager      *wm,
 	}
       else
 	{
-	  mb_wm_core_unmanage_client (wm, client);
+	  mb_wm_unmanage_client (wm, client);
 	  mb_wm_object_unref (MB_WM_OBJECT(client));
 	}
     }
@@ -107,13 +122,13 @@ test_unmap_notify (MBWindowManager      *wm,
 }
 
 static Bool
-mb_wm_core_handle_property_notify (MBWindowManager         *wm,
-				   XPropertyEvent          *xev,
-				   void                    *userdata)
+mb_wm_handle_property_notify (MBWindowManager         *wm,
+			      XPropertyEvent          *xev,
+			      void                    *userdata)
 {
   MBWindowManagerClient *client;
 
-  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (!client)
     return True;
@@ -126,16 +141,16 @@ mb_wm_core_handle_property_notify (MBWindowManager         *wm,
 }
 
 static  Bool
-mb_wm_core_handle_config_request (MBWindowManager        *wm,
-				  XConfigureRequestEvent *xev,
-				  void                   *userdata)
+mb_wm_handle_config_request (MBWindowManager        *wm,
+			     XConfigureRequestEvent *xev,
+			     void                   *userdata)
 {
   MBWindowManagerClient *client;
   unsigned long          value_mask;
   int                    req_x, req_y, req_w, req_h;
   MBGeometry             req_geom, *win_geom;
 
-  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (!client)
     {
@@ -187,15 +202,15 @@ mb_wm_core_handle_config_request (MBWindowManager        *wm,
 }
 
 static Bool
-mb_wm_core_handle_map_request (MBWindowManager   *wm,
-			       XMapRequestEvent  *xev,
-			       void              *userdata)
+mb_wm_handle_map_request (MBWindowManager   *wm,
+			  XMapRequestEvent  *xev,
+			  void              *userdata)
 {
   MBWindowManagerClient *client = NULL;
 
   MBWM_MARK();
 
-  client = mb_wm_core_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (!client)
     {
@@ -215,7 +230,7 @@ mb_wm_core_handle_map_request (MBWindowManager   *wm,
       client = wm->new_client_from_window_func(wm, win);
 
       if (client)
-	mb_wm_core_manage_client(wm, client);
+	mb_wm_manage_client(wm, client);
       else
 	mb_wm_object_unref (MB_WM_OBJECT (win));
     }
@@ -273,7 +288,7 @@ stack_sync_to_display (MBWindowManager *wm)
 }
 
 void
-mb_wm_core_sync (MBWindowManager *wm)
+mb_wm_sync (MBWindowManager *wm)
 {
   /* Sync all changes to display */
   MBWindowManagerClient *client = NULL;
@@ -313,8 +328,8 @@ mb_wm_core_sync (MBWindowManager *wm)
 }
 
 void
-mb_wm_core_manage_client (MBWindowManager       *wm,
-			  MBWindowManagerClient *client)
+mb_wm_manage_client (MBWindowManager       *wm,
+		     MBWindowManagerClient *client)
 {
   /* Add to our list of managed clients */
 
@@ -336,7 +351,7 @@ mb_wm_core_manage_client (MBWindowManager       *wm,
 }
 
 void
-mb_wm_core_unmanage_client (MBWindowManager       *wm,
+mb_wm_unmanage_client (MBWindowManager       *wm,
 			    MBWindowManagerClient *client)
 {
   /* FIXME: set a managed flag in client object ? */
@@ -351,7 +366,7 @@ mb_wm_core_unmanage_client (MBWindowManager       *wm,
 }
 
 MBWindowManagerClient*
-mb_wm_core_managed_client_from_xwindow(MBWindowManager *wm, Window win)
+mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win)
 {
   MBWindowManagerClient *client = NULL;
 
@@ -380,7 +395,7 @@ mb_wm_main_loop(MBWindowManager *wm)
       mb_wm_handle_x_event (wm, &xev);
 
      if (wm->need_display_sync)
-       mb_wm_core_sync (wm);
+       mb_wm_sync (wm);
     }
 }
 
@@ -430,7 +445,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	   client = wm->new_client_from_window_func(wm, win);
 
 	   if (client)
-	     mb_wm_core_manage_client(wm, client);
+	     mb_wm_manage_client(wm, client);
 	   else
 	     mb_wm_object_unref (MB_WM_OBJECT (win));
 	 }
@@ -444,13 +459,6 @@ mb_wm_register_client_type (void)
   static int type_cnt = 0;
   return ++type_cnt;
 }
-
-MBWindowManager*
-mb_wm_new(void)
-{
-  return mb_wm_util_malloc0(sizeof(MBWindowManager));
-}
-
 
 void
 mb_wm_x_event_handler_add (MBWindowManager *wm,
@@ -611,6 +619,47 @@ mb_wm_fd_watch_remove (MBWindowManager           *wm,
 
 }
 
+#ifdef MBWM_WANT_DEBUG
+
+static const char *MBWMDEBUGEvents[] = {
+    "error",
+    "reply",
+    "KeyPress",
+    "KeyRelease",
+    "ButtonPress",
+    "ButtonRelease",
+    "MotionNotify",
+    "EnterNotify",
+    "LeaveNotify",
+    "FocusIn",
+    "FocusOut",
+    "KeymapNotify",
+    "Expose",
+    "GraphicsExpose",
+    "NoExpose",
+    "VisibilityNotify",
+    "CreateNotify",
+    "DestroyNotify",
+    "UnmapNotify",
+    "MapNotify",
+    "MapRequest",
+    "ReparentNotify",
+    "ConfigureNotify",
+    "ConfigureRequest",
+    "GravityNotify",
+    "ResizeRequest",
+    "CirculateNotify",
+    "CirculateRequest",
+    "PropertyNotify",
+    "SelectionClear",
+    "SelectionRequest",
+    "SelectionNotify",
+    "ColormapNotify",
+    "ClientMessage",
+    "MappingNotify",
+};
+
+#endif
 
 static void
 mb_wm_handle_x_event (MBWindowManager *wm,
@@ -623,7 +672,7 @@ mb_wm_handle_x_event (MBWindowManager *wm,
  {
    MBWindowManagerClient *ev_client;
 
-   ev_client = mb_wm_core_managed_client_from_xwindow(wm, xev->xany.window);
+   ev_client = mb_wm_managed_client_from_xwindow(wm, xev->xany.window);
 
    MBWM_DBG("@ XEvent: '%s:%i' for %lx %s%s",
 	    MBWMDEBUGEvents[xev->type],
@@ -786,15 +835,15 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
   wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
 
   mb_wm_x_event_handler_add (wm, MapRequest,
-			     (MBWMXEventFunc)mb_wm_core_handle_map_request,
+			     (MBWMXEventFunc)mb_wm_handle_map_request,
 			     NULL);
 
   mb_wm_x_event_handler_add (wm, ConfigureRequest,
-			     (MBWMXEventFunc)mb_wm_core_handle_config_request,
+			     (MBWMXEventFunc)mb_wm_handle_config_request,
 			     NULL);
 
   mb_wm_x_event_handler_add (wm, PropertyNotify,
-			     (MBWMXEventFunc)mb_wm_core_handle_property_notify,
+			     (MBWMXEventFunc)mb_wm_handle_property_notify,
 			     NULL);
 
   mb_wm_x_event_handler_add (wm, DestroyNotify,
@@ -819,5 +868,3 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 
   return True;
 }
-
-

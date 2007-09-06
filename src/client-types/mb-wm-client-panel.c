@@ -92,7 +92,7 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMClientWindow *win)
     return NULL; 		/* FIXME: Handle out of memory */
 
   client->window = win;
-  client->wmref  = wm;
+  client->wmref  = mb_wm_object_ref (MB_WM_OBJECT (wm));
   client->stacking_layer = MBWMStackLayerBottomMid;
 
   mb_wm_client_set_layout_hints (client,

@@ -1,3 +1,23 @@
+/*
+ *  Matchbox Window Manager II - A lightweight window manager not for the
+ *                               desktop.
+ *
+ *  Authored By Matthew Allum <mallum@o-hand.com>
+ *
+ *  Copyright (c) 2005 OpenedHand Ltd - http://o-hand.com
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ */
+
 #include "mb-wm.h"
 
 /* Via Xatomtype.h */
@@ -28,7 +48,7 @@ validate_reply(void)
   ;
 }
 
-void
+static void
 mb_wm_client_window_class_init (MBWMObjectClass *klass)
 {
   MBWMClientWindowClass *rw_class;
@@ -38,11 +58,11 @@ mb_wm_client_window_class_init (MBWMObjectClass *klass)
   rw_class = (MBWMClientWindowClass *)klass;
 }
 
-void
+static void
 mb_wm_client_window_destroy (MBWMObject *this)
 {
-  MBWMClientWindow        * win  = MB_WM_CLIENT_WINDOW (this);
-  MBWMList                * l    = win->icons;
+  MBWMClientWindow * win = MB_WM_CLIENT_WINDOW (this);
+  MBWMList         * l   = win->icons;
 
   if (win->name)
     XFree (win->name);
@@ -56,10 +76,12 @@ mb_wm_client_window_destroy (MBWMObject *this)
       l = l->next;
     }
 
+  mb_wm_object_unref (MB_WM_OBJECT (win->wm));
+
   free (win);
 }
 
-void
+static void
 mb_wm_client_window_init (MBWMObject *this)
 {
 }
@@ -96,6 +118,7 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
     return NULL; 		/* FIXME: Handle out of memory */
 
   win->xwindow = xwin;
+  win->wm = (MBWindowManager*)mb_wm_object_ref (MB_WM_OBJECT (wm));
 
   mb_wm_client_window_sync_properties (wm, win, MBWM_WINDOW_PROP_ALL);
 

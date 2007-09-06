@@ -103,6 +103,7 @@ struct MBWMClientWindow
   unsigned int                   depth;
   char                          *name;
   Window                         xwindow;
+  MBWindowManager               *wm;
 
   Atom                           net_type;
   Bool                           want_key_input;

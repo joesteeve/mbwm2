@@ -113,7 +113,7 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
   client = MB_WM_CLIENT(client_dialog);
 
   client->window        = win;
-  client->wmref         = wm;
+  client->wmref         = mb_wm_object_ref (MB_WM_OBJECT (wm));
 
 
   mb_wm_client_set_layout_hints (client,
@@ -126,8 +126,8 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
       MBWM_DBG ("Adding to '%lx' transient list",
 		win->xwin_transient_for);
       mb_wm_client_add_transient
-	(mb_wm_core_managed_client_from_xwindow (wm,
-						 win->xwin_transient_for),
+	(mb_wm_managed_client_from_xwindow (wm,
+					    win->xwin_transient_for),
 	 client);
       client->stacking_layer = 0;  /* We stack with whatever transient too */
     }

@@ -76,7 +76,6 @@ typedef struct MBWMRgbaIcon
 } MBWMRgbaIcon;
 
 typedef struct MBWindowManager       MBWindowManager;
-typedef struct MBWindowManagerPriv   MBWindowManagerPriv;
 typedef struct MBWindowManagerClient MBWindowManagerClient;
 typedef struct MBWindowManagerClientClass MBWindowManagerClientClass;
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
@@ -309,52 +308,5 @@ typedef struct MBWMTimeOutEventInfo
   MBWindowManagerTimeOutFunc func;
 }
 MBWMTimeOutEventInfo;
-
-typedef struct MBWindowManagerEventFuncs
-{
-  /* FIXME: figure our X wrap / unwrap mechanism */
-  MBWMList *map_notify;
-  MBWMList *unmap_notify;
-  MBWMList *map_request;
-  MBWMList *destroy_notify;
-  MBWMList *configure_request;
-  MBWMList *configure_notify;
-  MBWMList *key_press;
-  MBWMList *property_notify;
-  MBWMList *button_press;
-  MBWMList *button_release;
-
-  MBWMList *timeout;
-}
-MBWindowManagerEventFuncs;
-
-
-/*********************/
-
-struct MBWindowManager
-{
-
-  Display                     *xdpy;
-  unsigned int                 xdpy_width, xdpy_height;
-  int                          xscreen;
-  Window                       xwin_root;
-  MBWindowManagerEventFuncs   *event_funcs;
-
-  MBWindowManagerClient       *stack_top, *stack_bottom;
-  MBWMList                    *clients;
-
-  Atom                         atoms[MBWM_ATOM_COUNT];
-
-  MBWMKeys                    *keys; /* Keybindings etc */
-
-  MBWindowManagerNewClientFunc new_client_from_window_func;
-
-  XasContext                   *xas_context;
-
-  /* ### Private ### */
-  Bool                          need_display_sync;
-  int                           client_type_cnt;
-  int                           stack_n_clients;
-};
 
 #endif

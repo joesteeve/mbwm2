@@ -85,7 +85,7 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info,
   return 1 + NObjectClasses++;
 }
 
-MBWMObject *
+void *
 mb_wm_object_ref (MBWMObject *this)
 {
   if (!this)

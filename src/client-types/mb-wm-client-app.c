@@ -140,7 +140,7 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMClientWindow *win)
   client = MB_WM_CLIENT(client_app);
 
   client->window        = win;
-  client->wmref         = wm;
+  client->wmref         = mb_wm_object_ref (MB_WM_OBJECT (wm));
   client->stacking_layer = MBWMStackLayerMid;
 
   mb_wm_client_set_layout_hints (client,

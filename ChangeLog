@@ -1,5 +1,46 @@
 2007-09-06  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm.h:
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-core.c:
+        * src/core/mb-wm-core.h:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-namager.h:
+        * src/core/mb-wm-client.c:
+        * src/client-types/mb-wm-client-app.c
+        * src/client-types/mb-wm-client-dialog.c
+        * src/client-types/mb-wm-client-panel.c
+        * src/core/Makefile.am:
+	* configure.ac:
+	
+	Objectified MBWindowManager and moved all relevant code to
+	mb-window-manager.h/c (removed empty mb-wm-core.h/c); unified
+	function naming to use mb_wm_ prefix.
+	
+        * src/core/mb-wm-client-base.h:
+
+	Stripped trailing whitespace.
+	
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+
+	Added licence; made non-public functions static; added
+	MBWindowManger to MBWMClientWindow struct.
+
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-root-window.h:
+
+	Skeleton for MBWMRootWindow object.
+	
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+	(mb_wm_object_ref):
+	
+	Modified to return void* instead of MBWMObject* to avoid endless
+	casting.
+	
+2007-09-06  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client-window.c:
         * src/core/mb-wm-client-window.h:
         * src/core/mb-wm-client.c:

@@ -43,6 +43,7 @@ mb_wm_client_destroy (MBWMObject *obj)
   mb_wm_display_sync_queue (client->wmref);
 
   mb_wm_object_unref (MB_WM_OBJECT (client->window));
+  mb_wm_object_unref (MB_WM_OBJECT (client->wmref));
 }
 
 
