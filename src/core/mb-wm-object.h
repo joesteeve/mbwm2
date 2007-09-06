@@ -63,7 +63,14 @@ struct MBWMObject
 {
   MBWMObjectClass *klass;
   int              refcnt;
+
+  MBWMList        *callbacks;
 };
+
+typedef Bool (*MBWMObjectCallbackFunc) (MBWMObject *obj,
+					int         mask,
+					void       *userdata);
+
 
 void
 mb_wm_object_init(void);
@@ -85,5 +92,17 @@ mb_wm_object_new (int type);
 const MBWMObjectClass*
 mb_wm_object_get_class (MBWMObject *this);
 
+unsigned long
+mb_wm_object_signal_connect (MBWMObject            *obj,
+			     unsigned long          signal,
+			     MBWMObjectCallbackFunc func,
+			     void                  *userdata);
+
+void
+mb_wm_object_signal_disconnect (MBWMObject    *obj,
+				unsigned long  id);
+
+void
+mb_wm_object_signal_emit (MBWMObject *obj, unsigned long signal);
 
 #endif

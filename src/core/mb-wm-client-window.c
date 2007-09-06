@@ -102,84 +102,6 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   return win;
 }
 
-unsigned long
-mb_wm_client_window_prop_handler_add (MBWMClientWindow              *win,
-				      MBWMClientWindowPropChangeFunc func,
-				      void                          *userdata)
-{
-  static unsigned long id_counter = 0;
-  MBWMFuncInfo *func_info;
-
-  MBWM_ASSERT(func != NULL);
-
-  func_info           = mb_wm_util_malloc0(sizeof(MBWMFuncInfo));
-  func_info->func     = (void*)func;
-  func_info->userdata = userdata;
-  func_info->data     = mb_wm_object_ref (MB_WM_OBJECT (win));
-  func_info->id       = id_counter++;
-
-  win->prop_change_funcs =
-    mb_wm_util_list_append (win->prop_change_funcs, func_info);
-
-  return func_info->id;
-}
-
-void
-mb_wm_client_window_prop_handler_remove (MBWMClientWindow *win,
-					 unsigned long     id)
-{
-    MBWMList  *item = win->prop_change_funcs;
-
-    while (item)
-      {
-	MBWMFuncInfo* info = item->data;
-
-	if (info->id == id)
-	  {
-	    MBWMList * prev = item->prev;
-	    MBWMList * next = item->next;
-
-	    if (prev)
-	      prev->next = next;
-	    else
-	      win->prop_change_funcs = next;
-	      
-	    if (next)
-	      next->prev = prev;
-
-	    mb_wm_object_unref (MB_WM_OBJECT (info->data));
-
-	    free (info);
-	    free (item);
-	    
-	    break;
-	  }
-
-	item = item->next;
-      }
-}
-
-static void
-mb_wm_client_window_emit_prop_changes (MBWindowManager  *wm,
-				       MBWMClientWindow *win,
-				       int               prop_changes)
-{
-    MBWMList  *item = win->prop_change_funcs;
-
-    while (item)
-      {
-	MBWMFuncInfo* info = item->data;
-
-	if (info->data == win)
-	  ((MBWMClientWindowPropChangeFunc)info->func) (wm,
-							win,
-							prop_changes,
-							info->userdata);
-
-	item = item->next;
-      }
-}
-
 void
 mb_wm_window_change_property (MBWindowManager  *wm,
 			      MBWMClientWindow *win,
@@ -752,7 +674,7 @@ mb_wm_client_window_sync_properties (MBWindowManager  *wm,
 
 
   if (changes)
-    mb_wm_client_window_emit_prop_changes (wm, win, changes);
+    mb_wm_object_signal_emit (MB_WM_OBJECT (win), changes);
 
  abort:
 

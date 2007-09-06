@@ -1,3 +1,17 @@
+2007-09-06  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+        * src/core/mb-wm-types.h:
+	(mb_wm_object_signal_connect):
+	(mb_wm_object_signal_disconnect):
+	(mb_wm_object_signal_emit):
+	
+	Moved signal handling into MBWMObject.
+
 2007-09-05  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-types.h:

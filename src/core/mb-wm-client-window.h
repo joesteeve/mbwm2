@@ -91,11 +91,6 @@ typedef enum MBWMClientWindowAllowedActions
   }
 MBWMClientWindowAllowedActions;
 
-typedef Bool (*MBWMClientWindowPropChangeFunc) (MBWindowManager    *wm,
-						MBWMClientWindow   *window,
-						int                 property,
-						void               *userdata);
-
 #define MB_WM_CLIENT_WINDOW(c) ((MBWMClientWindow*)(c))
 #define MB_WM_CLIENT_WINDOW_CLASS(c) ((MBWMClientWindowClass*)(c))
 #define MB_WM_TYPE_CLIENT_WINDOW (mb_wm_client_window_class_type ())
@@ -129,8 +124,6 @@ struct MBWMClientWindow
   MBWMClientWindowAllowedActions allowed_actions;
 
   unsigned long                  user_time;
-
-  MBWMList                      *prop_change_funcs;
 };
 
 struct MBWMClientWindowClass
@@ -148,14 +141,5 @@ Bool
 mb_wm_client_window_sync_properties (MBWindowManager  *wm,
 				     MBWMClientWindow *win,
 				     unsigned long     props_req);
-
-unsigned long
-mb_wm_client_window_prop_handler_add (MBWMClientWindow              *win,
-				      MBWMClientWindowPropChangeFunc func,
-				      void                          *userdata);
-
-void
-mb_wm_client_window_prop_handler_remove (MBWMClientWindow *win,
-					 unsigned long     id);
 
 #endif

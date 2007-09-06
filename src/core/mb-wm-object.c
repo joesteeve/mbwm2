@@ -179,6 +179,84 @@ mb_wm_object_get_class (MBWMObject *this)
   return this->klass;
 }
 
+unsigned long
+mb_wm_object_signal_connect (MBWMObject             *obj,
+			     unsigned long           signal,
+			     MBWMObjectCallbackFunc  func,
+			     void                   *userdata)
+{
+  static unsigned long id_counter = 0;
+  MBWMFuncInfo *func_info;
+
+  MBWM_ASSERT(func != NULL);
+
+  func_info           = mb_wm_util_malloc0(sizeof(MBWMFuncInfo));
+  func_info->func     = (void*)func;
+  func_info->userdata = userdata;
+  func_info->data     = mb_wm_object_ref (obj);
+  func_info->signal   = signal;
+  func_info->id       = id_counter++;
+
+  obj->callbacks =
+    mb_wm_util_list_append (obj->callbacks, func_info);
+
+  return func_info->id;
+}
+
+void
+mb_wm_object_signal_disconnect (MBWMObject    *obj,
+				unsigned long  id)
+{
+  MBWMList  *item = obj->callbacks;
+
+  while (item)
+    {
+      MBWMFuncInfo* info = item->data;
+
+      if (info->id == id)
+	{
+	  MBWMList * prev = item->prev;
+	  MBWMList * next = item->next;
+
+	  if (prev)
+	    prev->next = next;
+	  else
+	    obj->callbacks = next;
+
+	  if (next)
+	    next->prev = prev;
+
+	  mb_wm_object_unref (MB_WM_OBJECT (info->data));
+
+	  free (info);
+	  free (item);
+
+	  return;
+	}
+
+      item = item->next;
+    }
+
+  MBWM_DBG ("### Warning: did not find signal handler %d ###", id);
+}
+
+void
+mb_wm_object_signal_emit (MBWMObject    *obj,
+			  unsigned long  signal)
+{
+    MBWMList  *item = obj->callbacks;
+
+    while (item)
+      {
+	MBWMFuncInfo* info = item->data;
+
+	if (info->signal & signal)
+	  ((MBWMObjectCallbackFunc)info->func) (obj, signal, info->userdata);
+
+	item = item->next;
+      }
+}
+
 #if 0
 
 /* ----- Test code -------- */

@@ -120,8 +120,7 @@ mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client)
 }
 
 static Bool
-mb_wm_client_on_property_change (MBWindowManager         *wm,
-				 MBWMClientWindow        *window,
+mb_wm_client_on_property_change (MBWMClientWindow        *window,
 				 int                      property,
 				 void                    *userdata)
 {
@@ -141,9 +140,10 @@ mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win)
   client->window = win;
 
   /* Handle underlying property changes */
-  mb_wm_client_window_prop_handler_add (win,
-					mb_wm_client_on_property_change,
-					(void*)client);
+  mb_wm_object_signal_connect (MB_WM_OBJECT (win),
+			       MBWM_WINDOW_PROP_ALL,
+			       mb_wm_client_on_property_change,
+			       (void*)client);
   return client;
 }
 
