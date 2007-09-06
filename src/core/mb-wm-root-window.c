@@ -20,12 +20,6 @@
 
 #include "mb-wm.h"
 
-enum {
-  COOKIE_WIN_TYPE = 0,
-
-  N_COOKIES
-};
-
 static void
 mb_wm_root_window_class_init (MBWMObjectClass *klass)
 {
@@ -71,49 +65,160 @@ mb_wm_root_window_class_type ()
   return type;
 }
 
-MBWMRootWindow*
-mb_wm_root_window_new (MBWindowManager *wm, Window xwin)
-{
-  MBWMRootWindow           *root_window;
+static void
+mb_wm_root_window_init_properties (MBWMRootWindow * win);
 
-  root_window
-    = MB_WM_ROOT_WINDOW (mb_wm_object_new (MB_WM_TYPE_ROOT_WINDOW));
+MBWMRootWindow*
+mb_wm_root_window_get (MBWindowManager *wm)
+{
+  static MBWMRootWindow * root_window = NULL;
 
   if (!root_window)
-    return root_window;
+    {
+      XSetWindowAttributes attr;
 
-  root_window->xwindow = xwin;
-  root_window->wm = (MBWindowManager*)mb_wm_object_ref (MB_WM_OBJECT (wm));
+      root_window
+	= MB_WM_ROOT_WINDOW (mb_wm_object_new (MB_WM_TYPE_ROOT_WINDOW));
+
+      if (!root_window)
+	return root_window;
+
+      attr.override_redirect = True;
+      root_window->hidden_window = XCreateWindow(wm->xdpy, wm->xwin_root,
+						 -200, -200, 5, 5, 0,
+						 CopyFromParent,
+						 CopyFromParent,
+						 CopyFromParent,
+						 CWOverrideRedirect, &attr);
+
+      root_window->wm = (MBWindowManager*)mb_wm_object_ref (MB_WM_OBJECT (wm));
+      mb_wm_root_window_init_properties (root_window);
+    }
+  else
+    mb_wm_object_ref (MB_WM_OBJECT (root_window));
 
   return root_window;
 }
 
-Bool
-mb_wm_root_window_sync_properties (MBWindowManager  *wm,
-				   MBWMRootWindow   *win,
-				   unsigned long     props_req)
+static void
+mb_wm_root_window_init_properties (MBWMRootWindow * win)
 {
-  MBWMCookie       cookies[N_COOKIES];
-  Atom             actual_type_return, *result_atom = NULL;
-  int              actual_format_return;
-  unsigned long    nitems_return;
-  unsigned long    bytes_after_return;
-  unsigned int     foo;
-  int              x_error_code;
-  Window           xwin;
-  int              changes = 0;
+  MBWindowManager  *wm = win->wm;
+  Window            rwin = wm->xwin_root;
+  Window            hwin = win->hidden_window;
 
-  xwin = win->xwindow;
+  int               num_supported = 0;
+  int               num_desktops = 1;
+  unsigned long     val[1];
+  char             *app_name = "matchbox";
 
-  /* bundle all pending requests to server and wait for replys */
-  XSync(wm->xdpy, False);
+  val[0] = hwin;
+
+  /*
+   * The compliance info
+   */
+
+  /* Crack Needed to stop gnome session hanging ? */
+  XChangeProperty(wm->xdpy, rwin,
+		  wm->atoms[MBWM_ATOM_WIN_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace, (unsigned char *)val,
+		  1);
+
+  XChangeProperty(wm->xdpy, hwin,
+		  wm->atoms[MBWM_ATOM_WIN_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace,
+		  (unsigned char *)val, 1);
+
+  /* Correct way of doing it */
+  XChangeProperty(wm->xdpy, rwin,
+		  wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace, (unsigned char *)val,
+		  1);
+
+  XChangeProperty(wm->xdpy, hwin,
+		  wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace,
+		  (unsigned char *)val, 1);
 
 
-  if (changes)
-    mb_wm_object_signal_emit (MB_WM_OBJECT (win), changes);
+  XChangeProperty(wm->xdpy, hwin,
+		  wm->atoms[MBWM_ATOM_NET_WM_NAME],
+		  wm->atoms[MBWM_ATOM_UTF8_STRING],
+		  8, PropModeReplace,
+		  (unsigned char *)app_name, strlen(app_name)+1);
 
- abort:
+  XStoreName(wm->xdpy, hwin, app_name);
 
-  return True;
+  /*
+   * Supported info
+   */
+  Atom supported[] = {
+    wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_TOOLBAR],
+    wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK],
+    wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DIALOG],
+    wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP],
+    wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_SPLASH],
+    wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU],
+    wm->atoms[MBWM_ATOM_NET_WM_STATE],
+    wm->atoms[MBWM_ATOM_NET_WM_STATE_FULLSCREEN],
+    wm->atoms[MBWM_ATOM_NET_WM_STATE_MODAL],
+    wm->atoms[MBWM_ATOM_NET_SUPPORTED],
+    wm->atoms[MBWM_ATOM_NET_CLIENT_LIST],
+    wm->atoms[MBWM_ATOM_NET_NUMBER_OF_DESKTOPS],
+    wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW],
+    wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
+    wm->atoms[MBWM_ATOM_NET_CLOSE_WINDOW],
+    wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
+    wm->atoms[MBWM_ATOM_NET_CLIENT_LIST_STACKING],
+    wm->atoms[MBWM_ATOM_NET_SHOW_DESKTOP],
+    wm->atoms[MBWM_ATOM_NET_WM_NAME],
+    wm->atoms[MBWM_ATOM_NET_WM_ICON],
+    wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_FULLSCREEN],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE],
+    wm->atoms[MBWM_ATOM_NET_STARTUP_ID],
+    wm->atoms[MBWM_ATOM_NET_WM_PING],
+    wm->atoms[MBWM_ATOM_NET_WORKAREA],
+    wm->atoms[MBWM_ATOM_NET_DESKTOP_GEOMETRY],
+    wm->atoms[MBWM_ATOM_NET_WM_PING],
+    wm->atoms[MBWM_ATOM_NET_WM_PID],
+    wm->atoms[MBWM_ATOM_CM_TRANSLUCENCY],
+    0, 0
+   };
+
+  num_supported = sizeof(supported)/sizeof(Atom) - 2;
+
+#if 0
+  /* Check to see if the theme supports help / accept buttons */
+  if (( theme_frame_supports_button_type(w->mbtheme, FRAME_MAIN,
+					 BUTTON_ACTION_ACCEPT)
+	|| w->config->use_title == False )
+      && theme_frame_supports_button_type(w->mbtheme, FRAME_DIALOG,
+					  BUTTON_ACTION_ACCEPT))
+    supported[num_supported++] = wm->atoms[_NET_WM_CONTEXT_ACCEPT];
+
+  if (( theme_frame_supports_button_type(w->mbtheme, FRAME_MAIN,
+					 BUTTON_ACTION_HELP)
+	|| w->config->use_title == False )
+      && theme_frame_supports_button_type(w->mbtheme, FRAME_DIALOG,
+					  BUTTON_ACTION_HELP))
+    supported[num_supported++] = wm->atoms[_NET_WM_CONTEXT_HELP];
+#endif
+
+  XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_SUPPORTED],
+		  XA_ATOM, 32, PropModeReplace, (unsigned char *)supported,
+		  num_supported);
+
+  /*
+   * Desktop info
+   */
+  XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_NUMBER_OF_DESKTOPS],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&num_desktops, 1);
+
+  XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&num_desktops, 0);
 }
 

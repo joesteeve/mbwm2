@@ -88,6 +88,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_CONTEXT_ACCEPT",
     "_NET_WM_CONTEXT_CUSTOM",
     "_NET_WM_SYNC_REQUEST",
+    "CM_TRANSLUCENCY",
   };
 
   /* FIXME: Error Traps */

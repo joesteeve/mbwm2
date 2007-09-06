@@ -139,8 +139,7 @@ MBWMClientWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin);
 
 Bool
-mb_wm_client_window_sync_properties (MBWindowManager  *wm,
-				     MBWMClientWindow *win,
+mb_wm_client_window_sync_properties (MBWMClientWindow *win,
 				     unsigned long     props_req);
 
 #endif

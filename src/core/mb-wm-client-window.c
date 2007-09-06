@@ -120,14 +120,13 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   win->xwindow = xwin;
   win->wm = (MBWindowManager*)mb_wm_object_ref (MB_WM_OBJECT (wm));
 
-  mb_wm_client_window_sync_properties (wm, win, MBWM_WINDOW_PROP_ALL);
+  mb_wm_client_window_sync_properties (win, MBWM_WINDOW_PROP_ALL);
 
   return win;
 }
 
 void
-mb_wm_window_change_property (MBWindowManager  *wm,
-			      MBWMClientWindow *win,
+mb_wm_window_change_property (MBWMClientWindow *win,
 			      Atom              prop,
 			      Atom              type,
 			      int               format,
@@ -183,11 +182,11 @@ icon_from_net_wm_icon (unsigned long * data, MBWMRgbaIcon ** mb_icon)
 }
 
 Bool
-mb_wm_client_window_sync_properties (MBWindowManager  *wm,
-				     MBWMClientWindow *win,
+mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 				     unsigned long     props_req)
 {
   MBWMCookie       cookies[N_COOKIES];
+  MBWindowManager *wm = win->wm;
   Atom             actual_type_return, *result_atom = NULL;
   int              actual_format_return;
   unsigned long    nitems_return;

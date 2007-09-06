@@ -1,5 +1,26 @@
 2007-09-06  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+	(mb_wm_client_window_sync_properties):
+
+	Removed unnecessary MBWindowManager parameter.
+	
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-root-window.h:
+
+	Made into a singleton;
+	Removed unneeded mb_wm_root_window_sync_properties; 
+	Initial implementation of mb_wm_root_window_init_properties().
+
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-types.h:
+
+	Added CM_TRANSLUCENCY atom.
+	
+2007-09-06  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm.h:
         * src/core/mb-wm-types.h:
         * src/core/mb-wm-core.c:
