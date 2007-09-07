@@ -82,6 +82,9 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info,
 
   ObjectClasses[NObjectClasses] = klass;
 
+  if (klass->class_init)
+    klass->class_init (klass);
+
   return 1 + NObjectClasses++;
 }
 
@@ -120,11 +123,11 @@ static void
 mb_wm_object_class_init_recurse (MBWMObjectClass *klass,
 				 MBWMObjectClass *parent)
 {
-  if (parent->parent)
-    mb_wm_object_class_init_recurse (klass, parent->parent);
-
   if (parent->class_init)
     parent->class_init (klass);
+
+  if (parent->parent)
+    mb_wm_object_class_init_recurse (klass, parent->parent);
 }
 
 static void

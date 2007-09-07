@@ -21,8 +21,7 @@
 
 typedef struct ThemeCairo
 {
-  
-
+  MBWMThemeCaps caps;
 
 } 
 ThemeCairo;
@@ -205,3 +204,13 @@ mb_wm_theme_init (MBWindowManager   *wm)
 
   return TRUE;
 }
+
+Bool
+mb_wm_theme_supports (MBWMThemeCaps capability)
+{
+  if (!CairoTheme)
+    return False;
+  
+  return ((capability & CairoTheme->caps != False));
+}
+

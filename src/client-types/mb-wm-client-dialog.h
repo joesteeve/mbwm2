@@ -29,6 +29,7 @@ typedef struct MBWMClientDialogClass MBWMClientDialogClass;
 #define MB_WM_CLIENT_DIALOG(c) ((MBWMClientDialog*)(c))
 #define MB_WM_CLIENT_DIALOG_CLASS(c) ((MBWMClientDialogClass*)(c))
 #define MB_WM_TYPE_CLIENT_DIALOG (mb_wm_client_dialog_class_type ())
+#define MB_WM_IS_CLIENT_DIALOG(c) (MB_WM_OBJECT_TYPE(c)==MB_WM_TYPE_CLIENT_DIALOG)
 
 struct MBWMClientDialog
 {

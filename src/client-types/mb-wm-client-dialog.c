@@ -14,6 +14,45 @@ static void
 mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 			   int                    flags);
 
+static void
+mb_wm_client_dialog_show (MBWindowManagerClient *client)
+{
+  MBWMClientDialogClass       *dialog_klass;
+  MBWMClientBaseClass         *base_klass;
+  MBWindowManagerClientClass  *client_klass;
+
+  dialog_klass =
+    MB_WM_CLIENT_DIALOG_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  base_klass =
+    MB_WM_CLIENT_BASE_CLASS(MB_WM_OBJECT_CLASS(dialog_klass)->parent);
+
+  client_klass = MB_WM_CLIENT_CLASS(base_klass);
+
+  if (client->transient_for != NULL)
+    {
+      MBWindowManager * wm = client->wmref;
+
+      /*
+       * If an attempt has been made to activate a hidden
+       * dialog, activate its parent app first.
+       *
+       * Note this is mainly to work with some task selectors
+       * ( eg the gnome one, which activates top dialog ).
+       */
+      MBWindowManagerClient *parent = client->transient_for;
+
+      while (parent->transient_for != NULL)
+	parent = parent->transient_for;
+
+      if (parent != mb_wm_get_visible_main_client(wm))
+	mb_wm_client_show (parent);
+    }
+
+  if (client_klass->show)
+    client_klass->show(client);
+}
+
 void
 mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 {
@@ -25,6 +64,7 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   client->geometry = mb_wm_client_dialog_request_geometry;
   client->stack = mb_wm_client_dialog_stack;
+  client->show = mb_wm_client_dialog_show;
 }
 
  void

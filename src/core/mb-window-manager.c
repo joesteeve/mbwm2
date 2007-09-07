@@ -852,3 +852,37 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 
   return True;
 }
+
+void
+mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
+{
+  if (c == NULL)
+    return;
+
+  XGrabServer(wm->xdpy);
+
+  mb_wm_client_show (c);
+
+  /* FIXME -- might need some magic here ...*/
+
+  XSync(wm->xdpy, False);
+  XUngrabServer(wm->xdpy);
+}
+
+MBWindowManagerClient*
+mb_wm_get_visible_main_client(MBWindowManager *wm)
+{
+#if 0
+  if (w->flags & DESKTOP_RAISED_FLAG)
+    {
+      return wm->desktop;
+    }
+#endif
+
+  if (wm->stack_top_app)
+    {
+      return wm->stack_top_app;
+    }
+
+  return NULL;
+}

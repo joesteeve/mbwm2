@@ -57,5 +57,4 @@
 #include "mb-wm-layout.h"
 #include "mb-wm-stack.h"
 #include "mb-window-manager.h"
-
 #endif

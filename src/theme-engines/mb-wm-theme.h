@@ -29,7 +29,10 @@
 
 typedef enum MBWMThemeCaps 
 {
-  MBWMThemeCapsHasSomethingOrOther = (1<<1)
+  MBWMThemeCapsFrameMainButtonActionAccept = (1<<0),
+  MBWMThemeCapsFrameDlgButtonActionAccept  = (1<<1),
+  MBWMThemeCapsFrameMainButtonActionHelp   = (1<<2),
+  MBWMThemeCapsFrameDlgButtonActionHelp    = (1<<3),
 
 } MBWMThemeCaps;
 
@@ -48,5 +51,7 @@ mb_wm_theme_switch (MBWindowManager   *wm,
 Bool
 mb_wm_theme_init (MBWindowManager   *wm);
 
+Bool
+mb_wm_theme_supports (MBWMThemeCaps capability);
 
 #endif

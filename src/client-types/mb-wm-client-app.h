@@ -29,6 +29,7 @@ typedef struct MBWMClientAppClass MBWMClientAppClass;
 #define MB_WM_CLIENT_APP(c) ((MBWMClientApp*)(c))
 #define MB_WM_CLIENT_APP_CLASS(c) ((MBWMClientAppClass*)(c))
 #define MB_WM_TYPE_CLIENT_APP (mb_wm_client_app_class_type ())
+#define MB_WM_IS_CLIENT_APP(c) (MB_WM_OBJECT_TYPE(c)==MB_WM_TYPE_CLIENT_APP)
 
 struct MBWMClientApp
 {

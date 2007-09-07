@@ -56,8 +56,6 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass)
   client->show     = mb_wm_client_base_show;
   client->hide     = mb_wm_client_base_hide;
   client->sync     = mb_wm_client_base_display_sync;
-
-  MBWM_DBG("client->stack is %p", client->stack);
 }
 
 void

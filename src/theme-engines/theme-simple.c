@@ -8,6 +8,7 @@ typedef struct ThemeSimple
 } 
 ThemeSimple;
 
+static struct ThemeSimple * SimpleTheme = NULL;
 
 void
 theme_simple_paint_decor (MBWindowManager   *wm,
@@ -57,4 +58,13 @@ void
 theme_simple_init (MBWindowManager   *wm)
 {
 
+}
+
+Bool
+mb_wm_theme_supports (MBWMThemeCaps capability)
+{
+  if (!SimpleTheme)
+    return False;
+  
+  return ((capability & SimpleTheme->caps != False));
 }

@@ -57,6 +57,8 @@ struct MBWindowManager
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
+  MBWindowManagerClient       *desktop;
+  MBWindowManagerClient       *stack_top_app;
 
   Atom                         atoms[MBWM_ATOM_COUNT];
 
@@ -64,13 +66,13 @@ struct MBWindowManager
 
   MBWindowManagerNewClientFunc new_client_from_window_func;
 
-  XasContext                   *xas_context;
+  XasContext                  *xas_context;
 
   /* ### Private ### */
-  Bool                          need_display_sync;
-  int                           client_type_cnt;
-  int                           stack_n_clients;
-  MBWMRootWindow               *root_win;
+  Bool                         need_display_sync;
+  int                          client_type_cnt;
+  int                          stack_n_clients;
+  MBWMRootWindow              *root_win;
 };
 
 struct MBWindowManagerClass
@@ -114,5 +116,10 @@ void
 mb_wm_get_display_geometry (MBWindowManager  *wm,
 			    MBGeometry       *geometry);
 
+void
+mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c);
+
+MBWindowManagerClient*
+mb_wm_get_visible_main_client(MBWindowManager *wm);
 
 #endif

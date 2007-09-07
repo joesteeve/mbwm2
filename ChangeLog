@@ -1,5 +1,43 @@
 2007-09-07  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/core/mb-wm-object.c:
+	(mb_wm_object_class_init_recurse):
+	Fixed initialization so that parents are initalized before
+	childred.
+
+	(mb_wm_object_register_class):
+	Must call class_init() method if it exists otherwise the derived
+	classes cannot get at parent implementations of their virtual
+	methods.
+	
+        * src/client-types/mb-wm-client-app.h:
+	Added MB_WM_IS_CLIENT_APP() macro.
+	
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-dialog.h:
+	MB_WM_IS_CLIENT_DIALOG(c) macro.
+	Implemented virtual show() method.
+	
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	Skeletons for mb_wm_activate_client() and
+	mb_wm_get_visible_main_client().
+	
+        * src/theme-engines/mb-wm-theme.h:
+        * src/theme-engines/theme-cairo.c:
+        * src/theme-engines/theme-simple.c:
+	Added mb_wm_theme_supports() function.
+	
+        * src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_init_properties):
+	Added theme-dependent capabilities.
+
+	Skeleton for mb_wm_root_window_handle_message().
+	
+        * src/core/mb-wm.h
+	
+2007-09-07  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-dialog.c:
 	* src/managers/matchbox-window-manager-2-simple.c:
         * src/core/mb-window-manager.c:
