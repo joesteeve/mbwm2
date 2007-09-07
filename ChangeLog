@@ -1,3 +1,18 @@
+2007-09-07  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-dialog.c:
+	* src/managers/matchbox-window-manager-2-simple.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-keys.c:
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-root-window.h:
+
+	Plugged MBWMRootWindow into MBWindowManger.
+	Made MBWindowManager into a singleton.
+	
 2007-09-06  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

@@ -32,6 +32,7 @@ struct MBWMRootWindow
 {
   MBWMObject        parent;
 
+  Window            xwindow;
   Window            hidden_window;
   MBWindowManager  *wm;
 };

@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -34,8 +34,8 @@ mb_wm_decor_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMDecorClass),      
-	sizeof (MBWMDecor), 
+	sizeof (MBWMDecorClass),
+	sizeof (MBWMDecor),
 	NULL,
 	mb_wm_decor_destroy,
 	NULL
@@ -59,25 +59,25 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
   if (decor->parent_client == NULL)
     return False;
 
-  wm = decor->parent_client->wmref;  
+  wm = decor->parent_client->wmref;
 
   attr.override_redirect = True;
   attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
-  
+
   if (decor->xwin == None)
     {
-      mb_wm_util_trap_x_errors();  
+      mb_wm_util_trap_x_errors();
 
-      decor->xwin 
-	= XCreateWindow(wm->xdpy, 
-			wm->xwin_root, 
+      decor->xwin
+	= XCreateWindow(wm->xdpy,
+			wm->root_win->xwindow,
 			decor->geom.x,
 			decor->geom.y,
 			decor->geom.width,
 			decor->geom.height,
 			0,
-			CopyFromParent, 
-			CopyFromParent, 
+			CopyFromParent,
+			CopyFromParent,
 			CopyFromParent,
 			CWOverrideRedirect|CWBackPixel,
 			&attr);
@@ -87,7 +87,7 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 	       decor->geom.y,
 	       decor->geom.width,
 	       decor->geom.height);
-      
+
       if (mb_wm_util_untrap_x_errors())
 	return False;
 
@@ -95,18 +95,18 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
       if (decor->resize)
 	decor->resize(decor->parent_client->wmref, decor, decor->userdata);
 
-      mb_wm_util_list_foreach(decor->buttons, 
+      mb_wm_util_list_foreach(decor->buttons,
 			      (MBWMListForEachCB)mb_wm_decor_button_sync_window,
 			      NULL);
-      
+
       return mb_wm_decor_reparent (decor);
     }
   else
     {
       /* Resize */
-      mb_wm_util_trap_x_errors();  
+      mb_wm_util_trap_x_errors();
 
-      XMoveResizeWindow(wm->xdpy, 
+      XMoveResizeWindow(wm->xdpy,
 			decor->xwin,
 			decor->geom.x,
 			decor->geom.y,
@@ -114,8 +114,8 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 			decor->geom.height);
 
       /* Next up sort buttons */
-  
-      mb_wm_util_list_foreach(decor->buttons, 
+
+      mb_wm_util_list_foreach(decor->buttons,
 			      (MBWMListForEachCB)mb_wm_decor_button_sync_window,
 			      NULL);
 
@@ -136,16 +136,16 @@ mb_wm_decor_reparent (MBWMDecor *decor)
 
   MBWM_MARK();
 
-  wm = decor->parent_client->wmref;  
+  wm = decor->parent_client->wmref;
 
   /* FIXME: Check if we already have a parent here */
 
-  mb_wm_util_trap_x_errors();  
+  mb_wm_util_trap_x_errors();
 
-  XReparentWindow (wm->xdpy, 
-		   decor->xwin, 
-		   decor->parent_client->xwin_frame, 
-		   decor->geom.x, 
+  XReparentWindow (wm->xdpy,
+		   decor->xwin,
+		   decor->parent_client->xwin_frame,
+		   decor->geom.x,
 		   decor->geom.y);
 
   if (mb_wm_util_untrap_x_errors())
@@ -164,7 +164,7 @@ mb_wm_decor_calc_geometry (MBWMDecor *decor)
     return;
 
   client = decor->parent_client;
-  wm = client->wmref;  
+  wm = client->wmref;
 
   switch (decor->type)
     {
@@ -340,8 +340,8 @@ mb_wm_decor_button_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMDecorButtonClass),      
-	sizeof (MBWMDecorButton), 
+	sizeof (MBWMDecorButtonClass),
+	sizeof (MBWMDecorButton),
 	NULL,
 	mb_wm_decor_button_destroy,
 	NULL
@@ -362,36 +362,36 @@ mb_wm_decor_button_destroy (MBWMObject* obj)
 }
 
 static Bool
-mb_wm_decor_button_realize (MBWMDecorButton *button) 
+mb_wm_decor_button_realize (MBWMDecorButton *button)
 {
   MBWindowManager     *wm;
   XSetWindowAttributes attr;
 
-  wm = button->decor->parent_client->wmref;  
+  wm = button->decor->parent_client->wmref;
 
   attr.override_redirect = True;
   attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
   attr.event_mask = ButtonPressMask|ButtonReleaseMask;
-  
+
   if (button->xwin == None)
     {
-      mb_wm_util_trap_x_errors();  
+      mb_wm_util_trap_x_errors();
 
-      /* NOTE: may want input only window here if button paints 
+      /* NOTE: may want input only window here if button paints
        *       directly onto decor.
       */
 
       /* FIXME: Event Mask */
-      button->xwin 
-	= XCreateWindow(wm->xdpy, 
-			button->decor->xwin, 
+      button->xwin
+	= XCreateWindow(wm->xdpy,
+			button->decor->xwin,
 			button->geom.x,
 			button->geom.y,
 			button->geom.width,
 			button->geom.height,
 			0,
-			CopyFromParent, 
-			CopyFromParent, 
+			CopyFromParent,
+			CopyFromParent,
 			CopyFromParent,
 			CWOverrideRedirect|CWBackPixel|CWEventMask,
 			&attr);
@@ -412,18 +412,18 @@ mb_wm_decor_button_sync_window (MBWMDecorButton *button)
 
   MBWM_MARK();
 
-  wm = button->decor->parent_client->wmref;  
+  wm = button->decor->parent_client->wmref;
 
   if (button->xwin == None)
     mb_wm_decor_button_realize (button);
 
-  MBWM_DBG("####### X moving to %i, %i\n", 	      
+  MBWM_DBG("####### X moving to %i, %i\n",
 	   button->geom.x,
 	   button->geom.y);
 
 
   /* FIXME: conditional */
-  XMoveWindow(wm->xdpy, 
+  XMoveWindow(wm->xdpy,
 	      button->xwin,
 	      button->geom.x,
 	      button->geom.y);
@@ -454,7 +454,7 @@ mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
   button->geom.x = x;
   button->geom.y = y;
 
-  MBWM_DBG("#######  moving to %i, %i\n", 	      
+  MBWM_DBG("#######  moving to %i, %i\n",
 	   button->geom.x,
 	   button->geom.y);
 
@@ -465,7 +465,7 @@ button_press_handler (MBWindowManager *wm,
 		      XButtonEvent    *xev,
 		      void            *userdata)
 {
-  MBWMDecorButton *button; 
+  MBWMDecorButton *button;
 
   button = (MBWMDecorButton *)userdata;
 
@@ -474,7 +474,7 @@ button_press_handler (MBWindowManager *wm,
       button->state = MBWMDecorButtonStatePressed;
 
       MBWM_DBG("button is %ix%i\n", button->geom.width, button->geom.height);
-      if (button->press) 
+      if (button->press)
 	button->press(wm, button, button->userdata);
 
       return False;
@@ -488,7 +488,7 @@ button_release_handler (MBWindowManager *wm,
 			XButtonEvent    *xev,
 			void            *userdata)
 {
-  MBWMDecorButton *button; 
+  MBWMDecorButton *button;
 
   button = (MBWMDecorButton *)userdata;
 
@@ -497,7 +497,7 @@ button_release_handler (MBWindowManager *wm,
       button->state = MBWMDecorButtonStateInactive;
 
       MBWM_DBG("got release");
-      if (button->release) 
+      if (button->release)
 	button->release(wm, button, button->userdata);
 
       return False;
@@ -529,7 +529,7 @@ mb_wm_decor_button_create (MBWindowManager            *wm,
   button->geom.width  = width;
   button->geom.height = height;
   button->decor  = decor;
-  decor->buttons = mb_wm_util_list_append (decor->buttons, button); 
+  decor->buttons = mb_wm_util_list_append (decor->buttons, button);
 
   mb_wm_x_event_handler_add (wm, ButtonPress,
 			     (MBWMXEventFunc)button_press_handler,

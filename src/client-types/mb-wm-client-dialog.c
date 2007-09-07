@@ -121,7 +121,7 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
 
   if (win->xwin_transient_for
       && win->xwin_transient_for != win->xwindow
-      && win->xwin_transient_for != wm->xwin_root)
+      && win->xwin_transient_for != wm->root_win->xwindow)
     {
       MBWM_DBG ("Adding to '%lx' transient list",
 		win->xwin_transient_for);

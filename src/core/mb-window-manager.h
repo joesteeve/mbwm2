@@ -48,12 +48,11 @@ MBWindowManagerEventFuncs;
 
 struct MBWindowManager
 {
-  MBWMObject        parent;
+  MBWMObject                   parent;
 
   Display                     *xdpy;
   unsigned int                 xdpy_width, xdpy_height;
   int                          xscreen;
-  Window                       xwin_root;
   MBWindowManagerEventFuncs   *event_funcs;
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
@@ -71,6 +70,7 @@ struct MBWindowManager
   Bool                          need_display_sync;
   int                           client_type_cnt;
   int                           stack_n_clients;
+  MBWMRootWindow               *root_win;
 };
 
 struct MBWindowManagerClass
@@ -79,7 +79,7 @@ struct MBWindowManagerClass
 };
 
 MBWindowManager *
-mb_wm_new ();
+mb_wm_get ();
 
 int
 mb_wm_class_type ();

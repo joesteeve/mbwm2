@@ -61,7 +61,7 @@ key_binding_set_grab (MBWindowManager *wm,
 	  XUngrabKey(wm->xdpy, 
 		     XKeysymToKeycode(wm->xdpy, key->keysym), 
 		     key->modifier_mask | ignored_mask,
-		     wm->xwin_root);
+		     wm->root_win->xwindow);
 	} 
       else 
 	{
@@ -76,7 +76,7 @@ key_binding_set_grab (MBWindowManager *wm,
 
 	  XGrabKey(wm->xdpy, XKeysymToKeycode(wm->xdpy, key->keysym), 
 		   key->modifier_mask | ignored_mask,
-		       wm->xwin_root, True, GrabModeAsync, GrabModeAsync);
+		   wm->root_win->xwindow, True, GrabModeAsync, GrabModeAsync);
 
 	  result = mb_wm_util_untrap_x_errors(); 
 

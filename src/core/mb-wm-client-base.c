@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -42,7 +42,7 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 				    MBWMClientReqGeomType  flags);
 
 void
-mb_wm_client_base_class_init (MBWMObjectClass *klass) 
+mb_wm_client_base_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
 
@@ -74,8 +74,8 @@ mb_wm_client_base_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMClientBaseClass),      
-	sizeof (MBWMClientBase), 
+	sizeof (MBWMClientBaseClass),
+	sizeof (MBWMClientBase),
 	mb_wm_client_base_init,
 	mb_wm_client_base_destroy,
 	mb_wm_client_base_class_init
@@ -101,30 +101,30 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   attr.override_redirect = True;
   attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
   attr.event_mask = MBWMChildMask|MBWMButtonMask|ExposureMask;
-  
+
   /* This should probably be called via rather than on new clien sync() ...? */
 
   if (client->xwin_frame == None)
     {
-      client->xwin_frame 
-	= XCreateWindow(wm->xdpy, wm->xwin_root, 
+      client->xwin_frame
+	= XCreateWindow(wm->xdpy, wm->root_win->xwindow,
 			client->frame_geometry.x,
 			client->frame_geometry.y,
 			client->frame_geometry.width,
 			client->frame_geometry.height,
 			0,
-			CopyFromParent, 
-			CopyFromParent, 
+			CopyFromParent,
+			CopyFromParent,
 			CopyFromParent,
 			CWOverrideRedirect|CWEventMask|CWBackPixel,
 			&attr);
-      
+
       /* Assume geomerty sync will fix this up correctly togeather with
        * any decoration creation. Layout manager will call this
        */
-      XReparentWindow(wm->xdpy, 
-		      MB_WM_CLIENT_XWIN(client), 
-		      client->xwin_frame, 
+      XReparentWindow(wm->xdpy,
+		      MB_WM_CLIENT_XWIN(client),
+		      client->xwin_frame,
 		      0, 0);
       /* The reparent causes an unmap we'll want to ignore */
       client->skip_unmaps++;
@@ -132,9 +132,9 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 
   XSetWindowBorderWidth(wm->xdpy, MB_WM_CLIENT_XWIN(client), 0);
 
-  XAddToSaveSet(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+  XAddToSaveSet(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 
-  XSelectInput(wm->xdpy, 
+  XSelectInput(wm->xdpy,
 	       MB_WM_CLIENT_XWIN(client),
 	       PropertyChangeMask);
 }
@@ -161,7 +161,7 @@ mb_wm_client_base_show (MBWindowManagerClient *client)
 static void
 mb_wm_client_base_hide (MBWindowManagerClient *client)
 {
-  
+
   /* mark dirty somehow */
 
 }
@@ -177,10 +177,10 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   if (mb_wm_client_needs_geometry_sync (client))
     {
-      mb_wm_util_trap_x_errors();  
+      mb_wm_util_trap_x_errors();
 
       if (client->xwin_frame)
-	XMoveResizeWindow(wm->xdpy, 
+	XMoveResizeWindow(wm->xdpy,
 			  client->xwin_frame,
 			  client->frame_geometry.x,
 			  client->frame_geometry.y,
@@ -190,38 +190,38 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
       /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask, &xwc);
        *        here instead as can set border width = 0.
       */
-      XMoveResizeWindow(wm->xdpy, 
+      XMoveResizeWindow(wm->xdpy,
 			MB_WM_CLIENT_XWIN(client),
 			client->window->geometry.x - client->frame_geometry.x,
 			client->window->geometry.y - client->frame_geometry.y,
 			client->window->geometry.width,
 			client->window->geometry.height);
-      
+
       /* FIXME: need flags to handle other stuff like configure events etc */
 
       if (mb_wm_client_needs_synthetic_config_event (client))
 	; /* TODO: send fake config event */
 
       /* Resize any decor */
-      mb_wm_util_list_foreach(client->decor, 
+      mb_wm_util_list_foreach(client->decor,
 			      (MBWMListForEachCB)mb_wm_decor_handle_resize,
 			      NULL);
 
-      mb_wm_util_untrap_x_errors();  
+      mb_wm_util_untrap_x_errors();
     }
 
   /* Paint any decor */
 
-  mb_wm_util_trap_x_errors();  
+  mb_wm_util_trap_x_errors();
 
   if (mb_wm_client_needs_decor_sync (client))
     {
-      mb_wm_util_list_foreach(client->decor, 
+      mb_wm_util_list_foreach(client->decor,
 			      (MBWMListForEachCB)mb_wm_decor_handle_repaint,
 			      NULL);
     }
 
-  mb_wm_util_untrap_x_errors();  
+  mb_wm_util_untrap_x_errors();
 
   /* Handle any mapping - should be visible state ? */
 
@@ -229,53 +229,53 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
     {
       MBWM_DBG("needs visibility sync");
 
-      mb_wm_util_trap_x_errors();  
+      mb_wm_util_trap_x_errors();
 
       if (mb_wm_client_is_mapped (client))
 	{
 	  if (client->xwin_frame)
 	    {
-	      XMapWindow(wm->xdpy, client->xwin_frame); 
+	      XMapWindow(wm->xdpy, client->xwin_frame);
 	      XMapSubwindows(wm->xdpy, client->xwin_frame);
 	    }
 	  else
 	    {
 	      MBWM_DBG("mapping...");
-	      XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+	      XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 	    }
 
 	  mb_wm_window_change_property (wm,
 					client->window,
-					wm->atoms[MBWM_ATOM_WM_STATE], 
 					wm->atoms[MBWM_ATOM_WM_STATE],
-					32, 
-					(void *)NormalState, 
+					wm->atoms[MBWM_ATOM_WM_STATE],
+					32,
+					(void *)NormalState,
 					1);
 	}
       else
 	{
 	  if (client->xwin_frame)
-	    XUnmapWindow(wm->xdpy, client->xwin_frame); 
+	    XUnmapWindow(wm->xdpy, client->xwin_frame);
 	  else
-	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client)); 
+	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 
 	  /* FIXME: iconized state? */
 	  mb_wm_window_change_property (wm,
 					client->window,
-					wm->atoms[MBWM_ATOM_WM_STATE], 
 					wm->atoms[MBWM_ATOM_WM_STATE],
-					32, 
-					(void *)WithdrawnState, 
+					wm->atoms[MBWM_ATOM_WM_STATE],
+					32,
+					(void *)WithdrawnState,
 					1);
 
 	}
 
-      mb_wm_util_untrap_x_errors();  
+      mb_wm_util_untrap_x_errors();
     }
 
-  mb_wm_util_trap_x_errors();  
+  mb_wm_util_trap_x_errors();
   XSync(wm->xdpy, False);
-  mb_wm_util_untrap_x_errors();  
+  mb_wm_util_untrap_x_errors();
 }
 
 void
@@ -291,13 +291,13 @@ mb_wm_client_base_destroy (MBWMObject *this)
 
   wm = client->wmref;
 
-  mb_wm_util_trap_x_errors();  
+  mb_wm_util_trap_x_errors();
 
   XDestroyWindow(wm->xdpy, client->xwin_frame);
 
   XSync(wm->xdpy, False);
-  mb_wm_util_untrap_x_errors();  
-  
+  mb_wm_util_untrap_x_errors();
+
   parent = mb_wm_client_get_transient_for (MB_WM_CLIENT(this));
 
   if (parent)
@@ -312,7 +312,7 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 				    MBGeometry            *new_geometry,
 				    MBWMClientReqGeomType  flags)
 {
-  /* 
+  /*
    *  flags are
    *
    *  MBReqGeomDontCommit
@@ -323,8 +323,8 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
    *
   */
 
-  /* Dont actually change anything - mb_wm_core_sync() should do that 
-   * but mark dirty and 'queue any extra info like configure req'.   
+  /* Dont actually change anything - mb_wm_core_sync() should do that
+   * but mark dirty and 'queue any extra info like configure req'.
   */
 
   if (flags & MBWMClientReqGeomIsViaLayoutManager)
@@ -355,7 +355,7 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 
 void base_foo(void)
 {
-  ; /* nasty hack to workaround linking issues WTF... 
+  ; /* nasty hack to workaround linking issues WTF...
      * use .la's rather than .a's ??
     */
 }

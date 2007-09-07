@@ -67,7 +67,7 @@ main(int argc, char **argv)
 
   mb_wm_object_init();
 
-  wm = mb_wm_new();
+  wm = mb_wm_get();
 
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");

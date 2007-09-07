@@ -68,6 +68,9 @@ mb_wm_root_window_class_type ()
 static void
 mb_wm_root_window_init_properties (MBWMRootWindow * win);
 
+static Bool
+mb_wm_root_window_init_attributes (MBWMRootWindow * win);
+
 MBWMRootWindow*
 mb_wm_root_window_get (MBWindowManager *wm)
 {
@@ -83,15 +86,25 @@ mb_wm_root_window_get (MBWindowManager *wm)
       if (!root_window)
 	return root_window;
 
+      root_window->wm = mb_wm_object_ref (MB_WM_OBJECT (wm));
+      root_window->xwindow = RootWindow(wm->xdpy, wm->xscreen);
+
+      if (!mb_wm_root_window_init_attributes (root_window))
+	{
+	  mb_wm_object_unref (MB_WM_OBJECT (root_window));
+	  root_window = NULL;
+	  return root_window;
+	}
+
       attr.override_redirect = True;
-      root_window->hidden_window = XCreateWindow(wm->xdpy, wm->xwin_root,
+      root_window->hidden_window = XCreateWindow(wm->xdpy,
+						 root_window->xwindow,
 						 -200, -200, 5, 5, 0,
 						 CopyFromParent,
 						 CopyFromParent,
 						 CopyFromParent,
 						 CWOverrideRedirect, &attr);
 
-      root_window->wm = (MBWindowManager*)mb_wm_object_ref (MB_WM_OBJECT (wm));
       mb_wm_root_window_init_properties (root_window);
     }
   else
@@ -100,11 +113,41 @@ mb_wm_root_window_get (MBWindowManager *wm)
   return root_window;
 }
 
+static Bool
+mb_wm_root_window_init_attributes (MBWMRootWindow * win)
+{
+  XSetWindowAttributes  sattr;
+  MBWindowManager      *wm = win->wm;
+
+  sattr.event_mask =  SubstructureRedirectMask
+                      |SubstructureNotifyMask
+                      |StructureNotifyMask
+                      |PropertyChangeMask;
+
+  mb_wm_util_trap_x_errors();
+
+  XChangeWindowAttributes(wm->xdpy, win->xwindow, CWEventMask, &sattr);
+
+  XSync(wm->xdpy, False);
+
+  if (mb_wm_util_untrap_x_errors())
+    {
+      /* FIXME: Error codes */
+      mb_wm_util_fatal_error("Unable to manage display - "
+			     "another window manager already active?");
+      return False;
+    }
+
+  XSelectInput(wm->xdpy, win->xwindow, sattr.event_mask);
+
+  return True;
+}
+
 static void
 mb_wm_root_window_init_properties (MBWMRootWindow * win)
 {
   MBWindowManager  *wm = win->wm;
-  Window            rwin = wm->xwin_root;
+  Window            rwin = win->xwindow;
   Window            hwin = win->hidden_window;
 
   int               num_supported = 0;
@@ -220,5 +263,7 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
 		  XA_CARDINAL, 32, PropModeReplace,
 		  (unsigned char *)&num_desktops, 0);
+
+  XSync(wm->xdpy, False);
 }
 

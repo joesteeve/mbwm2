@@ -44,12 +44,17 @@ mb_wm_class_type ()
 }
 
 MBWindowManager*
-mb_wm_new ()
+mb_wm_get ()
 {
-  MBWindowManager *window_manager;
+  static MBWindowManager *window_manager = NULL;
 
-  window_manager
-    = MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER));
+  if (!window_manager)
+    {
+      window_manager
+	= MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER));
+    }
+  else
+    window_manager = mb_wm_object_ref (MB_WM_OBJECT (window_manager));
 
   if (!window_manager)
     return window_manager;
@@ -370,7 +375,7 @@ mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win)
 {
   MBWindowManagerClient *client = NULL;
 
-  if (win == wm->xwin_root)
+  if (win == wm->root_win->xwindow)
     return NULL;
 
   mb_wm_stack_enumerate(wm, client)
@@ -425,7 +430,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
    if (!wm->new_client_from_window_func)
      return;
 
-   XQueryTree(wm->xdpy, wm->xwin_root,
+   XQueryTree(wm->xdpy, wm->root_win->xwindow,
 	      &foowin1, &foowin2, &wins, &nwins);
 
    for (i = 0; i < nwins; i++)
@@ -678,7 +683,7 @@ mb_wm_handle_x_event (MBWindowManager *wm,
 	    MBWMDEBUGEvents[xev->type],
 	    xev->type,
 	    xev->xany.window,
-	    xev->xany.window == wm->xwin_root ? "(root)" : "",
+	    xev->xany.window == wm->root_win->xwindow ? "(root)" : "",
 	    ev_client ? ev_client->name : ""
 	    );
  }
@@ -785,8 +790,6 @@ mb_wm_handle_x_event (MBWindowManager *wm,
 Status
 mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 {
-  XSetWindowAttributes sattr;
-
   wm->xdpy = XOpenDisplay(getenv("DISPLAY"));
 
   if (!wm->xdpy)
@@ -804,31 +807,14 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
   /* FIXME: Multiple screen handling */
 
   wm->xscreen     = DefaultScreen(wm->xdpy);
-  wm->xwin_root   = RootWindow(wm->xdpy, wm->xscreen);
   wm->xdpy_width  = DisplayWidth(wm->xdpy, wm->xscreen);
   wm->xdpy_height = DisplayHeight(wm->xdpy, wm->xscreen);
 
   wm->xas_context = xas_context_new(wm->xdpy);
 
-  sattr.event_mask =  SubstructureRedirectMask
-                      |SubstructureNotifyMask
-                      |StructureNotifyMask
-                      |PropertyChangeMask;
+  mb_wm_atoms_init(wm);
 
-  mb_wm_util_trap_x_errors();
-
-  XChangeWindowAttributes(wm->xdpy, wm->xwin_root, CWEventMask, &sattr);
-
-  XSync(wm->xdpy, False);
-
-  if (mb_wm_util_untrap_x_errors())
-    {
-      /* FIXME: Error codes */
-      mb_wm_util_fatal_error("Unable to manage display - another window manager already active?");
-      return False;
-    }
-
-  XSelectInput(wm->xdpy, wm->xwin_root, sattr.event_mask);
+  wm->root_win = mb_wm_root_window_get (wm);
 
   wm->new_client_from_window_func = mb_wm_client_new;
 
@@ -857,8 +843,6 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
   mb_wm_x_event_handler_add (wm, KeyPress,
 			     (MBWMXEventFunc)test_key_press,
 			     NULL);
-
-  mb_wm_atoms_init(wm);
 
   mb_wm_keys_init(wm);
 
