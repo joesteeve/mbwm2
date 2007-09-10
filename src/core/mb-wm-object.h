@@ -21,16 +21,22 @@
 #ifndef _HAVE_MB_OBJECT_H
 #define _HAVE_MB_OBJECT_H
 
-typedef struct MBWMObject      MBWMObject;
-typedef struct MBWMObjectClass MBWMObjectClass;
+#include <stdarg.h>
 
-typedef void (*MBWMObjFunc)   (MBWMObject* obj);
-typedef void (*MBWMClassFunc) (MBWMObjectClass* klass);
+typedef struct MBWMObject       MBWMObject;
+typedef struct MBWMObjectClass  MBWMObjectClass;
+
+typedef void (*MBWMObjFunc)     (MBWMObject* obj);
+typedef void (*MBWMObjVargFunc) (MBWMObject* obj, va_list vap);
+typedef void (*MBWMClassFunc)   (MBWMObjectClass* klass);
 
 #define MB_WM_TYPE_OBJECT 0
 #define MB_WM_OBJECT(x) ((MBWMObject*)(x))
 #define MB_WM_OBJECT_CLASS(x) ((MBWMObjectClass*)(x))
 #define MB_WM_OBJECT_TYPE(x) (((MBWMObject*)(x))->klass->type)
+#define MB_WM_OBJECT_GET_CLASS(x) (mb_wm_object_get_class (MB_WM_OBJECT(x)))
+#define MB_WM_OBJECT_GET_PARENT_CLASS(x) \
+    ((mb_wm_object_get_class (MB_WM_OBJECT(x)))->parent)
 
 typedef enum  MBWMObjectClassType
 {
@@ -44,7 +50,7 @@ typedef struct MBWMObjectClassInfo
 {
   size_t              klass_size;
   size_t              instance_size;
-  MBWMObjFunc         instance_init;
+  MBWMObjVargFunc     instance_init;
   MBWMObjFunc         instance_destroy;
   MBWMClassFunc       class_init;
 }
@@ -54,7 +60,7 @@ struct MBWMObjectClass
 {
   int              type;
   MBWMObjectClass *parent;
-  MBWMObjFunc      init;
+  MBWMObjVargFunc  init;
   MBWMObjFunc      destroy;
   MBWMClassFunc    class_init;
 };
@@ -87,7 +93,7 @@ void
 mb_wm_object_unref (MBWMObject *this);
 
 MBWMObject*
-mb_wm_object_new (int type);
+mb_wm_object_new (int type, ...);
 
 const MBWMObjectClass*
 mb_wm_object_get_class (MBWMObject *this);

@@ -17,17 +17,10 @@ mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 static void
 mb_wm_client_dialog_show (MBWindowManagerClient *client)
 {
-  MBWMClientDialogClass       *dialog_klass;
-  MBWMClientBaseClass         *base_klass;
-  MBWindowManagerClientClass  *client_klass;
+  MBWindowManagerClientClass  *parent_klass;
 
-  dialog_klass =
-    MB_WM_CLIENT_DIALOG_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
-
-  base_klass =
-    MB_WM_CLIENT_BASE_CLASS(MB_WM_OBJECT_CLASS(dialog_klass)->parent);
-
-  client_klass = MB_WM_CLIENT_CLASS(base_klass);
+  parent_klass =
+    MB_WM_CLIENT_CLASS(MB_WM_OBJECT_GET_PARENT_CLASS(client));
 
   if (client->transient_for != NULL)
     {
@@ -49,8 +42,8 @@ mb_wm_client_dialog_show (MBWindowManagerClient *client)
 	mb_wm_client_show (parent);
     }
 
-  if (client_klass->show)
-    client_klass->show(client);
+  if (parent_klass->show)
+    parent_klass->show(client);
 }
 
 void
@@ -75,18 +68,14 @@ mb_wm_client_dialog_stack (MBWindowManagerClient *client,
   mb_wm_stack_move_top(client);
 }
 
-void
+static void
 mb_wm_client_dialog_destroy (MBWMObject *this)
 {
-  mb_wm_client_base_destroy(this);
 }
 
-void
-mb_wm_client_dialog_init (MBWMObject *this)
+static void
+mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 {
-  MBWM_MARK();
-
-  mb_wm_client_base_init (this);
 }
 
 int
@@ -145,7 +134,8 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
   MBWMDecorButton          *button;
 
   client_dialog
-    = MB_WM_CLIENT_DIALOG(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG));
+    = MB_WM_CLIENT_DIALOG(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG,
+					    NULL));
 
   if (!client_dialog)
     return NULL; 		/* FIXME: Handle out of memory */

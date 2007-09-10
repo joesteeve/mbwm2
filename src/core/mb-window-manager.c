@@ -1,4 +1,30 @@
 #include "mb-wm.h"
+#include "../client-types/mb-wm-client-app.h"
+#include "../client-types/mb-wm-client-panel.h"
+#include "../client-types/mb-wm-client-dialog.h"
+#include <stdarg.h>
+
+static void
+mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv);
+
+static MBWindowManagerClient*
+mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
+{
+  if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
+    {
+      printf("### is panel ###\n");
+      return mb_wm_client_panel_new(wm, win);
+    }
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DIALOG])
+    {
+      printf("### is dialog ###\n");
+      return mb_wm_client_dialog_new(wm, win);
+    }
+  else
+    {
+      return mb_wm_client_app_new(wm, win);
+    }
+}
 
 static void
 mb_wm_class_init (MBWMObjectClass *klass)
@@ -8,6 +34,9 @@ mb_wm_class_init (MBWMObjectClass *klass)
   MBWM_MARK();
 
   wm_class = (MBWindowManagerClass *)klass;
+
+  wm_class->process_cmdline = mb_wm_process_cmdline;
+  wm_class->client_new = mb_wm_client_new_func;
 }
 
 static void
@@ -15,12 +44,8 @@ mb_wm_destroy (MBWMObject *this)
 {
 }
 
-/* Name clash with the public mb_wm_init() */
 static void
-mb_wm_init_object (MBWMObject *this)
-{
-  MBWM_MARK();
-}
+mb_wm_init (MBWMObject *this, va_list vap);
 
 int
 mb_wm_class_type ()
@@ -32,7 +57,7 @@ mb_wm_class_type ()
       static MBWMObjectClassInfo info = {
 	sizeof (MBWindowManagerClass),
 	sizeof (MBWindowManager),
-	mb_wm_init_object,
+	mb_wm_init,
 	mb_wm_destroy,
 	mb_wm_class_init
       };
@@ -44,22 +69,19 @@ mb_wm_class_type ()
 }
 
 MBWindowManager*
-mb_wm_get ()
+mb_wm_new (int argc, char **argv)
 {
-  static MBWindowManager *window_manager = NULL;
+  MBWindowManager      *wm = NULL;
 
-  if (!window_manager)
-    {
-      window_manager
-	= MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER));
-    }
-  else
-    window_manager = mb_wm_object_ref (MB_WM_OBJECT (window_manager));
+  wm = MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER,
+					    "argc", argc,
+					    "argv", argv,
+					    NULL));
 
-  if (!window_manager)
-    return window_manager;
+  if (!wm)
+    return wm;
 
-  return window_manager;
+  return wm;
 }
 
 static void
@@ -93,7 +115,6 @@ test_destroy_notify (MBWindowManager      *wm,
     {
       MBWM_DBG("Found client, unmanaing!");
       mb_wm_unmanage_client (wm, client);
-      mb_wm_object_unref (MB_WM_OBJECT(client));
     }
 
   return True;
@@ -119,7 +140,6 @@ test_unmap_notify (MBWindowManager      *wm,
       else
 	{
 	  mb_wm_unmanage_client (wm, client);
-	  mb_wm_object_unref (MB_WM_OBJECT(client));
 	}
     }
 
@@ -212,6 +232,8 @@ mb_wm_handle_map_request (MBWindowManager   *wm,
 			  void              *userdata)
 {
   MBWindowManagerClient *client = NULL;
+  MBWindowManagerClass  *wm_class =
+    MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
   MBWM_MARK();
 
@@ -221,7 +243,7 @@ mb_wm_handle_map_request (MBWindowManager   *wm,
     {
       MBWMClientWindow *win = NULL;
 
-      if (wm->new_client_from_window_func == NULL)
+      if (!wm_class->client_new)
 	{
 	  MBWM_DBG("### No new client hook exists ###");
 	  return True;
@@ -232,7 +254,7 @@ mb_wm_handle_map_request (MBWindowManager   *wm,
       if (!win)
 	return True;
 
-      client = wm->new_client_from_window_func(wm, win);
+      client = wm_class->client_new (wm, win);
 
       if (client)
 	mb_wm_manage_client(wm, client);
@@ -341,8 +363,6 @@ mb_wm_manage_client (MBWindowManager       *wm,
   if (client == NULL)
     return;
 
-  mb_wm_object_ref(MB_WM_OBJECT(client));
-
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
   /* add to stack and move to position in stack */
@@ -426,8 +446,10 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
    unsigned int      nwins, i;
    Window            foowin1, foowin2, *wins;
    XWindowAttributes attr;
+   MBWindowManagerClass * wm_class =
+     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
-   if (!wm->new_client_from_window_func)
+   if (!wm_class->client_new)
      return;
 
    XQueryTree(wm->xdpy, wm->root_win->xwindow,
@@ -447,7 +469,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	   if (!win)
 	     continue;
 
-	   client = wm->new_client_from_window_func(wm, win);
+	   client = wm_class->client_new (wm, win);
 
 	   if (client)
 	     mb_wm_manage_client(wm, client);
@@ -787,16 +809,39 @@ mb_wm_handle_x_event (MBWindowManager *wm,
     }
 }
 
-Status
-mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
+static void
+mb_wm_init (MBWMObject *this, va_list vap)
 {
-  wm->xdpy = XOpenDisplay(getenv("DISPLAY"));
+  MBWindowManager      *wm = MB_WINDOW_MANAGER (this);
+  MBWindowManagerClass *wm_class;
+  char  *prop;
+  int    argc = 0;
+  char **argv = NULL;
+
+  prop = va_arg(vap, char *);
+  while (prop)
+    {
+      if (!strcmp ("argc", prop))
+	argc = va_arg(vap, int);
+      else if (!strcmp ("argv", prop))
+	argv = va_arg(vap, char **);
+
+      prop = va_arg(vap, char *);
+    }
+
+  wm_class = (MBWindowManagerClass *) MB_WM_OBJECT_GET_CLASS (wm);
+
+  if (argc && argv && wm_class->process_cmdline)
+    wm_class->process_cmdline (wm, argc, argv);
+
+  if (!wm->xdpy)
+    wm->xdpy = XOpenDisplay(getenv("DISPLAY"));
 
   if (!wm->xdpy)
     {
       /* FIXME: Error codes */
       mb_wm_util_fatal_error("Display connection failed");
-      return False;
+      return;
     }
 
   if (getenv("MB_SYNC"))
@@ -815,8 +860,6 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
   mb_wm_atoms_init(wm);
 
   wm->root_win = mb_wm_root_window_get (wm);
-
-  wm->new_client_from_window_func = mb_wm_client_new;
 
   wm->event_funcs = mb_wm_util_malloc0(sizeof(MBWindowManagerEventFuncs));
 
@@ -850,7 +893,20 @@ mb_wm_init (MBWindowManager *wm, int *argc, char ***argv)
 
   base_foo ();
 
-  return True;
+}
+
+static void
+mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
+{
+  int i;
+
+  for (i = 0; i < argc; ++i)
+    {
+      if ((i < argc - 1) && !strcmp(argv[i], "-display"))
+	{
+	  wm->xdpy = XOpenDisplay(argv[++i]);
+	}
+    }
 }
 
 void

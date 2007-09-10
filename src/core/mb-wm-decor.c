@@ -253,7 +253,7 @@ mb_wm_decor_create (MBWindowManager     *wm,
 {
   MBWMDecor           *decor;
 
-  decor = MB_WM_DECOR(mb_wm_object_new (MB_WM_TYPE_DECOR));
+  decor = MB_WM_DECOR(mb_wm_object_new (MB_WM_TYPE_DECOR, NULL));
 
   decor->type    = type;
   decor->dirty   = True; 	/* Needs painting */

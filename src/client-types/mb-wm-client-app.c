@@ -24,19 +24,15 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
   client->geometry = mb_wm_client_app_request_geometry;
 }
 
-void
+static void
 mb_wm_client_app_destroy (MBWMObject *this)
 {
   MBWM_MARK();
-  mb_wm_client_base_destroy(this);
 }
 
 void
-mb_wm_client_app_init (MBWMObject *this)
+mb_wm_client_app_init (MBWMObject *this, va_list vap)
 {
-  MBWM_MARK();
-
-  mb_wm_client_base_init (this);
 }
 
 int
@@ -132,7 +128,8 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMClientWindow *win)
   MBWMDecor                *decor;
   MBWMDecorButton          *button;
 
-  client_app = MB_WM_CLIENT_APP(mb_wm_object_new (MB_WM_TYPE_CLIENT_APP));
+  client_app = MB_WM_CLIENT_APP(mb_wm_object_new (MB_WM_TYPE_CLIENT_APP,
+						  NULL));
 
   if (!client_app)
     return NULL; 		/* FIXME: Handle out of memory */

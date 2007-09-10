@@ -10,25 +10,6 @@ enum {
   KEY_ACTION_TOGGLE_DESKTOP,
 };
 
-MBWindowManagerClient*
-client_new(MBWindowManager *wm, MBWMClientWindow *win)
-{
-  if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
-    {
-      printf("### is panel ###\n");
-      return mb_wm_client_panel_new(wm, win);
-    }
-  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DIALOG])
-    {
-      printf("### is dialog ###\n");
-      return mb_wm_client_dialog_new(wm, win);
-    }
-  else
-    {
-      return mb_wm_client_app_new(wm, win);
-    }
-}
-
 void
 key_binding_func (MBWindowManager   *wm,
 		  MBWMKeyBinding    *binding,
@@ -64,19 +45,19 @@ int
 main(int argc, char **argv)
 {
   MBWindowManager     *wm;
-
+  char * test[2] = 
+    {
+      "test1", "test2"
+    };
+  
   mb_wm_object_init();
 
-  wm = mb_wm_get();
+  wm = mb_wm_new(2, (char**)&test[0]);
 
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");
 
-  mb_wm_init(wm, NULL, NULL);
-
   mb_wm_theme_init (wm);
-
-  wm->new_client_from_window_func = client_new;
 
   mb_wm_manage_preexistsing_wins (wm);
 

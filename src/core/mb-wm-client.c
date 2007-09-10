@@ -36,7 +36,7 @@ struct MBWindowManagerClientPriv
   int  sync_state;
 };
 
-void
+static void
 mb_wm_client_destroy (MBWMObject *obj)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
@@ -46,6 +46,24 @@ mb_wm_client_destroy (MBWMObject *obj)
   mb_wm_object_unref (MB_WM_OBJECT (client->wmref));
 }
 
+static void
+mb_wm_client_init (MBWMObject *obj)
+{
+  MBWindowManagerClient *client;
+
+  MBWM_MARK();
+
+  client = MB_WM_CLIENT(obj);
+
+  client->priv   = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPriv));
+
+  /*
+  if (client->init)
+    client->init(wm, client, win);
+  else
+    mb_wm_client_base_init (wm, client, win);
+  */
+}
 
 int
 mb_wm_client_class_type ()
@@ -133,7 +151,8 @@ mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient *client = NULL;
 
-  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT));
+  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT,
+					  NULL));
 
   if (!client)
     return NULL; 		/* FIXME: Handle out of memory */
@@ -146,25 +165,6 @@ mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win)
 			       mb_wm_client_on_property_change,
 			       (void*)client);
   return client;
-}
-
-void
-mb_wm_client_init (MBWMObject *obj)
-{
-  MBWindowManagerClient *client;
-
-  MBWM_MARK();
-
-  client = MB_WM_CLIENT(obj);
-
-  client->priv   = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPriv));
-
-  /*
-  if (client->init)
-    client->init(wm, client, win);
-  else
-    mb_wm_client_base_init (wm, client, win);
-  */
 }
 
 void

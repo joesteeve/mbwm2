@@ -167,9 +167,6 @@ MBWindowManagerClient*
 mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win);
 
 void
-mb_wm_client_init (MBWMObject *obj);
-
-void
 mb_wm_client_realize (MBWindowManagerClient *client);
 
 void

@@ -41,7 +41,7 @@ mb_wm_root_window_destroy (MBWMObject *this)
 }
 
 static void
-mb_wm_root_window_init (MBWMObject *this)
+mb_wm_root_window_init (MBWMObject *this, va_list vap)
 {
   MBWM_MARK();
 }
@@ -83,7 +83,8 @@ mb_wm_root_window_get (MBWindowManager *wm)
       XSetWindowAttributes attr;
 
       root_window
-	= MB_WM_ROOT_WINDOW (mb_wm_object_new (MB_WM_TYPE_ROOT_WINDOW));
+	= MB_WM_ROOT_WINDOW (mb_wm_object_new (MB_WM_TYPE_ROOT_WINDOW,
+					       NULL));
 
       if (!root_window)
 	return root_window;

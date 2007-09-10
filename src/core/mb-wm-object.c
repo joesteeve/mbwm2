@@ -38,14 +38,33 @@ mb_wm_object_init(void)
     ObjectClassesAllocated = N_CLASSES_PREALLOC;
 }
 
+static void
+mb_wm_object_class_init_recurse (MBWMObjectClass *klass,
+				 MBWMObjectClass *parent)
+{
+  if (parent->parent)
+    mb_wm_object_class_init_recurse (klass, parent->parent);
+
+  if (parent->class_init)
+    parent->class_init (klass);
+}
+
+static void
+mb_wm_object_class_init (MBWMObjectClass *klass)
+{
+  if (klass->parent)
+    mb_wm_object_class_init_recurse (klass, klass->parent);
+
+  if (klass->class_init)
+    klass->class_init (klass);
+}
+
 int
 mb_wm_object_register_class (MBWMObjectClassInfo *info,
 			     int                  parent_type,
 			     int                  flags)
 {
   MBWMObjectClass *klass;
-
-  printf("%s() called\n", __func__);
 
   if (NObjectClasses >= ObjectClassesAllocated)
     {
@@ -82,8 +101,7 @@ mb_wm_object_register_class (MBWMObjectClassInfo *info,
 
   ObjectClasses[NObjectClasses] = klass;
 
-  if (klass->class_init)
-    klass->class_init (klass);
+  mb_wm_object_class_init (klass);
 
   return 1 + NObjectClasses++;
 }
@@ -101,6 +119,20 @@ mb_wm_object_ref (MBWMObject *this)
   return this;
 }
 
+static void
+mb_wm_object_destroy_recursive (const MBWMObjectClass * klass,
+				MBWMObject *this)
+{
+  /* Destruction needs to happen top to bottom */
+  MBWMObjectClass *parent_klass = klass->parent;
+
+  if (klass->destroy)
+    klass->destroy (this);
+
+  if (parent_klass)
+    mb_wm_object_destroy_recursive (parent_klass, this);
+}
+
 void
 mb_wm_object_unref (MBWMObject *this)
 {
@@ -113,49 +145,52 @@ mb_wm_object_unref (MBWMObject *this)
   this->refcnt--;
 
   if (this->refcnt == 0)
-    {
-      if (this->klass->destroy)
-	this->klass->destroy(this);
-    }
+    mb_wm_object_destroy_recursive (MB_WM_OBJECT_GET_CLASS (this),
+				    this);
 }
 
 static void
-mb_wm_object_class_init_recurse (MBWMObjectClass *klass,
-				 MBWMObjectClass *parent)
+mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent,
+			   va_list vap)
 {
-  if (parent->class_init)
-    parent->class_init (klass);
+  va_list vap2;
+
+  va_copy (vap2, vap);
 
   if (parent->parent)
-    mb_wm_object_class_init_recurse (klass, parent->parent);
-}
-
-static void
-mb_wm_object_class_init (MBWMObjectClass *klass)
-{
-  if (klass->parent)
-    mb_wm_object_class_init_recurse (klass, klass->parent);
-
-  if (klass->class_init)
-    klass->class_init (klass);
-}
-
-static void
-mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent)
-{
-  if (parent->parent)
-    mb_wm_object_init_recurse (obj, parent->parent);
+    mb_wm_object_init_recurse (obj, parent->parent, vap2);
 
   if (parent->init)
-    parent->init (obj);
+    parent->init (obj, vap);
+
+  va_end (vap2);
+}
+
+static void
+mb_wm_object_init_object (MBWMObject *obj, va_list vap)
+{
+  va_list vap2;
+
+  va_copy(vap2, vap);
+
+  if (obj->klass->parent)
+    mb_wm_object_init_recurse (obj, obj->klass->parent, vap2);
+
+  if (obj->klass->init)
+    obj->klass->init(obj, vap);
+
+  va_end(vap2);
 }
 
 
 MBWMObject*
-mb_wm_object_new (int type)
+mb_wm_object_new (int type, ...)
 {
   MBWMObjectClassInfo *info;
   MBWMObject          *obj;
+  va_list              vap;
+
+  va_start(vap, type);
 
   info = ObjectClassesInfo[type-1];
 
@@ -163,15 +198,11 @@ mb_wm_object_new (int type)
 
   obj->klass = MB_WM_OBJECT_CLASS(ObjectClasses[type-1]);
 
-  mb_wm_object_class_init (obj->klass);
-
-  if (obj->klass->parent)
-    mb_wm_object_init_recurse (obj, obj->klass->parent);
-
-  if (obj->klass->init)
-    obj->klass->init(obj);
+  mb_wm_object_init_object (obj, vap);
 
   mb_wm_object_ref (obj);
+
+  va_end(vap);
 
   return obj;
 }
@@ -283,7 +314,6 @@ void
 mb_wm_foo_init (MBWMObject *obj)
 {
   printf("%s() called\n", __func__);
-
 }
 
 void

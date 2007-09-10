@@ -221,19 +221,6 @@ struct MBWMKeyBinding
   /* FIXME: free func */
 };
 
-
-/* Hookage */
-
-typedef  MBWindowManagerClient* (*MBWindowManagerNewClientFunc)
-     (MBWindowManager             *wm,
-      MBWMClientWindow            *w);
-
-typedef  void (*MBWindowManagerDestroyClientFunc)
-     (MBWindowManager             *wm,
-      MBWindowManagerClient       *client);
-
-
-
 /* Event Callbacks */
 
 typedef Bool (*MBWMXEventFunc)

@@ -1,3 +1,37 @@
+2007-09-10  Tomas Frydrych  <tf@o-hand.com>
+
+	* src/core/mb-wm-props.c:
+	Fixed uninitialized variable.
+	
+	* src/core/mb-wm-object.h:
+	* src/core/mb-wm-object.c:
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-client-base.c:
+	* src/core/mb-wm-client-base.h:
+	* src/core/mb-wm-decor.c:
+	* src/client-types/mb-wm-client-dialog.c:
+	* src/client-types/mb-wm-client-app.c:
+	* src/client-types/mb-wm-client-panel.c:
+	* src/core/mb-wm-root-window.c:
+	* src/core/mb-wm-client-window.c:
+	* src/core/mb-window-manager.c:
+	* src/core/mb-window-manager.h:
+	Added MB_WM_OBJECT_GET_CLASS() and MB_WM_OBJECT_PARENT_CLASS() macros.
+	Reorganized class initialization and destruction.
+	(mb_wm_object_new)
+	Made variadic to allow chaining of class init methods.
+	
+	* src/core/mb-window-manager.c:
+	* src/managers/matchbox-window-manager-2-simple.c:
+	Put back mb_wm_new() but with parameters.
+	Added virtual function process_cmdline() so subclasses can do
+	their own cmdline processing.
+	Moved client_new function from object to class.
+
+	* src/core/mb-wm-types.h:
+	Removed unneed definitions.
+	
 2007-09-07  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-object.c:

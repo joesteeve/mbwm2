@@ -82,7 +82,7 @@ mb_wm_client_window_destroy (MBWMObject *this)
 }
 
 static void
-mb_wm_client_window_init (MBWMObject *this)
+mb_wm_client_window_init (MBWMObject *this, va_list vap)
 {
 }
 

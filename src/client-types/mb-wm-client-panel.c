@@ -19,16 +19,14 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
   client->geometry = mb_wm_client_panel_request_geometry;
 }
 
-void
-mb_wm_client_panel_init (MBWMObject *this)
+static void
+mb_wm_client_panel_init (MBWMObject *this, va_list vap)
 {
-  mb_wm_client_base_init (this);
 }
 
-void
+static void
 mb_wm_client_panel_destroy (MBWMObject *this)
 {
-
 }
 
 int
@@ -86,7 +84,8 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient *client = NULL;
 
-  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_PANEL));
+  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_PANEL,
+					  NULL));
 
   if (!client)
     return NULL; 		/* FIXME: Handle out of memory */

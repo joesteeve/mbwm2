@@ -58,10 +58,35 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass)
   client->sync     = mb_wm_client_base_display_sync;
 }
 
-void
-mb_wm_client_base_init (MBWMObject *this)
+static void
+mb_wm_client_base_destroy (MBWMObject *this)
 {
-  mb_wm_client_init (this);
+  MBWindowManagerClient *parent;
+  MBWindowManagerClient *client;
+  MBWindowManager *wm;
+
+  MBWM_MARK();
+
+  client = MB_WM_CLIENT(this);
+
+  wm = client->wmref;
+
+  mb_wm_util_trap_x_errors();
+
+  XDestroyWindow(wm->xdpy, client->xwin_frame);
+
+  XSync(wm->xdpy, False);
+  mb_wm_util_untrap_x_errors();
+
+  parent = mb_wm_client_get_transient_for (MB_WM_CLIENT(this));
+
+  if (parent)
+    mb_wm_client_remove_transient (parent, MB_WM_CLIENT(this));
+}
+
+static void
+mb_wm_client_base_init (MBWMObject *this, va_list vap)
+{
 }
 
 int
@@ -274,34 +299,6 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
   mb_wm_util_trap_x_errors();
   XSync(wm->xdpy, False);
   mb_wm_util_untrap_x_errors();
-}
-
-void
-mb_wm_client_base_destroy (MBWMObject *this)
-{
-  MBWindowManagerClient *parent;
-  MBWindowManagerClient *client;
-  MBWindowManager *wm;
-
-  MBWM_MARK();
-
-  client = MB_WM_CLIENT(this);
-
-  wm = client->wmref;
-
-  mb_wm_util_trap_x_errors();
-
-  XDestroyWindow(wm->xdpy, client->xwin_frame);
-
-  XSync(wm->xdpy, False);
-  mb_wm_util_untrap_x_errors();
-
-  parent = mb_wm_client_get_transient_for (MB_WM_CLIENT(this));
-
-  if (parent)
-    mb_wm_client_remove_transient (parent, MB_WM_CLIENT(this));
-
-  mb_wm_client_destroy (this);
 }
 
 /* Note request geometry always called by layout manager */

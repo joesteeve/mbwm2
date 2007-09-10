@@ -57,7 +57,7 @@ mb_wm_property_get_reply_and_validate (MBWindowManager  *wm,
   int              actual_format_return;
   unsigned long    nitems_return;
   unsigned long    bytes_after_return;
-  unsigned char   *prop_data;
+  unsigned char   *prop_data = NULL;
 
   *x_error_code = 0;
 

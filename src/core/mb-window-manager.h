@@ -64,8 +64,6 @@ struct MBWindowManager
 
   MBWMKeys                    *keys; /* Keybindings etc */
 
-  MBWindowManagerNewClientFunc new_client_from_window_func;
-
   XasContext                  *xas_context;
 
   /* ### Private ### */
@@ -73,21 +71,26 @@ struct MBWindowManager
   int                          client_type_cnt;
   int                          stack_n_clients;
   MBWMRootWindow              *root_win;
+
+  int                          argc;
+  const char                 **argv;
 };
 
 struct MBWindowManagerClass
 {
   MBWMObjectClass parent;
+
+  void (*process_cmdline) (MBWindowManager * wm, int argc, char **argv);
+
+  MBWindowManagerClient* (*client_new) (MBWindowManager *wm,
+					MBWMClientWindow *w);
 };
 
 MBWindowManager *
-mb_wm_get ();
+mb_wm_new (int argc, char **argv);
 
 int
 mb_wm_class_type ();
-
-Status
-mb_wm_init(MBWindowManager *wm, int *argc, char ***argv);
 
 void
 mb_wm_manage_preexistsing_wins (MBWindowManager* wm);
