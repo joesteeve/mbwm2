@@ -57,6 +57,8 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 
   client->priv   = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPriv));
 
+  client->pings_pending = -1;
+
   /*
   if (client->init)
     client->init(wm, client, win);
@@ -395,4 +397,118 @@ mb_wm_client_get_name (MBWindowManagerClient *client)
     return NULL;
 
   return client->window->name;
+}
+
+static void
+mb_wm_client_deliver_message (MBWindowManagerClient   *client,
+			      Atom          delivery_atom,
+			      unsigned long data0,
+			      unsigned long data1,
+			      unsigned long data2,
+			      unsigned long data3,
+			      unsigned long data4)
+{
+  MBWindowManager *wm = client->wmref;
+  Window xwin = client->window->xwindow;
+  XEvent ev;
+
+  memset(&ev, 0, sizeof(ev));
+
+  ev.xclient.type = ClientMessage;
+  ev.xclient.window = xwin;
+  ev.xclient.message_type = delivery_atom;
+  ev.xclient.format = 32;
+  ev.xclient.data.l[0] = data0;
+  ev.xclient.data.l[1] = data1;
+  ev.xclient.data.l[2] = data2;
+  ev.xclient.data.l[3] = data3;
+  ev.xclient.data.l[4] = data4;
+
+  XSendEvent(wm->xdpy, xwin, False, NoEventMask, &ev);
+
+  XSync(wm->xdpy, False);
+}
+
+static void
+mb_wm_client_deliver_wm_protocol (MBWindowManagerClient *client,
+				  Atom protocol)
+{
+  MBWindowManager *wm = client->wmref;
+
+  mb_wm_client_deliver_message (client, wm->atoms[MBWM_ATOM_WM_PROTOCOLS],
+				protocol, CurrentTime, 0, 0, 0);
+}
+
+static void
+mb_wm_client_ping_start (MBWindowManagerClient *client)
+{
+#ifndef NO_PING
+  if (client->pings_pending == -1)
+    {
+      client->pings_pending       = 0;
+      client->pings_sent          = 0;
+      client->ping_handler_called = False;
+      client->wmref->n_active_ping_clients++;
+    }
+#endif
+}
+
+static void
+mb_wm_client_ping_stop (MBWindowManagerClient *client)
+{
+#ifndef NO_PING
+  if (client->pings_pending != -1)
+    {
+      client->pings_pending = -1;
+      client->wmref->n_active_ping_clients--;
+    }
+#endif
+}
+
+static Bool
+mb_wm_client_obliterate (MBWindowManagerClient *client)
+{
+  char               buf[257];
+  int                sig     = 9;
+  MBWMClientWindow  *win     = client->window;
+  const char        *machine = win->machine;
+  pid_t              pid     = win->pid;
+
+  if (!machine || !pid)
+    return False;
+
+  if (gethostname (buf, sizeof(buf)-1) == 0)
+    {
+      if (!strcmp (buf, machine))
+	{
+	  if (kill (pid, sig) < 0)
+	    return False;
+	}
+      else
+	return False; 	/* on a different host */
+    }
+  else
+    return False;
+
+  return True;
+}
+
+void
+mb_wm_client_deliver_delete (MBWindowManagerClient *client)
+{
+  MBWindowManager        *wm     = client->wmref;
+  MBWMRootWindow         *rwin   = wm->root_win;
+  Window                  xwin   = client->window->xwindow;
+  MBWMClientWindowProtos  protos = client->window->protos;
+
+  if ((protos & MBWMClientWindowProtosDelete))
+    {
+      mb_wm_client_deliver_wm_protocol (client,
+				wm->atoms[MBWM_ATOM_WM_DELETE_WINDOW]);
+
+      if (client->pings_pending == -1)
+	mb_wm_client_ping_start (client);
+    }
+  else if (!mb_wm_client_obliterate (client))
+    XKillClient(wm->xdpy, xwin);
 }

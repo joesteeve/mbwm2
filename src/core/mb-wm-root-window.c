@@ -290,10 +290,9 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_CLOSE_WINDOW])
     {
-#if 0
       if ((c = mb_wm_managed_client_from_xwindow(wm, e->window)) != NULL)
-	mb_wm_client_deliver_delete(wm, c);
-#endif
+	mb_wm_client_deliver_delete(c);
+
       return 1;
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_WM_PROTOCOLS]
@@ -305,10 +304,12 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	  /* We got a response to a ping. stop pinging it now
 	   * until close button is pressed again.
 	   */
-	  if (c->ping_handler_called)
+	  if (client->ping_handler_called)
 	    {
 	      int len;
 	      char *buf;
+	      MBWMClientWindow * cwin = c->window;
+
 	      /* aha! this was thought be be dead but has come
 	       * alive again..
 	       */
@@ -319,8 +320,8 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 		{
 		  snprintf(buf, len-1, "%s %i %li 1",
 			   w->config->ping_handler,
-			   c->pid,
-			   c->window);
+			   cwin->pid,
+			   cwin->xwindow);
 
 		  fork_exec(buf);
 
@@ -340,7 +341,7 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	       */
 	      if (c->pings_pending > 0)
 		{
-		  ewmh_ping_client_stop(c);
+		  mb_wm_client_ping_stop (c);
 		}
 	    }
 #endif

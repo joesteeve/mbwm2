@@ -137,6 +137,9 @@ struct MBWindowManagerClient
   MBWindowManagerClient       *transient_for;
 
   int                          skip_unmaps;
+  int                          pings_pending;
+  int                          pings_sent;
+  Bool                         ping_handler_called;
 
   /* To add focus, coverage */
 
@@ -250,5 +253,7 @@ mb_wm_client_get_transient_for (MBWindowManagerClient *client);
 const char*
 mb_wm_client_get_name (MBWindowManagerClient *client);
 
+void
+mb_wm_client_deliver_delete (MBWindowManagerClient *client);
 
 #endif
