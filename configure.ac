@@ -24,6 +24,9 @@ AC_ARG_ENABLE(gtk,
   [  --disable-gtk           Disable GTK integration support],
   [use_gtk=$enableval], [use_gtk=yes])
 
+AC_ARG_ENABLE(debug,
+  [  --enable-debug          Enable verbose debugging output],
+  [want_debug=$enableval], [want_debug=no])
 
 if test "x$use_cairo" = "xyes"; then
   needed_pkgs="$needed_pkgs pangocairo "
@@ -31,6 +34,11 @@ fi
 
 if test "x$use_gtk" = "xyes"; then
   needed_pkgs="$needed_pkgs gtk+-2.0 "
+fi
+
+if test "x$want_debug" = "xyes"; then
+  MBWM_DEBUG_CFLAGS="$MBWM_DEBUG_CFLAGS -DMBWM_WANT_DEBUG"
+  MBWM_DEBUG_LDFLAGS="$MBWM_DEBUG_LDFLAGS -rdynamic"
 fi
 
 PKG_CHECK_MODULES(MBWM, $needed_pkgs)
@@ -49,6 +57,7 @@ MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_src
 MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
 MBWM_THEME_LIBS='$(top_builddir)/src/theme-engines'
+MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS"
 
 AC_SUBST([MBWM_CFLAGS])
 AC_SUBST([MBWM_LIBS])
@@ -56,6 +65,8 @@ AC_SUBST([MBWM_CORE_LIB])
 AC_SUBST([MBWM_INCS])
 AC_SUBST([MBWM_CLIENT_LIBS])
 AC_SUBST([MBWM_THEME_LIBS])
+AC_SUBST([MBWM_DEBUG_CFLAGS])
+AC_SUBST([MBWM_DEBUG_LDFLAGS])
 
 AC_OUTPUT([
 Makefile
@@ -75,4 +86,5 @@ echo "
 
 	Cairo support:          ${use_cairo}
 	GTK integration:	${use_gtk}
+	Debugging output:       ${want_debug}
 "

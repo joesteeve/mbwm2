@@ -47,7 +47,7 @@ mb_wm_client_destroy (MBWMObject *obj)
 }
 
 static void
-mb_wm_client_init (MBWMObject *obj)
+mb_wm_client_init (MBWMObject *obj, va_list vap)
 {
   MBWindowManagerClient *client;
 

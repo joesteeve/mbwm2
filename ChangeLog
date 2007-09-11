@@ -1,3 +1,23 @@
+2007-09-11  Tomas Frydrych  <tf@o-hand.com>
+
+        * configure.ac:
+        * src/core/Makefile.am:
+        * src/managers/Makefile.am
+	Added --enable-debug.
+	
+	* src/managers/matchbox-window-manager-2-simple.c:
+	Pass cmd line args to MBWindowManager object.
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_init):
+	Fixed signature.
+	
+        * src/core/mb-wm-debug.c:
+        * src/core/mb-wm-debug.h:
+        * src/core/mb-wm-macros.h:
+        * src/core/mb-wm-object.c:
+	Added MBWM_TRACE() macro and trace option for MB_DEBUG.
+	
 2007-09-10  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-props.c:

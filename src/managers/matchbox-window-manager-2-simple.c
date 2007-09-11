@@ -45,14 +45,10 @@ int
 main(int argc, char **argv)
 {
   MBWindowManager     *wm;
-  char * test[2] = 
-    {
-      "test1", "test2"
-    };
   
   mb_wm_object_init();
 
-  wm = mb_wm_new(2, (char**)&test[0]);
+  wm = mb_wm_new(argc, argv);
 
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");

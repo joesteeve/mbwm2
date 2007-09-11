@@ -116,6 +116,9 @@ mb_wm_object_ref (MBWMObject *this)
     }
 
   this->refcnt++;
+
+  MBWM_TRACE ();
+
   return this;
 }
 
@@ -147,6 +150,8 @@ mb_wm_object_unref (MBWMObject *this)
   if (this->refcnt == 0)
     mb_wm_object_destroy_recursive (MB_WM_OBJECT_GET_CLASS (this),
 				    this);
+
+  MBWM_TRACE ();
 }
 
 static void

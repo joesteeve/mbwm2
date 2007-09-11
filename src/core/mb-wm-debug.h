@@ -29,6 +29,7 @@ typedef enum {
   MBWM_DEBUG_PROP            = 1 << 2,
   MBWM_DEBUG_EVENT           = 1 << 3,
   MBWM_DEBUG_PAINT           = 1 << 4,
+  MBWM_DEBUG_TRACE           = 1 << 5,
 } MBWMDebugFlag;
 
 extern int mbwm_debug_flags;

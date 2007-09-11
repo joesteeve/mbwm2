@@ -21,10 +21,7 @@
 #ifndef _HAVE_MB_MACROS_H
 #define _HAVE_MB_MACROS_H
 
-#define MBWM_WANT_DEBUG 1
-
 #ifdef MBWM_WANT_DEBUG
-
 #define MBWM_NOTE(type,x,a...)  do {                                  \
         if (mbwm_debug_flags & MBWM_DEBUG_##type)                     \
           { fprintf (stderr, "[" #type "] " __FILE__ ":%d,%s() " ": " x "\n", __LINE__, __func__, ##a); } \
@@ -33,10 +30,43 @@
 #define MBWM_MARK() MBWM_NOTE(MISC, "== mark ==")
 #define MBWM_DBG(x, a...) MBWM_NOTE(MISC, x, ##a)
 
+#include <execinfo.h>
+
+#define MBWM_TRACE()                                              \
+if (mbwm_debug_flags & MBWM_DEBUG_TRACE)                          \
+do                                                                \
+{                                                                 \
+  void    *trace[10];                                             \
+  size_t   depth, i;                                              \
+  char   **strings;                                               \
+                                                                  \
+  fprintf (stderr, __FILE__ ":%d,%s(): ### TRACE ### \n",         \
+	   __LINE__, __func__);                                   \
+                                                                  \
+  depth   = backtrace (trace, sizeof(trace)/sizeof(void*));       \
+  strings = backtrace_symbols (trace, depth);                     \
+                                                                  \
+  for (i = 1; i < depth; ++i)                                     \
+    {                                                             \
+      char * s = strings[i];                                      \
+      while (s && *s && *s != '(')                                \
+	s++;                                                      \
+                                                                  \
+      if (s && *s)                                                \
+	s++;                                                      \
+                                                                  \
+      fprintf (stderr, "    %s\n", s);                            \
+    }                                                             \
+  free (strings);                                                 \
+}while (0)
+
+
 #else /* !MBWM_ENABLE_DEBUG */
 
 #define MBWM_NOTE(type,x,a...)
-#define MBWM_DBG(x, )
+#define MBWM_DBG(x, a...)
+#define MBWM_TRACE()
+#define MBWM_MARK()
 
 #endif /* MBWM_ENABLE_DEBUG */
 

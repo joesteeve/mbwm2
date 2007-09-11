@@ -30,7 +30,8 @@ static const struct { const char *key; MBWMDebugFlag flag; } debug_keys[] = {
   { "client",  MBWM_DEBUG_CLIENT },
   { "texture", MBWM_DEBUG_PROP },
   { "event",   MBWM_DEBUG_EVENT },
-  { "paint",   MBWM_DEBUG_PAINT }
+  { "paint",   MBWM_DEBUG_PAINT },
+  { "trace",   MBWM_DEBUG_TRACE }
 };
 #endif
 
