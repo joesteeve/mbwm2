@@ -53,7 +53,8 @@ struct MBWindowManager
   Display                     *xdpy;
   unsigned int                 xdpy_width, xdpy_height;
   int                          xscreen;
-  MBWindowManagerEventFuncs   *event_funcs;
+
+  MBWindowManagerEventFuncs    event_funcs;
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
@@ -80,8 +81,15 @@ struct MBWindowManagerClass
 
   void (*process_cmdline) (MBWindowManager * wm, int argc, char **argv);
 
+  void (*show_desktop) (MBWindowManager *wm, Bool show);
+  
   MBWindowManagerClient* (*client_new) (MBWindowManager *wm,
 					MBWMClientWindow *w);
+
+  /* These return True if now further action to be taken */
+  Bool (*client_activate)   (MBWindowManager *wm, MBWindowManagerClient *c);
+  Bool (*client_responding) (MBWindowManager *wm, MBWindowManagerClient *c);
+  Bool (*client_hang)       (MBWindowManager *wm, MBWindowManagerClient *c);
 };
 
 MBWindowManager *
@@ -116,6 +124,15 @@ mb_wm_get_display_geometry (MBWindowManager  *wm,
 
 void
 mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c);
+
+void
+mb_wm_handle_ping_reply (MBWindowManager * wm, MBWindowManagerClient *c);
+
+void
+mb_wm_handle_hang_client (MBWindowManager * wm, MBWindowManagerClient *c);
+
+void
+mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show);
 
 MBWindowManagerClient*
 mb_wm_get_visible_main_client(MBWindowManager *wm);

@@ -1,5 +1,35 @@
 2007-09-11  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	Statically allocated event_funcs struct in MBWindowManger object.
+
+	(client_activate):
+	(client_responding):
+	(client_hang):
+	(show_desktop):
+	New class virtuals for subclasses to hook into if needed.
+
+	(mb_wm_handle_ping_reply):
+	(mb_wm_handle_hang_client):
+	(mb_wm_handle_show_desktop):
+	New function (for x message handling).
+	
+        * src/core/mb-wm-client-window.h:
+	MBWMClientWindowStateChange enum for _NET_WM_STATE_xxx message
+	values.
+	
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	(mb_wm_handle_show_desktop):
+	(mb_wm_client_set_state):
+	
+        * src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_handle_message):
+	Fixed up previously disable parts.
+	
+2007-09-11  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.h:
         * src/core/mb-wm-client.c:
         * src/core/mb-wm-client.h:

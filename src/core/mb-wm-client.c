@@ -447,7 +447,6 @@ mb_wm_client_ping_start (MBWindowManagerClient *client)
     {
       client->pings_pending       = 0;
       client->pings_sent          = 0;
-      client->ping_handler_called = False;
       client->wmref->n_active_ping_clients++;
     }
 #endif
@@ -465,39 +464,36 @@ mb_wm_client_ping_stop (MBWindowManagerClient *client)
 #endif
 }
 
-static Bool
-mb_wm_client_obliterate (MBWindowManagerClient *client)
+void
+mb_wm_client_shutdown (MBWindowManagerClient *client)
 {
   char               buf[257];
   int                sig     = 9;
+  MBWindowManager   *wm      = client->wmref;
   MBWMClientWindow  *win     = client->window;
+  Window             xwin    = client->window->xwindow;
   const char        *machine = win->machine;
   pid_t              pid     = win->pid;
 
   if (!machine || !pid)
-    return False;
+    return;
 
   if (gethostname (buf, sizeof(buf)-1) == 0)
     {
       if (!strcmp (buf, machine))
 	{
-	  if (kill (pid, sig) < 0)
-	    return False;
+	  if (kill (pid, sig) >= 0)
+	    return;
 	}
-      else
-	return False; 	/* on a different host */
     }
-  else
-    return False;
 
-  return True;
+  XKillClient(wm->xdpy, xwin);
 }
 
 void
 mb_wm_client_deliver_delete (MBWindowManagerClient *client)
 {
   MBWindowManager        *wm     = client->wmref;
-  MBWMRootWindow         *rwin   = wm->root_win;
   Window                  xwin   = client->window->xwindow;
   MBWMClientWindowProtos  protos = client->window->protos;
 
@@ -509,6 +505,74 @@ mb_wm_client_deliver_delete (MBWindowManagerClient *client)
       if (client->pings_pending == -1)
 	mb_wm_client_ping_start (client);
     }
-  else if (!mb_wm_client_obliterate (client))
-    XKillClient(wm->xdpy, xwin);
+  else
+    mb_wm_client_shutdown (client);
+}
+
+void
+mb_wm_client_set_state (MBWindowManagerClient *client,
+			Atom state,
+			MBWMClientWindowStateChange state_op)
+{
+  MBWindowManager   *wm  = client->wmref;
+  MBWMClientWindow  *win = client->window;
+  Bool               old_state;
+  Bool               new_state;
+  MBWMClientWindowEWMHState state_flag;
+
+  switch (state)
+    {
+    case MBWM_ATOM_NET_WM_STATE_FULLSCREEN:
+      state_flag = MBWMClientWindowEWMHStateFullscreen;
+      break;
+    case MBWM_ATOM_NET_WM_STATE_ABOVE:
+      state_flag = MBWMClientWindowEWMHStateAbove;
+      break;
+
+    case MBWM_ATOM_NET_WM_STATE_MODAL:
+    case MBWM_ATOM_NET_WM_STATE_STICKY:
+    case MBWM_ATOM_NET_WM_STATE_MAXIMIZED_VERT:
+    case MBWM_ATOM_NET_WM_STATE_MAXIMIZED_HORZ:
+    case MBWM_ATOM_NET_WM_STATE_SHADED:
+    case MBWM_ATOM_NET_WM_STATE_SKIP_TASKBAR:
+    case MBWM_ATOM_NET_WM_STATE_SKIP_PAGER:
+    case MBWM_ATOM_NET_WM_STATE_HIDDEN:
+    case MBWM_ATOM_NET_WM_STATE_BELOW:
+    case MBWM_ATOM_NET_WM_STATE_DEMANDS_ATTENTION:
+    default:
+      return; /* not handled yet */
+    }
+
+  old_state = (win->ewmh_state & state_flag);
+
+  switch (state_op)
+    {
+    case MBWMClientWindowStateChangeRemove:
+      new_state = False;
+      break;
+    case MBWMClientWindowStateChangeAdd:
+      new_state = True;
+      break;
+    case MBWMClientWindowStateChangeToggle:
+      new_state != old_state;
+      break;
+    }
+
+  if (new_state == old_state)
+    return;
+
+  if (new_state)
+    {
+      win->ewmh_state |= state_flag;
+    }
+  else
+    {
+      win->ewmh_state &= ~state_flag;
+    }
+
+  /*
+   * FIXME -- resize && move, possibly redraw decors when returning from
+   * fullscreen
+   */
+  mb_wm_activate_client(wm, client);
 }

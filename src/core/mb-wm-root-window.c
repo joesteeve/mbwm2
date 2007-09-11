@@ -272,20 +272,7 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 
   if (e->message_type == wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW])
     {
-      if ((c = mb_wm_managed_client_from_xwindow(wm,
-						 e->window)) != NULL)
-	{
-#if 0
-	  /* Likely activated by a TN so start pinging if aggresive setup */
-	  if (w->config->ping_aggressive
-	      && c->type == MBCLIENT_TYPE_APP
-	      && c != mb_wm_get_visible_main_client(wm, w))
-	    ewmh_ping_client_start (c);
-#endif
-	}
-
       mb_wm_activate_client(wm, c);
-
       return 1;
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_CLOSE_WINDOW])
@@ -299,53 +286,8 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	   && e->data.l[0] == wm->atoms[MBWM_ATOM_NET_WM_PING])
     {
       if ((c = mb_wm_managed_client_from_xwindow(wm, e->data.l[1])) != NULL)
-	{
-#if 0
-	  /* We got a response to a ping. stop pinging it now
-	   * until close button is pressed again.
-	   */
-	  if (client->ping_handler_called)
-	    {
-	      int len;
-	      char *buf;
-	      MBWMClientWindow * cwin = c->window;
-
-	      /* aha! this was thought be be dead but has come
-	       * alive again..
-	       */
-	      len = strlen(w->config->ping_handler) + 32;
-	      buf = malloc(len);
-
-	      if (buf)
-		{
-		  snprintf(buf, len-1, "%s %i %li 1",
-			   w->config->ping_handler,
-			   cwin->pid,
-			   cwin->xwindow);
-
-		  fork_exec(buf);
-
-		  free(buf);
-		}
-	    }
-
-	  if (w->config->ping_aggressive)
-	    {
-	      if (c->pings_pending >= 0)
-		c->pings_pending--;
-	    }
-	  else
-	    {
-	      /* Regular pinging, assume 1 reply and the
-	       * app is alive.
-	       */
-	      if (c->pings_pending > 0)
-		{
-		  mb_wm_client_ping_stop (c);
-		}
-	    }
-#endif
-	}
+	mb_wm_handle_ping_reply (wm, c);
+      return 1;
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_WM_STATE])
     {
@@ -353,62 +295,22 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	  && ((c = mb_wm_managed_client_from_xwindow(wm, e->window)) != NULL)
 	  && MB_WM_IS_CLIENT_APP (c))
 	{
-#if 0
-	  switch (e->data.l[0])
-	    {
-	    case _NET_WM_STATE_REMOVE:
-	      if (c->flags & CLIENT_FULLSCREEN_FLAG)
-		main_client_toggle_fullscreen(c);
-	      break;
-	    case _NET_WM_STATE_ADD:
-	      if (!(c->flags & CLIENT_FULLSCREEN_FLAG))
-		main_client_toggle_fullscreen(c);
-	      break;
-	    case _NET_WM_STATE_TOGGLE:
-	      main_client_toggle_fullscreen(c);
-	      break;
-	    }
-#endif
+	  mb_wm_client_set_state (c, e->data.l[1], e->data.l[0]);
 	}
       else if (e->data.l[1] == wm->atoms[MBWM_ATOM_NET_WM_STATE_ABOVE]
 	       && ((c = mb_wm_managed_client_from_xwindow(wm, e->window)) !=
 		   NULL)
 	       && MB_WM_IS_CLIENT_DIALOG (c))
 	{
-#if 0
-	  dbg("got EWMH above state change\n");
-	  switch (e->data.l[0])
-	    {
-	    case _NET_WM_STATE_REMOVE:
-	      c->flags &= ~CLIENT_HAS_ABOVE_STATE;
-	      break;
-	    case _NET_WM_STATE_ADD:
-	      c->flags |= CLIENT_HAS_ABOVE_STATE;
-	      break;
-	    case _NET_WM_STATE_TOGGLE:
-	      c->flags ^= CLIENT_HAS_ABOVE_STATE;
-	      break;
-	    }
-	  wm_activate_client(c);
-#endif
+	  mb_wm_client_set_state (c, e->data.l[1], e->data.l[0]);
 	}
       return 1;
     }
-#if 0
-  else if (e->message_type == wm->atoms[MBWM_ATOM_NET_SHOW_DESKTOP]
-	   && wm_get_desktop(w) )
+  else if (e->message_type == wm->atoms[MBWM_ATOM_NET_SHOW_DESKTOP])
     {
-      if (e->data.l[0] == 1)
-	{ 			/* Show the desktop, if not shown */
-	  if (!(w->flags & DESKTOP_RAISED_FLAG))
-	    wm_toggle_desktop(w);
-	}
-      else
-	{                 /* Hide the desktop, if shown */
-	  if (w->flags & DESKTOP_RAISED_FLAG)
-	    wm_toggle_desktop(w);
-	}
+      mb_wm_handle_show_desktop (wm, e->data.l[0]);
+      return 1;
     }
-#endif
+
   return 0;
 }

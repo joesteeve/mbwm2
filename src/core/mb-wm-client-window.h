@@ -64,6 +64,14 @@ typedef enum MBWMClientWindowEWMHState
   }
 MBWMClientWindowEWMHState;
 
+typedef enum MBWMClientWindowStateChange
+  {
+    MBWMClientWindowStateChangeRemove  = (1<<0),
+    MBWMClientWindowStateChangeAdd     = (1<<1),
+    MBWMClientWindowStateChangeToggle  = (1<<2),
+  }
+MBWMClientWindowStateChange;
+
 typedef enum MBWMClientWindowProtos
   {
     MBWMClientWindowProtosFocus         = (1<<0),

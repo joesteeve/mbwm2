@@ -137,9 +137,12 @@ struct MBWindowManagerClient
   MBWindowManagerClient       *transient_for;
 
   int                          skip_unmaps;
+
   int                          pings_pending;
   int                          pings_sent;
-  Bool                         ping_handler_called;
+
+  Bool                         not_responding;
+  Bool                         kill_attempted;
 
   /* To add focus, coverage */
 
@@ -255,5 +258,13 @@ mb_wm_client_get_name (MBWindowManagerClient *client);
 
 void
 mb_wm_client_deliver_delete (MBWindowManagerClient *client);
+
+void
+mb_wm_client_shutdown (MBWindowManagerClient *client);
+
+void
+mb_wm_client_set_state (MBWindowManagerClient *client,
+			Atom state,
+			MBWMClientWindowStateChange state_op);
 
 #endif
