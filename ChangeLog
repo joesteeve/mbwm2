@@ -1,5 +1,13 @@
 2007-09-11  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/managers/matchbox-window-manager-2-simple.c:
+	Moved remaning initialization of MBWindowManager object from 
+	simple manager to the object init function.
+	
+2007-09-11  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
         * src/core/Makefile.am:
         * src/managers/Makefile.am

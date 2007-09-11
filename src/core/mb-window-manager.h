@@ -93,9 +93,6 @@ int
 mb_wm_class_type ();
 
 void
-mb_wm_manage_preexistsing_wins (MBWindowManager* wm);
-
-void
 mb_wm_main_loop(MBWindowManager *wm);
 
 MBWindowManagerClient*

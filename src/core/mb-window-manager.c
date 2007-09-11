@@ -440,7 +440,7 @@ mb_wm_display_sync_queue (MBWindowManager* wm)
   wm->need_display_sync = True;
 }
 
-void
+static void
 mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 {
    unsigned int      nwins, i;
@@ -893,6 +893,8 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   base_foo ();
 
+  mb_wm_theme_init (wm);
+  mb_wm_manage_preexistsing_wins (wm);
 }
 
 static void

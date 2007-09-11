@@ -53,10 +53,6 @@ main(int argc, char **argv)
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");
 
-  mb_wm_theme_init (wm);
-
-  mb_wm_manage_preexistsing_wins (wm);
-
   mb_wm_keys_binding_add_with_spec (wm,
 				    "<alt>d",
 				    key_binding_func,
