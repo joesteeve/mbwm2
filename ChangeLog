@@ -1,4 +1,13 @@
 2007-09-12  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/client-types/mb-wm-client-app.c:
+	MBWMDecor, MBWMDecorButton:
+	Renamed constructors from _create to _new for consistency with
+	other objects; moved initialization from _new into _init functions.
+	
+2007-09-12  Tomas Frydrych  <tf@o-hand.com>
 	
         * src/core/mb-wm-debug.c:
         * src/core/mb-wm-debug.h:

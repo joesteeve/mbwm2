@@ -26,6 +26,51 @@ mb_wm_decor_destroy (MBWMObject *obj);
 static void
 mb_wm_decor_button_sync_window (MBWMDecorButton *button);
 
+static void
+mb_wm_decor_init (MBWMObject *obj, va_list vap)
+{
+  MBWMDecor             *decor = MB_WM_DECOR (obj);
+  MBWindowManager       *wm = NULL;
+  MBWMDecorType          type;
+  MBWMDecorResizedFunc   resize;
+  MBWMDecorRepaintFunc   repaint;
+  void                  *userdata;
+  char                  *prop;
+
+  prop = va_arg(vap, char *);
+  while (prop)
+    {
+      if (!strcmp ("wm", prop))
+	{
+	  wm = va_arg(vap, MBWindowManager *);
+	}
+      else if (!strcmp ("type", prop))
+	{
+	  type = va_arg(vap, MBWMDecorType);
+	}
+      else if (!strcmp ("resize", prop))
+	{
+	  resize = va_arg(vap, MBWMDecorResizedFunc);
+	}
+      else if (!strcmp ("repaint", prop))
+	{
+	  repaint = va_arg(vap, MBWMDecorRepaintFunc);
+	}
+      else if (!strcmp ("user-data", prop))
+	{
+	  userdata = va_arg(vap, void*);
+	}
+
+      prop = va_arg(vap, char *);
+    }
+
+  decor->type     = type;
+  decor->dirty    = True; 	/* Needs painting */
+  decor->resize   = resize;
+  decor->repaint  = repaint;
+  decor->userdata = userdata;
+}
+
 int
 mb_wm_decor_class_type ()
 {
@@ -36,7 +81,7 @@ mb_wm_decor_class_type ()
       static MBWMObjectClassInfo info = {
 	sizeof (MBWMDecorClass),
 	sizeof (MBWMDecor),
-	NULL,
+	mb_wm_decor_init,
 	mb_wm_decor_destroy,
 	NULL
       };
@@ -96,7 +141,7 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 	decor->resize(decor->parent_client->wmref, decor, decor->userdata);
 
       mb_wm_util_list_foreach(decor->buttons,
-			      (MBWMListForEachCB)mb_wm_decor_button_sync_window,
+		             (MBWMListForEachCB)mb_wm_decor_button_sync_window,
 			      NULL);
 
       return mb_wm_decor_reparent (decor);
@@ -245,21 +290,21 @@ mb_wm_decor_handle_resize (MBWMDecor *decor)
 }
 
 MBWMDecor*
-mb_wm_decor_create (MBWindowManager     *wm,
-		    MBWMDecorType        type,
-		    MBWMDecorResizedFunc resize,
-		    MBWMDecorResizedFunc repaint,
-		    void                *userdata)
+mb_wm_decor_new (MBWindowManager      *wm,
+		 MBWMDecorType         type,
+		 MBWMDecorResizedFunc  resize,
+		 MBWMDecorRepaintFunc  repaint,
+		 void                 *userdata)
 {
-  MBWMDecor           *decor;
+  MBWMDecor *decor;
 
-  decor = MB_WM_DECOR(mb_wm_object_new (MB_WM_TYPE_DECOR, NULL));
-
-  decor->type    = type;
-  decor->dirty   = True; 	/* Needs painting */
-  decor->resize  = resize;
-  decor->repaint = repaint;
-  decor->userdata = userdata;
+  decor = MB_WM_DECOR(mb_wm_object_new (MB_WM_TYPE_DECOR,
+					"wm",        wm,
+					"type",      type,
+					"resize",    resize,
+					"repaint",   repaint,
+					"user-data", userdata,
+					NULL));
 
   return decor;
 }
@@ -314,7 +359,6 @@ mb_wm_decor_attach (MBWMDecor             *decor,
 void
 mb_wm_decor_detach (MBWMDecor *decor)
 {
-
 }
 
 static void
@@ -328,9 +372,135 @@ mb_wm_decor_destroy (MBWMObject* obj)
 }
 
 /* Buttons */
-
 static void
 mb_wm_decor_button_destroy (MBWMObject* obj);
+
+static Bool
+mb_wm_decor_button_press_handler (MBWindowManager *wm,
+				  XButtonEvent    *xev,
+				  void            *userdata)
+{
+  MBWMDecorButton *button;
+
+  button = (MBWMDecorButton *)userdata;
+
+  if (xev->window == button->xwin)
+    {
+      button->state = MBWMDecorButtonStatePressed;
+
+      MBWM_DBG("button is %ix%i\n", button->geom.width, button->geom.height);
+      if (button->press)
+	button->press(wm, button, button->userdata);
+
+      return False;
+    }
+
+  return True;
+}
+
+static Bool
+mb_wm_decor_button_release_handler (MBWindowManager *wm,
+				    XButtonEvent    *xev,
+				    void            *userdata)
+{
+  MBWMDecorButton *button;
+
+  button = (MBWMDecorButton *)userdata;
+
+  if (xev->window == button->xwin)
+    {
+      button->state = MBWMDecorButtonStateInactive;
+
+      MBWM_DBG("got release");
+      if (button->release)
+	button->release(wm, button, button->userdata);
+
+      return False;
+    }
+
+  return True;
+}
+
+static void
+mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
+{
+  MBWMDecorButton             *button = MB_WM_DECOR_BUTTON (obj);
+  MBWindowManager             *wm = NULL;
+  MBWMDecor                   *decor = NULL;
+  int                          width;
+  int                          height;
+  MBWMDecorButtonPressedFunc   press;
+  MBWMDecorButtonReleasedFunc  release;
+  MBWMDecorButtonRepaintFunc   paint;
+  MBWMDecorButtonFlags         flags;
+  void                        *userdata = NULL;
+  char                        *prop;
+
+  prop = va_arg(vap, char *);
+  while (prop)
+    {
+      if (!strcmp ("wm", prop))
+	{
+	  wm = va_arg(vap, MBWindowManager *);
+	}
+      else if (!strcmp ("decor", prop))
+	{
+	  decor = va_arg(vap, MBWMDecor*);
+	}
+      else if (!strcmp ("width", prop))
+	{
+	  width = va_arg(vap, int);
+	}
+      else if (!strcmp ("height", prop))
+	{
+	  height = va_arg(vap, int);
+	}
+      else if (!strcmp ("press", prop))
+	{
+	  press = va_arg(vap, MBWMDecorButtonPressedFunc);
+	}
+      else if (!strcmp ("release", prop))
+	{
+	  release = va_arg(vap, MBWMDecorButtonReleasedFunc);
+	}
+      else if (!strcmp ("paint", prop))
+	{
+	  paint = va_arg(vap, MBWMDecorButtonRepaintFunc);
+	}
+      else if (!strcmp ("flags", prop))
+	{
+	  flags = va_arg(vap, MBWMDecorButtonFlags);
+	}
+      else if (!strcmp ("user-data", prop))
+	{
+	  userdata = va_arg(vap, void*);
+	}
+
+      prop = va_arg(vap, char *);
+    }
+
+  if (!wm)
+    return;
+
+  button->press    = press;
+  button->release  = release;
+  button->repaint  = paint;
+  button->userdata = userdata;
+  button->decor    = decor;
+
+  button->geom.width  = width;
+  button->geom.height = height;
+  button->decor  = decor;
+  decor->buttons = mb_wm_util_list_append (decor->buttons, button);
+
+  mb_wm_x_event_handler_add (wm, ButtonPress,
+			     (MBWMXEventFunc)mb_wm_decor_button_press_handler,
+			     button);
+
+  mb_wm_x_event_handler_add (wm, ButtonRelease,
+		            (MBWMXEventFunc)mb_wm_decor_button_release_handler,
+			     button);
+}
 
 int
 mb_wm_decor_button_class_type ()
@@ -342,7 +512,7 @@ mb_wm_decor_button_class_type ()
       static MBWMObjectClassInfo info = {
 	sizeof (MBWMDecorButtonClass),
 	sizeof (MBWMDecorButton),
-	NULL,
+	mb_wm_decor_button_init,
 	mb_wm_decor_button_destroy,
 	NULL
       };
@@ -460,84 +630,31 @@ mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
 
 }
 
-static Bool
-button_press_handler (MBWindowManager *wm,
-		      XButtonEvent    *xev,
-		      void            *userdata)
-{
-  MBWMDecorButton *button;
-
-  button = (MBWMDecorButton *)userdata;
-
-  if (xev->window == button->xwin)
-    {
-      button->state = MBWMDecorButtonStatePressed;
-
-      MBWM_DBG("button is %ix%i\n", button->geom.width, button->geom.height);
-      if (button->press)
-	button->press(wm, button, button->userdata);
-
-      return False;
-    }
-
-  return True;
-}
-
-static Bool
-button_release_handler (MBWindowManager *wm,
-			XButtonEvent    *xev,
-			void            *userdata)
-{
-  MBWMDecorButton *button;
-
-  button = (MBWMDecorButton *)userdata;
-
-  if (xev->window == button->xwin)
-    {
-      button->state = MBWMDecorButtonStateInactive;
-
-      MBWM_DBG("got release");
-      if (button->release)
-	button->release(wm, button, button->userdata);
-
-      return False;
-    }
-
-  return True;
-}
-
 MBWMDecorButton*
-mb_wm_decor_button_create (MBWindowManager            *wm,
-			   MBWMDecor                  *decor,
-			   int                         width,
-			   int                         height,
-			   MBWMDecorButtonPressedFunc  press,
-			   MBWMDecorButtonReleasedFunc release,
-			   MBWMDecorButtonRepaintFunc  paint,
-			   MBWMDecorButtonFlags        flags,
-			   void                       *userdata)
+mb_wm_decor_button_new (MBWindowManager            *wm,
+			MBWMDecor                  *decor,
+			int                         width,
+			int                         height,
+			MBWMDecorButtonPressedFunc  press,
+			MBWMDecorButtonReleasedFunc release,
+			MBWMDecorButtonRepaintFunc  paint,
+			MBWMDecorButtonFlags        flags,
+			void                       *userdata)
 {
   MBWMDecorButton  *button;
 
-  button = MB_WM_DECOR_BUTTON(mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON));
+  button = MB_WM_DECOR_BUTTON(mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
+						"wm",        wm,
+						"decor",     decor,
+						"width",     width,
+						"height",    height,
+						"press",     press,
+						"release",   release,
+						"paint",     paint,
+						"flags",     flags,
+						"user-data", userdata,
+						NULL));
 
-  button->press    = press;
-  button->release  = release;
-  button->repaint  = paint;
-  button->userdata = userdata;
-
-  button->geom.width  = width;
-  button->geom.height = height;
-  button->decor  = decor;
-  decor->buttons = mb_wm_util_list_append (decor->buttons, button);
-
-  mb_wm_x_event_handler_add (wm, ButtonPress,
-			     (MBWMXEventFunc)button_press_handler,
-			     button);
-
-  mb_wm_x_event_handler_add (wm, ButtonRelease,
-			     (MBWMXEventFunc)button_release_handler,
-			     button);
   return button;
 }
 

@@ -96,11 +96,11 @@ struct MBWMDecorClass
 
 
 MBWMDecor*
-mb_wm_decor_create (MBWindowManager     *wm,
-		    MBWMDecorType        type,
-		    MBWMDecorResizedFunc resize,
-		    MBWMDecorResizedFunc repaint,
-		    void                *userdata);
+mb_wm_decor_new (MBWindowManager     *wm,
+		 MBWMDecorType        type,
+		 MBWMDecorResizedFunc resize,
+		 MBWMDecorRepaintFunc repaint,
+		 void                *userdata);
 
 static Bool
 mb_wm_decor_reparent (MBWMDecor *decor);
@@ -135,16 +135,6 @@ mb_wm_decor_attach (MBWMDecor             *decor,
 
 void
 mb_wm_decor_detach (MBWMDecor *decor);
-
-void
-mb_wm_decor_unref (MBWMDecor *decor);
-
-void
-mb_wm_decor_ref (MBWMDecor *decor);
-
-void
-mb_wm_decor_init (MBWindowManager     *wm);
-
 
 typedef enum MBWMDecorButtonState 
 {
@@ -193,15 +183,15 @@ void
 mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y);
 
 MBWMDecorButton*
-mb_wm_decor_button_create (MBWindowManager            *wm,
-			   MBWMDecor                  *decor,
-			   int                         width,
-			   int                         height,
-			   MBWMDecorButtonPressedFunc  press,
-			   MBWMDecorButtonReleasedFunc release,
-			   MBWMDecorButtonRepaintFunc  paint,
-			   MBWMDecorButtonFlags        flags,
-			   void                       *userdata);
+mb_wm_decor_button_new (MBWindowManager            *wm,
+			MBWMDecor                  *decor,
+			int                         width,
+			int                         height,
+			MBWMDecorButtonPressedFunc  press,
+			MBWMDecorButtonReleasedFunc release,
+			MBWMDecorButtonRepaintFunc  paint,
+			MBWMDecorButtonFlags        flags,
+			void                       *userdata);
 
 
 #endif

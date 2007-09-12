@@ -100,34 +100,34 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
 
   /* Titlebar */
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeNorth,
-			      decor_resize, decor_repaint, client_app);
+  decor = mb_wm_decor_new (wm, MBWMDecorTypeNorth,
+			   decor_resize, decor_repaint, client_app);
 
   client_app->button_close
-    = mb_wm_decor_button_create (wm,
-				 decor,
-				 FRAME_TITLEBAR_HEIGHT-2,
-				 FRAME_TITLEBAR_HEIGHT-2,
-				 NULL,
-				 close_button_pressed,
-				 NULL,
-				 0,
-				 client_app);
+    = mb_wm_decor_button_new (wm,
+			      decor,
+			      FRAME_TITLEBAR_HEIGHT-2,
+			      FRAME_TITLEBAR_HEIGHT-2,
+			      NULL,
+			      close_button_pressed,
+			      NULL,
+			      0,
+			      client_app);
 
   mb_wm_decor_button_show (client_app->button_close);
   mb_wm_decor_attach (decor, client);
 
   /* Borders */
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeSouth,
-			      NULL, decor_repaint, NULL);
+  decor = mb_wm_decor_new (wm, MBWMDecorTypeSouth,
+			   NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeEast,
-			      NULL, decor_repaint, NULL);
+  decor = mb_wm_decor_new (wm, MBWMDecorTypeEast,
+			   NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 
-  decor = mb_wm_decor_create (wm, MBWMDecorTypeWest,
-			      NULL, decor_repaint, NULL);
+  decor = mb_wm_decor_new (wm, MBWMDecorTypeWest,
+			   NULL, decor_repaint, NULL);
   mb_wm_decor_attach (decor, client);
 }
 
