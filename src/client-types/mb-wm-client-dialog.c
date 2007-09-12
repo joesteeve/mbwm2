@@ -76,6 +76,69 @@ mb_wm_client_dialog_destroy (MBWMObject *this)
 static void
 mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 {
+  MBWindowManagerClient *client = MB_WM_CLIENT (this);
+  MBWMClientDialog      *client_dialog = MB_WM_CLIENT_DIALOG (this);
+  MBWMDecor             *decor;
+  MBWMDecorButton       *button;
+  MBWindowManager       *wm;
+  MBWMClientWindow      *win;
+  char                  *prop;
+
+  prop = va_arg(vap, char *);
+  while (prop)
+    {
+      if (!strcmp ("wm", prop))
+	{
+	  wm = va_arg(vap, MBWindowManager *);
+	}
+      else if (!strcmp ("client-window", prop))
+	{
+	  win = va_arg(vap, MBWMClientWindow *);
+	}
+
+      prop = va_arg(vap, char *);
+    }
+
+  mb_wm_client_set_layout_hints (client,
+				 LayoutPrefPositionFree|LayoutPrefVisible);
+
+  if (win->xwin_transient_for
+      && win->xwin_transient_for != win->xwindow
+      && win->xwin_transient_for != wm->root_win->xwindow)
+    {
+      MBWM_DBG ("Adding to '%lx' transient list",
+		win->xwin_transient_for);
+      mb_wm_client_add_transient
+	(mb_wm_managed_client_from_xwindow (wm,
+					    win->xwin_transient_for),
+	 client);
+      client->stacking_layer = 0;  /* We stack with whatever transient too */
+    }
+  else
+    {
+      MBWM_DBG ("Dialog is transient to root");
+      /* Stack with 'always on top' */
+      client->stacking_layer = MBWMStackLayerTopMid;
+    }
+
+  /* center if window sets 0,0 */
+  if (client->window->geometry.x == 0 && client->window->geometry.y == 0)
+    {
+        MBGeometry  avail_geom;
+
+	mb_wm_get_display_geometry (wm, &avail_geom);
+
+	client->window->geometry.x
+	  = (avail_geom.width - client->window->geometry.width) / 2;
+	client->window->geometry.y
+	  = (avail_geom.height - client->window->geometry.height) / 2;
+    }
+
+  client->frame_geometry.x      = client->window->geometry.x;
+  client->frame_geometry.y      = client->window->geometry.y;
+  client->frame_geometry.width  = client->window->geometry.width;
+  client->frame_geometry.height = client->window->geometry.height;
+
 }
 
 int
@@ -128,63 +191,13 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 MBWindowManagerClient*
 mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
 {
-  MBWindowManagerClient    *client;
-  MBWMClientDialog         *client_dialog;
-  MBWMDecor                *decor;
-  MBWMDecorButton          *button;
+  MBWindowManagerClient *client;
 
-  client_dialog
-    = MB_WM_CLIENT_DIALOG(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG,
-					    NULL));
-
-  if (!client_dialog)
-    return NULL; 		/* FIXME: Handle out of memory */
-
-  client = MB_WM_CLIENT(client_dialog);
-
-  client->window        = win;
-  client->wmref         = mb_wm_object_ref (MB_WM_OBJECT (wm));
-
-
-  mb_wm_client_set_layout_hints (client,
-				 LayoutPrefPositionFree|LayoutPrefVisible);
-
-  if (win->xwin_transient_for
-      && win->xwin_transient_for != win->xwindow
-      && win->xwin_transient_for != wm->root_win->xwindow)
-    {
-      MBWM_DBG ("Adding to '%lx' transient list",
-		win->xwin_transient_for);
-      mb_wm_client_add_transient
-	(mb_wm_managed_client_from_xwindow (wm,
-					    win->xwin_transient_for),
-	 client);
-      client->stacking_layer = 0;  /* We stack with whatever transient too */
-    }
-  else
-    {
-      MBWM_DBG ("Dialog is transient to root");
-      /* Stack with 'always on top' */
-      client->stacking_layer = MBWMStackLayerTopMid;
-    }
-
-  /* center if window sets 0,0 */
-  if (client->window->geometry.x == 0 && client->window->geometry.y == 0)
-    {
-        MBGeometry  avail_geom;
-
-	mb_wm_get_display_geometry (wm, &avail_geom);
-
-	client->window->geometry.x
-	  = (avail_geom.width - client->window->geometry.width) / 2;
-	client->window->geometry.y
-	  = (avail_geom.height - client->window->geometry.height) / 2;
-    }
-
-  client->frame_geometry.x      = client->window->geometry.x;
-  client->frame_geometry.y      = client->window->geometry.y;
-  client->frame_geometry.width  = client->window->geometry.width;
-  client->frame_geometry.height = client->window->geometry.height;
+  client
+    = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG,
+				     "wm", wm,
+				     "client-window", win,
+				     NULL));
 
   return client;
 }

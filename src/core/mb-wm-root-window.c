@@ -35,9 +35,6 @@ mb_wm_root_window_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_root_window_destroy (MBWMObject *this)
 {
-  MBWMRootWindow *win = MB_WM_ROOT_WINDOW (this);
-
-  mb_wm_object_unref (MB_WM_OBJECT (win->wm));
 }
 
 static void
@@ -89,7 +86,7 @@ mb_wm_root_window_get (MBWindowManager *wm)
       if (!root_window)
 	return root_window;
 
-      root_window->wm = mb_wm_object_ref (MB_WM_OBJECT (wm));
+      root_window->wm = (MBWindowManager *) MB_WM_OBJECT (wm);
       root_window->xwindow = RootWindow(wm->xdpy, wm->xscreen);
 
       if (!mb_wm_root_window_init_attributes (root_window))

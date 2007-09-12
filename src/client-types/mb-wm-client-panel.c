@@ -22,6 +22,12 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_client_panel_init (MBWMObject *this, va_list vap)
 {
+  MBWindowManagerClient * client = MB_WM_CLIENT (this);
+
+  client->stacking_layer = MBWMStackLayerBottomMid;
+
+  mb_wm_client_set_layout_hints (client,
+				 LayoutPrefReserveEdgeSouth|LayoutPrefVisible);
 }
 
 static void
@@ -85,17 +91,9 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMClientWindow *win)
   MBWindowManagerClient *client = NULL;
 
   client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_PANEL,
+					  "wm", wm,
+					  "client-window", win,
 					  NULL));
-
-  if (!client)
-    return NULL; 		/* FIXME: Handle out of memory */
-
-  client->window = win;
-  client->wmref  = mb_wm_object_ref (MB_WM_OBJECT (wm));
-  client->stacking_layer = MBWMStackLayerBottomMid;
-
-  mb_wm_client_set_layout_hints (client,
-				 LayoutPrefReserveEdgeSouth|LayoutPrefVisible);
 
   return client;
 }

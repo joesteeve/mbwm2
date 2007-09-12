@@ -1,3 +1,33 @@
+2007-09-12  Tomas Frydrych  <tf@o-hand.com>
+	
+        * src/core/mb-wm-debug.c:
+        * src/core/mb-wm-debug.h:
+        * src/core/mb-wm-macros.h:
+	Added obj-ref and obj-unref to debug info types;
+	Added MBWM_TRACE_MSG() macro.
+	
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+        * src/managers/matchbox-window-manager-2-simple.c:
+	Code to assist in debugging object memory management.
+	
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-panel.c:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	Moved object initialization from _new() into _init() functions;
+	fixed destruction code.
+	
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	Fixed object destructon, added -sn-client-id cmdline parameter.
+	
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-decor.c:
+	Fixed object destruction.
+
 2007-09-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

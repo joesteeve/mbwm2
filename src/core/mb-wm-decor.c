@@ -323,8 +323,8 @@ mb_wm_decor_destroy (MBWMObject* obj)
   MBWMDecor *decor = MB_WM_DECOR(obj);
 
   mb_wm_decor_detach (decor);
+
   /* XDestroyWindow(wm->dpy, decor->xwin); */
-  free(decor);
 }
 
 /* Buttons */

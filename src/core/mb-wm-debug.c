@@ -26,12 +26,14 @@
 int mbwm_debug_flags = 0;
 
 static const struct { const char *key; MBWMDebugFlag flag; } debug_keys[] = {
-  { "misc",    MBWM_DEBUG_MISC },
-  { "client",  MBWM_DEBUG_CLIENT },
-  { "texture", MBWM_DEBUG_PROP },
-  { "event",   MBWM_DEBUG_EVENT },
-  { "paint",   MBWM_DEBUG_PAINT },
-  { "trace",   MBWM_DEBUG_TRACE }
+  { "misc",      MBWM_DEBUG_MISC },
+  { "client",    MBWM_DEBUG_CLIENT },
+  { "texture",   MBWM_DEBUG_PROP },
+  { "event",     MBWM_DEBUG_EVENT },
+  { "paint",     MBWM_DEBUG_PAINT },
+  { "trace",     MBWM_DEBUG_TRACE },
+  { "obj-ref",   MBWM_DEBUG_OBJ_REF },
+  { "obj-unref", MBWM_DEBUG_OBJ_UNREF },
 };
 #endif
 

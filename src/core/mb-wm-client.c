@@ -40,24 +40,58 @@ static void
 mb_wm_client_destroy (MBWMObject *obj)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
+  MBWMList * l = client->decor;
+
   mb_wm_display_sync_queue (client->wmref);
 
   mb_wm_object_unref (MB_WM_OBJECT (client->window));
-  mb_wm_object_unref (MB_WM_OBJECT (client->wmref));
+
+  while (l)
+    {
+      mb_wm_object_unref (l->data);
+      l = l->next;
+    }
+
+  mb_wm_object_signal_disconnect (MB_WM_OBJECT (client->window),
+				  client->sig_prop_change_id);
 }
+
+static Bool
+mb_wm_client_on_property_change (MBWMClientWindow *window,
+				 int               property,
+				 void             *userdata);
 
 static void
 mb_wm_client_init (MBWMObject *obj, va_list vap)
 {
   MBWindowManagerClient *client;
+  MBWindowManager       *wm = NULL;
+  MBWMClientWindow      *win = NULL;
+  char                  *prop;
+
+  prop = va_arg(vap, char *);
+  while (prop)
+    {
+      if (!strcmp ("wm", prop))
+	{
+	  wm = va_arg(vap, MBWindowManager *);
+	}
+      else if (!strcmp ("client-window", prop))
+	{
+	  win = va_arg(vap, MBWMClientWindow *);
+	}
+
+      prop = va_arg(vap, char *);
+    }
 
   MBWM_MARK();
 
   client = MB_WM_CLIENT(obj);
-
   client->priv   = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPriv));
-
   client->pings_pending = -1;
+
+  client->window        = win;
+  client->wmref         = wm;
 
   /*
   if (client->init)
@@ -65,6 +99,13 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   else
     mb_wm_client_base_init (wm, client, win);
   */
+
+  /* Handle underlying property changes */
+  client->sig_prop_change_id =
+    mb_wm_object_signal_connect (MB_WM_OBJECT (win),
+				 MBWM_WINDOW_PROP_ALL,
+				 mb_wm_client_on_property_change,
+				 (void*)client);
 }
 
 int
@@ -154,18 +195,10 @@ mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win)
   MBWindowManagerClient *client = NULL;
 
   client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT,
+					  "wm", wm,
+					  "client-window", win,
 					  NULL));
 
-  if (!client)
-    return NULL; 		/* FIXME: Handle out of memory */
-
-  client->window = win;
-
-  /* Handle underlying property changes */
-  mb_wm_object_signal_connect (MB_WM_OBJECT (win),
-			       MBWM_WINDOW_PROP_ALL,
-			       mb_wm_client_on_property_change,
-			       (void*)client);
   return client;
 }
 

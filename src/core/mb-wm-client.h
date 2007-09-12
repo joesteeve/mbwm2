@@ -149,6 +149,7 @@ struct MBWindowManagerClient
   /* ### Private ### */
 
   MBWindowManagerClientPriv   *priv;
+  unsigned long                sig_prop_change_id;
 };
 
 #define mb_wm_client_frame_west_width(c) \

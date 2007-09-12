@@ -32,16 +32,16 @@
 
 #include <execinfo.h>
 
-#define MBWM_TRACE()                                              \
-if (mbwm_debug_flags & MBWM_DEBUG_TRACE)                          \
+#define _MBWM_TRACE(type,x,a...)                                  \
+if (mbwm_debug_flags & MBWM_DEBUG_##type)                         \
 do                                                                \
 {                                                                 \
   void    *trace[10];                                             \
   size_t   depth, i;                                              \
   char   **strings;                                               \
                                                                   \
-  fprintf (stderr, __FILE__ ":%d,%s(): ### TRACE ### \n",         \
-	   __LINE__, __func__);                                   \
+  fprintf (stderr, __FILE__ ":%d,%s(): " x "\n",                  \
+	   __LINE__, __func__, ##a);                              \
                                                                   \
   depth   = backtrace (trace, sizeof(trace)/sizeof(void*));       \
   strings = backtrace_symbols (trace, depth);                     \
@@ -60,6 +60,8 @@ do                                                                \
   free (strings);                                                 \
 }while (0)
 
+#define MBWM_TRACE() _MBWM_TRACE(MBWM_DEBUG_TRACE, "### TRACE ###")
+#define MBWM_TRACE_MSG(type,x,a...) _MBWM_TRACE(type, x, ##a)
 
 #else /* !MBWM_ENABLE_DEBUG */
 

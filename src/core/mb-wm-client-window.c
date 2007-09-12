@@ -75,15 +75,38 @@ mb_wm_client_window_destroy (MBWMObject *this)
       mb_wm_rgba_icon_free ((MBWMRgbaIcon *)l->data);
       l = l->next;
     }
-
-  mb_wm_object_unref (MB_WM_OBJECT (win->wm));
-
-  free (win);
 }
 
 static void
 mb_wm_client_window_init (MBWMObject *this, va_list vap)
 {
+  MBWMClientWindow *win = MB_WM_CLIENT_WINDOW (this);
+  char * prop;
+
+  MBWindowManager * wm = NULL;
+  Window            xwin = None;
+
+  prop = va_arg(vap, char *);
+  while (prop)
+    {
+      if (!strcmp ("wm", prop))
+	wm = va_arg(vap, MBWindowManager *);
+      else if (!strcmp ("xwin", prop))
+	xwin = va_arg(vap, Window);
+
+      prop = va_arg(vap, char *);
+    }
+
+  if (!wm || !xwin)
+    {
+      fprintf (stderr, "--- error, no wm or xwin ---\n");
+      return;
+    }
+
+  win->xwindow = xwin;
+  win->wm = wm;
+
+  mb_wm_client_window_sync_properties (win, MBWM_WINDOW_PROP_ALL);
 }
 
 int
@@ -110,18 +133,12 @@ mb_wm_client_window_class_type ()
 MBWMClientWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
 {
-  MBWMClientWindow *win = NULL;
+  MBWMClientWindow *win;
 
-  win = mb_wm_util_malloc0(sizeof(MBWMClientWindow));
-
-  if (!win)
-    return NULL; 		/* FIXME: Handle out of memory */
-
-  win->xwindow = xwin;
-  win->wm = (MBWindowManager*)mb_wm_object_ref (MB_WM_OBJECT (wm));
-
-  mb_wm_client_window_sync_properties (win, MBWM_WINDOW_PROP_ALL);
-
+  win = MB_WM_CLIENT_WINDOW (mb_wm_object_new (MB_WM_TYPE_CLIENT_WINDOW,
+					       "wm", wm,
+					       "xwin", xwin,
+					       NULL));
   return win;
 }
 

@@ -30,6 +30,9 @@ typedef enum {
   MBWM_DEBUG_EVENT           = 1 << 3,
   MBWM_DEBUG_PAINT           = 1 << 4,
   MBWM_DEBUG_TRACE           = 1 << 5,
+  MBWM_DEBUG_OBJ_REF         = 1 << 6,
+  MBWM_DEBUG_OBJ_UNREF       = 1 << 7,
+  MBWM_DEBUG_OBJ             = MBWM_DEBUG_OBJ_REF | MBWM_DEBUG_OBJ_UNREF,
 } MBWMDebugFlag;
 
 extern int mbwm_debug_flags;

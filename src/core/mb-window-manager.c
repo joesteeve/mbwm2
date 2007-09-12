@@ -42,6 +42,17 @@ mb_wm_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_destroy (MBWMObject *this)
 {
+  MBWindowManager * wm = MB_WINDOW_MANAGER (this);
+  MBWMList *l = wm->clients;
+
+  while (l)
+    {
+      mb_wm_object_unref (l->data);
+
+      l = l->next;
+    }
+
+  mb_wm_object_unref (wm->root_win);
 }
 
 static void
@@ -377,7 +388,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
 void
 mb_wm_unmanage_client (MBWindowManager       *wm,
-			    MBWindowManagerClient *client)
+		       MBWindowManagerClient *client)
 {
   /* FIXME: set a managed flag in client object ? */
 
@@ -902,9 +913,17 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 
   for (i = 0; i < argc; ++i)
     {
-      if ((i < argc - 1) && !strcmp(argv[i], "-display"))
+      /* These need to have a value after the name parameter */
+      if (i < argc - 1)
 	{
-	  wm->xdpy = XOpenDisplay(argv[++i]);
+	  if (!strcmp(argv[i], "-display"))
+	    {
+	      wm->xdpy = XOpenDisplay(argv[++i]);
+	    }
+	  else if (!strcmp ("-sm-client-id", argv[i]))
+	    {
+	      wm->sm_client_id = argv[++i];
+	    }
 	}
     }
 }

@@ -25,6 +25,18 @@ static MBWMObjectClass     **ObjectClasses  = NULL;
 static int                   ObjectClassesAllocated = 0;
 static int                   NObjectClasses = 0;
 
+#ifdef MBWM_WANT_DEBUG
+/*
+ * Increased for each ref call and decreased for each unref call
+ */
+static int object_count = 0;
+int
+mb_wm_object_get_object_count (void)
+{
+  return object_count;
+}
+#endif
+
 #define N_CLASSES_PREALLOC 10
 #define N_CLASSES_REALLOC_STEP  5
 
@@ -115,9 +127,13 @@ mb_wm_object_ref (MBWMObject *this)
       return this;
     }
 
+#ifdef MBWM_WANT_DEBUG
+  object_count++;
+#endif
+
   this->refcnt++;
 
-  MBWM_TRACE ();
+  MBWM_TRACE_MSG (OBJ_REF, "### REF ###");
 
   return this;
 }
@@ -145,13 +161,30 @@ mb_wm_object_unref (MBWMObject *this)
       return;
     }
 
+  MBWM_TRACE_MSG (OBJ_UNREF, "### UNREF ###");
+
+#ifdef MBWM_WANT_DEBUG
+  object_count--;
+  if (object_count < 0)
+    {
+      /* Note that the trace is not necessarily pointing to the code that is
+       * at fault, but at least it gives us a terminal point before which the
+       * bad unref happened.
+       */
+      MBWM_TRACE_MSG (OBJ_UNREF, "### Unbalanced unref ###");
+    }
+#endif
+
   this->refcnt--;
 
   if (this->refcnt == 0)
-    mb_wm_object_destroy_recursive (MB_WM_OBJECT_GET_CLASS (this),
-				    this);
+    {
+      MBWM_NOTE (OBJ_UNREF, "=== DESTROYING OBJECT type %d ===",
+		 this->klass->type);
 
-  MBWM_TRACE ();
+      mb_wm_object_destroy_recursive (MB_WM_OBJECT_GET_CLASS (this),
+				      this);
+    }
 }
 
 static void
