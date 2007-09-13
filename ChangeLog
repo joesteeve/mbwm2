@@ -1,5 +1,10 @@
 2007-09-13  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-object-props.h:
+	Fixed bug in MBWMO_PROP_EAT().
+	
+2007-09-13  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
 	Pass -O0 to compiler when --enable-debug given.
 	

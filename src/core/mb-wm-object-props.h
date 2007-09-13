@@ -43,7 +43,7 @@
 #define MBWMO_PROP_EAT(_ovap, prop)       \
 do                                        \
 {                                         \
-  int size = (prop & 0x000000ff);         \
+  int size = (prop & 0x0000000f);         \
                                           \
   if (size == sizeof (int))               \
     va_arg (_ovap, int);                  \
