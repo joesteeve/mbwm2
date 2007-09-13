@@ -1,3 +1,29 @@
+2007-09-13  Tomas Frydrych  <tf@o-hand.com>
+
+        * configure.ac:
+	Pass -O0 to compiler when --enable-debug given.
+	
+        * src/core/Makefile.am:
+        * src/core/mb-wm-object.h:
+        * src/core/mb-wm-object-props.h:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-types.h:
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-panel.c:
+	Switched construction property ids from strings to numerical ids
+	to allow safe handling of uknown properties by parent classes
+	(with the added benefit of avoiding large number of strcmp calls
+	in object _init() methods).
+
+	* src/managers/matchbox-window-manager-2-simple.c:
+	Squashed warning.
+	
 2007-09-12  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:

@@ -36,7 +36,7 @@ signal_handler (int sig)
     {
       int count;
 
-      mb_wm_object_unref (wm);
+      mb_wm_object_unref (MB_WM_OBJECT (wm));
 
       count = mb_wm_object_get_object_count();
 

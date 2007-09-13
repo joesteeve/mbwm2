@@ -4,6 +4,7 @@ core_h  = mb-wm.h             	\
           mb-wm-macros.h      	\
           mb-wm-debug.h       	\
           mb-wm-object.h      	\
+          mb-wm-object-props.h 	\
           mb-wm-client.h      	\
           mb-wm-client-base.h 	\
 	  mb-wm-client-window.h \

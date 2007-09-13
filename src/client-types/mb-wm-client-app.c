@@ -29,7 +29,7 @@ mb_wm_client_app_destroy (MBWMObject *this)
 {
   MBWMClientApp * app = MB_WM_CLIENT_APP (this);
 
-  mb_wm_object_unref (app->button_close);
+  mb_wm_object_unref (MB_WM_OBJECT (app->button_close));
 }
 
 static void
@@ -77,18 +77,20 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   MBWMDecor                *decor;
   MBWMDecorButton          *button;
   MBWindowManager          *wm = NULL;
-  char                     *prop;
-
-  prop = va_arg(vap, char *);
+  MBWMObjectProp            prop;
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("wm", prop))
+      if (prop == MBWMObjectPropWm)
 	{
 	  wm = va_arg(vap, MBWindowManager *);
 	  break;
 	}
-
-      prop = va_arg(vap, char *);
+      else
+	MBWMO_PROP_EAT (vap, prop);
+      
+      prop = va_arg (vap, MBWMObjectProp);
     }
 
   if (!wm)
@@ -185,8 +187,8 @@ mb_wm_client_app_new (MBWindowManager *wm, MBWMClientWindow *win)
   MBWindowManagerClient *client;
 
   client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_APP,
-					  "wm", wm,
-					  "client-window", win,
+					  MBWMObjectPropWm,           wm,
+					  MBWMObjectPropClientWindow, win,
 					  NULL));
 
   return client;

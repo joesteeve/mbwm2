@@ -35,33 +35,33 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   MBWMDecorResizedFunc   resize;
   MBWMDecorRepaintFunc   repaint;
   void                  *userdata;
-  char                  *prop;
-
-  prop = va_arg(vap, char *);
+  MBWMObjectProp         prop;
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("wm", prop))
+      switch (prop)
 	{
+	case MBWMObjectPropWm:
 	  wm = va_arg(vap, MBWindowManager *);
-	}
-      else if (!strcmp ("type", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorType:
 	  type = va_arg(vap, MBWMDecorType);
-	}
-      else if (!strcmp ("resize", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorResizedFunc:
 	  resize = va_arg(vap, MBWMDecorResizedFunc);
-	}
-      else if (!strcmp ("repaint", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorRepaintFunc:
 	  repaint = va_arg(vap, MBWMDecorRepaintFunc);
-	}
-      else if (!strcmp ("user-data", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorUserData:
 	  userdata = va_arg(vap, void*);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
 	}
 
-      prop = va_arg(vap, char *);
+      prop = va_arg(vap, MBWMObjectProp);
     }
 
   decor->type     = type;
@@ -296,17 +296,17 @@ mb_wm_decor_new (MBWindowManager      *wm,
 		 MBWMDecorRepaintFunc  repaint,
 		 void                 *userdata)
 {
-  MBWMDecor *decor;
+  MBWMObject *decor;
 
-  decor = MB_WM_DECOR(mb_wm_object_new (MB_WM_TYPE_DECOR,
-					"wm",        wm,
-					"type",      type,
-					"resize",    resize,
-					"repaint",   repaint,
-					"user-data", userdata,
-					NULL));
+  decor = mb_wm_object_new (MB_WM_TYPE_DECOR,
+			    MBWMObjectPropWm,               wm,
+			    MBWMObjectPropDecorType,        type,
+			    MBWMObjectPropDecorResizedFunc, resize,
+			    MBWMObjectPropDecorRepaintFunc, repaint,
+			    MBWMObjectPropDecorUserData,    userdata,
+			    NULL);
 
-  return decor;
+  return MB_WM_DECOR(decor);
 }
 
 Window
@@ -434,49 +434,45 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   MBWMDecorButtonRepaintFunc   paint;
   MBWMDecorButtonFlags         flags;
   void                        *userdata = NULL;
-  char                        *prop;
-
-  prop = va_arg(vap, char *);
+  MBWMObjectProp               prop;
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("wm", prop))
+      switch (prop)
 	{
+	case MBWMObjectPropWm:
 	  wm = va_arg(vap, MBWindowManager *);
-	}
-      else if (!strcmp ("decor", prop))
-	{
+	  break;
+	case MBWMObjectPropDecor:
 	  decor = va_arg(vap, MBWMDecor*);
-	}
-      else if (!strcmp ("width", prop))
-	{
+	  break;
+	case MBWMObjectPropWidth:
 	  width = va_arg(vap, int);
-	}
-      else if (!strcmp ("height", prop))
-	{
+	  break;
+	case MBWMObjectPropHeight:
 	  height = va_arg(vap, int);
-	}
-      else if (!strcmp ("press", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorButtonPressedFunc:
 	  press = va_arg(vap, MBWMDecorButtonPressedFunc);
-	}
-      else if (!strcmp ("release", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorButtonReleasedFunc:
 	  release = va_arg(vap, MBWMDecorButtonReleasedFunc);
-	}
-      else if (!strcmp ("paint", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorButtonRepaintFunc:
 	  paint = va_arg(vap, MBWMDecorButtonRepaintFunc);
-	}
-      else if (!strcmp ("flags", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorButtonFlags:
 	  flags = va_arg(vap, MBWMDecorButtonFlags);
-	}
-      else if (!strcmp ("user-data", prop))
-	{
+	  break;
+	case MBWMObjectPropDecorButtonUserData:
 	  userdata = va_arg(vap, void*);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
 	}
 
-      prop = va_arg(vap, char *);
+      prop = va_arg(vap, MBWMObjectProp);
     }
 
   if (!wm)
@@ -641,20 +637,20 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecorButtonFlags        flags,
 			void                       *userdata)
 {
-  MBWMDecorButton  *button;
+  MBWMObject  *button;
 
-  button = MB_WM_DECOR_BUTTON(mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
-						"wm",        wm,
-						"decor",     decor,
-						"width",     width,
-						"height",    height,
-						"press",     press,
-						"release",   release,
-						"paint",     paint,
-						"flags",     flags,
-						"user-data", userdata,
-						NULL));
+  button = mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
+			     MBWMObjectPropWm,                      wm,
+			     MBWMObjectPropDecor,                   decor,
+			     MBWMObjectPropWidth,                   width,
+			     MBWMObjectPropHeight,                  height,
+			     MBWMObjectPropDecorButtonPressedFunc,  press,
+			     MBWMObjectPropDecorButtonReleasedFunc, release,
+			     MBWMObjectPropDecorButtonRepaintFunc,  paint,
+			     MBWMObjectPropDecorButtonFlags,        flags,
+			     MBWMObjectPropDecorButtonUserData,     userdata,
+			     NULL);
 
-  return button;
+  return MB_WM_DECOR_BUTTON(button);
 }
 

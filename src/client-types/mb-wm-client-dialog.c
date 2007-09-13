@@ -82,21 +82,24 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
   MBWMDecorButton       *button;
   MBWindowManager       *wm;
   MBWMClientWindow      *win;
-  char                  *prop;
-
-  prop = va_arg(vap, char *);
+  MBWMObjectProp         prop;
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("wm", prop))
+      switch (prop)
 	{
+	case MBWMObjectPropWm:
 	  wm = va_arg(vap, MBWindowManager *);
-	}
-      else if (!strcmp ("client-window", prop))
-	{
+	  break;
+	case MBWMObjectPropClientWindow:
 	  win = va_arg(vap, MBWMClientWindow *);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
 	}
 
-      prop = va_arg(vap, char *);
+      prop = va_arg(vap, MBWMObjectProp);
     }
 
   mb_wm_client_set_layout_hints (client,
@@ -195,8 +198,8 @@ mb_wm_client_dialog_new (MBWindowManager *wm, MBWMClientWindow *win)
 
   client
     = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_DIALOG,
-				     "wm", wm,
-				     "client-window", win,
+				     MBWMObjectPropWm,           wm,
+				     MBWMObjectPropClientWindow, win,
 				     NULL));
 
   return client;

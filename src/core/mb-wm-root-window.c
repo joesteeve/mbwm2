@@ -37,10 +37,53 @@ mb_wm_root_window_destroy (MBWMObject *this)
 {
 }
 
+static Bool
+mb_wm_root_window_init_attributes (MBWMRootWindow * win);
+
+static void
+mb_wm_root_window_init_properties (MBWMRootWindow * win);
+
 static void
 mb_wm_root_window_init (MBWMObject *this, va_list vap)
 {
-  MBWM_MARK();
+  MBWMRootWindow       *root_window = MB_WM_ROOT_WINDOW (this);
+  MBWindowManager      *wm;
+  MBWMObjectProp        prop;
+  XSetWindowAttributes  attr;
+
+  prop = va_arg(vap, MBWMObjectProp);
+  while (prop)
+    {
+      if (prop == MBWMObjectPropWm)
+	{
+	  wm = va_arg(vap, MBWindowManager *);
+	  break;
+	}
+      else
+	MBWMO_PROP_EAT (vap, prop);
+	
+      prop = va_arg(vap, MBWMObjectProp);
+    }
+  
+  root_window->wm = wm;
+  root_window->xwindow = RootWindow(wm->xdpy, wm->xscreen);
+
+  if (!mb_wm_root_window_init_attributes (root_window))
+    {
+      MBWM_DBG ("Failed to initialize root window attributes.");
+      abort ();
+    }
+
+  attr.override_redirect = True;
+  root_window->hidden_window = XCreateWindow(wm->xdpy,
+					     root_window->xwindow,
+					     -200, -200, 5, 5, 0,
+					     CopyFromParent,
+					     CopyFromParent,
+					     CopyFromParent,
+					     CWOverrideRedirect, &attr);
+
+  mb_wm_root_window_init_properties (root_window);
 }
 
 int
@@ -64,12 +107,6 @@ mb_wm_root_window_class_type ()
   return type;
 }
 
-static void
-mb_wm_root_window_init_properties (MBWMRootWindow * win);
-
-static Bool
-mb_wm_root_window_init_attributes (MBWMRootWindow * win);
-
 MBWMRootWindow*
 mb_wm_root_window_get (MBWindowManager *wm)
 {
@@ -77,35 +114,10 @@ mb_wm_root_window_get (MBWindowManager *wm)
 
   if (!root_window)
     {
-      XSetWindowAttributes attr;
-
       root_window
 	= MB_WM_ROOT_WINDOW (mb_wm_object_new (MB_WM_TYPE_ROOT_WINDOW,
+					       MBWMObjectPropWm, wm,
 					       NULL));
-
-      if (!root_window)
-	return root_window;
-
-      root_window->wm = (MBWindowManager *) MB_WM_OBJECT (wm);
-      root_window->xwindow = RootWindow(wm->xdpy, wm->xscreen);
-
-      if (!mb_wm_root_window_init_attributes (root_window))
-	{
-	  mb_wm_object_unref (MB_WM_OBJECT (root_window));
-	  root_window = NULL;
-	  return root_window;
-	}
-
-      attr.override_redirect = True;
-      root_window->hidden_window = XCreateWindow(wm->xdpy,
-						 root_window->xwindow,
-						 -200, -200, 5, 5, 0,
-						 CopyFromParent,
-						 CopyFromParent,
-						 CopyFromParent,
-						 CWOverrideRedirect, &attr);
-
-      mb_wm_root_window_init_properties (root_window);
     }
   else
     mb_wm_object_ref (MB_WM_OBJECT (root_window));

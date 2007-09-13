@@ -37,7 +37,7 @@ if test "x$use_gtk" = "xyes"; then
 fi
 
 if test "x$want_debug" = "xyes"; then
-  MBWM_DEBUG_CFLAGS="$MBWM_DEBUG_CFLAGS -DMBWM_WANT_DEBUG"
+  MBWM_DEBUG_CFLAGS="-O0 $MBWM_DEBUG_CFLAGS -DMBWM_WANT_DEBUG"
   MBWM_DEBUG_LDFLAGS="$MBWM_DEBUG_LDFLAGS -rdynamic"
 fi
 

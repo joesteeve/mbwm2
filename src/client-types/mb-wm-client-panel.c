@@ -91,8 +91,8 @@ mb_wm_client_panel_new(MBWindowManager *wm, MBWMClientWindow *win)
   MBWindowManagerClient *client = NULL;
 
   client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_PANEL,
-					  "wm", wm,
-					  "client-window", win,
+					  MBWMObjectPropWm,           wm,
+					  MBWMObjectPropClientWindow, win,
 					  NULL));
 
   return client;

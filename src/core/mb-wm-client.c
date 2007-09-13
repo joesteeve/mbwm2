@@ -67,21 +67,24 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   MBWindowManagerClient *client;
   MBWindowManager       *wm = NULL;
   MBWMClientWindow      *win = NULL;
-  char                  *prop;
-
-  prop = va_arg(vap, char *);
+  MBWMObjectProp         prop;
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("wm", prop))
+      switch (prop)
 	{
+	case MBWMObjectPropWm:
 	  wm = va_arg(vap, MBWindowManager *);
-	}
-      else if (!strcmp ("client-window", prop))
-	{
+	  break;
+	case MBWMObjectPropClientWindow:
 	  win = va_arg(vap, MBWMClientWindow *);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
 	}
-
-      prop = va_arg(vap, char *);
+      
+      prop = va_arg(vap, MBWMObjectProp);
     }
 
   MBWM_MARK();
@@ -105,7 +108,7 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
     mb_wm_object_signal_connect (MB_WM_OBJECT (win),
 				 MBWM_WINDOW_PROP_ALL,
 				 mb_wm_client_on_property_change,
-				 (void*)client);
+				 (MBWMObjectCallbackFunc)client);
 }
 
 int
@@ -195,8 +198,8 @@ mb_wm_client_new (MBWindowManager *wm, MBWMClientWindow *win)
   MBWindowManagerClient *client = NULL;
 
   client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT,
-					  "wm", wm,
-					  "client-window", win,
+					  MBWMObjectPropWm,           wm,
+					  MBWMObjectPropClientWindow, win,
 					  NULL));
 
   return client;

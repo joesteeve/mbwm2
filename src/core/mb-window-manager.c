@@ -52,7 +52,7 @@ mb_wm_destroy (MBWMObject *this)
       l = l->next;
     }
 
-  mb_wm_object_unref (wm->root_win);
+  mb_wm_object_unref (MB_WM_OBJECT (wm->root_win));
 }
 
 static void
@@ -85,8 +85,8 @@ mb_wm_new (int argc, char **argv)
   MBWindowManager      *wm = NULL;
 
   wm = MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER,
-					    "argc", argc,
-					    "argv", argv,
+					    MBWMObjectPropArgc, argc,
+					    MBWMObjectPropArgv, argv,
 					    NULL));
 
   if (!wm)
@@ -825,19 +825,26 @@ mb_wm_init (MBWMObject *this, va_list vap)
 {
   MBWindowManager      *wm = MB_WINDOW_MANAGER (this);
   MBWindowManagerClass *wm_class;
-  char  *prop;
-  int    argc = 0;
-  char **argv = NULL;
-
-  prop = va_arg(vap, char *);
+  MBWMObjectProp        prop;
+  int                   argc = 0;
+  char                **argv = NULL;
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("argc", prop))
-	argc = va_arg(vap, int);
-      else if (!strcmp ("argv", prop))
-	argv = va_arg(vap, char **);
+      switch (prop)
+	{
+	case MBWMObjectPropArgc:
+	  argc = va_arg(vap, int);
+	  break;
+	case MBWMObjectPropArgv:
+	  argv = va_arg(vap, char **);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
+	}
 
-      prop = va_arg(vap, char *);
+      prop = va_arg(vap, MBWMObjectProp);
     }
 
   wm_class = (MBWindowManagerClass *) MB_WM_OBJECT_GET_CLASS (wm);

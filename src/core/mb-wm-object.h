@@ -22,6 +22,7 @@
 #define _HAVE_MB_OBJECT_H
 
 #include <stdarg.h>
+#include "mb-wm-object-props.h"
 
 typedef struct MBWMObject       MBWMObject;
 typedef struct MBWMObjectClass  MBWMObjectClass;

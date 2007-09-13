@@ -297,4 +297,19 @@ typedef struct MBWMTimeOutEventInfo
 }
 MBWMTimeOutEventInfo;
 
+typedef enum MBWMDecorButtonFlags
+{
+  MB_WM_DECOR_BUTTON_INVISIBLE = (1<<1)
+
+} MBWMDecorButtonFlags;
+
+typedef enum MBWMDecorType
+{
+  MBWMDecorTypeNorth,
+  MBWMDecorTypeSouth,
+  MBWMDecorTypeEast,
+  MBWMDecorTypeWest,
+
+} MBWMDecorType;
+
 #endif

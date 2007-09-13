@@ -37,23 +37,6 @@ typedef struct MBWMDecorClass  MBWMDecorClass;
 typedef struct MBWMDecorButton MBWMDecorButton;
 typedef struct MBWMDecorButtonClass MBWMDecorButtonClass;
 
-
-typedef enum MBWMDecorButtonFlags
-{
-  MB_WM_DECOR_BUTTON_INVISIBLE = (1<<1)
-
-} MBWMDecorButtonFlags;
-
-typedef enum MBWMDecorType
-{
-  MBWMDecorTypeNorth,
-  MBWMDecorTypeSouth,
-  MBWMDecorTypeEast,
-  MBWMDecorTypeWest,
-
-} MBWMDecorType;
-
-
 typedef void (*MBWMDecorResizedFunc) (MBWindowManager   *wm,
 				      MBWMDecor         *decor,
 				      void              *userdata);

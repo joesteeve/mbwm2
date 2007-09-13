@@ -81,20 +81,26 @@ static void
 mb_wm_client_window_init (MBWMObject *this, va_list vap)
 {
   MBWMClientWindow *win = MB_WM_CLIENT_WINDOW (this);
-  char * prop;
-
-  MBWindowManager * wm = NULL;
+  MBWMObjectProp    prop;
+  MBWindowManager  *wm = NULL;
   Window            xwin = None;
-
-  prop = va_arg(vap, char *);
+  
+  prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
-      if (!strcmp ("wm", prop))
-	wm = va_arg(vap, MBWindowManager *);
-      else if (!strcmp ("xwin", prop))
-	xwin = va_arg(vap, Window);
-
-      prop = va_arg(vap, char *);
+      switch (prop)
+	{
+	case MBWMObjectPropWm:
+	  wm = va_arg(vap, MBWindowManager *);
+	  break;
+	case MBWMObjectPropXwindow:
+	  xwin = va_arg(vap, Window);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
+	}
+      
+      prop = va_arg(vap, MBWMObjectProp);
     }
 
   if (!wm || !xwin)
@@ -136,8 +142,8 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   MBWMClientWindow *win;
 
   win = MB_WM_CLIENT_WINDOW (mb_wm_object_new (MB_WM_TYPE_CLIENT_WINDOW,
-					       "wm", wm,
-					       "xwin", xwin,
+					       MBWMObjectPropWm,      wm,
+					       MBWMObjectPropXwindow, xwin,
 					       NULL));
   return win;
 }
