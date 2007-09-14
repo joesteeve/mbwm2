@@ -68,6 +68,7 @@ do                                                                \
 #define MBWM_NOTE(type,x,a...)
 #define MBWM_DBG(x, a...)
 #define MBWM_TRACE()
+#define MBWM_TRACE_MSG(type,x,a...)
 #define MBWM_MARK()
 
 #endif /* MBWM_ENABLE_DEBUG */

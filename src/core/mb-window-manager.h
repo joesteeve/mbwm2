@@ -75,6 +75,8 @@ struct MBWindowManager
   int                          n_active_ping_clients;
 
   const char                  *sm_client_id;
+
+  MBWMTheme                   *theme;
 };
 
 struct MBWindowManagerClass
@@ -92,6 +94,8 @@ struct MBWindowManagerClass
   Bool (*client_activate)   (MBWindowManager *wm, MBWindowManagerClient *c);
   Bool (*client_responding) (MBWindowManager *wm, MBWindowManagerClient *c);
   Bool (*client_hang)       (MBWindowManager *wm, MBWindowManagerClient *c);
+
+  MBWMTheme * (*theme_init) (MBWindowManager *wm);
 };
 
 MBWindowManager *

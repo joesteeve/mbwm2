@@ -81,6 +81,13 @@ typedef struct MBWindowManagerClientClass MBWindowManagerClientClass;
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
 typedef struct MBWMClientWindow           MBWMClientWindow;
 typedef struct MBWMClientWindowClass      MBWMClientWindowClass;
+typedef struct MBWMTheme                  MBWMTheme;
+typedef struct MBWMThemeClass             MBWMThemeClass;
+typedef struct MBWMThemeCairo             MBWMThemeCairo;
+typedef struct MBWMThemeCairoClass        MBWMThemeCairoClass;
+typedef struct MBWMThemeSimple            MBWMThemeSimple;
+typedef struct MBWMThemeSimpleClass       MBWMThemeSimpleClass;
+typedef enum   MBWMThemeCaps              MBWMThemeCaps;
 
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;

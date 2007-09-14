@@ -1,3 +1,25 @@
+2007-09-14  Tomas Frydrych  <tf@o-hand.com>
+
+	* src/core/mb-wm-macros.h:
+	Added missing non-debug definition for MBWM_TRACE_MSG().
+	
+        * src/client-types/mb-wm-client-app.c
+        * src/core/mb-window-manager.c
+        * src/core/mb-window-manager.h
+        * src/core/mb-wm-client.c
+        * src/core/mb-wm-decor.c
+        * src/core/mb-wm-root-window.c
+        * src/core/mb-wm-types.h
+        * src/theme-engines/Makefile.am:
+        * src/theme-engines/mb-wm-theme.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme-cairo.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-simple.h:
+        * src/theme-engines/mb-wm-theme-simple.c:
+	Objectified themes; renamed theme-cairo.c and theme-simple.c to
+	match naming conventions elsewhere in the tree.
+	
 2007-09-13  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-object-props.h:

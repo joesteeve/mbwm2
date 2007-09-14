@@ -56,7 +56,7 @@ decor_repaint (MBWindowManager   *wm,
 	       MBWMDecor         *decor,
 	       void              *userdata)
 {
-  mb_wm_theme_paint_decor (wm, decor);
+  mb_wm_theme_paint_decor (wm->theme, decor);
 }
 
 static void

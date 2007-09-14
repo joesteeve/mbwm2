@@ -31,11 +31,12 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
 {
   MBWMDecor             *decor = MB_WM_DECOR (obj);
   MBWindowManager       *wm = NULL;
-  MBWMDecorType          type;
-  MBWMDecorResizedFunc   resize;
-  MBWMDecorRepaintFunc   repaint;
-  void                  *userdata;
+  MBWMDecorType          type = 0;
+  MBWMDecorResizedFunc   resize = NULL;
+  MBWMDecorRepaintFunc   repaint = NULL;
+  void                  *userdata = NULL;
   MBWMObjectProp         prop;
+  int                    i = 0;
   
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -427,12 +428,12 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   MBWMDecorButton             *button = MB_WM_DECOR_BUTTON (obj);
   MBWindowManager             *wm = NULL;
   MBWMDecor                   *decor = NULL;
-  int                          width;
-  int                          height;
-  MBWMDecorButtonPressedFunc   press;
-  MBWMDecorButtonReleasedFunc  release;
-  MBWMDecorButtonRepaintFunc   paint;
-  MBWMDecorButtonFlags         flags;
+  int                          width = 0;
+  int                          height = 0;
+  MBWMDecorButtonPressedFunc   press = NULL;
+  MBWMDecorButtonReleasedFunc  release = NULL;
+  MBWMDecorButtonRepaintFunc   paint = NULL;
+  MBWMDecorButtonFlags         flags = 0;
   void                        *userdata = NULL;
   MBWMObjectProp               prop;
   

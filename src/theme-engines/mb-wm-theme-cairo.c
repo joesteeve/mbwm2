@@ -1,4 +1,4 @@
-#include "mb-wm-theme.h"
+#include "mb-wm-theme-cairo.h"
 
 #ifdef USE_GTK
 #ifndef GTK_DISABLE_DEPRECATED
@@ -19,31 +19,108 @@
 #include <pango/pango-context.h>
 #include <pango/pangocairo.h>
 
-typedef struct ThemeCairo
+static void
+mb_wm_theme_cairo_paint_decor (MBWMTheme *theme, MBWMDecor *decor);
+static void
+mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
+
+static Bool
+mb_wm_theme_cairo_switch (MBWMTheme *theme, const char *detail);
+
+static Bool
+mb_wm_theme_cairo_supports (MBWMTheme *theme, MBWMThemeCaps capability);
+
+static void
+mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
 {
-  MBWMThemeCaps caps;
+  MBWMThemeClass *t_class = MB_WM_THEME_CLASS (klass);
 
-} 
-ThemeCairo;
+  t_class->paint_decor  = mb_wm_theme_cairo_paint_decor;
+  t_class->paint_button = mb_wm_theme_cairo_paint_button;
+  t_class->theme_switch = mb_wm_theme_cairo_switch;
+  t_class->supports     = mb_wm_theme_cairo_supports;
+}
 
-static ThemeCairo *CairoTheme = NULL;
+static void
+mb_wm_theme_cairo_destroy (MBWMObject *obj)
+{
+}
 
-void
-mb_wm_theme_paint_decor (MBWindowManager   *wm,
-			 MBWMDecor         *decor)
+static void
+mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
+{
+  MBWMThemeCairo * theme = MB_WM_THEME_CAIRO (obj);
+  
+  PangoFontDescription *desc;
+#ifdef USE_GTK
+  GtkWindow            *gwin;
+#endif
+
+#ifdef USE_GTK
+  /* 
+   * Plan here is to just get the GTK settings so we can follow
+   * colors set by widgets.  
+  */
+
+  gtk_init (NULL, NULL);
+
+  gwin = gtk_window_new (GTK_WINDOW_POPUP);
+  gtk_widget_ensure_style (gwin);
+
+  
+#endif
+
+  /*
+   font->pgo_context = pango_xft_get_context (font->dpy, DefaultScreen(dpy));
+   font->pgo_fontmap = pango_xft_get_font_map (font->dpy, DefaultScreen(dpy));
+   font->fontdes     = pango_font_description_new ();
+   
+   pango_context = gtk_widget_create_pango_context (style_window);
+   
+   desc = pango_font_description_from_string ("Sans Bold 10");
+   
+   pango_context_set_font_description (pango_context, desc);
+  */
+
+  /* TODO -- init caps */
+}
+
+int
+mb_wm_theme_cairo_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMThemeCairoClass),
+	sizeof (MBWMThemeCairo),
+	mb_wm_theme_cairo_init,
+	mb_wm_theme_cairo_destroy,
+	mb_wm_theme_cairo_class_init
+      };
+
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_THEME, 0);
+    }
+
+  return type;
+}
+
+static void
+mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
+			       MBWMDecor *decor)
 {
   MBWMDecorType          type;
   const MBGeometry      *geom;
   MBWindowManagerClient *client;
   Window                 xwin;
   Pixmap                 xpxmp;
-
+  MBWindowManager       *wm = theme->wm;
   cairo_pattern_t       *pattern;
   cairo_matrix_t         matrix;
   cairo_surface_t       *surface;
   cairo_t               *cr;
   double                 x, y, w, h;
-
 
   client = mb_wm_decor_get_parent (decor);
   xwin = mb_wm_decor_get_x_window (decor);
@@ -154,63 +231,24 @@ mb_wm_theme_paint_decor (MBWindowManager   *wm,
   XFreePixmap (wm->xdpy, xpxmp);
 }
 
-void
-mb_wm_theme_paint_button (MBWindowManager   *wm,
+static void
+mb_wm_theme_cairo_paint_button (MBWMTheme   *theme,
 			  MBWMDecorButton   *button)
 {
-
 }
 
-Bool
-mb_wm_theme_switch (MBWindowManager   *wm,
-		    const char        *detail)
+static Bool
+mb_wm_theme_cairo_switch (MBWMTheme   *theme,
+			   const char  *detail)
 {
-
 }
 
-Bool
-mb_wm_theme_init (MBWindowManager   *wm)
+static Bool
+mb_wm_theme_cairo_supports (MBWMTheme *theme, MBWMThemeCaps capability)
 {
-  PangoFontDescription *desc;
-#ifdef USE_GTK
-  GtkWindow            *gwin;
-#endif
-
-#ifdef USE_GTK
-  /* 
-   * Plan here is to just get the GTK settings so we can follow
-   * colors set by widgets.  
-  */
-
-  gtk_init (NULL, NULL);
-
-  gwin = gtk_window_new (GTK_WINDOW_POPUP);
-  gtk_widget_ensure_style (gwin);
-
-  
-#endif
-
-  /*
-   font->pgo_context = pango_xft_get_context (font->dpy, DefaultScreen(dpy));
-   font->pgo_fontmap = pango_xft_get_font_map (font->dpy, DefaultScreen(dpy));
-   font->fontdes     = pango_font_description_new ();
-   
-   pango_context = gtk_widget_create_pango_context (style_window);
-   
-   desc = pango_font_description_from_string ("Sans Bold 10");
-   
-   pango_context_set_font_description (pango_context, desc);
-  */
-
-  return TRUE;
-}
-
-Bool
-mb_wm_theme_supports (MBWMThemeCaps capability)
-{
-  if (!CairoTheme)
+  if (theme)
     return False;
   
-  return ((capability & CairoTheme->caps != False));
+  return ((capability & theme->caps != False));
 }
 

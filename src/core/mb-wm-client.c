@@ -106,9 +106,9 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   /* Handle underlying property changes */
   client->sig_prop_change_id =
     mb_wm_object_signal_connect (MB_WM_OBJECT (win),
-				 MBWM_WINDOW_PROP_ALL,
-				 mb_wm_client_on_property_change,
-				 (MBWMObjectCallbackFunc)client);
+		 MBWM_WINDOW_PROP_ALL,
+		 (MBWMObjectCallbackFunc)mb_wm_client_on_property_change,
+		 client);
 }
 
 int

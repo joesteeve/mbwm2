@@ -245,14 +245,18 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   num_supported = sizeof(supported)/sizeof(Atom) - 2;
 
   /* Check to see if the theme supports help / accept buttons */
-  if (( mb_wm_theme_supports (MBWMThemeCapsFrameMainButtonActionAccept)
+  if (( mb_wm_theme_supports (wm->theme,
+			      MBWMThemeCapsFrameMainButtonActionAccept)
 	/*|| w->config->use_title == False */)
-      && mb_wm_theme_supports (MBWMThemeCapsFrameMainButtonActionAccept))
+      && mb_wm_theme_supports (wm->theme,
+			       MBWMThemeCapsFrameMainButtonActionAccept))
     supported[num_supported++] = wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT];
 
-  if (( mb_wm_theme_supports (MBWMThemeCapsFrameMainButtonActionHelp)
+  if (( mb_wm_theme_supports (wm->theme,
+			      MBWMThemeCapsFrameMainButtonActionHelp)
 	/*|| w->config->use_title == False*/ )
-      && mb_wm_theme_supports (MBWMThemeCapsFrameMainButtonActionHelp))
+      && mb_wm_theme_supports (wm->theme,
+			       MBWMThemeCapsFrameMainButtonActionHelp))
     supported[num_supported++] = wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP];
 
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_SUPPORTED],

@@ -26,6 +26,12 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
     }
 }
 
+static MBWMTheme *
+mb_wm_theme_init (MBWindowManager * wm)
+{
+  return mb_wm_theme_new (wm);
+}
+
 static void
 mb_wm_class_init (MBWMObjectClass *klass)
 {
@@ -36,7 +42,8 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class = (MBWindowManagerClass *)klass;
 
   wm_class->process_cmdline = mb_wm_process_cmdline;
-  wm_class->client_new = mb_wm_client_new_func;
+  wm_class->client_new      = mb_wm_client_new_func;
+  wm_class->theme_init      = mb_wm_theme_init;
 }
 
 static void
@@ -53,6 +60,7 @@ mb_wm_destroy (MBWMObject *this)
     }
 
   mb_wm_object_unref (MB_WM_OBJECT (wm->root_win));
+  mb_wm_object_unref (MB_WM_OBJECT (wm->theme));
 }
 
 static void
@@ -877,6 +885,8 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_atoms_init(wm);
 
+  wm->theme = wm_class->theme_init (wm);
+
   wm->root_win = mb_wm_root_window_get (wm);
 
   mb_wm_x_event_handler_add (wm, MapRequest,
@@ -909,7 +919,6 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   base_foo ();
 
-  mb_wm_theme_init (wm);
   mb_wm_manage_preexistsing_wins (wm);
 }
 
