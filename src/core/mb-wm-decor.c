@@ -37,7 +37,7 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   void                  *userdata = NULL;
   MBWMObjectProp         prop;
   int                    i = 0;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -263,13 +263,27 @@ mb_wm_decor_handle_map (MBWMDecor *decor)
 void
 mb_wm_decor_handle_repaint (MBWMDecor *decor)
 {
+  MBWMList *l;
+
   if (decor->parent_client == NULL)
     return;
 
-  if (decor->dirty && decor->repaint)
-    decor->repaint(decor->parent_client->wmref, decor, decor->userdata);
+  if (decor->dirty)
+    {
+      if(decor->repaint)
+	decor->repaint(decor->parent_client->wmref, decor, decor->userdata);
 
-  decor->dirty = False;
+      l = decor->buttons;
+      while (l)
+	{
+	  MBWMDecorButton * button = l->data;
+	  mb_wm_decor_button_handle_repaint (button);
+
+	  l = l->next;
+	}
+
+      decor->dirty = False;
+    }
 }
 
 void
@@ -434,9 +448,10 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   MBWMDecorButtonReleasedFunc  release = NULL;
   MBWMDecorButtonRepaintFunc   paint = NULL;
   MBWMDecorButtonFlags         flags = 0;
+  MBWMDecorButtonType          type = 0;
   void                        *userdata = NULL;
   MBWMObjectProp               prop;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -469,6 +484,9 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropDecorButtonUserData:
 	  userdata = va_arg(vap, void*);
 	  break;
+	case MBWMObjectPropDecorButtonType:
+	  type = va_arg(vap, MBWMDecorButtonType);
+	  break;
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -484,10 +502,10 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   button->repaint  = paint;
   button->userdata = userdata;
   button->decor    = decor;
-
   button->geom.width  = width;
   button->geom.height = height;
-  button->decor  = decor;
+  button->type = type;
+
   decor->buttons = mb_wm_util_list_append (decor->buttons, button);
 
   mb_wm_x_event_handler_add (wm, ButtonPress,
@@ -546,8 +564,7 @@ mb_wm_decor_button_realize (MBWMDecorButton *button)
 
       /* NOTE: may want input only window here if button paints
        *       directly onto decor.
-      */
-
+       */
       /* FIXME: Event Mask */
       button->xwin
 	= XCreateWindow(wm->xdpy,
@@ -617,7 +634,6 @@ void
 mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
 {
   /* FIXME: set a sync flag so it know X movewindow is needed */
-
   button->geom.x = x;
   button->geom.y = y;
 
@@ -629,6 +645,7 @@ mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
 
 MBWMDecorButton*
 mb_wm_decor_button_new (MBWindowManager            *wm,
+			MBWMDecorButtonType         type,
 			MBWMDecor                  *decor,
 			int                         width,
 			int                         height,
@@ -642,6 +659,7 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 
   button = mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
 			     MBWMObjectPropWm,                      wm,
+			     MBWMObjectPropDecorButtonType,         type,
 			     MBWMObjectPropDecor,                   decor,
 			     MBWMObjectPropWidth,                   width,
 			     MBWMObjectPropHeight,                  height,
@@ -655,3 +673,20 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
   return MB_WM_DECOR_BUTTON(button);
 }
 
+void
+mb_wm_decor_button_handle_repaint (MBWMDecorButton *button)
+{
+  MBWMDecor * decor = button->decor;
+
+  if (decor->parent_client == NULL)
+    return;
+
+  if (button->repaint)
+    button->repaint(decor->parent_client->wmref, button, button->userdata);
+  else
+    {
+      MBWMTheme * theme = decor->parent_client->wmref->theme;
+
+      mb_wm_theme_paint_button (theme, button);
+    }
+}

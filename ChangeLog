@@ -1,5 +1,14 @@
 2007-09-14  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/core/mb-wm-object-props.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+	Basic button paint method in cairo theme.
+
+2007-09-14  Tomas Frydrych  <tf@o-hand.com>
+
 	* src/core/mb-wm-macros.h:
 	Added missing non-debug definition for MBWM_TRACE_MSG().
 	

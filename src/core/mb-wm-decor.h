@@ -126,9 +126,18 @@ typedef enum MBWMDecorButtonState
 
 } MBWMDecorButtonState ;
 
+typedef enum MBWMDecorButtonType
+  {
+    MBWMDecorButtonCustom = 0,
+    MBWMDecorButtonClose  = 1,
+    MBWMDecorButtonMenu   = 2,
+  }
+MBWMDecorButtonType;
+
 struct MBWMDecorButton
 {
   MBWMObject                  parent;
+  MBWMDecorButtonType         type;
   MBWMDecor                  *decor;
   Window                      xwin;
 
@@ -165,8 +174,12 @@ mb_wm_decor_button_hide (MBWMDecorButton *button);
 void
 mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y);
 
+void
+mb_wm_decor_button_handle_repaint (MBWMDecorButton *button);
+
 MBWMDecorButton*
 mb_wm_decor_button_new (MBWindowManager            *wm,
+			MBWMDecorButtonType         type,
 			MBWMDecor                  *decor,
 			int                         width,
 			int                         height,

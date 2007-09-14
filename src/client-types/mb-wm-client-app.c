@@ -107,6 +107,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 
   client_app->button_close
     = mb_wm_decor_button_new (wm,
+			      MBWMDecorButtonClose,
 			      decor,
 			      FRAME_TITLEBAR_HEIGHT-2,
 			      FRAME_TITLEBAR_HEIGHT-2,
