@@ -163,6 +163,7 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   if (mb_wm_decor_get_type(decor) == MBWMDecorTypeNorth)
     {
       cairo_font_extents_t font_extents;
+      int pack_start_x = mb_wm_decor_get_pack_start_x (decor);
 
       pattern = cairo_pattern_create_linear (0, 0, 0, h);
 
@@ -189,7 +190,7 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
       cairo_set_font_size (cr, h - (h/6));
 
       cairo_move_to (cr,
-		     mb_wm_client_frame_west_width (client),
+		     mb_wm_client_frame_west_width (client) + pack_start_x,
 		     (h - (font_extents.ascent + font_extents.descent)) / 2
 		     + font_extents.ascent + 2);
 
@@ -275,16 +276,34 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   cairo_rectangle( cr, 0.0, 0.0, w, h);
   cairo_fill (cr);
 
+  cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
+  cairo_set_line_width (cr, 3.0);
+  cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
+
   if (button->type == MBWMDecorButtonClose)
     {
-      cairo_set_line_width (cr, 3.0);
-      cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
       cairo_move_to (cr, 3.0, 3.0);
-      cairo_line_to (cr, w-4.0, h-4.0);
+      cairo_line_to (cr, w-3.0, h-3.0);
       cairo_stroke (cr);
 
-      cairo_move_to (cr, 3.0, h-4.0);
-      cairo_line_to (cr, w-4.0, 3.0);
+      cairo_move_to (cr, 3.0, h-3.0);
+      cairo_line_to (cr, w-3.0, 3.0);
+      cairo_stroke (cr);
+    }
+  else if (button->type == MBWMDecorButtonMinimize)
+    {
+      cairo_move_to (cr, 3.0, h-5.0);
+      cairo_line_to (cr, w-3.0, h-5.0);
+      cairo_stroke (cr);
+    }
+  else if (button->type == MBWMDecorButtonMenu)
+    {
+      cairo_move_to (cr, 3.0, 5.0);
+      cairo_line_to (cr, w/2.0, h-7.0);
+      cairo_stroke (cr);
+
+      cairo_move_to (cr, w/2.0, h-7.0);
+      cairo_line_to (cr, w-3.0, 5.0);
       cairo_stroke (cr);
     }
 

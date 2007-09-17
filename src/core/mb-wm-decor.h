@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -21,16 +21,16 @@
 #ifndef _HAVE_MB_WM_DECOR_H
 #define _HAVE_MB_WM_DECOR_H
 
-#define MB_WM_DECOR(c) ((MBWMDecor*)(c)) 
-#define MB_WM_DECOR_CLASS(c) ((MBWMDecorClass*)(c)) 
+#define MB_WM_DECOR(c) ((MBWMDecor*)(c))
+#define MB_WM_DECOR_CLASS(c) ((MBWMDecorClass*)(c))
 #define MB_WM_TYPE_DECOR (mb_wm_decor_class_type ())
 
 typedef struct MBWMDecor       MBWMDecor;
 typedef struct MBWMDecorClass  MBWMDecorClass;
 
 
-#define MB_WM_DECOR_BUTTON(c) ((MBWMDecorButton*)(c)) 
-#define MB_WM_DECOR_BUTTON_CLASS(c) ((MBWMDecorButtonClass*)(c)) 
+#define MB_WM_DECOR_BUTTON(c) ((MBWMDecorButton*)(c))
+#define MB_WM_DECOR_BUTTON_CLASS(c) ((MBWMDecorButtonClass*)(c))
 #define MB_WM_TYPE_DECOR_BUTTON (mb_wm_decor_button_class_type ())
 
 
@@ -70,6 +70,8 @@ struct MBWMDecor
   MBWMDecorRepaintFunc   repaint;
   void                  *userdata;
   MBWMList              *buttons;
+  int                    pack_start_x;
+  int                    pack_end_x;
 };
 
 struct MBWMDecorClass
@@ -103,6 +105,12 @@ mb_wm_decor_get_x_window (MBWMDecor *decor);
 MBWMDecorType
 mb_wm_decor_get_type (MBWMDecor *decor);
 
+int
+mb_wm_decor_get_pack_start_x (MBWMDecor *decor);
+
+int
+mb_wm_decor_get_pack_end_x (MBWMDecor *decor);
+
 const MBGeometry*
 mb_wm_decor_get_geometry (MBWMDecor *decor);
 
@@ -119,7 +127,7 @@ mb_wm_decor_attach (MBWMDecor             *decor,
 void
 mb_wm_decor_detach (MBWMDecor *decor);
 
-typedef enum MBWMDecorButtonState 
+typedef enum MBWMDecorButtonState
 {
   MBWMDecorButtonStateInactive = 0,
   MBWMDecorButtonStatePressed
@@ -128,16 +136,25 @@ typedef enum MBWMDecorButtonState
 
 typedef enum MBWMDecorButtonType
   {
-    MBWMDecorButtonCustom = 0,
-    MBWMDecorButtonClose  = 1,
-    MBWMDecorButtonMenu   = 2,
+    MBWMDecorButtonCustom   = 0,
+    MBWMDecorButtonClose    = 1,
+    MBWMDecorButtonMenu     = 2,
+    MBWMDecorButtonMinimize = 3,
   }
 MBWMDecorButtonType;
+
+typedef enum MBWMDecorButtonPack
+  {
+    MBWMDecorButtonPackStart = 0,
+    MBWMDecorButtonPackEnd   = 1,
+  }
+MBWMDecorButtonPack;
 
 struct MBWMDecorButton
 {
   MBWMObject                  parent;
   MBWMDecorButtonType         type;
+  MBWMDecorButtonPack         pack;
   MBWMDecor                  *decor;
   Window                      xwin;
 
@@ -158,7 +175,7 @@ struct MBWMDecorButtonClass
 {
   MBWMObjectClass   parent;
 
-  /* 
+  /*
      show;
      hide;
      realize; ??
@@ -179,7 +196,7 @@ mb_wm_decor_button_handle_repaint (MBWMDecorButton *button);
 
 MBWMDecorButton*
 mb_wm_decor_button_new (MBWindowManager            *wm,
-			MBWMDecorButtonType         type,
+			MBWMDecorButtonPack         pack,
 			MBWMDecor                  *decor,
 			int                         width,
 			int                         height,
@@ -189,5 +206,14 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecorButtonFlags        flags,
 			void                       *userdata);
 
+
+MBWMDecorButton*
+mb_wm_decor_button_stock_new (MBWindowManager            *wm,
+			      MBWMDecorButtonType         type,
+			      MBWMDecorButtonPack         pack,
+			      MBWMDecor                  *decor,
+			      int                         width,
+			      int                         height,
+			      MBWMDecorButtonFlags        flags);
 
 #endif

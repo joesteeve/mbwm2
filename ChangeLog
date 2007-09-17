@@ -1,3 +1,20 @@
+2007-09-17  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-app.c
+        * src/client-types/mb-wm-client-app.h
+        * src/core/mb-wm-decor.c
+        * src/core/mb-wm-decor.h
+        * src/core/mb-wm-object-props.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+
+	Added support for decor button packing from start/end.
+	Added minimize and menu buttons to theme.
+	Handling of button events for stock buttons by MBWMDecorButton (to
+	simplify design of derived client objects.
+	Decor buttons owned (and destroyed) by MBWMDecor rather than
+	client (to simplify design of derived client objects).
+	Added simplified construction for stock decor buttons.
+	
 2007-09-14  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:

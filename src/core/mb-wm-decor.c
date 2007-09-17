@@ -349,6 +349,20 @@ mb_wm_decor_get_geometry (MBWMDecor *decor)
   return &decor->geom;
 }
 
+int
+mb_wm_decor_get_pack_start_x (MBWMDecor *decor)
+{
+  return decor->pack_start_x;
+}
+
+
+int
+mb_wm_decor_get_pack_end_x (MBWMDecor *decor)
+{
+  return decor->pack_end_x;
+}
+
+
 /* Mark a client in need of a repaint */
 void
 mb_wm_decor_mark_dirty (MBWMDecor *decor)
@@ -380,8 +394,15 @@ static void
 mb_wm_decor_destroy (MBWMObject* obj)
 {
   MBWMDecor *decor = MB_WM_DECOR(obj);
+  MBWMList * l = decor->buttons;
 
   mb_wm_decor_detach (decor);
+
+  while (l)
+    {
+      mb_wm_object_unref (MB_WM_OBJECT (l->data));
+      l = l->next;
+    }
 
   /* XDestroyWindow(wm->dpy, decor->xwin); */
 }
@@ -389,6 +410,31 @@ mb_wm_decor_destroy (MBWMObject* obj)
 /* Buttons */
 static void
 mb_wm_decor_button_destroy (MBWMObject* obj);
+
+static void
+mb_wm_decor_button_stock_pressed (MBWMDecorButton *button)
+{
+  MBWMDecor *decor = button->decor;
+  MBWindowManagerClient *client = decor->parent_client;
+  MBWindowManager *wm = client->wmref;
+
+  switch (button->type)
+    {
+    case MBWMDecorButtonClose:
+      XDestroyWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+      break;
+    case MBWMDecorButtonMenu:
+      /*FIXME*/
+      break;
+
+    case MBWMDecorButtonMinimize:
+      /* FIXME */
+      break;
+    }
+
+  return;
+}
+
 
 static Bool
 mb_wm_decor_button_press_handler (MBWindowManager *wm,
@@ -406,6 +452,8 @@ mb_wm_decor_button_press_handler (MBWindowManager *wm,
       MBWM_DBG("button is %ix%i\n", button->geom.width, button->geom.height);
       if (button->press)
 	button->press(wm, button, button->userdata);
+      else if (button->type != MBWMDecorButtonCustom)
+	mb_wm_decor_button_stock_pressed (button);
 
       return False;
     }
@@ -449,6 +497,7 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   MBWMDecorButtonRepaintFunc   paint = NULL;
   MBWMDecorButtonFlags         flags = 0;
   MBWMDecorButtonType          type = 0;
+  MBWMDecorButtonPack          pack = MBWMDecorButtonPackEnd;
   void                        *userdata = NULL;
   MBWMObjectProp               prop;
 
@@ -487,6 +536,9 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropDecorButtonType:
 	  type = va_arg(vap, MBWMDecorButtonType);
 	  break;
+	case MBWMObjectPropDecorButtonPack:
+	  pack = va_arg(vap, MBWMDecorButtonPack);
+	  break;
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -505,6 +557,7 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   button->geom.width  = width;
   button->geom.height = height;
   button->type = type;
+  button->pack = pack;
 
   decor->buttons = mb_wm_util_list_append (decor->buttons, button);
 
@@ -645,7 +698,7 @@ mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
 
 MBWMDecorButton*
 mb_wm_decor_button_new (MBWindowManager            *wm,
-			MBWMDecorButtonType         type,
+			MBWMDecorButtonPack         pack,
 			MBWMDecor                  *decor,
 			int                         width,
 			int                         height,
@@ -659,7 +712,7 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 
   button = mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
 			     MBWMObjectPropWm,                      wm,
-			     MBWMObjectPropDecorButtonType,         type,
+			     MBWMObjectPropDecorButtonPack,         pack,
 			     MBWMObjectPropDecor,                   decor,
 			     MBWMObjectPropWidth,                   width,
 			     MBWMObjectPropHeight,                  height,
@@ -668,6 +721,30 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			     MBWMObjectPropDecorButtonRepaintFunc,  paint,
 			     MBWMObjectPropDecorButtonFlags,        flags,
 			     MBWMObjectPropDecorButtonUserData,     userdata,
+			     NULL);
+
+  return MB_WM_DECOR_BUTTON(button);
+}
+
+MBWMDecorButton*
+mb_wm_decor_button_stock_new (MBWindowManager            *wm,
+			      MBWMDecorButtonType         type,
+			      MBWMDecorButtonPack         pack,
+			      MBWMDecor                  *decor,
+			      int                         width,
+			      int                         height,
+			      MBWMDecorButtonFlags        flags)
+{
+  MBWMObject  *button;
+
+  button = mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
+			     MBWMObjectPropWm,                      wm,
+			     MBWMObjectPropDecorButtonType,         type,
+			     MBWMObjectPropDecorButtonPack,         pack,
+			     MBWMObjectPropDecor,                   decor,
+			     MBWMObjectPropWidth,                   width,
+			     MBWMObjectPropHeight,                  height,
+			     MBWMObjectPropDecorButtonFlags,        flags,
 			     NULL);
 
   return MB_WM_DECOR_BUTTON(button);

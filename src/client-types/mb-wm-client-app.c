@@ -29,7 +29,6 @@ mb_wm_client_app_destroy (MBWMObject *this)
 {
   MBWMClientApp * app = MB_WM_CLIENT_APP (this);
 
-  mb_wm_object_unref (MB_WM_OBJECT (app->button_close));
 }
 
 static void
@@ -38,17 +37,38 @@ decor_resize (MBWindowManager   *wm,
 	      void              *userdata)
 {
   const MBGeometry *geom;
-  MBWMDecorButton  *button;
   MBWMClientApp    *client_app;
+  MBWMList         *l;
+  int               btn_x_start, btn_x_end;
 
   client_app = (MBWMClientApp *)userdata;
 
   geom = mb_wm_decor_get_geometry (decor);
 
-  button = (MBWMDecorButton  *)decor->buttons->data;
+  btn_x_end = geom->width - 2;
+  btn_x_start = 2;
 
-  mb_wm_decor_button_move_to (client_app->button_close,
-			      geom->width - FRAME_TITLEBAR_HEIGHT -2 , 2);
+  l = decor->buttons;
+  while (l)
+    {
+      MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
+
+      if (btn->pack == MBWMDecorButtonPackEnd)
+	{
+	  btn_x_end -= (btn->geom.width + 2);
+	  mb_wm_decor_button_move_to (btn, btn_x_end, 2);
+	}
+      else
+	{
+	  mb_wm_decor_button_move_to (btn, btn_x_start, 2);
+	  btn_x_start += (btn->geom.width + 2);
+	}
+
+      l = l->next;
+    }
+
+  decor->pack_start_x = btn_x_start;
+  decor->pack_end_x   = btn_x_end;
 }
 
 static void
@@ -57,16 +77,6 @@ decor_repaint (MBWindowManager   *wm,
 	       void              *userdata)
 {
   mb_wm_theme_paint_decor (wm->theme, decor);
-}
-
-static void
-close_button_pressed (MBWindowManager   *wm,
-		      MBWMDecorButton   *button,
-		      void              *userdata)
-{
-  MBWindowManagerClient *client = (MBWindowManagerClient*)userdata;
-
-  XDestroyWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 }
 
 void
@@ -78,7 +88,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   MBWMDecorButton          *button;
   MBWindowManager          *wm = NULL;
   MBWMObjectProp            prop;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -89,7 +99,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 	}
       else
 	MBWMO_PROP_EAT (vap, prop);
-      
+
       prop = va_arg (vap, MBWMObjectProp);
     }
 
@@ -105,19 +115,36 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   decor = mb_wm_decor_new (wm, MBWMDecorTypeNorth,
 			   decor_resize, decor_repaint, client_app);
 
-  client_app->button_close
-    = mb_wm_decor_button_new (wm,
-			      MBWMDecorButtonClose,
-			      decor,
-			      FRAME_TITLEBAR_HEIGHT-2,
-			      FRAME_TITLEBAR_HEIGHT-2,
-			      NULL,
-			      close_button_pressed,
-			      NULL,
-			      0,
-			      client_app);
+  button = mb_wm_decor_button_stock_new (wm,
+				    MBWMDecorButtonClose,
+				    MBWMDecorButtonPackEnd,
+				    decor,
+				    FRAME_TITLEBAR_HEIGHT-2,
+				    FRAME_TITLEBAR_HEIGHT-2,
+				    0);
 
-  mb_wm_decor_button_show (client_app->button_close);
+  mb_wm_decor_button_show (button);
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonMinimize,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 0);
+
+  mb_wm_decor_button_show (button);
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonMenu,
+					 MBWMDecorButtonPackStart,
+					 decor,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 0);
+
+  mb_wm_decor_button_show (button);
+
   mb_wm_decor_attach (decor, client);
 
   /* Borders */

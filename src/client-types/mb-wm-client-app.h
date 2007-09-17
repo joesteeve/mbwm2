@@ -34,7 +34,6 @@ typedef struct MBWMClientAppClass MBWMClientAppClass;
 struct MBWMClientApp
 {
   MBWMClientBase    parent;
-  MBWMDecorButton  *button_close;
 };
 
 struct MBWMClientAppClass
