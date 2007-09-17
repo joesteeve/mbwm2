@@ -1,5 +1,16 @@
 2007-09-17  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c
+        * src/core/mb-wm-client-base.c
+        * src/core/mb-wm-client.c
+        * src/core/mb-wm-client.h
+        * src/core/mb-wm-decor.c
+        * src/core/mb-wm-decor.h
+        * src/theme-engines/mb-wm-theme-cairo.c
+	Implemented client hiding; code toward fullscreen state.
+	
+2007-09-17  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c:
         * src/core/mb-wm-decor.c:
 

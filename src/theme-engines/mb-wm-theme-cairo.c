@@ -125,7 +125,8 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   client = mb_wm_decor_get_parent (decor);
   xwin = mb_wm_decor_get_x_window (decor);
 
-  if (client == NULL || xwin == None) return;
+  if (client == NULL || xwin == None)
+    return;
 
   type = mb_wm_decor_get_type (decor);
   geom = mb_wm_decor_get_geometry (decor);
@@ -288,6 +289,15 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
       cairo_move_to (cr, 3.0, h-3.0);
       cairo_line_to (cr, w-3.0, 3.0);
+      cairo_stroke (cr);
+    }
+  else if (button->type == MBWMDecorButtonFullscreen)
+    {
+      cairo_move_to (cr, 3.0, 3.0);
+      cairo_line_to (cr, 3.0, h-3.0);
+      cairo_line_to (cr, w-3.0, h-3.0);
+      cairo_line_to (cr, w-3.0, 3.0);
+      cairo_line_to (cr, 3.0, 3.0);
       cairo_stroke (cr);
     }
   else if (button->type == MBWMDecorButtonMinimize)

@@ -19,6 +19,7 @@
  */
 
 #include "mb-wm.h"
+#include <X11/Xmd.h>
 
 enum
   {
@@ -68,7 +69,7 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   MBWindowManager       *wm = NULL;
   MBWMClientWindow      *win = NULL;
   MBWMObjectProp         prop;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -83,7 +84,7 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
-      
+
       prop = va_arg(vap, MBWMObjectProp);
     }
 
@@ -554,6 +555,7 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
   MBWMClientWindow  *win = client->window;
   Bool               old_state;
   Bool               new_state;
+  Bool               activate = True;
   MBWMClientWindowEWMHState state_flag;
 
   switch (state)
@@ -564,7 +566,9 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
     case MBWM_ATOM_NET_WM_STATE_ABOVE:
       state_flag = MBWMClientWindowEWMHStateAbove;
       break;
-
+    case MBWM_ATOM_NET_WM_STATE_HIDDEN:
+      state_flag = MBWMClientWindowEWMHStateHidden;
+      break;
     case MBWM_ATOM_NET_WM_STATE_MODAL:
     case MBWM_ATOM_NET_WM_STATE_STICKY:
     case MBWM_ATOM_NET_WM_STATE_MAXIMIZED_VERT:
@@ -572,7 +576,6 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
     case MBWM_ATOM_NET_WM_STATE_SHADED:
     case MBWM_ATOM_NET_WM_STATE_SKIP_TASKBAR:
     case MBWM_ATOM_NET_WM_STATE_SKIP_PAGER:
-    case MBWM_ATOM_NET_WM_STATE_HIDDEN:
     case MBWM_ATOM_NET_WM_STATE_BELOW:
     case MBWM_ATOM_NET_WM_STATE_DEMANDS_ATTENTION:
     default:
@@ -597,6 +600,12 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
   if (new_state == old_state)
     return;
 
+  if ((state_flag & MBWMClientWindowEWMHStateHidden))
+    {
+      mb_wm_client_hide (client);
+      return;
+    }
+
   if (new_state)
     {
       win->ewmh_state |= state_flag;
@@ -610,5 +619,6 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
    * FIXME -- resize && move, possibly redraw decors when returning from
    * fullscreen
    */
-  mb_wm_activate_client(wm, client);
+  if (activate)
+    mb_wm_activate_client(wm, client);
 }

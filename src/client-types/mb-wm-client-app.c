@@ -126,6 +126,23 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   mb_wm_decor_button_show (button);
   mb_wm_object_unref (MB_WM_OBJECT (button));
 
+#if 1
+  /* FIXME
+   * We probably do not want this in the default client, but for now
+   * it is useful for testing purposes
+   */
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonFullscreen,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+#endif
+
   button = mb_wm_decor_button_stock_new (wm,
 					 MBWMDecorButtonMinimize,
 					 MBWMDecorButtonPackEnd,
