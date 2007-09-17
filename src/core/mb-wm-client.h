@@ -201,6 +201,9 @@ Bool
 mb_wm_client_needs_geometry_sync (MBWindowManagerClient *client);
 
 Bool
+mb_wm_client_needs_fullscreen_sync (MBWindowManagerClient *client);
+
+Bool
 mb_wm_client_needs_decor_sync (MBWindowManagerClient *client);
 
 Bool
@@ -233,6 +236,9 @@ mb_wm_client_set_layout_hint (MBWindowManagerClient *client,
 
 void
 mb_wm_client_stacking_mark_dirty (MBWindowManagerClient *client);
+
+void
+mb_wm_client_fullscreen_mark_dirty (MBWindowManagerClient *client);
 
 void
 mb_wm_client_geometry_mark_dirty (MBWindowManagerClient *client);

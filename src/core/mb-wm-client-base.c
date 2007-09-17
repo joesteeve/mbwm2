@@ -213,8 +213,42 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
   MBWMClientWindow * win = client->window;
+  Bool fullscreen = (win->ewmh_state & MBWMClientWindowEWMHStateFullscreen);
 
   MBWM_MARK();
+
+  /*
+   * If we need to sync due to change in fullscreen state, we have reparent
+   * the client window to the frame/root window
+   */
+  if (mb_wm_client_needs_fullscreen_sync (client))
+    {
+      if (mb_wm_client_is_mapped (client))
+	{
+	  if (client->xwin_frame)
+	    {
+	      if (!fullscreen)
+		{
+		  XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+				  client->xwin_frame, 0, 0);
+		  XMapWindow(wm->xdpy, client->xwin_frame);
+		  XMapSubwindows(wm->xdpy, client->xwin_frame);
+		}
+	      else
+		{
+		  XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+				  wm->root_win->xwindow, 0, 0);
+		  XUnmapWindow(wm->xdpy, client->xwin_frame);
+		  XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+		}
+	    }
+	  else
+	    {
+	      XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+			      wm->root_win->xwindow, 0, 0);
+	    }
+	}
+    }
 
   /* Sync up any geometry */
 
@@ -222,23 +256,35 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
     {
       mb_wm_util_trap_x_errors();
 
-      if (client->xwin_frame)
-	XMoveResizeWindow(wm->xdpy,
-			  client->xwin_frame,
-			  client->frame_geometry.x,
-			  client->frame_geometry.y,
-			  client->frame_geometry.width,
-			  client->frame_geometry.height);
+      if (!fullscreen)
+	{
+	  if (client->xwin_frame)
+	    XMoveResizeWindow(wm->xdpy,
+			      client->xwin_frame,
+			      client->frame_geometry.x,
+			      client->frame_geometry.y,
+			      client->frame_geometry.width,
+			      client->frame_geometry.height);
 
-      /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask, &xwc);
-       *        here instead as can set border width = 0.
-      */
-      XMoveResizeWindow(wm->xdpy,
+	  /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask, &xwc);
+	   *        here instead as can set border width = 0.
+	   */
+	  XMoveResizeWindow(wm->xdpy,
 			MB_WM_CLIENT_XWIN(client),
 			client->window->geometry.x - client->frame_geometry.x,
 			client->window->geometry.y - client->frame_geometry.y,
 			client->window->geometry.width,
 			client->window->geometry.height);
+	}
+      else
+	{
+	  XMoveResizeWindow(wm->xdpy,
+			    MB_WM_CLIENT_XWIN(client),
+			    client->frame_geometry.x,
+			    client->frame_geometry.y,
+			    client->frame_geometry.width,
+			    client->frame_geometry.height);
+	}
 
       /* FIXME: need flags to handle other stuff like configure events etc */
 
@@ -253,19 +299,6 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
       mb_wm_util_untrap_x_errors();
     }
 
-  /* Paint any decor */
-
-  mb_wm_util_trap_x_errors();
-
-  if (mb_wm_client_needs_decor_sync (client))
-    {
-      mb_wm_util_list_foreach(client->decor,
-			      (MBWMListForEachCB)mb_wm_decor_handle_repaint,
-			      NULL);
-    }
-
-  mb_wm_util_untrap_x_errors();
-
   /* Handle any mapping - should be visible state ? */
 
   if (mb_wm_client_needs_visibility_sync (client))
@@ -278,29 +311,46 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	{
 	  if (client->xwin_frame)
 	    {
-	      XMapWindow(wm->xdpy, client->xwin_frame);
-	      XMapSubwindows(wm->xdpy, client->xwin_frame);
+	      if (!fullscreen)
+		{
+		  XMapWindow(wm->xdpy, client->xwin_frame);
+		  XMapSubwindows(wm->xdpy, client->xwin_frame);
+		}
+	      else
+		{
+		  XUnmapWindow(wm->xdpy, client->xwin_frame);
+		  XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+		}
 	    }
 	  else
 	    {
-	      MBWM_DBG("mapping...");
 	      XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 	    }
 
-	  mb_wm_window_change_property (wm,
-					client->window,
-					wm->atoms[MBWM_ATOM_WM_STATE],
-					wm->atoms[MBWM_ATOM_WM_STATE],
-					32,
-					(void *)NormalState,
-					1);
+	  if (fullscreen)
+	    mb_wm_window_change_property (wm,
+					  client->window,
+					  wm->atoms[MBWM_ATOM_WM_STATE],
+					  wm->atoms[MBWM_ATOM_WM_STATE],
+					  32,
+					(void *) wm->atoms[MBWM_ATOM_NET_WM_STATE_FULLSCREEN],
+					  1);
+	  else
+	    mb_wm_window_change_property (wm,
+					  client->window,
+					  wm->atoms[MBWM_ATOM_WM_STATE],
+					  wm->atoms[MBWM_ATOM_WM_STATE],
+					  32,
+					  (void *) NormalState,
+					  1);
+
 	}
       else
 	{
 	  if (client->xwin_frame)
 	    XUnmapWindow(wm->xdpy, client->xwin_frame);
 	  else
-	    XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+	    XUnmapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 
 	  /* FIXME: iconized state? */
 	  mb_wm_window_change_property (wm,
@@ -315,6 +365,32 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       mb_wm_util_untrap_x_errors();
     }
+
+  /* Paint any decor */
+
+  mb_wm_util_trap_x_errors();
+
+  if (mb_wm_client_needs_decor_sync (client))
+    {
+      if (fullscreen)
+	{
+	  if (client->xwin_frame)
+	    XUnmapWindow(wm->xdpy, client->xwin_frame);
+	}
+      else
+	{
+	  if (client->xwin_frame)
+	    XMapWindow(wm->xdpy, client->xwin_frame);
+	}
+
+      mb_wm_util_list_foreach(client->decor,
+			      (MBWMListForEachCB)mb_wm_decor_handle_repaint,
+			      NULL);
+
+
+    }
+
+  mb_wm_util_untrap_x_errors();
 
   mb_wm_util_trap_x_errors();
   XSync(wm->xdpy, False);

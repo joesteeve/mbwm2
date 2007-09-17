@@ -126,8 +126,8 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   mb_wm_decor_button_show (button);
   mb_wm_object_unref (MB_WM_OBJECT (button));
 
-#if 1
-  /* FIXME
+#if 0
+  /*
    * We probably do not want this in the default client, but for now
    * it is useful for testing purposes
    */

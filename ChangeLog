@@ -1,5 +1,13 @@
 2007-09-17  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	Implemented client fullscreening.
+
+2007-09-17  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c
         * src/core/mb-wm-client-base.c
         * src/core/mb-wm-client.c

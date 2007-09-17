@@ -27,7 +27,8 @@ enum
     GeometryNeedsSync      = (1<<2),
     VisibilityNeedsSync    = (1<<3),
     DecorNeedsSync         = (1<<4),
-    SyntheticConfigEvSync  = (1<<5)
+    SyntheticConfigEvSync  = (1<<5),
+    FullscreenSync         = (1<<6),
   };
 
 struct MBWindowManagerClientPriv
@@ -133,6 +134,15 @@ mb_wm_client_class_type ()
   return type;
 }
 
+void
+mb_wm_client_fullscreen_mark_dirty (MBWindowManagerClient *client)
+{
+  /* fullscreen implies geometry and visibility sync */
+  mb_wm_display_sync_queue (client->wmref);
+  client->priv->sync_state |= (FullscreenSync |
+			       GeometryNeedsSync |
+			       VisibilityNeedsSync);
+}
 
 void
 mb_wm_client_stacking_mark_dirty (MBWindowManagerClient *client)
@@ -183,6 +193,12 @@ mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client)
   client->priv->sync_state |= DecorNeedsSync;
 
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
+}
+
+Bool
+mb_wm_client_needs_fullscreen_sync (MBWindowManagerClient *client)
+{
+  return (client->priv->sync_state & FullscreenSync);
 }
 
 static Bool
@@ -613,6 +629,11 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
   else
     {
       win->ewmh_state &= ~state_flag;
+    }
+
+  if ((state_flag & MBWMClientWindowEWMHStateFullscreen))
+    {
+      mb_wm_client_fullscreen_mark_dirty (client);
     }
 
   /*
