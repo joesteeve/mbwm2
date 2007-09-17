@@ -428,7 +428,9 @@ mb_wm_decor_button_stock_pressed (MBWMDecorButton *button)
       break;
 
     case MBWMDecorButtonMinimize:
-      /* FIXME */
+      mb_wm_client_set_state (client,
+			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			      MBWMClientWindowStateChangeAdd);
       break;
     }
 
@@ -560,6 +562,9 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   button->pack = pack;
 
   decor->buttons = mb_wm_util_list_append (decor->buttons, button);
+
+  /* the decor assumes a reference, so add one for the caller */
+  mb_wm_object_ref (obj);
 
   mb_wm_x_event_handler_add (wm, ButtonPress,
 			     (MBWMXEventFunc)mb_wm_decor_button_press_handler,

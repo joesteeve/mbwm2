@@ -124,6 +124,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 				    0);
 
   mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
 
   button = mb_wm_decor_button_stock_new (wm,
 					 MBWMDecorButtonMinimize,
@@ -134,6 +135,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 					 0);
 
   mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
 
   button = mb_wm_decor_button_stock_new (wm,
 					 MBWMDecorButtonMenu,
@@ -144,6 +146,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 					 0);
 
   mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
 
   mb_wm_decor_attach (decor, client);
 

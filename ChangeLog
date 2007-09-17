@@ -1,5 +1,13 @@
 2007-09-17  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+        * src/core/mb-wm-decor.c:
+
+	Fixed refcount of MBDecorButton objects; hooked up min button
+	handler to client api.
+	
+2007-09-17  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c
         * src/client-types/mb-wm-client-app.h
         * src/core/mb-wm-decor.c
