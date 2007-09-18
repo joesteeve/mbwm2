@@ -92,6 +92,9 @@ typedef struct MBWMDecor                   MBWMDecor;
 typedef struct MBWMDecorClass              MBWMDecorClass;
 typedef struct MBWMDecorButton             MBWMDecorButton;
 typedef struct MBWMDecorButtonClass        MBWMDecorButtonClass;
+typedef struct MBWMLayout                  MBWMLayout;
+typedef struct MBWMLayoutClass             MBWMLayoutClass;
+
 
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;

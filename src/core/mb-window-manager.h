@@ -77,6 +77,7 @@ struct MBWindowManager
   const char                  *sm_client_id;
 
   MBWMTheme                   *theme;
+  MBWMLayout                  *layout;
 };
 
 struct MBWindowManagerClass
@@ -86,7 +87,7 @@ struct MBWindowManagerClass
   void (*process_cmdline) (MBWindowManager * wm, int argc, char **argv);
 
   void (*show_desktop) (MBWindowManager *wm, Bool show);
-  
+
   MBWindowManagerClient* (*client_new) (MBWindowManager *wm,
 					MBWMClientWindow *w);
 
@@ -100,6 +101,9 @@ struct MBWindowManagerClass
 
 MBWindowManager *
 mb_wm_new (int argc, char **argv);
+
+void
+mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout, Bool sync);
 
 int
 mb_wm_class_type ();

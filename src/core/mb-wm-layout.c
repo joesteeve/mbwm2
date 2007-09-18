@@ -6,10 +6,85 @@
 #define SET_HEIGHT (1<<4)
 #define SET_ALL    (SET_X|SET_Y|SET_WIDTH|SET_HEIGHT)
 
+static void
+mb_wm_layout_real_update (MBWMLayout * layout);
+
+static void
+mb_wm_layout_class_init (MBWMObjectClass *klass)
+{
+  MBWMLayoutClass * layout_class = MB_WM_LAYOUT_CLASS (klass);
+
+  layout_class->update = mb_wm_layout_real_update;
+}
+
+static void
+mb_wm_layout_destroy (MBWMObject *this)
+{
+}
+
+static void
+mb_wm_layout_init (MBWMObject *this, va_list vap)
+{
+  MBWMLayout *layout = MB_WM_LAYOUT (this);
+  MBWMObjectProp    prop;
+  MBWindowManager  *wm = NULL;
+
+  prop = va_arg(vap, MBWMObjectProp);
+  while (prop)
+    {
+      switch (prop)
+	{
+	case MBWMObjectPropWm:
+	  wm = va_arg(vap, MBWindowManager *);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
+	}
+
+      prop = va_arg(vap, MBWMObjectProp);
+    }
+
+  MBWM_ASSERT (wm);
+
+  layout->wm = wm;
+}
+
+int
+mb_wm_layout_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMLayoutClass),
+	sizeof (MBWMLayout),
+	mb_wm_layout_init,
+	mb_wm_layout_destroy,
+	mb_wm_layout_class_init
+      };
+
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
+    }
+
+  return type;
+}
+
+MBWMLayout*
+mb_wm_layout_new (MBWindowManager *wm)
+{
+  MBWMLayout *layout;
+
+  layout = MB_WM_LAYOUT (mb_wm_object_new (MB_WM_TYPE_LAYOUT,
+					   MBWMObjectPropWm, wm,
+					   NULL));
+  return layout;
+}
+
 static Bool
-clip_geometry (MBGeometry *geom,
-	       MBGeometry *min,
-	       int         flags)
+mb_wm_layout_clip_geometry (MBGeometry *geom,
+			    MBGeometry *min,
+			    int         flags)
 {
   Bool changed = False;
 
@@ -45,9 +120,9 @@ clip_geometry (MBGeometry *geom,
 }
 
 static Bool
-maximise_geometry (MBGeometry *geom,
-		   MBGeometry *max,
-		   int         flags)
+mb_wm_layout_maximise_geometry (MBGeometry *geom,
+				MBGeometry *max,
+				int         flags)
 {
   Bool changed = False;
 
@@ -78,9 +153,9 @@ maximise_geometry (MBGeometry *geom,
   return changed;
 }
 
-int /* FIXME: work for multiple edges */
-mb_wm_layout_manager_get_edge_offset (MBWindowManager *wm,
-				      int              edge)
+static int /* FIXME: work for multiple edges */
+mb_wm_layout_get_edge_offset (MBWindowManager *wm,
+			      int              edge)
 {
   MBGeometry             coverage;
   MBWindowManagerClient *client = NULL;
@@ -111,21 +186,22 @@ mb_wm_layout_manager_get_edge_offset (MBWindowManager *wm,
       }
 
   return offset;
-} 
+}
 
-void
-mb_wm_layout_manager_update (MBWindowManager *wm) 
+static void
+mb_wm_layout_real_update (MBWMLayout * layout)
 {
+  MBWindowManager       *wm = layout->wm;
   int                    min_x, max_x, min_y, max_y;
   MBGeometry             coverage, avail_geom;
   MBWindowManagerClient *client = NULL;
   Bool                   need_change;
 
-  mb_wm_get_display_geometry (wm, &avail_geom); 
+  mb_wm_get_display_geometry (wm, &avail_geom);
 
   /*
     cycle through clients, laying out each in below order.
-    Note they must have LayoutPrefVisible set. 
+    Note they must have LayoutPrefVisible set.
 
     LayoutPrefReserveEdgeNorth
     LayoutPrefReserveEdgeSouth
@@ -143,10 +219,10 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 
     LayoutPrefFullscreen
 
-    XXX need to check they are mapped too 
+    XXX need to check they are mapped too
 
     foreach client with LayoutPrefReserveEdgeNorth & LayoutPrefVisible
-       grab there current geometry 
+       grab there current geometry
           does it fit well into current restraints ( min_, max_ )
             yes leave
             no  resize so it does, mark dirty
@@ -163,17 +239,18 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
     if (client->layout_hints == (LayoutPrefReserveEdgeNorth|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
-	
-	/* set x,y to avail and max width */
-	need_change = maximise_geometry (&coverage,
-					 &avail_geom,
-					 SET_X|SET_Y|SET_WIDTH);
-	/* Too high */
-	need_change |= clip_geometry (&coverage, &avail_geom, SET_HEIGHT);
 
-	if (need_change) 	
-	  mb_wm_client_request_geometry (client, 
-					 &coverage, 
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_X|SET_Y|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_HEIGHT);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 	  /* FIXME: what if this returns False ? */
 
@@ -186,13 +263,14 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
     if (client->layout_hints == (LayoutPrefReserveEdgeSouth|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
-	
+
 	/* set x,y to avail and max width */
-	need_change = maximise_geometry (&coverage,
-					 &avail_geom,
-					 SET_X|SET_WIDTH);
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_X|SET_WIDTH);
 	/* Too high */
-	need_change |= clip_geometry (&coverage, &avail_geom, SET_HEIGHT);
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_HEIGHT);
 
 	if (coverage.y != avail_geom.y + avail_geom.height - coverage.height)
 	  {
@@ -200,9 +278,9 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 	    need_change = True;
 	  }
 
-	if (need_change) 	
-	  mb_wm_client_request_geometry (client, 
-					 &coverage, 
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 
 	avail_geom.height = avail_geom.height - coverage.height;
@@ -213,17 +291,18 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
     if (client->layout_hints == (LayoutPrefReserveEdgeWest|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
-	
-	/* set x,y to avail and max width */
-	need_change = maximise_geometry (&coverage,
-					 &avail_geom,
-					 SET_X|SET_Y|SET_HEIGHT);
-	/* Too wide */
-	need_change |= clip_geometry (&coverage, &avail_geom, SET_WIDTH);
 
-	if (need_change) 	
-	  mb_wm_client_request_geometry (client, 
-					 &coverage, 
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_X|SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 
 	avail_geom.x      = coverage.x + coverage.width;
@@ -235,17 +314,18 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
     if (client->layout_hints == (LayoutPrefReserveEdgeEast|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
-	
-	/* set x,y to avail and max width */
-	need_change = maximise_geometry (&coverage,
-					 &avail_geom,
-					 SET_Y|SET_HEIGHT);
-	/* Too wide */
-	need_change |= clip_geometry (&coverage, &avail_geom, SET_WIDTH);
 
-	if (need_change) 	
-	  mb_wm_client_request_geometry (client, 
-					 &coverage, 
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 
 	if (coverage.x != avail_geom.x + avail_geom.width - coverage.width)
@@ -266,7 +346,7 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
-	if (coverage.x != avail_geom.x 
+	if (coverage.x != avail_geom.x
 	    || coverage.width != avail_geom.width
 	    || coverage.y != avail_geom.y
 	    || coverage.height != avail_geom.height)
@@ -279,11 +359,22 @@ mb_wm_layout_manager_update (MBWindowManager *wm)
 	    coverage.x      = avail_geom.x;
 	    coverage.y      = avail_geom.y;
 
-	    mb_wm_client_request_geometry (client, 
-					   &coverage, 
+	    mb_wm_client_request_geometry (client,
+					   &coverage,
 					   MBWMClientReqGeomIsViaLayoutManager);
 	  }
       }
 
 }
 
+void
+mb_wm_layout_update (MBWMLayout * layout)
+{
+  MBWMLayoutClass *klass;
+
+  klass = MB_WM_LAYOUT_CLASS (MB_WM_OBJECT_GET_CLASS (layout));
+
+  MBWM_ASSERT (klass->update);
+
+  klass->update (layout);
+}

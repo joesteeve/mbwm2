@@ -1,5 +1,18 @@
 2007-09-18  Tomas Frydrych  <tf@o-hand.com>
 
+        * TODO:
+	Removed items already done.
+	
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-layout.c:
+        * src/core/mb-wm-layout.h:
+        * src/core/mb-wm-types.h:
+        * src/managers/matchbox-window-manager-2-simple.c:
+	Objectified layout.
+	
+2007-09-18  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client.c:
         * src/core/mb-wm-client.h:
         * src/core/mb-wm-decor.c:

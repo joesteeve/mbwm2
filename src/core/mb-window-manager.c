@@ -62,6 +62,7 @@ mb_wm_destroy (MBWMObject *this)
 
   mb_wm_object_unref (MB_WM_OBJECT (wm->root_win));
   mb_wm_object_unref (MB_WM_OBJECT (wm->theme));
+  mb_wm_object_unref (MB_WM_OBJECT (wm->layout));
 }
 
 static void
@@ -347,7 +348,8 @@ mb_wm_sync (MBWindowManager *wm)
   /* Size stuff first assume newly managed windows unmapped ?
    *
   */
-  mb_wm_layout_manager_update (wm);
+  if (wm->layout)
+    mb_wm_layout_update (wm->layout);
 
   /* Create the actual window */
   mb_wm_stack_enumerate(wm, client)
@@ -837,7 +839,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
   MBWMObjectProp        prop;
   int                   argc = 0;
   char                **argv = NULL;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -1032,4 +1034,13 @@ mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show)
 
   if (wm_klass->show_desktop)
       wm_klass->show_desktop (wm, show);
+}
+
+void
+mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout, Bool sync)
+{
+  wm->layout = layout;
+
+  if (sync)
+    mb_wm_sync (wm);
 }
