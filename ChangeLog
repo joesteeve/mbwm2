@@ -1,5 +1,23 @@
 2007-09-18  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+	Added Help and Accept buttons handling.
+
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-object-props.h:
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-app.h:
+	Added virtual construct_buttons() to MBWindowClientAppClass.
+
+	* src/core/mb-window-manager.c:
+	Squashed compiler warning.
+
+2007-09-18  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c:
         * src/core/mb-wm-client-base.c:
         * src/core/mb-wm-decor.c:

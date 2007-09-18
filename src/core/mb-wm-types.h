@@ -75,19 +75,23 @@ typedef struct MBWMRgbaIcon
   unsigned long *pixels;
 } MBWMRgbaIcon;
 
-typedef struct MBWindowManager       MBWindowManager;
-typedef struct MBWindowManagerClient MBWindowManagerClient;
-typedef struct MBWindowManagerClientClass MBWindowManagerClientClass;
+typedef struct MBWindowManager             MBWindowManager;
+typedef struct MBWindowManagerClient       MBWindowManagerClient;
+typedef struct MBWindowManagerClientClass  MBWindowManagerClientClass;
 typedef struct MBWindowManagerClientPriv   MBWindowManagerClientPriv;
-typedef struct MBWMClientWindow           MBWMClientWindow;
-typedef struct MBWMClientWindowClass      MBWMClientWindowClass;
-typedef struct MBWMTheme                  MBWMTheme;
-typedef struct MBWMThemeClass             MBWMThemeClass;
-typedef struct MBWMThemeCairo             MBWMThemeCairo;
-typedef struct MBWMThemeCairoClass        MBWMThemeCairoClass;
-typedef struct MBWMThemeSimple            MBWMThemeSimple;
-typedef struct MBWMThemeSimpleClass       MBWMThemeSimpleClass;
-typedef enum   MBWMThemeCaps              MBWMThemeCaps;
+typedef struct MBWMClientWindow            MBWMClientWindow;
+typedef struct MBWMClientWindowClass       MBWMClientWindowClass;
+typedef struct MBWMTheme                   MBWMTheme;
+typedef struct MBWMThemeClass              MBWMThemeClass;
+typedef struct MBWMThemeCairo              MBWMThemeCairo;
+typedef struct MBWMThemeCairoClass         MBWMThemeCairoClass;
+typedef struct MBWMThemeSimple             MBWMThemeSimple;
+typedef struct MBWMThemeSimpleClass        MBWMThemeSimpleClass;
+typedef enum   MBWMThemeCaps               MBWMThemeCaps;
+typedef struct MBWMDecor                   MBWMDecor;
+typedef struct MBWMDecorClass              MBWMDecorClass;
+typedef struct MBWMDecorButton             MBWMDecorButton;
+typedef struct MBWMDecorButtonClass        MBWMDecorButtonClass;
 
 typedef unsigned long MBWMCookie;
 typedef int           MBWindowManagerClientType;

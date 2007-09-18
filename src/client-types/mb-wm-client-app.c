@@ -10,18 +10,26 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBGeometry            *new_geometry,
 				   MBWMClientReqGeomType  flags);
 
+static void
+mb_wm_client_app_construct_buttons (MBWMClientApp * client,
+				    MBWMDecor * decor);
+
 void
 mb_wm_client_app_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
+  MBWMClientAppClass * client_app;
 
   MBWM_MARK();
 
-  client = (MBWindowManagerClientClass *)klass;
+  client     = (MBWindowManagerClientClass *)klass;
+  client_app = (MBWMClientAppClass *)klass;
 
   MBWM_DBG("client->stack is %p", client->stack);
 
   client->geometry = mb_wm_client_app_request_geometry;
+
+  client_app->construct_buttons = mb_wm_client_app_construct_buttons;
 }
 
 static void
@@ -79,49 +87,21 @@ decor_repaint (MBWindowManager   *wm,
   mb_wm_theme_paint_decor (wm->theme, decor);
 }
 
-void
-mb_wm_client_app_init (MBWMObject *this, va_list vap)
+static void
+mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
+				    MBWMDecor * decor)
 {
-  MBWMClientApp            *client_app = MB_WM_CLIENT_APP (this);
-  MBWindowManagerClient    *client     = MB_WM_CLIENT (this);
-  MBWMDecor                *decor;
-  MBWMDecorButton          *button;
-  MBWindowManager          *wm = NULL;
-  MBWMObjectProp            prop;
-
-  prop = va_arg(vap, MBWMObjectProp);
-  while (prop)
-    {
-      if (prop == MBWMObjectPropWm)
-	{
-	  wm = va_arg(vap, MBWindowManager *);
-	  break;
-	}
-      else
-	MBWMO_PROP_EAT (vap, prop);
-
-      prop = va_arg (vap, MBWMObjectProp);
-    }
-
-  if (!wm)
-    return;
-
-  client->stacking_layer = MBWMStackLayerMid;
-
-  mb_wm_client_set_layout_hints (client,
-				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
-
-  /* Titlebar */
-  decor = mb_wm_decor_new (wm, MBWMDecorTypeNorth,
-			   decor_resize, decor_repaint, client_app);
+  MBWindowManagerClient *client = MB_WM_CLIENT (client_app);
+  MBWindowManager       *wm     = client->wmref;
+  MBWMDecorButton       *button;
 
   button = mb_wm_decor_button_stock_new (wm,
-				    MBWMDecorButtonClose,
-				    MBWMDecorButtonPackEnd,
-				    decor,
-				    FRAME_TITLEBAR_HEIGHT-2,
-				    FRAME_TITLEBAR_HEIGHT-2,
-				    0);
+					 MBWMDecorButtonClose,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 0);
 
   mb_wm_decor_button_show (button);
   mb_wm_object_unref (MB_WM_OBJECT (button));
@@ -133,6 +113,28 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
    */
   button = mb_wm_decor_button_stock_new (wm,
 					 MBWMDecorButtonFullscreen,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonHelp,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 FRAME_TITLEBAR_HEIGHT-2,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonAccept,
 					 MBWMDecorButtonPackEnd,
 					 decor,
 					 FRAME_TITLEBAR_HEIGHT-2,
@@ -164,6 +166,56 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
 
   mb_wm_decor_button_show (button);
   mb_wm_object_unref (MB_WM_OBJECT (button));
+}
+
+void
+mb_wm_client_app_init (MBWMObject *this, va_list vap)
+{
+  MBWMClientApp            *client_app = MB_WM_CLIENT_APP (this);
+  MBWindowManagerClient    *client     = MB_WM_CLIENT (this);
+  MBWMDecor                *decor;
+  MBWMDecorButton          *button;
+  MBWindowManager          *wm = NULL;
+  MBWMClientAppClass       *app_class;
+
+  app_class = MB_WM_CLIENT_APP_CLASS (MB_WM_OBJECT_GET_CLASS (this));
+
+#if 0
+  /*
+   * Property parsing not needed for now, as there are no ClientApp specific
+   * properties
+   */
+  prop = va_arg(vap, MBWMObjectProp);
+  while (prop)
+    {
+      if (prop == MBWMObjectPropWm)
+	{
+	  wm = va_arg(vap, MBWindowManager *);
+	  break;
+	}
+      else
+	MBWMO_PROP_EAT (vap, prop);
+
+      prop = va_arg (vap, MBWMObjectProp);
+    }
+#endif
+
+  wm = client->wmref;
+
+  if (!wm)
+    return;
+
+  client->stacking_layer = MBWMStackLayerMid;
+
+  mb_wm_client_set_layout_hints (client,
+				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
+
+  /* Titlebar */
+  decor = mb_wm_decor_new (wm, MBWMDecorTypeNorth,
+			   decor_resize, decor_repaint, client_app);
+
+  if (app_class->construct_buttons)
+    app_class->construct_buttons (client_app, decor);
 
   mb_wm_decor_attach (decor, client);
 

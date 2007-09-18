@@ -25,17 +25,10 @@
 #define MB_WM_DECOR_CLASS(c) ((MBWMDecorClass*)(c))
 #define MB_WM_TYPE_DECOR (mb_wm_decor_class_type ())
 
-typedef struct MBWMDecor       MBWMDecor;
-typedef struct MBWMDecorClass  MBWMDecorClass;
-
 
 #define MB_WM_DECOR_BUTTON(c) ((MBWMDecorButton*)(c))
 #define MB_WM_DECOR_BUTTON_CLASS(c) ((MBWMDecorButtonClass*)(c))
 #define MB_WM_TYPE_DECOR_BUTTON (mb_wm_decor_button_class_type ())
-
-
-typedef struct MBWMDecorButton MBWMDecorButton;
-typedef struct MBWMDecorButtonClass MBWMDecorButtonClass;
 
 typedef void (*MBWMDecorResizedFunc) (MBWindowManager   *wm,
 				      MBWMDecor         *decor,
@@ -135,14 +128,15 @@ typedef enum MBWMDecorButtonState
 } MBWMDecorButtonState ;
 
 typedef enum MBWMDecorButtonType
-  {
-    MBWMDecorButtonCustom     = 0,
-    MBWMDecorButtonClose      = 1,
-    MBWMDecorButtonMenu       = 2,
-    MBWMDecorButtonMinimize   = 3,
-    MBWMDecorButtonFullscreen = 4,
-  }
-MBWMDecorButtonType;
+{
+  MBWMDecorButtonCustom     = 0,
+  MBWMDecorButtonClose      = 1,
+  MBWMDecorButtonMenu       = 2,
+  MBWMDecorButtonMinimize   = 3,
+  MBWMDecorButtonFullscreen = 4,
+  MBWMDecorButtonAccept     = 5,
+  MBWMDecorButtonHelp       = 6,
+} MBWMDecorButtonType;
 
 typedef enum MBWMDecorButtonPack
   {

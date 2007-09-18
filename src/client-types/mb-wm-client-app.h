@@ -39,6 +39,8 @@ struct MBWMClientApp
 struct MBWMClientAppClass
 {
   MBWMClientBaseClass parent;
+
+  void (*construct_buttons) (MBWMClientApp * client, MBWMDecor * decor);
 };
 
 MBWindowManagerClient*

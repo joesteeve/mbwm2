@@ -16,14 +16,14 @@
  * values), and (b) handle unknown properties safely.
  *
  * Property arguments can only be of the following types:
- * 
+ *
  *     int,
  *     long,
  *     long long,
  *     void*,
- *     
+ *
  * plus their unsigned variants.
- * 
+ *
  * The property id is a 32-bit value, constructed as follows:
  *
  * Bits 31-4  : numerical id that uniquely identifies this property. Bits 31-24

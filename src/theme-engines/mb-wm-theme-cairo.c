@@ -1,5 +1,7 @@
 #include "mb-wm-theme-cairo.h"
 
+#include <math.h>
+
 #ifdef USE_GTK
 #ifndef GTK_DISABLE_DEPRECATED
 #define GTK_DISABLE_DEPRECATED
@@ -181,8 +183,6 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
 
       cairo_set_source_rgb (cr, 1.0, 1.0, 1.0);
 
-      cairo_font_extents (cr, &font_extents);
-
       cairo_select_font_face (cr,
 			      "Sans Serif",
 			      CAIRO_FONT_SLANT_NORMAL,
@@ -190,10 +190,12 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
 
       cairo_set_font_size (cr, h - (h/6));
 
+      cairo_font_extents (cr, &font_extents);
+
       cairo_move_to (cr,
 		     mb_wm_client_frame_west_width (client) + pack_start_x,
 		     (h - (font_extents.ascent + font_extents.descent)) / 2
-		     + font_extents.ascent + 2);
+		     + font_extents.ascent);
 
       cairo_show_text (cr, mb_wm_client_get_name(client));
 
@@ -245,6 +247,7 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   cairo_t               *cr;
   int                    xi, yi, wi, hi;
   double                 x, y, w, h;
+  cairo_font_extents_t   font_extents;
 
   decor = button->decor;
   client = mb_wm_decor_get_parent (decor);
@@ -306,6 +309,24 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
       cairo_line_to (cr, w-3.0, h-5.0);
       cairo_stroke (cr);
     }
+  else if (button->type == MBWMDecorButtonHelp)
+    {
+      cairo_select_font_face (cr,
+			      "Sans Serif",
+			      CAIRO_FONT_SLANT_NORMAL,
+			      CAIRO_FONT_WEIGHT_BOLD);
+
+      cairo_set_font_size (cr, h);
+      cairo_font_extents (cr, &font_extents);
+
+
+      cairo_move_to (cr,
+		     4.0,
+		     (h - (font_extents.ascent + font_extents.descent)) / 2
+		     + font_extents.ascent);
+
+      cairo_show_text (cr, "?");
+    }
   else if (button->type == MBWMDecorButtonMenu)
     {
       cairo_move_to (cr, 3.0, 5.0);
@@ -314,6 +335,11 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
       cairo_move_to (cr, w/2.0, h-7.0);
       cairo_line_to (cr, w-3.0, 5.0);
+      cairo_stroke (cr);
+    }
+  else if (button->type == MBWMDecorButtonAccept)
+    {
+      cairo_arc (cr, w/2.0, h/2.0, (w-8.0)/2.0, 0.0, 2.0 * M_PI);
       cairo_stroke (cr);
     }
 

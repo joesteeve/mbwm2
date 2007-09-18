@@ -412,21 +412,31 @@ static void
 mb_wm_decor_button_destroy (MBWMObject* obj);
 
 static void
-mb_wm_decor_button_stock_pressed (MBWMDecorButton *button)
+mb_wm_decor_button_stock_button_pressed (MBWMDecorButton *button)
 {
-  MBWMDecor *decor = button->decor;
-  MBWindowManagerClient *client = decor->parent_client;
-  MBWindowManager *wm = client->wmref;
+  MBWindowManagerClient *client = button->decor->parent_client;
+  MBWindowManager       *wm = client->wmref;
+
+#if 0
+  /* FIXME -- deal with modality -- these should perhaps be ignored
+   * if system modal dialog is present ??
+   */
+  switch (type)
+    {
+    case MBWMDecorButtonClose:
+    case MBWMDecorButtonMinimize:
+    case MBWMDecorButtonFullscreen:
+      return;
+    default:
+      ;
+    }
+#endif
 
   switch (button->type)
     {
     case MBWMDecorButtonClose:
       XDestroyWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
       break;
-    case MBWMDecorButtonMenu:
-      /*FIXME*/
-      break;
-
     case MBWMDecorButtonMinimize:
       mb_wm_client_set_state (client,
 			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
@@ -441,11 +451,23 @@ mb_wm_decor_button_stock_pressed (MBWMDecorButton *button)
 
       mb_wm_client_display_sync (client);
       break;
+    case MBWMDecorButtonAccept:
+      mb_wm_client_deliver_wm_protocol (client,
+				wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT]);
+      break;
+    case MBWMDecorButtonHelp:
+      mb_wm_client_deliver_wm_protocol (client,
+				wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP]);
+      break;
+    default:
+    case MBWMDecorButtonMenu:
+      mb_wm_client_deliver_wm_protocol (client,
+				wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_CUSTOM]);
+      break;
     }
 
   return;
 }
-
 
 static Bool
 mb_wm_decor_button_press_handler (MBWindowManager *wm,
@@ -463,8 +485,8 @@ mb_wm_decor_button_press_handler (MBWindowManager *wm,
       MBWM_DBG("button is %ix%i\n", button->geom.width, button->geom.height);
       if (button->press)
 	button->press(wm, button, button->userdata);
-      else if (button->type != MBWMDecorButtonCustom)
-	mb_wm_decor_button_stock_pressed (button);
+      else
+	mb_wm_decor_button_stock_button_pressed (button);
 
       return False;
     }

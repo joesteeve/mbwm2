@@ -2,6 +2,7 @@
 #include "../client-types/mb-wm-client-app.h"
 #include "../client-types/mb-wm-client-panel.h"
 #include "../client-types/mb-wm-client-dialog.h"
+#include "../theme-engines/mb-wm-theme.h"
 #include <stdarg.h>
 
 static void
