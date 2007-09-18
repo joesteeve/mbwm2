@@ -1,5 +1,11 @@
 2007-09-18  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/core/mb-wm-layout.c:
+	(mb_wm_layout_real_update):
+	Clip windows of type LayoutPrefPositionFree as needed.
+	
+2007-09-18  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client.c
 	(mb_wm_client_on_property_change):
 	Handle name and geometry changes.

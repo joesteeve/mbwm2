@@ -236,7 +236,8 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 
   /* FIXME: need to enumerate by *age* in case multiple panels ? */
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveEdgeNorth|LayoutPrefVisible))
+    if (client->layout_hints ==
+	(LayoutPrefReserveEdgeNorth|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
@@ -258,9 +259,9 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 	avail_geom.height = avail_geom.height - coverage.height;
       }
 
-
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveEdgeSouth|LayoutPrefVisible))
+    if (client->layout_hints ==
+	(LayoutPrefReserveEdgeSouth|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
@@ -360,11 +361,27 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 	    coverage.y      = avail_geom.y;
 
 	    mb_wm_client_request_geometry (client,
-					   &coverage,
-					   MBWMClientReqGeomIsViaLayoutManager);
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
 	  }
       }
 
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefPositionFree|LayoutPrefVisible))
+      {
+	/* Clip if needed */
+	mb_wm_client_get_coverage (client, &coverage);
+
+	need_change = mb_wm_layout_clip_geometry (&coverage,
+						  &avail_geom,
+						  SET_X | SET_Y |
+						  SET_HEIGHT | SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+      }
 }
 
 void
