@@ -386,8 +386,6 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
       MBWM_DBG("Type: %lx",win->net_type);
       MBWM_DBG("Geom: +%i+%i,%ix%i", win->geometry.x, win->geometry.y,
 	       win->geometry.width, win->geometry.height);
-
-
     }
 
   if (props_req & MBWM_WINDOW_PROP_NAME)
@@ -508,6 +506,8 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 	  XFree(trans_win);
 	}
       else MBWM_DBG("@@@ Window transient for nothing @@@");
+
+      changes |= MBWM_WINDOW_PROP_TRANSIENCY;
     }
 
   if (props_req & MBWM_WINDOW_PROP_PROTOS)

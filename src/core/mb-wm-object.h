@@ -74,6 +74,7 @@ struct MBWMObject
   MBWMList        *callbacks;
 };
 
+/* returns True to stop signal emission */
 typedef Bool (*MBWMObjectCallbackFunc) (MBWMObject *obj,
 					int         mask,
 					void       *userdata);

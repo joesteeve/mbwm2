@@ -1,5 +1,26 @@
 2007-09-18  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.c
+	(mb_wm_client_on_property_change):
+	Handle name and geometry changes.
+
+	(mb_wm_client_init):
+	Added initial sync with window props.
+	
+        * src/core/mb-window-manager.c:
+	(mb_wm_handle_property_notify):
+	Added a bunch of previously unhandled properties.
+	
+        * src/core/mb-wm-client-window.c:
+	(mb_wm_client_window_sync_properties):
+	Signal change in transiency.
+	
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+	Do not ignore return value from signal functions.
+
+2007-09-18  Tomas Frydrych  <tf@o-hand.com>
+
         * TODO:
 	Removed items already done.
 	

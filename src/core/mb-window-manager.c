@@ -173,15 +173,34 @@ mb_wm_handle_property_notify (MBWindowManager         *wm,
 			      void                    *userdata)
 {
   MBWindowManagerClient *client;
+  int flag = 0;
 
   client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (!client)
     return True;
 
-  if (xev->atom == wm->atoms[MBWM_ATOM_WM_NAME])
-    mb_wm_client_window_sync_properties (client->window,
-					 MBWM_WINDOW_PROP_NAME);
+  if (xev->atom == wm->atoms[MBWM_ATOM_NET_WM_USER_TIME])
+    flag = MBWM_WINDOW_PROP_NET_USER_TIME;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_NAME])
+    flag = MBWM_WINDOW_PROP_NAME;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_HINTS])
+    flag = MBWM_WINDOW_PROP_WM_HINTS;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_NET_WM_ICON])
+    flag = MBWM_WINDOW_PROP_NET_ICON;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_PROTOCOLS])
+    flag = MBWM_WINDOW_PROP_PROTOS;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_TRANSIENT_FOR])
+    flag = MBWM_WINDOW_PROP_TRANSIENCY;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE])
+    flag = MBWM_WINDOW_PROP_WIN_TYPE;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_CLIENT_MACHINE])
+    flag = MBWM_WINDOW_PROP_CLIENT_MACHINE;
+  else if (xev->atom == wm->atoms[MBWM_ATOM_NET_WM_PID])
+    flag = MBWM_WINDOW_PROP_NET_PID;
+
+  if (flag)
+    mb_wm_client_window_sync_properties (client->window, flag);
 
   return True;
 }

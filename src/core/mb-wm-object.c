@@ -323,7 +323,14 @@ mb_wm_object_signal_emit (MBWMObject    *obj,
 	MBWMFuncInfo* info = item->data;
 
 	if (info->signal & signal)
-	  ((MBWMObjectCallbackFunc)info->func) (obj, signal, info->userdata);
+	  {
+	    if (((MBWMObjectCallbackFunc)info->func) (obj,
+						      signal,
+						      info->userdata))
+	      {
+		break;
+	      }
+	  }
 
 	item = item->next;
       }

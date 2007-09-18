@@ -98,12 +98,8 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   client->window        = win;
   client->wmref         = wm;
 
-  /*
-  if (client->init)
-    client->init(wm, client, win);
-  else
-    mb_wm_client_base_init (wm, client, win);
-  */
+  /* sync with client window */
+  mb_wm_client_on_property_change (win, MBWM_WINDOW_PROP_ALL, client);
 
   /* Handle underlying property changes */
   client->sig_prop_change_id =
@@ -206,7 +202,29 @@ mb_wm_client_on_property_change (MBWMClientWindow        *window,
 				 int                      property,
 				 void                    *userdata)
 {
-  printf("One of my underlying properties changed - %i\n", property);
+  MBWindowManagerClient * client = MB_WM_CLIENT (userdata);
+
+  if (property & MBWM_WINDOW_PROP_NAME)
+    {
+      MBWMList * l = client->decor;
+      while (l)
+	{
+	  MBWMDecor * decor = l->data;
+
+	  if (mb_wm_decor_get_type (decor) == MBWMDecorTypeNorth)
+	    {
+	      mb_wm_decor_mark_dirty (decor);
+	      break;
+	    }
+
+	  l = l->next;
+	}
+    }
+
+  if (property & MBWM_WINDOW_PROP_GEOMETRY)
+    mb_wm_client_geometry_mark_dirty (client);
+
+  return False;
 }
 
 MBWindowManagerClient* 	/* FIXME: rename to mb_wm_client_base/class_new ? */
