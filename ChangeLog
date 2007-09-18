@@ -1,3 +1,11 @@
+2007-09-18  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-app.c:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	Simplified fullscreen code.
+
 2007-09-17  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:

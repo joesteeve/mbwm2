@@ -70,7 +70,6 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   decor->resize   = resize;
   decor->repaint  = repaint;
   decor->userdata = userdata;
-  decor->visible  = True;
 }
 
 int
@@ -146,11 +145,6 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 		             (MBWMListForEachCB)mb_wm_decor_button_sync_window,
 			      NULL);
 
-      if (!decor->visible)
-	{
-	  XUnmapWindow(wm->xdpy, decor->xwin);
-	}
-
       return mb_wm_decor_reparent (decor);
     }
   else
@@ -170,11 +164,6 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
       mb_wm_util_list_foreach(decor->buttons,
 			      (MBWMListForEachCB)mb_wm_decor_button_sync_window,
 			      NULL);
-
-      if (decor->visible)
-	XMapWindow(wm->xdpy, decor->xwin);
-      else
-	XUnmapWindow(wm->xdpy, decor->xwin);
 
       if (mb_wm_util_untrap_x_errors())
 	return False;
@@ -279,7 +268,7 @@ mb_wm_decor_handle_repaint (MBWMDecor *decor)
   if (decor->parent_client == NULL)
     return;
 
-  if (decor->dirty && decor->visible)
+  if (decor->dirty)
     {
       if(decor->repaint)
 	decor->repaint(decor->parent_client->wmref, decor, decor->userdata);
@@ -313,28 +302,6 @@ mb_wm_decor_handle_resize (MBWMDecor *decor)
 
   /* Fire repaint callback */
   mb_wm_decor_mark_dirty (decor);
-}
-
-void
-mb_wm_decor_show (MBWMDecor *decor)
-{
-  if (decor->visible)
-    return;
-
-  decor->visible = True;
-  mb_wm_decor_mark_dirty (decor);
-  mb_wm_client_geometry_mark_dirty (decor->parent_client);
-}
-
-void
-mb_wm_decor_hide (MBWMDecor *decor)
-{
-  if (!decor->visible)
-    return;
-
-  decor->visible = False;
-  mb_wm_decor_mark_dirty (decor);
-  mb_wm_client_geometry_mark_dirty (decor->parent_client);
 }
 
 MBWMDecor*
@@ -712,7 +679,7 @@ mb_wm_decor_button_sync_window (MBWMDecorButton *button)
 	      button->geom.x,
 	      button->geom.y);
 
-  if (button->visible && button->decor->visible)
+  if (button->visible)
     XMapWindow(wm->xdpy, button->xwin);
   else
     XUnmapWindow(wm->xdpy, button->xwin);

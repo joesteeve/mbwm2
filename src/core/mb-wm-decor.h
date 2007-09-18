@@ -66,7 +66,6 @@ struct MBWMDecor
   MBWindowManagerClient *parent_client;
   MBGeometry             geom;
   Bool                   dirty;
-  Bool                   visible;
   MBWMDecorResizedFunc   resize;
   MBWMDecorRepaintFunc   repaint;
   void                  *userdata;
@@ -127,12 +126,6 @@ mb_wm_decor_attach (MBWMDecor             *decor,
 
 void
 mb_wm_decor_detach (MBWMDecor *decor);
-
-void
-mb_wm_decor_show (MBWMDecor *decor);
-
-void
-mb_wm_decor_hide (MBWMDecor *decor);
 
 typedef enum MBWMDecorButtonState
 {

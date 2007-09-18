@@ -180,24 +180,6 @@ mb_wm_client_base_show (MBWindowManagerClient *client)
 {
   /* mark dirty somehow */
 
-  /* Make sure that decors are hidden in fullscreen mode */
-  MBWMList * l = client->decor;
-  MBWMClientWindow * win = client->window;
-  MBWindowManager * wm = client->wmref;
-
-  while (l)
-    {
-      MBWMDecor * decor = l->data;
-
-      if ((win->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
-	mb_wm_decor_hide (decor);
-      else
-	mb_wm_decor_show (decor);
-
-      l = l->next;
-    }
-
-  mb_wm_client_display_sync (client);
 }
 
 static void
