@@ -597,13 +597,13 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   /* the decor assumes a reference, so add one for the caller */
   mb_wm_object_ref (obj);
 
-  mb_wm_x_event_handler_add (wm, ButtonPress,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonPress,
 			     (MBWMXEventFunc)mb_wm_decor_button_press_handler,
 			     button);
 
-  mb_wm_x_event_handler_add (wm, ButtonRelease,
-		            (MBWMXEventFunc)mb_wm_decor_button_release_handler,
-			     button);
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonRelease,
+		           (MBWMXEventFunc)mb_wm_decor_button_release_handler,
+			   button);
 }
 
 int

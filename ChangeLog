@@ -1,5 +1,17 @@
 2007-09-19  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/Makefile.am:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm.h:
+	Extracted main loop functionality from MBWindowManager object into
+	MBWMMainContext object. Fixed xeven handlers installation and
+	removal functions.
+	
+2007-09-19  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/managers/matchbox-window-manager-2-simple.c:

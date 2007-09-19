@@ -18,6 +18,7 @@ core_h  = mb-wm.h             	\
           mb-wm-keys.h        	\
           mb-wm-decor.h        	\
 	  mb-window-manager.h	\
+	  mb-wm-main-context.h	\
           xas.h
 
 core_c  = mb-wm-object.c      	\
@@ -34,6 +35,7 @@ core_c  = mb-wm-object.c      	\
           mb-wm-keys.c        	\
           mb-wm-decor.c       	\
 	  mb-window-manager.c	\
+	  mb-wm-main-context.c	\
           xas.c
 
 libmatchbox_window_manager_2_core_a_SOURCES = $(core_h) $(core_c)

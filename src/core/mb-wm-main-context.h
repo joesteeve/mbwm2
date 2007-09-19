@@ -1,0 +1,106 @@
+/*
+ *  Matchbox Window Manager II - A lightweight window manager not for the
+ *                               desktop.
+ *
+ *  Authored By Matthew Allum <mallum@o-hand.com>
+ *
+ *  Copyright (c) 2005 OpenedHand Ltd - http://o-hand.com
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ */
+
+#ifndef _HAVE_MB_MAIN_CONTEXT_H
+#define _HAVE_MB_MAIN_CONTEXT_H
+
+#include "mb-wm.h"
+
+#define MB_WM_MAIN_CONTEXT(c) ((MBWMMainContext*)(c))
+#define MB_WM_MAIN_CONTEXT_CLASS(c) ((MBWMMainContextClass*)(c))
+#define MB_WM_TYPE_MAIN_CONTEXT (mb_wm_main_context_class_type ())
+#define MB_WM_IS_MAIN_CONTEXT(c) (MB_WM_OBJECT_TYPE(c)==MB_WM_TYPE_MAIN_CONTEXT)
+
+typedef Bool (*MBWMMainContextXEventFunc) (XEvent * xev, void * userdata);
+
+typedef struct MBWMEventFuncs
+{
+  /* FIXME: figure our X wrap / unwrap mechanism */
+  MBWMList *map_notify;
+  MBWMList *unmap_notify;
+  MBWMList *map_request;
+  MBWMList *destroy_notify;
+  MBWMList *configure_request;
+  MBWMList *configure_notify;
+  MBWMList *key_press;
+  MBWMList *property_notify;
+  MBWMList *button_press;
+  MBWMList *button_release;
+
+  MBWMList *timeout;
+}
+MBWMEventFuncs;
+
+struct MBWMMainContext
+{
+  MBWMObject       parent;
+
+  MBWindowManager *wm;
+
+  MBWMEventFuncs   event_funcs;
+};
+
+struct MBWMMainContextClass
+{
+  MBWMObjectClass parent;
+};
+
+int
+mb_wm_main_context_class_type ();
+
+MBWMMainContext*
+mb_wm_main_context_new(MBWindowManager *wm);
+
+unsigned long
+mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
+					int              type,
+					MBWMXEventFunc   func,
+					void            *userdata);
+
+void
+mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
+					   int              type,
+					   unsigned long    id);
+
+unsigned long
+mb_wm_context_timeout_handler_add (MBWMMainContext            *ctx,
+				   int                         ms,
+				   MBWindowManagerTimeOutFunc  func,
+				   void                       *userdata);
+
+void
+mb_wm_main_context_timeout_handler_remove (MBWMMainContext *ctx,
+					   unsigned long    id);
+
+unsigned long
+mb_wm_main_context_fd_watch_add (MBWMMainContext           *ctx,
+				 MBWindowManagerFdWatchFunc func);
+
+void
+mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
+				    unsigned long    id);
+
+void
+mb_wm_main_context_loop (MBWMMainContext *ctx);
+
+Bool
+mb_wm_main_context_spin (MBWMMainContext *ctx);
+
+#endif

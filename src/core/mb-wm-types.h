@@ -96,6 +96,9 @@ typedef struct MBWMDecorButton             MBWMDecorButton;
 typedef struct MBWMDecorButtonClass        MBWMDecorButtonClass;
 typedef struct MBWMLayout                  MBWMLayout;
 typedef struct MBWMLayoutClass             MBWMLayoutClass;
+typedef struct MBWMMainContext             MBWMMainContext;
+typedef struct MBWMMainContextClass        MBWMMainContextClass;
+
 
 typedef enum MBWMClientType
 {
@@ -307,20 +310,33 @@ typedef Bool (*MBWindowManagerTimeOutFunc)
      (MBWindowManager         *wm,
       void                    *userdata);
 
+typedef Bool (*MBWindowManagerFdWatchFunc)
+     (MBWindowManager         *wm,
+      void                    *userdata);
+
 typedef struct MBWMXEventFuncInfo
 {
   MBWMXEventFunc func;
   void          *userdata;
+  unsigned long  id;
 }
 MBWMXEventFuncInfo;
 
 typedef struct MBWMTimeOutEventInfo
 {
-  int                        ms;
-
-  MBWindowManagerTimeOutFunc func;
+  int                         ms;
+  MBWindowManagerTimeOutFunc  func;
+  void                       *userdata;
+  unsigned long               id;
 }
 MBWMTimeOutEventInfo;
+
+typedef struct MBWMFdWatchInfo
+{
+  MBWindowManagerFdWatchFunc  func;
+  void                       *userdata;
+  unsigned long               id;
+}MBWMFdWatchInfo;
 
 typedef enum MBWMDecorButtonFlags
 {

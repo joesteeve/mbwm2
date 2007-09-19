@@ -28,24 +28,6 @@ typedef struct MBWindowManagerPriv    MBWindowManagerPriv;
 #define MB_WINDOW_MANAGER_CLASS(c) ((MBWindowManagerClass*)(c))
 #define MB_TYPE_WINDOW_MANAGER     (mb_wm_class_type ())
 
-typedef struct MBWindowManagerEventFuncs
-{
-  /* FIXME: figure our X wrap / unwrap mechanism */
-  MBWMList *map_notify;
-  MBWMList *unmap_notify;
-  MBWMList *map_request;
-  MBWMList *destroy_notify;
-  MBWMList *configure_request;
-  MBWMList *configure_notify;
-  MBWMList *key_press;
-  MBWMList *property_notify;
-  MBWMList *button_press;
-  MBWMList *button_release;
-
-  MBWMList *timeout;
-}
-MBWindowManagerEventFuncs;
-
 struct MBWindowManager
 {
   MBWMObject                   parent;
@@ -53,8 +35,6 @@ struct MBWindowManager
   Display                     *xdpy;
   unsigned int                 xdpy_width, xdpy_height;
   int                          xscreen;
-
-  MBWindowManagerEventFuncs    event_funcs;
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
@@ -78,6 +58,7 @@ struct MBWindowManager
 
   MBWMTheme                   *theme;
   MBWMLayout                  *layout;
+  MBWMMainContext             *main_ctx;
 };
 
 struct MBWindowManagerClass
