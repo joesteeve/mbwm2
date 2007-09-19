@@ -55,12 +55,13 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   client = (MBWindowManagerClientClass *)klass;
 
+  client->client_type = MBWMClientTypeDialog;
   client->geometry = mb_wm_client_dialog_request_geometry;
   client->stack = mb_wm_client_dialog_stack;
   client->show = mb_wm_client_dialog_show;
 }
 
- void
+void
 mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 			   int                    flags)
 {

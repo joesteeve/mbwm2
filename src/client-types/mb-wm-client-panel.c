@@ -15,6 +15,7 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 
   client = (MBWindowManagerClientClass *)klass;
 
+  client->client_type = MBWMClientTypePanel;
   client->realize  = mb_wm_client_panel_realize;
   client->geometry = mb_wm_client_panel_request_geometry;
 }

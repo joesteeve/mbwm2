@@ -97,9 +97,18 @@ typedef struct MBWMDecorButtonClass        MBWMDecorButtonClass;
 typedef struct MBWMLayout                  MBWMLayout;
 typedef struct MBWMLayoutClass             MBWMLayoutClass;
 
+typedef enum MBWMClientType
+{
+  MBWMClientTypeApp     = (1 << 0),
+  MBWMClientTypeDialog  = (1 << 1),
+  MBWMClientTypePanel   = (1 << 2),
+  MBWMClientTypeDesktop = (1 << 3),
+  MBWMClientTypeInput   = (1 << 4),
+
+  MBWMClientTypeLast    = MBWMClientTypeInput,
+} MBWMClientType;
 
 typedef unsigned long MBWMCookie;
-typedef int           MBWindowManagerClientType;
 
 typedef enum MBWMAtom
 {

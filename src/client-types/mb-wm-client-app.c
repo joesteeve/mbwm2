@@ -27,8 +27,8 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 
   MBWM_DBG("client->stack is %p", client->stack);
 
+  client->client_type = MBWMClientTypeApp;
   client->geometry = mb_wm_client_app_request_geometry;
-
   client_app->construct_buttons = mb_wm_client_app_construct_buttons;
 }
 

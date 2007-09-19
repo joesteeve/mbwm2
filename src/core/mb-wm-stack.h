@@ -64,25 +64,27 @@ mb_wm_stack_prepend_bottom (MBWindowManagerClient *client);
 
 void
 mb_wm_stack_move_client_above_type (MBWindowManagerClient *client, 
-				    int                    type_below);
+				    MBWMClientType         type_below);
 
 void
 mb_wm_stack_move_client_above_type (MBWindowManagerClient *client, 
-				    int                    type_below);
+				    MBWMClientType         type_below);
 
 void
-mb_wm_stack_cycle_by_type(MBWindowManager *w, int type);
+mb_wm_stack_cycle_by_type(MBWindowManager *w, MBWMClientType type);
 
 void
 mb_wm_stack_move_above_client (MBWindowManagerClient *client, 
 			       MBWindowManagerClient *client_below);
 
 MBWindowManagerClient*
-mb_wm_stack_get_highest_by_type(MBWindowManager *w, int wanted_type);
+mb_wm_stack_get_highest_by_type(MBWindowManager *w,
+				MBWMClientType wanted_type);
 
 
 MBWindowManagerClient*
-mb_wm_stack_get_lowest_by_type(MBWindowManager *w, int wanted_type);
+mb_wm_stack_get_lowest_by_type(MBWindowManager *w,
+			       MBWMClientType wanted_type);
 
 void
 mb_wm_stack_remove (MBWindowManagerClient *client);

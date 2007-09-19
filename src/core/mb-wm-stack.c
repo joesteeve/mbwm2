@@ -181,7 +181,7 @@ mb_wm_stack_prepend_bottom (MBWindowManagerClient *client)
 
 void
 mb_wm_stack_move_client_above_type (MBWindowManagerClient *client, 
-				    int                    type_below)
+				    MBWMClientType         type_below)
 {
   MBWindowManager       *wm = client->wmref;
   MBWindowManagerClient *highest_client = NULL;
@@ -208,13 +208,13 @@ mb_wm_stack_move_above_client (MBWindowManagerClient *client,
 
 MBWindowManagerClient*
 mb_wm_stack_get_highest_by_type (MBWindowManager       *wm, 
-				 int                    type)
+				 MBWMClientType         type)
 {
   MBWindowManagerClient *highest_client = NULL, *c = NULL;
 
   mb_wm_stack_enumerate(wm,c)
     {
-      if (MB_WM_OBJECT_TYPE(c) == type)
+      if (MB_WM_CLIENT_CLIENT_TYPE(c) == type)
 	highest_client = c;
     }
 
@@ -222,20 +222,20 @@ mb_wm_stack_get_highest_by_type (MBWindowManager       *wm,
 }
 
 MBWindowManagerClient*
-mb_wm_stack_get_lowest_by_type(MBWindowManager *w, int wanted_type)
+mb_wm_stack_get_lowest_by_type(MBWindowManager *w, MBWMClientType wanted_type)
 
 {
   MBWindowManagerClient *c = NULL;
 
   mb_wm_stack_enumerate(w,c)
-    if (MB_WM_OBJECT_TYPE(c) == wanted_type)
+    if (MB_WM_CLIENT_CLIENT_TYPE(c) == wanted_type)
       return c;
 
   return NULL;
 }
 
 void
-mb_wm_stack_cycle_by_type(MBWindowManager *wm, int type)
+mb_wm_stack_cycle_by_type(MBWindowManager *wm, MBWMClientType type)
 {
   MBWindowManagerClient *lowest, *highest;
 

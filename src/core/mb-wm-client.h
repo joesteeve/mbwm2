@@ -25,10 +25,10 @@
 #define MB_WM_CLIENT_CLASS(c) ((MBWindowManagerClientClass*)(c))
 #define MB_WM_TYPE_CLIENT (mb_wm_client_class_type ())
 #define MB_WM_CLIENT_XWIN(w) (w)->window->xwindow
+#define MB_WM_CLIENT_CLIENT_TYPE(c) \
+    (MB_WM_CLIENT_CLASS(MB_WM_OBJECT_GET_CLASS(c))->client_type)
 
 typedef void (*MBWindowManagerClientInitMethod) (MBWindowManagerClient *client);
-
-typedef unsigned int MBWMClientType;
 
 /* Clients hint to what stacking layer they exist in. By default all
  * transients to that client will also be stacked there.
@@ -105,6 +105,8 @@ typedef  void (*MBWMClientSyncMethod) (MBWindowManagerClient *client);
 struct MBWindowManagerClientClass
 {
   MBWMObjectClass              parent;
+
+  MBWMClientType               client_type;
 
   MBWMClientRealizeMethod      realize;	 /* create dpy resources / reparent */
   MBWMClientGeometryMethod     geometry; /* requests a gemetry change */

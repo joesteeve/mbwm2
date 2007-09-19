@@ -1,5 +1,24 @@
 2007-09-19  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-panel.c:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-stack.c:
+        * src/core/mb-wm-stack.h:
+        * src/core/mb-wm-types.h:
+	Addded orable MBWMClientType id to MBWindowManagerClientClass to
+	simplify processing of client stack.
+
+        * src/managers/Makefile.am:
+        * src/client-types/Makefile.am:
+        * src/client-types/mb-wm-client-input.c:
+        * src/client-types/mb-wm-client-input.h:
+
+	Added object skeleton for MBWMClientInput.
+	
+2007-09-19  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
         * src/core/mb-wm-types.h:
         * src/theme-engines/Makefile.am:
