@@ -1,5 +1,13 @@
 2007-09-19  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/managers/matchbox-window-manager-2-simple.c:
+	(mb_wm_set_layout):
+	Removed unnecessary sync parameter.
+
+2007-09-19  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c:
         * src/client-types/mb-wm-client-dialog.c:
         * src/client-types/mb-wm-client-input.c:

@@ -103,7 +103,7 @@ MBWindowManager *
 mb_wm_new (int argc, char **argv);
 
 void
-mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout, Bool sync);
+mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout);
 
 int
 mb_wm_class_type ();

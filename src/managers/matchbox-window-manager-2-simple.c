@@ -103,7 +103,7 @@ main(int argc, char **argv)
   if (layout == NULL)
     mb_wm_util_fatal_error("OOM?");
 
-  mb_wm_set_layout (wm, layout, False);
+  mb_wm_set_layout (wm, layout);
 
   mb_wm_keys_binding_add_with_spec (wm,
 				    "<alt>d",

@@ -1056,10 +1056,8 @@ mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show)
 }
 
 void
-mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout, Bool sync)
+mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 {
   wm->layout = layout;
-
-  if (sync)
-    mb_wm_sync (wm);
+  wm->need_display_sync = True;
 }
