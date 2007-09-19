@@ -2,6 +2,23 @@
 
         * src/client-types/mb-wm-client-app.c:
         * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-input.c:
+        * src/client-types/mb-wm-client-panel.c:
+	Made static some functions that should have been.
+
+	(mb_wm_client_input_request_geometry):
+	Made geometry frameless.
+	
+        * src/client-types/Makefile.am:
+        * src/managers/Makefile.am:
+        * src/client-types/mb-wm-client-desktop.c:
+        * src/client-types/mb-wm-client-desktop.h:
+	Added MBWMClientDesktop skeleton.
+
+2007-09-19  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-dialog.c:
         * src/client-types/mb-wm-client-panel.c:
         * src/core/mb-wm-client.h:
         * src/core/mb-wm-stack.c:

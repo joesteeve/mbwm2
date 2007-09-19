@@ -14,7 +14,7 @@ static void
 mb_wm_client_app_construct_buttons (MBWMClientApp * client,
 				    MBWMDecor * decor);
 
-void
+static void
 mb_wm_client_app_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -168,7 +168,7 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
   mb_wm_object_unref (MB_WM_OBJECT (button));
 }
 
-void
+static void
 mb_wm_client_app_init (MBWMObject *this, va_list vap)
 {
   MBWMClientApp            *client_app = MB_WM_CLIENT_APP (this);

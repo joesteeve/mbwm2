@@ -1,56 +1,54 @@
-#include "mb-wm-client-input.h"
+#include "mb-wm-client-desktop.h"
 
 #define FRAME_TITLEBAR_HEIGHT 20
 #define FRAME_EDGE_SIZE 3
 
 static Bool
-mb_wm_client_input_request_geometry (MBWindowManagerClient *client,
-				     MBGeometry            *new_geometry,
-				     MBWMClientReqGeomType  flags);
+mb_wm_client_desktop_request_geometry (MBWindowManagerClient *client,
+				       MBGeometry            *new_geometry,
+				       MBWMClientReqGeomType  flags);
 
 static void
-mb_wm_client_input_stack (MBWindowManagerClient *client, int flags);
+mb_wm_client_desktop_stack (MBWindowManagerClient *client, int flags);
 
 static void
-mb_wm_client_input_class_init (MBWMObjectClass *klass)
+mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
-  MBWMClientInputClass * client_input;
+  MBWMClientDesktopClass * client_desktop;
 
   MBWM_MARK();
 
   client     = (MBWindowManagerClientClass *)klass;
-  client_input = (MBWMClientInputClass *)klass;
+  client_desktop = (MBWMClientDesktopClass *)klass;
 
-  MBWM_DBG("client->stack is %p", client->stack);
-
-  client->client_type = MBWMClientTypeInput;
-  client->geometry = mb_wm_client_input_request_geometry;
-  client->stack = mb_wm_client_input_stack;
+  client->client_type = MBWMClientTypeDesktop;
+  client->geometry = mb_wm_client_desktop_request_geometry;
+  client->stack = mb_wm_client_desktop_stack;
 }
 
 static void
-mb_wm_client_input_destroy (MBWMObject *this)
+mb_wm_client_desktop_destroy (MBWMObject *this)
 {
-  MBWMClientInput * app = MB_WM_CLIENT_INPUT (this);
+  MBWMClientDesktop * app = MB_WM_CLIENT_DESKTOP (this);
 
 }
 
 static void
-mb_wm_client_input_init (MBWMObject *this, va_list vap)
+mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
 {
-  MBWMClientInput          *client_input = MB_WM_CLIENT_INPUT (this);
-  MBWindowManagerClient    *client       = MB_WM_CLIENT (this);
+  MBWMClientDesktop        *client_desktop = MB_WM_CLIENT_DESKTOP (this);
+  MBWindowManagerClient    *client         = MB_WM_CLIENT (this);
   MBWMDecor                *decor;
   MBWMDecorButton          *button;
   MBWindowManager          *wm = NULL;
-  MBWMClientInputClass     *inp_class;
+  MBWMClientDesktopClass   *inp_class;
 
-  inp_class = MB_WM_CLIENT_INPUT_CLASS (MB_WM_OBJECT_GET_CLASS (this));
+  inp_class = MB_WM_CLIENT_DESKTOP_CLASS (MB_WM_OBJECT_GET_CLASS (this));
 
 #if 0
   /*
-   * Property parsing not needed for now, as there are no ClientInput specific
+   * Property parsing not needed for now, as there are no ClientDesktop specific
    * properties
    */
   prop = va_arg(vap, MBWMObjectProp);
@@ -73,25 +71,25 @@ mb_wm_client_input_init (MBWMObject *this, va_list vap)
   if (!wm)
     return;
 
-  client->stacking_layer = MBWMStackLayerMid;
+  client->stacking_layer = MBWMStackLayerBottom;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
 }
 
 int
-mb_wm_client_input_class_type ()
+mb_wm_client_desktop_class_type ()
 {
   static int type = 0;
 
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWMClientInputClass),
-	sizeof (MBWMClientInput),
-	mb_wm_client_input_init,
-	mb_wm_client_input_destroy,
-	mb_wm_client_input_class_init
+	sizeof (MBWMClientDesktopClass),
+	sizeof (MBWMClientDesktop),
+	mb_wm_client_desktop_init,
+	mb_wm_client_desktop_destroy,
+	mb_wm_client_desktop_class_init
       };
       type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE, 0);
     }
@@ -100,9 +98,9 @@ mb_wm_client_input_class_type ()
 }
 
 static Bool
-mb_wm_client_input_request_geometry (MBWindowManagerClient *client,
-				     MBGeometry            *new_geometry,
-				     MBWMClientReqGeomType  flags)
+mb_wm_client_desktop_request_geometry (MBWindowManagerClient *client,
+				       MBGeometry            *new_geometry,
+				       MBWMClientReqGeomType  flags)
 {
   if (flags & MBWMClientReqGeomIsViaLayoutManager)
     {
@@ -123,20 +121,18 @@ mb_wm_client_input_request_geometry (MBWindowManagerClient *client,
 }
 
 static void
-mb_wm_client_input_stack (MBWindowManagerClient *client, int flags)
+mb_wm_client_desktop_stack (MBWindowManagerClient *client, int flags)
 {
   MBWM_MARK();
-
-  mb_wm_stack_move_client_above_type (client,
-				     MBWMClientTypeApp|MBWMClientTypeDesktop);
+  mb_wm_stack_move_top(client);
 }
 
 MBWindowManagerClient*
-mb_wm_client_input_new (MBWindowManager *wm, MBWMClientWindow *win)
+mb_wm_client_desktop_new (MBWindowManager *wm, MBWMClientWindow *win)
 {
   MBWindowManagerClient *client;
 
-  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_INPUT,
+  client = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_DESKTOP,
 					  MBWMObjectPropWm,           wm,
 					  MBWMObjectPropClientWindow, win,
 					  NULL));

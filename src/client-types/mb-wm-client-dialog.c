@@ -46,7 +46,7 @@ mb_wm_client_dialog_show (MBWindowManagerClient *client)
     parent_klass->show(client);
 }
 
-void
+static void
 mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -61,7 +61,7 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
   client->show = mb_wm_client_dialog_show;
 }
 
-void
+static void
 mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 			   int                    flags)
 {

@@ -8,7 +8,7 @@ mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
 				     MBGeometry            *new_geometry,
 				     MBWMClientReqGeomType  flags);
 
-void
+static void
 mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;

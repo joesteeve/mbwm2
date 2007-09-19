@@ -2,11 +2,12 @@ INCLUDES = 					       \
 	@MBWM_INCS@				       \
 	@MBWM_CFLAGS@
 
-CLIENT_LIBS =                                          \
-        @MBWM_CLIENT_LIBS@/libmb-wm-client-panel.a     \
-        @MBWM_CLIENT_LIBS@/libmb-wm-client-dialog.a    \
-        @MBWM_CLIENT_LIBS@/libmb-wm-client-app.a       \
-        @MBWM_CLIENT_LIBS@/libmb-wm-client-input.a
+CLIENT_LIBS =						\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-panel.a	\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-dialog.a	\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-app.a	\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-input.a	\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-desktop.a
 
 
 THEME_LIBS = @MBWM_THEME_LIBS@/libmb-theme.a
