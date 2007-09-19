@@ -435,7 +435,7 @@ mb_wm_decor_button_stock_button_pressed (MBWMDecorButton *button)
   switch (button->type)
     {
     case MBWMDecorButtonClose:
-      XDestroyWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+      mb_wm_client_deliver_delete (client);
       break;
     case MBWMDecorButtonMinimize:
       mb_wm_client_set_state (client,
