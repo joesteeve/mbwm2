@@ -61,9 +61,6 @@ struct MBWMThemeClass
 
   Bool (*theme_switch) (MBWMTheme       *theme,
 			const char      *detail);
-
-  Bool (*supports)     (MBWMTheme       *theme,
-			MBWMThemeCaps    capability);
 };
 
 struct MBWMTheme

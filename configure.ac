@@ -16,9 +16,13 @@ AC_CHECK_FUNCS([memset strdup strncasecmp])
 
 needed_pkgs="x11 "
 
-AC_ARG_ENABLE(cairo,
-  [  --disable-cairo         Disable Cairo graphics rendering support],
+AC_ARG_ENABLE(cairo-theme,
+  [  --disable-cairo-theme   Disable Cairo graphics rendering support],
   [use_cairo=$enableval], [use_cairo=yes])
+
+AC_ARG_ENABLE(png-theme,
+  [  --enable-png-theme      Enable PNG-based theme],
+  [png_theme=$enableval], [png_theme=no])
 
 AC_ARG_ENABLE(gtk,
   [  --disable-gtk           Disable GTK integration support],
@@ -43,10 +47,15 @@ fi
 
 PKG_CHECK_MODULES(MBWM, $needed_pkgs)
 
-AM_CONDITIONAL(USE_CAIRO, test "x$use_cairo" = "xyes")
+AM_CONDITIONAL(THEME_CAIRO, [test "x$use_cairo" = "xyes"])
 if test "$use_cairo" = yes; then
   AC_DEFINE(USE_CAIRO, 1, [Use cairo for theme rendering])
 fi
+
+AM_CONDITIONAL(THEME_PNG, [test "x$png_theme" = "xyes"])
+
+# only build simple theme if cairo theme disabled
+AM_CONDITIONAL(THEME_SIMPLE, [test "x$use_cairo" != "xyes"])
 
 AM_CONDITIONAL(USE_GTK, test "x$use_gtk" = "xyes")
 if test "$use_gtk" = yes; then
@@ -84,7 +93,8 @@ echo "
         install prefix:         ${prefix}
         source code location:   ${srcdir}
 
-	Cairo support:          ${use_cairo}
+	Cairo theme:            ${use_cairo}
+	PNG theme:              ${png_theme}
 	GTK integration:	${use_gtk}
 	Debugging output:       ${want_debug}
 "

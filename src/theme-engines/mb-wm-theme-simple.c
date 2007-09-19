@@ -8,9 +8,6 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
 static Bool
 mb_wm_theme_simple_switch (MBWMTheme *theme, const char *detail);
 
-static Bool
-mb_wm_theme_simple_supports (MBWMTheme *theme, MBWMThemeCaps capability);
-
 static void
 mb_wm_theme_simple_class_init (MBWMObjectClass *klass)
 {
@@ -19,7 +16,6 @@ mb_wm_theme_simple_class_init (MBWMObjectClass *klass)
   t_class->paint_decor  = mb_wm_theme_simple_paint_decor;
   t_class->paint_button = mb_wm_theme_simple_paint_button;
   t_class->theme_switch = mb_wm_theme_simple_switch;
-  t_class->supports     = mb_wm_theme_simple_supports;
 }
 
 static void
@@ -61,7 +57,7 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   MBWindowManagerClient *client;
   Window                 xwin;
   MBWindowManager       *wm = theme->wm;
-  
+
   client = mb_wm_decor_get_parent (decor);
   xwin = mb_wm_decor_get_x_window (decor);
 
@@ -91,13 +87,4 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 static Bool
 mb_wm_theme_simple_switch (MBWMTheme *theme, const char *detail)
 {
-}
-
-static Bool
-mb_wm_theme_simple_supports (MBWMTheme *theme, MBWMThemeCaps capability)
-{
-  if (!theme)
-    return False;
-  
-  return ((capability & theme->caps != False));
 }

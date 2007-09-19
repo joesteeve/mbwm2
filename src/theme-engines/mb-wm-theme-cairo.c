@@ -29,9 +29,6 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
 static Bool
 mb_wm_theme_cairo_switch (MBWMTheme *theme, const char *detail);
 
-static Bool
-mb_wm_theme_cairo_supports (MBWMTheme *theme, MBWMThemeCaps capability);
-
 static void
 mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
 {
@@ -40,7 +37,6 @@ mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
   t_class->paint_decor  = mb_wm_theme_cairo_paint_decor;
   t_class->paint_button = mb_wm_theme_cairo_paint_button;
   t_class->theme_switch = mb_wm_theme_cairo_switch;
-  t_class->supports     = mb_wm_theme_cairo_supports;
 }
 
 static void
@@ -354,14 +350,5 @@ static Bool
 mb_wm_theme_cairo_switch (MBWMTheme   *theme,
 			  const char  *detail)
 {
-}
-
-static Bool
-mb_wm_theme_cairo_supports (MBWMTheme *theme, MBWMThemeCaps capability)
-{
-  if (theme)
-    return False;
-
-  return ((capability & theme->caps != False));
 }
 

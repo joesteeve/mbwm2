@@ -108,14 +108,10 @@ mb_wm_theme_switch (MBWMTheme *theme, const char *detail)
 Bool
 mb_wm_theme_supports (MBWMTheme *theme, MBWMThemeCaps capability)
 {
-  if (!theme)
+  if (theme)
     return False;
-  
-  MBWMThemeClass *klass =
-    MB_WM_THEME_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(theme)));
 
-  if (klass->supports)
-    klass->supports (theme, capability);
+  return ((capability & theme->caps != False));
 }
 
 MBWMTheme *

@@ -1,5 +1,21 @@
 2007-09-19  Tomas Frydrych  <tf@o-hand.com>
 
+        * configure.ac:
+        * src/core/mb-wm-types.h:
+        * src/theme-engines/Makefile.am:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-simple.c:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-png.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+
+	Renambed --disable-cairo to --disable-theme-cairo,
+	Added --enable-theme-png,
+	Added object skeleton for MBWMThemePng.
+
+2007-09-19  Tomas Frydrych  <tf@o-hand.com>
+
 	* src/core/mb-wm-decor.c:
 	(mb_wm_decor_button_stock_button_pressed):
 	Handle Close button gracefully.
