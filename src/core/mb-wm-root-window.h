@@ -48,4 +48,7 @@ mb_wm_root_window_get (MBWindowManager *wm);
 int
 mb_wm_root_window_class_type ();
 
+int
+mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e);
+
 #endif

@@ -168,6 +168,13 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
   switch (xev->type)
     {
+    case ClientMessage:
+      if (xev->xany.window == wm->root_win->xwindow)
+	{
+	  mb_wm_root_window_handle_message (wm->root_win,
+					    (XClientMessageEvent *)xev);
+	}
+      break;
     case Expose:
       break;
     case MapRequest:

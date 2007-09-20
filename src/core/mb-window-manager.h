@@ -52,7 +52,6 @@ struct MBWindowManager
   int                          client_type_cnt;
   int                          stack_n_clients;
   MBWMRootWindow              *root_win;
-  int                          n_active_ping_clients;
 
   const char                  *sm_client_id;
 

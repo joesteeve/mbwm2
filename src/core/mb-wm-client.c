@@ -44,6 +44,10 @@ mb_wm_client_destroy (MBWMObject *obj)
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
   MBWMList * l = client->decor;
 
+  if (client->ping_cb_id)
+    mb_wm_main_context_timeout_handler_remove (client->wmref->main_ctx,
+					       client->ping_cb_id);
+
   mb_wm_display_sync_queue (client->wmref);
 
   mb_wm_object_unref (MB_WM_OBJECT (client->window));
@@ -93,10 +97,10 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 
   client = MB_WM_CLIENT(obj);
   client->priv   = mb_wm_util_malloc0(sizeof(MBWindowManagerClientPriv));
-  client->pings_pending = -1;
 
   client->window        = win;
   client->wmref         = wm;
+  client->ping_timeout  = 1000;
 
   /* sync with client window */
   mb_wm_client_on_property_change (win, MBWM_WINDOW_PROP_ALL, client);
@@ -511,28 +515,54 @@ mb_wm_client_deliver_wm_protocol (MBWindowManagerClient *client,
 }
 
 static void
-mb_wm_client_ping_start (MBWindowManagerClient *client)
+mb_wm_client_deliver_ping_protocol (MBWindowManagerClient *client)
 {
-#ifndef NO_PING
-  if (client->pings_pending == -1)
-    {
-      client->pings_pending       = 0;
-      client->pings_sent          = 0;
-      client->wmref->n_active_ping_clients++;
-    }
-#endif
+  MBWindowManager *wm = client->wmref;
+
+  mb_wm_client_deliver_message (client,
+				wm->atoms[MBWM_ATOM_WM_PROTOCOLS],
+				wm->atoms[MBWM_ATOM_NET_WM_PING],
+				CurrentTime,
+				client->window->xwindow,
+				0, 0);
+}
+
+static Bool
+mb_wm_client_ping_timeout_cb (void * userdata)
+{
+  MBWindowManagerClient * client = userdata;
+
+  mb_wm_client_shutdown (client);
+  return True;
 }
 
 static void
+mb_wm_client_ping_start (MBWindowManagerClient *client)
+{
+  MBWindowManager * wm = client->wmref;
+  MBWMMainContext * ctx = wm->main_ctx;
+
+  if (client->ping_cb_id)
+    return;
+
+  client->ping_cb_id =
+    mb_wm_main_context_timeout_handler_add (ctx, client->ping_timeout,
+					    mb_wm_client_ping_timeout_cb,
+					    client);
+
+  mb_wm_client_deliver_ping_protocol (client);
+}
+
+void
 mb_wm_client_ping_stop (MBWindowManagerClient *client)
 {
-#ifndef NO_PING
-  if (client->pings_pending != -1)
-    {
-      client->pings_pending = -1;
-      client->wmref->n_active_ping_clients--;
-    }
-#endif
+  MBWMMainContext * ctx = client->wmref->main_ctx;
+
+  if (!client->ping_cb_id)
+    return;
+
+  mb_wm_main_context_timeout_handler_remove (ctx, client->ping_cb_id);
+  client->ping_cb_id = 0;
 }
 
 void
@@ -573,8 +603,7 @@ mb_wm_client_deliver_delete (MBWindowManagerClient *client)
       mb_wm_client_deliver_wm_protocol (client,
 				wm->atoms[MBWM_ATOM_WM_DELETE_WINDOW]);
 
-      if (client->pings_pending == -1)
-	mb_wm_client_ping_start (client);
+      mb_wm_client_ping_start (client);
     }
   else
     mb_wm_client_shutdown (client);
@@ -661,3 +690,10 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
   if (activate)
     mb_wm_activate_client(wm, client);
 }
+
+Bool
+mb_wm_client_ping_in_progress (MBWindowManagerClient * client)
+{
+  return (client->ping_cb_id != 0);
+}
+

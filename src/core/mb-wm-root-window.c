@@ -21,6 +21,8 @@
 #include "mb-wm.h"
 
 #include "../theme-engines/mb-wm-theme.h"
+#include "../client-types/mb-wm-client-dialog.h"
+#include "../client-types/mb-wm-client-app.h"
 
 static void
 mb_wm_root_window_class_init (MBWMObjectClass *klass)
@@ -277,7 +279,7 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   XSync(wm->xdpy, False);
 }
 
-static int
+int
 mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 {
   MBWindowManager       *wm = win->wm;
@@ -298,7 +300,7 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
   else if (e->message_type == wm->atoms[MBWM_ATOM_WM_PROTOCOLS]
 	   && e->data.l[0] == wm->atoms[MBWM_ATOM_NET_WM_PING])
     {
-      if ((c = mb_wm_managed_client_from_xwindow(wm, e->data.l[1])) != NULL)
+      if ((c = mb_wm_managed_client_from_xwindow(wm, e->data.l[2])) != NULL)
 	mb_wm_handle_ping_reply (wm, c);
       return 1;
     }

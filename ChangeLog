@@ -1,5 +1,16 @@
 2007-09-20  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-root-window.h:
+	Implemented _NET_WM_PING protocol.
+	
+2007-09-20  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c
         * src/core/mb-wm-decor.c
         * src/core/mb-wm-main-context.c

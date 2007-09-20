@@ -678,16 +678,16 @@ mb_wm_handle_ping_reply (MBWindowManager * wm, MBWindowManagerClient *c)
   if (c == NULL)
     return;
 
-  if (c->not_responding)
+  if (mb_wm_client_ping_in_progress (c))
     {
       MBWindowManagerClass  *wm_klass;
+
+      mb_wm_client_ping_stop (c);
 
       wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
       if (wm_klass->client_responding)
 	wm_klass->client_responding (wm, c);
-
-      c->not_responding = False;
     }
 }
 
@@ -701,13 +701,10 @@ mb_wm_handle_hang_client (MBWindowManager * wm, MBWindowManagerClient *c)
 
   wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
-  if (c->kill_attempted ||
-      !wm_klass->client_hang || !wm_klass->client_hang (wm, c))
+  if (!wm_klass->client_hang || !wm_klass->client_hang (wm, c))
     {
       mb_wm_client_shutdown (c);
     }
-  else
-    c->kill_attempted = True;
 }
 
 void

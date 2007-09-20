@@ -140,18 +140,14 @@ struct MBWindowManagerClient
 
   int                          skip_unmaps;
 
-  int                          pings_pending;
-  int                          pings_sent;
-
-  Bool                         not_responding;
-  Bool                         kill_attempted;
-
   /* To add focus, coverage */
 
   /* ### Private ### */
 
   MBWindowManagerClientPriv   *priv;
   unsigned long                sig_prop_change_id;
+  unsigned long                ping_cb_id;
+  int                          ping_timeout;
 };
 
 #define mb_wm_client_frame_west_width(c) \
@@ -279,5 +275,11 @@ void
 mb_wm_client_set_state (MBWindowManagerClient *client,
 			Atom state,
 			MBWMClientWindowStateChange state_op);
+
+Bool
+mb_wm_client_ping_in_progress (MBWindowManagerClient * client);
+
+void
+mb_wm_client_ping_stop (MBWindowManagerClient *client);
 
 #endif
