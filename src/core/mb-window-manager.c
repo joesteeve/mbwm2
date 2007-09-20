@@ -393,6 +393,81 @@ mb_wm_sync (MBWindowManager *wm)
   wm->need_display_sync = False;
 }
 
+static void
+mb_wm_update_root_win_lists (MBWindowManager *wm)
+{
+  Window root_win = wm->root_win->xwindow;
+
+  if (!mb_wm_stack_empty(wm))
+    {
+      Window                *wins = NULL;
+      Window                *app_wins = NULL;
+      int                    app_win_cnt = 0;
+      int                    cnt = 0;
+      int                    stack_size = mb_wm_stack_size (wm);
+      MBWindowManagerClient *c;
+      MBWMList              *l;
+
+      wins     = mb_wm_util_malloc0 (sizeof(Window) * stack_size);
+      app_wins = mb_wm_util_malloc0 (sizeof(Window) * stack_size);
+
+      mb_wm_stack_enumerate (wm,c)
+	{
+	  wins[cnt++] = c->window->xwindow;
+	  if (MB_WM_IS_CLIENT_APP (c))
+	    app_wins[app_win_cnt++] = c->window->xwindow;
+	}
+
+      XChangeProperty(wm->xdpy, root_win,
+		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST_STACKING],
+		      XA_WINDOW, 32, PropModeReplace,
+		      (unsigned char *)wins, stack_size);
+
+      XChangeProperty(wm->xdpy, root_win,
+		      wm->atoms[MBWM_ATOM_MB_APP_WINDOW_LIST_STACKING],
+		      XA_WINDOW, 32, PropModeReplace,
+		      (unsigned char *)app_wins, app_win_cnt);
+
+      free(app_wins);
+
+      /* Update _NET_CLIENT_LIST but with 'age' order rather than stacking */
+      cnt = 0;
+      l = wm->clients;
+      while (l)
+	{
+	  c = l->data;
+	  wins[cnt++] = c->window->xwindow;
+
+	  l = l->next;
+	}
+
+      XChangeProperty(wm->xdpy, root_win,
+		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST] ,
+		      XA_WINDOW, 32, PropModeReplace,
+		      (unsigned char *)wins, stack_size);
+
+      free(wins);
+    }
+  else
+    {
+      /* No managed windows */
+      XChangeProperty(wm->xdpy, root_win,
+		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST_STACKING] ,
+		      XA_WINDOW, 32, PropModeReplace,
+		      NULL, 0);
+
+      XChangeProperty(wm->xdpy, root_win,
+		      wm->atoms[MBWM_ATOM_MB_APP_WINDOW_LIST_STACKING],
+		      XA_WINDOW, 32, PropModeReplace,
+		      NULL, 0);
+
+      XChangeProperty(wm->xdpy, root_win, wm
+		      ->atoms[MBWM_ATOM_NET_CLIENT_LIST] ,
+		      XA_WINDOW, 32, PropModeReplace,
+		      NULL, 0);
+    }
+}
+
 void
 mb_wm_manage_client (MBWindowManager       *wm,
 		     MBWindowManagerClient *client)
@@ -408,6 +483,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
   mb_wm_stack_append_top (client);
   mb_wm_client_stack(client, 0);
+  mb_wm_update_root_win_lists (wm);
 
   /* set flags to map - should this go elsewhere? */
 
@@ -423,6 +499,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
 
   mb_wm_stack_remove (client);
+  mb_wm_update_root_win_lists (wm);
 
   mb_wm_object_unref (MB_WM_OBJECT(client));
 

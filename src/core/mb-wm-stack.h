@@ -47,7 +47,7 @@
  ((w)->stack_bottom == NULL)
 
 #define mb_wm_stack_size(w) \
- (w)->stack_n_items
+ (w)->stack_n_clients
 
 void
 mb_wm_stack_ensure (MBWindowManager *wm);

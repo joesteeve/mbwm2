@@ -202,6 +202,8 @@ typedef enum MBWMAtom
 
   MBWM_ATOM_CM_TRANSLUCENCY,
 
+  MBWM_ATOM_MB_APP_WINDOW_LIST_STACKING,
+
   /* FIXME: Custom/Unused to sort out
    *
    * MB_WM_STATE_DOCK_TITLEBAR,

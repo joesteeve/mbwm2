@@ -2,6 +2,16 @@
 
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-stack.h:
+        * src/core/mb-wm-types.h:
+	Setting of _NET_CLIENT_LIST, _NET_CLIENT_LIST_STACKING and
+	_MB_APP_WINDOW_LIST_STACKING root window props.
+	
+2007-09-20  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
         * src/core/mb-wm-client.c:
         * src/core/mb-wm-client.h:
         * src/core/mb-wm-main-context.c:
