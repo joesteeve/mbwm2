@@ -106,15 +106,12 @@ mb_wm_new (int argc, char **argv)
   return wm;
 }
 
-static void
-mb_wm_handle_x_event (XEvent          *xev,
-		      MBWindowManager *wm);
-
 Bool
-test_key_press (MBWindowManager *wm,
-		XKeyEvent       *xev,
+test_key_press (XKeyEvent       *xev,
 		void            *userdata)
 {
+  MBWindowManager *wm = (MBWindowManager*)userdata;
+
   mb_wm_keys_press (wm,
 		    XKeycodeToKeysym(wm->xdpy, xev->keycode, 0),
 		    xev->state);
@@ -123,10 +120,10 @@ test_key_press (MBWindowManager *wm,
 }
 
 Bool
-test_destroy_notify (MBWindowManager      *wm,
-		     XDestroyWindowEvent  *xev,
+test_destroy_notify (XDestroyWindowEvent  *xev,
 		     void                 *userdata)
 {
+  MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client = NULL;
 
   MBWM_MARK();
@@ -143,10 +140,10 @@ test_destroy_notify (MBWindowManager      *wm,
 }
 
 Bool
-test_unmap_notify (MBWindowManager      *wm,
-		   XUnmapEvent          *xev,
+test_unmap_notify (XUnmapEvent          *xev,
 		   void                 *userdata)
 {
+  MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client = NULL;
 
   MBWM_MARK();
@@ -169,10 +166,10 @@ test_unmap_notify (MBWindowManager      *wm,
 }
 
 static Bool
-mb_wm_handle_property_notify (MBWindowManager         *wm,
-			      XPropertyEvent          *xev,
+mb_wm_handle_property_notify (XPropertyEvent          *xev,
 			      void                    *userdata)
 {
+  MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client;
   int flag = 0;
 
@@ -207,10 +204,10 @@ mb_wm_handle_property_notify (MBWindowManager         *wm,
 }
 
 static  Bool
-mb_wm_handle_config_request (MBWindowManager        *wm,
-			     XConfigureRequestEvent *xev,
+mb_wm_handle_config_request (XConfigureRequestEvent *xev,
 			     void                   *userdata)
 {
+  MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client;
   unsigned long          value_mask;
   int                    req_x, req_y, req_w, req_h;
@@ -268,10 +265,10 @@ mb_wm_handle_config_request (MBWindowManager        *wm,
 }
 
 static Bool
-mb_wm_handle_map_request (MBWindowManager   *wm,
-			  XMapRequestEvent  *xev,
+mb_wm_handle_map_request (XMapRequestEvent  *xev,
 			  void              *userdata)
 {
+  MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client = NULL;
   MBWindowManagerClass  *wm_class =
     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
@@ -581,27 +578,27 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, MapRequest,
 			     (MBWMXEventFunc)mb_wm_handle_map_request,
-			     NULL);
+			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, ConfigureRequest,
 			     (MBWMXEventFunc)mb_wm_handle_config_request,
-			     NULL);
+			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, PropertyNotify,
 			     (MBWMXEventFunc)mb_wm_handle_property_notify,
-			     NULL);
+			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, DestroyNotify,
 			     (MBWMXEventFunc)test_destroy_notify,
-			     NULL);
+			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, UnmapNotify,
 			     (MBWMXEventFunc)test_unmap_notify,
-			     NULL);
+			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, KeyPress,
 			     (MBWMXEventFunc)test_key_press,
-			     NULL);
+			     wm);
 
   mb_wm_keys_init(wm);
 

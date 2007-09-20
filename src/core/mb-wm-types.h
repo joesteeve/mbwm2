@@ -252,66 +252,55 @@ struct MBWMKeyBinding
 /* Event Callbacks */
 
 typedef Bool (*MBWMXEventFunc)
-     (MBWindowManager   *wm,
-      void              *xev,
+     (void              *xev,
       void              *userdata);
 
 typedef Bool (*MBWindowManagerMapNotifyFunc)
-     (MBWindowManager   *wm,
-      XMapEvent         *xev,
+     (XMapEvent         *xev,
       void              *userdata);
 
 typedef Bool (*MBWindowManagerMapRequestFunc)
-     (MBWindowManager   *wm,
-      XMapRequestEvent  *xev,
+     (XMapRequestEvent  *xev,
       void              *userdata);
 
 typedef Bool (*MBWindowManagerUnmapNotifyFunc)
-     (MBWindowManager   *wm,
-      XUnmapEvent       *xev,
+     (XUnmapEvent       *xev,
       void              *userdata);
 
 typedef Bool (*MBWindowManagerDestroyNotifyFunc)
-     (MBWindowManager      *wm,
-      XDestroyWindowEvent  *xev,
+     (XDestroyWindowEvent  *xev,
       void                 *userdata);
 
 typedef Bool (*MBWindowManagerConfigureNotifyFunc)
-     (MBWindowManager      *wm,
-      XConfigureEvent      *xev,
+     (XConfigureEvent      *xev,
       void                 *userdata);
 
 typedef Bool (*MBWindowManagerConfigureRequestFunc)
-     (MBWindowManager         *wm,
-      XConfigureRequestEvent  *xev,
+     (XConfigureRequestEvent  *xev,
       void                    *userdata);
 
 typedef Bool (*MBWindowManagerKeyPressFunc)
-     (MBWindowManager         *wm,
-      XKeyEvent               *xev,
+     (XKeyEvent               *xev,
       void                    *userdata);
 
 typedef Bool (*MBWindowManagerPropertyNotifyFunc)
-     (MBWindowManager         *wm,
-      XPropertyEvent          *xev,
+     (XPropertyEvent          *xev,
       void                    *userdata);
 
 typedef Bool (*MBWindowManagerButtonPressFunc)
-     (MBWindowManager         *wm,
-      XButtonEvent            *xev,
+     (XButtonEvent            *xev,
       void                    *userdata);
 
 typedef Bool (*MBWindowManagerButtonReleaseFunc)
-     (MBWindowManager         *wm,
-      XButtonEvent            *xev,
+     (XButtonEvent            *xev,
       void                    *userdata);
 
 typedef Bool (*MBWindowManagerTimeOutFunc)
-     (MBWindowManager         *wm,
-      void                    *userdata);
+     (void                    *userdata);
 
 typedef Bool (*MBWindowManagerFdWatchFunc)
-     (MBWindowManager         *wm,
+     (int                      fd,
+      int                      events,
       void                    *userdata);
 
 typedef struct MBWMXEventFuncInfo
@@ -322,21 +311,8 @@ typedef struct MBWMXEventFuncInfo
 }
 MBWMXEventFuncInfo;
 
-typedef struct MBWMTimeOutEventInfo
-{
-  int                         ms;
-  MBWindowManagerTimeOutFunc  func;
-  void                       *userdata;
-  unsigned long               id;
-}
-MBWMTimeOutEventInfo;
-
-typedef struct MBWMFdWatchInfo
-{
-  MBWindowManagerFdWatchFunc  func;
-  void                       *userdata;
-  unsigned long               id;
-}MBWMFdWatchInfo;
+typedef struct MBWMTimeOutEventInfo MBWMTimeOutEventInfo;
+typedef struct MBWMFdWatchInfo      MBWMFdWatchInfo;
 
 typedef enum MBWMDecorButtonFlags
 {

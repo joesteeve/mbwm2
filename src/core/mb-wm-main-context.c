@@ -1,5 +1,12 @@
 #include "mb-wm-main-context.h"
 
+#include <sys/time.h>
+#include <poll.h>
+#include <limits.h>
+#include <fcntl.h>
+
+#define MBWM_CTX_MAX_TIMEOUT 100
+
 #ifdef MBWM_WANT_DEBUG
 
 static const char *MBWMDEBUGEvents[] = {
@@ -42,6 +49,29 @@ static const char *MBWMDEBUGEvents[] = {
 
 #endif
 
+static Bool
+mb_wm_main_context_check_timeouts (MBWMMainContext *ctx);
+
+static Bool
+mb_wm_main_context_check_fd_watches (MBWMMainContext * ctx);
+
+struct MBWMTimeOutEventInfo
+{
+  int                         ms;
+  MBWindowManagerTimeOutFunc  func;
+  void                       *userdata;
+  unsigned long               id;
+  struct timeval              triggers;
+
+};
+
+struct MBWMFdWatchInfo{
+  int                         fd;
+  int                         events;
+  MBWindowManagerFdWatchFunc  func;
+  void                       *userdata;
+  unsigned long               id;
+};
 
 static void
 mb_wm_main_context_class_init (MBWMObjectClass *klass)
@@ -145,7 +175,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerMapRequestFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XMapRequestEvent*)&xev->xmaprequest, XE_ITER_GET_DATA(iter)))
+	     ((XMapRequestEvent*)&xev->xmaprequest, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -154,7 +184,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerMapNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XMapEvent*)&xev->xmap, XE_ITER_GET_DATA(iter)))
+	     ((XMapEvent*)&xev->xmap, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -163,7 +193,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerUnmapNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XUnmapEvent*)&xev->xunmap, XE_ITER_GET_DATA(iter)))
+	     ((XUnmapEvent*)&xev->xunmap, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -172,7 +202,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerDestroyNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XDestroyWindowEvent*)&xev->xdestroywindow, XE_ITER_GET_DATA(iter)))
+	     ((XDestroyWindowEvent*)&xev->xdestroywindow, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
       break;
     case ConfigureNotify:
@@ -180,7 +210,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	  ((MBWindowManagerConfigureNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XConfigureEvent*)&xev->xconfigure, XE_ITER_GET_DATA(iter)))
+	     ((XConfigureEvent*)&xev->xconfigure, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -189,7 +219,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerConfigureRequestFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XConfigureRequestEvent*)&xev->xconfigurerequest, XE_ITER_GET_DATA(iter)))
+	     ((XConfigureRequestEvent*)&xev->xconfigurerequest, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -198,7 +228,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerKeyPressFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XKeyEvent*)&xev->xkey, XE_ITER_GET_DATA(iter)))
+	     ((XKeyEvent*)&xev->xkey, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -207,7 +237,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerPropertyNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XPropertyEvent*)&xev->xproperty, XE_ITER_GET_DATA(iter)))
+	     ((XPropertyEvent*)&xev->xproperty, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
 
       break;
@@ -216,7 +246,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerButtonPressFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XButtonEvent*)&xev->xbutton, XE_ITER_GET_DATA(iter)))
+	     ((XButtonEvent*)&xev->xbutton, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
       break;
     case ButtonRelease:
@@ -224,7 +254,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
       while (iter &&
 	     ((MBWindowManagerButtonReleaseFunc)XE_ITER_GET_FUNC(iter))
-	     (wm, (XButtonEvent*)&xev->xbutton, XE_ITER_GET_DATA(iter)))
+	     ((XButtonEvent*)&xev->xbutton, XE_ITER_GET_DATA(iter)))
 	iter = iter->next;
       break;
 
@@ -236,13 +266,13 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
   return False;
 }
 
-Bool
-mb_wm_main_context_spin (MBWMMainContext *ctx)
+static Bool
+mb_wm_main_context_spin_xevent (MBWMMainContext *ctx, Bool block)
 {
   MBWindowManager * wm = ctx->wm;
   XEvent xev;
 
-  if (!XEventsQueued (wm->xdpy, QueuedAfterReading))
+  if (!block && !XEventsQueued (wm->xdpy, QueuedAfterFlush))
     return False;
 
   XNextEvent(wm->xdpy, &xev);
@@ -256,13 +286,26 @@ void
 mb_wm_main_context_loop(MBWMMainContext *ctx)
 {
   MBWindowManager * wm = ctx->wm;
-  XEvent xev;
 
   while (True)
     {
-      XNextEvent(wm->xdpy, &xev);
+      Bool sources;
 
-      mb_wm_main_context_handle_x_event (&xev, ctx);
+      sources  = mb_wm_main_context_check_timeouts (ctx);
+      sources |= mb_wm_main_context_check_fd_watches (ctx);
+
+      if (!sources)
+	{
+	  /* No timeouts, idles, etc. -- wait for next
+	   * X event
+	   */
+	  mb_wm_main_context_spin_xevent (ctx, True);
+	}
+      else
+	{
+	  /* Process any pending xevents */
+	  while (mb_wm_main_context_spin_xevent (ctx, False));
+	}
     }
 }
 
@@ -410,14 +453,95 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
     }
 }
 
+static void
+mb_wm_main_context_timeout_setup (MBWMTimeOutEventInfo * tinfo,
+				  struct timeval       * current_time)
+{
+  int sec = tinfo->ms / 1000;
+  int usec = (tinfo->ms - sec *1000) * 1000;
+
+  sec  += current_time->tv_sec;
+  usec += current_time->tv_usec;
+
+  if (usec >= 1000000)
+    {
+      usec -= 1000000;
+      sec++;
+    }
+
+  tinfo->triggers.tv_sec  = sec;
+  tinfo->triggers.tv_usec = usec;
+}
+
+static Bool
+mb_wm_main_context_handle_timeout (MBWMTimeOutEventInfo *tinfo,
+				   struct timeval       *current_time)
+{
+  if (tinfo->triggers.tv_sec < current_time->tv_sec ||
+      (tinfo->triggers.tv_sec == current_time->tv_sec &&
+       tinfo->triggers.tv_usec <= current_time->tv_usec))
+    {
+      if (tinfo->func (tinfo->userdata))
+	return True;
+
+      mb_wm_main_context_timeout_setup (tinfo, current_time);
+    }
+
+  return False;
+}
+
+/*
+ * Returns false if no timeouts are present
+ */
+static Bool
+mb_wm_main_context_check_timeouts (MBWMMainContext *ctx)
+{
+  MBWMList * l = ctx->event_funcs.timeout;
+  struct timeval current_time;
+
+  if (!l)
+    return False;
+
+  gettimeofday (&current_time, NULL);
+
+  while (l)
+    {
+      MBWMTimeOutEventInfo * tinfo = l->data;
+
+      if (mb_wm_main_context_handle_timeout (tinfo, &current_time))
+	{
+	  MBWMList * prev = l->prev;
+	  MBWMList * next = l->next;
+
+	  if (prev)
+	    prev->next = next;
+	  else
+	    ctx->event_funcs.timeout = next;
+
+	  if (next)
+	    next->prev = prev;
+
+	  free (tinfo);
+	  free (l);
+
+	  l = next;
+	}
+      else
+	l = l->next;
+    }
+
+  return True;
+}
+
 unsigned long
-mb_wm_context_timeout_handler_add (MBWMMainContext            *ctx,
-				   int                         ms,
-				   MBWindowManagerTimeOutFunc  func,
-				   void                       *userdata)
+mb_wm_main_context_timeout_handler_add (MBWMMainContext            *ctx,
+					int                         ms,
+					MBWindowManagerTimeOutFunc  func,
+					void                       *userdata)
 {
   static unsigned long ids = 0;
   MBWMTimeOutEventInfo * tinfo;
+  struct timeval current_time;
 
   ++ids;
 
@@ -426,6 +550,9 @@ mb_wm_context_timeout_handler_add (MBWMMainContext            *ctx,
   tinfo->id = ids;
   tinfo->ms = ms;
   tinfo->userdata = userdata;
+
+  gettimeofday (&current_time, NULL);
+  mb_wm_main_context_timeout_setup (tinfo, &current_time);
 
   ctx->event_funcs.timeout =
     mb_wm_util_list_append (ctx->event_funcs.timeout, tinfo);
@@ -468,11 +595,33 @@ mb_wm_main_context_timeout_handler_remove (MBWMMainContext *ctx,
 
 unsigned long
 mb_wm_main_context_fd_watch_add (MBWMMainContext           *ctx,
-				 MBWindowManagerFdWatchFunc func)
+				 int                        fd,
+				 int                        events,
+				 MBWindowManagerFdWatchFunc func,
+				 void                      *userdata)
 {
   static unsigned long ids = 0;
+  MBWMFdWatchInfo * finfo;
+  struct pollfd * fds;
 
   ++ids;
+
+  finfo = mb_wm_util_malloc0 (sizeof (MBWMFdWatchInfo));
+  finfo->func = func;
+  finfo->id = ids;
+  finfo->fd = fd;
+  finfo->events = events;
+  finfo->userdata = userdata;
+
+  ctx->event_funcs.fd_watch =
+    mb_wm_util_list_append (ctx->event_funcs.fd_watch, finfo);
+
+  ctx->n_poll_fds++;
+  ctx->poll_fds = realloc (ctx->poll_fds, sizeof (struct pollfd));
+
+  fds = ctx->poll_fds + (ctx->n_poll_fds - 1);
+  fds->fd = fd;
+  fds->events = events;
 
   return ids;
 }
@@ -481,6 +630,129 @@ void
 mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
 				    unsigned long    id)
 {
+  MBWMList * l = ctx->event_funcs.fd_watch;
 
+  while (l)
+    {
+        MBWMFdWatchInfo * info = l->data;
+
+      if (info->id == id)
+	{
+	  MBWMList * prev = l->prev;
+	  MBWMList * next = l->next;
+
+	  if (prev)
+	    prev->next = next;
+	  else
+	    ctx->event_funcs.fd_watch = next;
+
+	  if (next)
+	    next->prev = prev;
+
+	  free (info);
+	  free (l);
+
+	  return;
+	}
+
+      l = l->next;
+    }
+
+  ctx->n_poll_fds--;
+  ctx->poll_cache_dirty = True;
+}
+
+static void
+mb_wm_main_context_setup_poll_cache (MBWMMainContext *ctx)
+{
+  MBWMList *l = ctx->event_funcs.fd_watch;
+  int i = 0;
+
+  if (!ctx->poll_cache_dirty)
+    return;
+
+  ctx->poll_fds = realloc (ctx->poll_fds, ctx->n_poll_fds);
+
+  while (l)
+    {
+      MBWMFdWatchInfo *info = l->data;
+
+      ctx->poll_fds[i].fd     = info->fd;
+      ctx->poll_fds[i].events = info->events;
+
+      l = l->next;
+      ++i;
+    }
+
+  ctx->poll_cache_dirty = False;
+}
+
+static Bool
+mb_wm_main_context_check_fd_watches (MBWMMainContext * ctx)
+{
+  int ret;
+  int i = 0;
+  MBWMList * l = ctx->event_funcs.fd_watch;
+  Bool removal = False;
+
+  if (!ctx->n_poll_fds)
+    return False;
+
+  mb_wm_main_context_setup_poll_cache (ctx);
+
+  ret = poll (ctx->poll_fds, ctx->n_poll_fds, 0);
+
+  if (ret < 0)
+    {
+      MBWM_DBG ("Poll failed.");
+      return True;
+    }
+
+  if (ret == 0)
+    return True;
+
+  while (l)
+    {
+      MBWMFdWatchInfo *info = l->data;
+
+      if (ctx->poll_fds[i].revents & ctx->poll_fds[i].events)
+	{
+	  Bool zap = info->func (info->fd, ctx->poll_fds[i].revents,
+				 info->userdata);
+
+	  if (zap)
+	    {
+	      MBWMList * prev = l->prev;
+	      MBWMList * next = l->next;
+
+	      if (prev)
+		prev->next = next;
+	      else
+		ctx->event_funcs.fd_watch = next;
+
+	      if (next)
+		next->prev = prev;
+
+	      free (info);
+	      free (l);
+
+	      ctx->n_poll_fds--;
+
+	      removal = True;
+
+	      l = next;
+	    }
+	  else
+	    l = l->next;
+	}
+      else
+	l = l->next;
+
+      ++i;
+    }
+
+  ctx->poll_cache_dirty = removal;
+
+  return True;
 }
 

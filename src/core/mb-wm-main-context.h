@@ -22,6 +22,7 @@
 #define _HAVE_MB_MAIN_CONTEXT_H
 
 #include "mb-wm.h"
+#include <poll.h>
 
 #define MB_WM_MAIN_CONTEXT(c) ((MBWMMainContext*)(c))
 #define MB_WM_MAIN_CONTEXT_CLASS(c) ((MBWMMainContextClass*)(c))
@@ -45,6 +46,7 @@ typedef struct MBWMEventFuncs
   MBWMList *button_release;
 
   MBWMList *timeout;
+  MBWMList *fd_watch;
 }
 MBWMEventFuncs;
 
@@ -55,6 +57,9 @@ struct MBWMMainContext
   MBWindowManager *wm;
 
   MBWMEventFuncs   event_funcs;
+  struct pollfd   *poll_fds;
+  int              n_poll_fds;
+  Bool             poll_cache_dirty;
 };
 
 struct MBWMMainContextClass
@@ -91,7 +96,10 @@ mb_wm_main_context_timeout_handler_remove (MBWMMainContext *ctx,
 
 unsigned long
 mb_wm_main_context_fd_watch_add (MBWMMainContext           *ctx,
-				 MBWindowManagerFdWatchFunc func);
+				 int                        fd,
+				 int                        events,
+				 MBWindowManagerFdWatchFunc func,
+				 void                      *userdata);
 
 void
 mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
@@ -99,8 +107,5 @@ mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
 
 void
 mb_wm_main_context_loop (MBWMMainContext *ctx);
-
-Bool
-mb_wm_main_context_spin (MBWMMainContext *ctx);
 
 #endif
