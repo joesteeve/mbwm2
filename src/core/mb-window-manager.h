@@ -40,6 +40,7 @@ struct MBWindowManager
   MBWMList                    *clients;
   MBWindowManagerClient       *desktop;
   MBWindowManagerClient       *stack_top_app;
+  MBWindowManagerClient       *focused_client;
 
   Atom                         atoms[MBWM_ATOM_COUNT];
 
@@ -126,5 +127,8 @@ mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show);
 
 MBWindowManagerClient*
 mb_wm_get_visible_main_client(MBWindowManager *wm);
+
+void
+mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client);
 
 #endif

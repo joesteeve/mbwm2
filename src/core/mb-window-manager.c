@@ -12,6 +12,9 @@ static void
 mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv);
 
 static void
+mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client);
+
+static void
 mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 
 static MBWindowManagerClient*
@@ -121,6 +124,25 @@ test_key_press (XKeyEvent       *xev,
   mb_wm_keys_press (wm,
 		    XKeycodeToKeysym(wm->xdpy, xev->keycode, 0),
 		    xev->state);
+
+  return True;
+}
+
+Bool
+test_button_press (XButtonEvent *xev, void *userdata)
+{
+  MBWindowManager *wm = (MBWindowManager*)userdata;
+  MBWindowManagerClient *client = NULL;
+
+  if (xev->button != 1)
+    return True;
+
+  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
+
+  if (!client)
+    return True;
+
+  mb_wm_focus_client (wm, client);
 
   return True;
 }
@@ -496,7 +518,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
   /* set flags to map - should this go elsewhere? */
 
-  mb_wm_client_show(client);
+  mb_wm_activate_client (wm, client);
 }
 
 void
@@ -504,6 +526,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 		       MBWindowManagerClient *client)
 {
   /* FIXME: set a managed flag in client object ? */
+  MBWindowManagerClient *c;
 
   wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
 
@@ -513,9 +536,18 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   if (MB_WM_IS_CLIENT_PANEL(client))
     mb_wm_update_root_win_rectangles (wm);
 
-  mb_wm_object_unref (MB_WM_OBJECT(client));
+  if (wm->focused_client == client)
+    mb_wm_unfocus_client (wm, client);
 
-  /* Call show() and activate here or whatver :/ */
+  mb_wm_stack_enumerate (wm, c)
+    {
+      if (c->next_focused_client == client)
+	c->next_focused_client = client->next_focused_client;
+
+      /* FIXME -- handle transients ? */
+    }
+
+  mb_wm_object_unref (MB_WM_OBJECT(client));
 }
 
 MBWindowManagerClient*
@@ -756,6 +788,10 @@ mb_wm_init (MBWMObject *this, va_list vap)
 			     (MBWMXEventFunc)test_key_press,
 			     wm);
 
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonPress,
+			     (MBWMXEventFunc)test_button_press,
+			     wm);
+
   mb_wm_keys_init(wm);
 
   /* mb_wm_decor_init (wm); */
@@ -795,14 +831,15 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
   if (c == NULL)
     return;
 
-   wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+  wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
-   if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
-     return; /* Handled by derived class */
+  if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
+    return; /* Handled by derived class */
 
   XGrabServer(wm->xdpy);
 
   mb_wm_client_show (c);
+  mb_wm_focus_client (wm, c);
 
   /* FIXME -- might need some magic here ...*/
 
@@ -879,3 +916,51 @@ mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
   wm->layout = layout;
   wm->need_display_sync = True;
 }
+
+static void
+mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
+{
+  if (mb_wm_client_focus (client))
+    {
+      if (wm->focused_client)
+	{
+	  MBWindowManagerClient *trans_old = wm->focused_client;
+	  MBWindowManagerClient *trans_new = client;
+
+	  while (trans_old->transient_for)
+	    trans_old = trans_old->transient_for;
+
+	  while (trans_new->transient_for)
+	    trans_new = trans_new->transient_for;
+
+	  client->next_focused_client = NULL;
+
+	  /*
+	   * Are we both transient for the same thing ?
+	   */
+	  if (trans_new && trans_new == trans_old)
+	    client->next_focused_client = wm->focused_client;
+
+	  /* From regular dialog to transient for root dialogs */
+	  if (MB_WM_IS_CLIENT_DIALOG (client) &&
+	      !client->transient_for &&
+	      MB_WM_IS_CLIENT_DIALOG (wm->focused_client))
+	    client->next_focused_client = wm->focused_client;
+	}
+
+      wm->focused_client = client;
+    }
+}
+
+void
+mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
+{
+  if (client != wm->focused_client)
+    return;
+
+  if (client->next_focused_client)
+    mb_wm_activate_client (wm, client->next_focused_client);
+  else if (wm->stack_top)
+    mb_wm_activate_client (wm, wm->stack_top);
+}
+

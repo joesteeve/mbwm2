@@ -1,4 +1,14 @@
-2007-09-20  Tomas Frydrych  <tf@o-hand.com>
+2007-09-21  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-panel.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	* src/core/mb-wm-client-base.c:
+	Rudimentary handling of focus.
+	
+2007-09-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-panel.h:
 	Added convenience macro MB_WM_IS_CLIENT_PANEL().

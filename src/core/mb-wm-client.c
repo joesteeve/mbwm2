@@ -19,7 +19,6 @@
  */
 
 #include "mb-wm.h"
-#include <X11/Xmd.h>
 
 enum
   {
@@ -42,6 +41,7 @@ static void
 mb_wm_client_destroy (MBWMObject *obj)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
+  MBWindowManagerClient * c;
   MBWMList * l = client->decor;
 
   if (client->ping_cb_id)
@@ -101,6 +101,7 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   client->window        = win;
   client->wmref         = wm;
   client->ping_timeout  = 1000;
+  client->want_focus    = 1;
 
   /* sync with client window */
   mb_wm_client_on_property_change (win, MBWM_WINDOW_PROP_ALL, client);
@@ -323,8 +324,30 @@ mb_wm_client_hide (MBWindowManagerClient *client)
 
   /* remove it from stack */
   mb_wm_stack_remove (client);
+  mb_wm_unfocus_client (client->wmref, client);
 
   mb_wm_client_visibility_mark_dirty (client);
+}
+
+/*
+ * The focus processing is split into two stages, client and WM
+ *
+ * The client stage is handled by this function, with the return value
+ * of True indicating that the focus has changed.
+ *
+ * NB: This function should be considered protected and only called by the
+ * MBWindowManager object code.
+ */
+Bool
+mb_wm_client_focus (MBWindowManagerClient *client)
+{
+  MBWindowManagerClientClass *klass;
+
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  MBWM_ASSERT (klass->focus != NULL);
+
+  return klass->focus(client);
 }
 
 Bool

@@ -19,6 +19,7 @@
  */
 
 #include "mb-wm.h"
+#include <X11/Xmd.h>
 
 static void
 mb_wm_client_base_realize (MBWindowManagerClient *client);
@@ -41,6 +42,9 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 				    MBGeometry            *new_geometry,
 				    MBWMClientReqGeomType  flags);
 
+static Bool
+mb_wm_client_base_focus (MBWindowManagerClient *client);
+
 void
 mb_wm_client_base_class_init (MBWMObjectClass *klass)
 {
@@ -56,6 +60,7 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass)
   client->show     = mb_wm_client_base_show;
   client->hide     = mb_wm_client_base_hide;
   client->sync     = mb_wm_client_base_display_sync;
+  client->focus    = mb_wm_client_base_focus;
 }
 
 static void
@@ -422,6 +427,40 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 
       return True; /* Geometry accepted */
     }
+
+  return True;
+}
+
+static Bool
+mb_wm_client_base_focus (MBWindowManagerClient *client)
+{
+  static Window     last_focused = None;
+  MBWindowManager  *wm = client->wmref;
+  Window            xwin = client->window->xwindow;
+
+  unsigned long        val[1] = { 0 };
+
+  if (!client->want_focus)
+    return False;
+
+  if (xwin == last_focused)
+    return False;
+
+  val[0] = xwin;
+
+  mb_wm_util_trap_x_errors ();
+
+  XSetInputFocus(wm->xdpy, xwin, RevertToPointerRoot, CurrentTime);
+
+  XChangeProperty(wm->xdpy, wm->root_win->xwindow,
+		  wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW],
+		  XA_WINDOW, 32, PropModeReplace,
+		  (unsigned char *)val, 1);
+
+  if (mb_wm_util_untrap_x_errors())
+    return False;
+
+  last_focused = xwin;
 
   return True;
 }

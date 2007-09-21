@@ -101,6 +101,8 @@ typedef  void (*MBWMClientHideMethod) (MBWindowManagerClient *client);
 
 typedef  void (*MBWMClientSyncMethod) (MBWindowManagerClient *client);
 
+typedef  Bool (*MBWMClientFocusMethod)(MBWindowManagerClient *client);
+
 
 struct MBWindowManagerClientClass
 {
@@ -114,6 +116,7 @@ struct MBWindowManagerClientClass
   MBWMClientShowMethod         show;
   MBWMClientHideMethod         hide;
   MBWMClientSyncMethod         sync;     /* sync internal changes to display */
+  MBWMClientFocusMethod        focus;
 };
 
 struct MBWindowManagerClient
@@ -141,6 +144,7 @@ struct MBWindowManagerClient
   int                          skip_unmaps;
 
   /* To add focus, coverage */
+  int                          want_focus;
 
   /* ### Private ### */
 
@@ -176,12 +180,15 @@ mb_wm_client_realize (MBWindowManagerClient *client);
 
 void
 mb_wm_client_stack (MBWindowManagerClient *client,
-  int                    flags);
+		    int                    flags);
 void
 mb_wm_client_show (MBWindowManagerClient *client);
 
 void
 mb_wm_client_hide (MBWindowManagerClient *client);
+
+Bool
+mb_wm_client_focus (MBWindowManagerClient *client);
 
 void
 mb_wm_client_display_sync (MBWindowManagerClient *client);
