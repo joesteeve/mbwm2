@@ -2,6 +2,8 @@
 #include "../client-types/mb-wm-client-app.h"
 #include "../client-types/mb-wm-client-panel.h"
 #include "../client-types/mb-wm-client-dialog.h"
+#include "../client-types/mb-wm-client-desktop.h"
+#include "../client-types/mb-wm-client-input.h"
 #include "../theme-engines/mb-wm-theme.h"
 
 #include <stdarg.h>
@@ -29,6 +31,16 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
     {
       printf("### is dialog ###\n");
       return mb_wm_client_dialog_new(wm, win);
+    }
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP])
+    {
+      printf("### is desktop ###\n");
+      return mb_wm_client_desktop_new (wm, win);
+    }
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_INPUT])
+    {
+      printf("### is input ###\n");
+      return mb_wm_client_input_new (wm, win);
     }
   else
     {
@@ -323,7 +335,7 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
       client = wm_class->client_new (wm, win);
 
       if (client)
-	mb_wm_manage_client(wm, client);
+	mb_wm_manage_client(wm, client, True);
       else
 	mb_wm_object_unref (MB_WM_OBJECT (win));
     }
@@ -498,7 +510,8 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
 
 void
 mb_wm_manage_client (MBWindowManager       *wm,
-		     MBWindowManagerClient *client)
+		     MBWindowManagerClient *client,
+		     Bool                   activate)
 {
   /* Add to our list of managed clients */
 
@@ -518,7 +531,10 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
   /* set flags to map - should this go elsewhere? */
 
-  mb_wm_activate_client (wm, client);
+  if (activate)
+    mb_wm_activate_client (wm, client);
+  else
+    mb_wm_client_show (client);
 }
 
 void
@@ -619,7 +635,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	   client = wm_class->client_new (wm, win);
 
 	   if (client)
-	     mb_wm_manage_client(wm, client);
+	     mb_wm_manage_client(wm, client, False);
 	   else
 	     mb_wm_object_unref (MB_WM_OBJECT (win));
 	 }
@@ -827,6 +843,8 @@ void
 mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
 {
   MBWindowManagerClass  *wm_klass;
+  Bool was_desktop;
+  Bool is_desktop;
 
   if (c == NULL)
     return;
@@ -836,15 +854,30 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
   if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
     return; /* Handled by derived class */
 
+  mb_wm_util_trap_x_errors ();
+
   XGrabServer(wm->xdpy);
 
+  was_desktop = (wm->stack_top && MB_WM_IS_CLIENT_DESKTOP(wm->stack_top));
+  is_desktop  = (MB_WM_IS_CLIENT_DESKTOP(c));
+
   mb_wm_client_show (c);
+
   mb_wm_focus_client (wm, c);
 
-  /* FIXME -- might need some magic here ...*/
+  if (is_desktop != was_desktop)
+    {
+      CARD32 card = is_desktop ? 1 : 0;
+
+      XChangeProperty(wm->xdpy, wm->root_win->xwindow,
+		      wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP],
+		      XA_CARDINAL, 32, PropModeReplace,
+		      (unsigned char *)&card, 1);
+    }
 
   XSync(wm->xdpy, False);
   XUngrabServer(wm->xdpy);
+  mb_wm_util_untrap_x_errors ();
 }
 
 MBWindowManagerClient*
@@ -907,7 +940,7 @@ mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show)
     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
   if (wm_klass->show_desktop)
-      wm_klass->show_desktop (wm, show);
+    wm_klass->show_desktop (wm, show);
 }
 
 void
@@ -920,6 +953,12 @@ mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 static void
 mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 {
+  if (!mb_wm_client_want_focus (client))
+    return;
+
+  if (!mb_wm_client_is_realized (client))
+    mb_wm_sync (wm);
+
   if (mb_wm_client_focus (client))
     {
       if (wm->focused_client)
@@ -955,12 +994,28 @@ mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 void
 mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 {
+  MBWindowManagerClient *next = NULL;
+
   if (client != wm->focused_client)
     return;
 
   if (client->next_focused_client)
-    mb_wm_activate_client (wm, client->next_focused_client);
+    next = client->next_focused_client;
   else if (wm->stack_top)
-    mb_wm_activate_client (wm, wm->stack_top);
+    {
+      MBWindowManagerClient *c;
+
+      mb_wm_stack_enumerate_reverse (wm, c)
+	{
+	  if (mb_wm_client_want_focus (c))
+	    {
+	      next = c;
+	      break;
+	    }
+	}
+    }
+
+  if (next)
+    mb_wm_activate_client (wm, next);
 }
 

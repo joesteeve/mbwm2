@@ -100,7 +100,8 @@ mb_wm_register_client_type (void);
 
 void
 mb_wm_manage_client (MBWindowManager       *wm,
-		     MBWindowManagerClient *client);
+		     MBWindowManagerClient *client,
+		     Bool                   activate);
 
 void
 mb_wm_unmanage_client (MBWindowManager       *wm,

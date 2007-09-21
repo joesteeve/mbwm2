@@ -351,6 +351,12 @@ mb_wm_client_focus (MBWindowManagerClient *client)
 }
 
 Bool
+mb_wm_client_want_focus (MBWindowManagerClient *client)
+{
+  return (client->want_focus != False);
+}
+
+Bool
 mb_wm_client_needs_visibility_sync (MBWindowManagerClient *client)
 {
   return (client->priv->sync_state & VisibilityNeedsSync);
@@ -381,7 +387,6 @@ mb_wm_client_is_mapped (MBWindowManagerClient *client)
 {
   return client->priv->mapped;
 }
-
 
 void
 mb_wm_client_display_sync (MBWindowManagerClient *client)

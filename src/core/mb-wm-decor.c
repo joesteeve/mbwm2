@@ -264,7 +264,6 @@ void
 mb_wm_decor_handle_repaint (MBWMDecor *decor)
 {
   MBWMList *l;
-
   if (decor->parent_client == NULL)
     return;
 

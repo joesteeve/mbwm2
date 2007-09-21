@@ -62,6 +62,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_DESKTOP_GEOMETRY",
     "_NET_WORKAREA",
     "_NET_SHOW_DESKTOP",
+    "_NET_SHOWING_DESKTOP",
     
     "_NET_WM_ALLOWED_ACTIONS",
     "_NET_WM_ACTION_MOVE",

@@ -190,6 +190,9 @@ mb_wm_client_hide (MBWindowManagerClient *client);
 Bool
 mb_wm_client_focus (MBWindowManagerClient *client);
 
+Bool
+mb_wm_client_want_focus (MBWindowManagerClient *client);
+
 void
 mb_wm_client_display_sync (MBWindowManagerClient *client);
 

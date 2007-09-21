@@ -24,6 +24,8 @@
 #include "../client-types/mb-wm-client-dialog.h"
 #include "../client-types/mb-wm-client-app.h"
 
+#include <X11/Xmd.h>
+
 static void
 mb_wm_root_window_class_init (MBWMObjectClass *klass)
 {
@@ -63,10 +65,10 @@ mb_wm_root_window_init (MBWMObject *this, va_list vap)
 	}
       else
 	MBWMO_PROP_EAT (vap, prop);
-	
+
       prop = va_arg(vap, MBWMObjectProp);
     }
-  
+
   root_window->wm = wm;
   root_window->xwindow = RootWindow(wm->xdpy, wm->xscreen);
 
@@ -164,8 +166,8 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   Window            rwin = win->xwindow;
   Window            hwin = win->hidden_window;
 
-  int               num_supported = 0;
-  int               num_desktops = 1;
+  CARD32            num_supported = 0;
+  CARD32            card32;
   unsigned long     val[1];
   char             *app_name = "matchbox";
 
@@ -228,6 +230,7 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
     wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
     wm->atoms[MBWM_ATOM_NET_CLIENT_LIST_STACKING],
     wm->atoms[MBWM_ATOM_NET_SHOW_DESKTOP],
+    wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP],
     wm->atoms[MBWM_ATOM_NET_WM_NAME],
     wm->atoms[MBWM_ATOM_NET_WM_ICON],
     wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS],
@@ -268,13 +271,19 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   /*
    * Desktop info
    */
+  card32 = 1;
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_NUMBER_OF_DESKTOPS],
 		  XA_CARDINAL, 32, PropModeReplace,
-		  (unsigned char *)&num_desktops, 1);
+		  (unsigned char *)&card32, 1);
 
+  --card32;
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
 		  XA_CARDINAL, 32, PropModeReplace,
-		  (unsigned char *)&num_desktops, 0);
+		  (unsigned char *)&card32, 1);
+
+  XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&card32, 1);
 
   XSync(wm->xdpy, False);
 }

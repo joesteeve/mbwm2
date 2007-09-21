@@ -438,15 +438,11 @@ mb_wm_client_base_focus (MBWindowManagerClient *client)
   MBWindowManager  *wm = client->wmref;
   Window            xwin = client->window->xwindow;
 
-  unsigned long        val[1] = { 0 };
-
   if (!client->want_focus)
     return False;
 
   if (xwin == last_focused)
     return False;
-
-  val[0] = xwin;
 
   mb_wm_util_trap_x_errors ();
 
@@ -455,7 +451,7 @@ mb_wm_client_base_focus (MBWindowManagerClient *client)
   XChangeProperty(wm->xdpy, wm->root_win->xwindow,
 		  wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW],
 		  XA_WINDOW, 32, PropModeReplace,
-		  (unsigned char *)val, 1);
+		  (unsigned char *)&xwin, 1);
 
   if (mb_wm_util_untrap_x_errors())
     return False;
