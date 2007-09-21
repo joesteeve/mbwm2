@@ -29,6 +29,8 @@ typedef struct MBWMClientPanelClass MBWMClientPanelClass;
 #define MB_WM_CLIENT_PANEL(c) ((MBWMClientPanel*)(c))
 #define MB_WM_CLIENT_PANEL_CLASS(c) ((MBWMClientPanelClass*)(c))
 #define MB_WM_TYPE_CLIENT_PANEL (mb_wm_client_panel_class_type ())
+#define MB_WM_IS_CLIENT_PANEL(c) \
+                           (MB_WM_OBJECT_TYPE(c)==MB_WM_TYPE_CLIENT_PANEL)
 
 struct MBWMClientPanel
 {

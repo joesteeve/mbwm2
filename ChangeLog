@@ -1,5 +1,15 @@
 2007-09-20  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-panel.h:
+	Added convenience macro MB_WM_IS_CLIENT_PANEL().
+	
+        * src/core/mb-window-manager.c:
+	(mb_wm_get_desktop_geometry):
+	(mb_wm_update_root_win_rectangles):
+	Handling of _NET_WORKAREA and _NET_DESKTOP_GEOMETRY root win props.
+	
+2007-09-20  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/core/mb-wm-atoms.c:

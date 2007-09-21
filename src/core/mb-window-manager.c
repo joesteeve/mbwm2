@@ -3,10 +3,16 @@
 #include "../client-types/mb-wm-client-panel.h"
 #include "../client-types/mb-wm-client-dialog.h"
 #include "../theme-engines/mb-wm-theme.h"
+
 #include <stdarg.h>
+
+#include <X11/Xmd.h>
 
 static void
 mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv);
+
+static void
+mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 
 static MBWindowManagerClient*
 mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
@@ -485,6 +491,9 @@ mb_wm_manage_client (MBWindowManager       *wm,
   mb_wm_client_stack(client, 0);
   mb_wm_update_root_win_lists (wm);
 
+  if (MB_WM_IS_CLIENT_PANEL(client))
+    mb_wm_update_root_win_rectangles (wm);
+
   /* set flags to map - should this go elsewhere? */
 
   mb_wm_client_show(client);
@@ -500,6 +509,9 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 
   mb_wm_stack_remove (client);
   mb_wm_update_root_win_lists (wm);
+
+  if (MB_WM_IS_CLIENT_PANEL(client))
+    mb_wm_update_root_win_rectangles (wm);
 
   mb_wm_object_unref (MB_WM_OBJECT(client));
 
@@ -583,6 +595,72 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
    XFree(wins);
 }
 
+static void
+mb_wm_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
+{
+  MBWindowManagerClient *c;
+  int     x, y, width, height, result = 0;
+  MBGeometry p_geom;
+  MBWMClientLayoutHints hints;
+
+  geom->x      = 0;
+  geom->y      = 0;
+  geom->width  = wm->xdpy_width;
+  geom->height = wm->xdpy_height;
+
+  if (mb_wm_stack_empty(wm))
+    return;
+
+  mb_wm_stack_enumerate(wm, c)
+     {
+       if (!mb_wm_client_is_mapped (c) || !MB_WM_IS_CLIENT_PANEL (c))
+	 continue;
+
+       mb_wm_client_get_coverage (c, & p_geom);
+
+       hints = mb_wm_client_get_layout_hints (c);
+
+       if (LayoutPrefReserveEdgeNorth & hints)
+	 geom->x += p_geom.height;
+
+       if (LayoutPrefReserveEdgeSouth & hints)
+	 geom->height -= p_geom.height;
+
+       if (LayoutPrefReserveEdgeWest & hints)
+	 geom->y += p_geom.width;
+
+       if (LayoutPrefReserveEdgeEast & hints)
+	 geom->width -= p_geom.width;
+     }
+}
+
+static void
+mb_wm_update_root_win_rectangles (MBWindowManager *wm)
+{
+  Display * dpy = wm->xdpy;
+  Window    root = wm->root_win->xwindow;
+  MBGeometry d_geom;
+  CARD32 val[4];
+
+  mb_wm_get_desktop_geometry (wm, &d_geom);
+
+  val[0] = d_geom.x;
+  val[1] = d_geom.y;
+  val[2] = d_geom.width;
+  val[3] = d_geom.height;
+
+  /* FIXME -- handle decorated desktops */
+
+  XChangeProperty(dpy, root, wm->atoms[MBWM_ATOM_NET_WORKAREA],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)val, 4);
+
+  XChangeProperty(dpy, root, wm->atoms[MBWM_ATOM_NET_DESKTOP_GEOMETRY],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&val[2], 2);
+
+}
+
 int
 mb_wm_register_client_type (void)
 {
@@ -651,8 +729,9 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   wm->root_win = mb_wm_root_window_get (wm);
 
-  wm->main_ctx = mb_wm_main_context_new (wm);
+  mb_wm_update_root_win_rectangles (wm);
 
+  wm->main_ctx = mb_wm_main_context_new (wm);
   mb_wm_main_context_x_event_handler_add (wm->main_ctx, MapRequest,
 			     (MBWMXEventFunc)mb_wm_handle_map_request,
 			     wm);
