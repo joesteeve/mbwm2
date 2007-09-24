@@ -65,6 +65,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_SHOWING_DESKTOP",
     "_NET_DESKTOP_VIEWPORT",
     "_NET_FRAME_EXTENTS",
+    "_NET_WM_FULL_PLACEMENT",
 
     "_NET_WM_ALLOWED_ACTIONS",
     "_NET_WM_ACTION_MOVE",

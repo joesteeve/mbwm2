@@ -248,6 +248,8 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
     wm->atoms[MBWM_ATOM_NET_WM_PING],
     wm->atoms[MBWM_ATOM_NET_WM_PID],
     wm->atoms[MBWM_ATOM_CM_TRANSLUCENCY],
+    wm->atoms[MBWM_ATOM_NET_WM_FULL_PLACEMENT],
+    wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
     0, 0
    };
 

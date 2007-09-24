@@ -2,6 +2,13 @@
 
         * src/core/mb-wm-types.h:
         * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-root-window.c:
+	_NET_WM_FULL_PLACEMENT.
+
+2007-09-24  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-atoms.c:
         * src/core/mb-wm-client-base.c:
 	_NET_FRAME_EXTENTS.
 
