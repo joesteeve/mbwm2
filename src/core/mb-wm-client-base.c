@@ -249,6 +249,9 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       if (!fullscreen)
 	{
+	  int x, y, w, h;
+	  CARD32 wgeom[4];
+
 	  if (client->xwin_frame)
 	    XMoveResizeWindow(wm->xdpy,
 			      client->xwin_frame,
@@ -257,24 +260,49 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 			      client->frame_geometry.width,
 			      client->frame_geometry.height);
 
-	  /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask, &xwc);
+	  /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask,&xwc);
 	   *        here instead as can set border width = 0.
 	   */
-	  XMoveResizeWindow(wm->xdpy,
-			MB_WM_CLIENT_XWIN(client),
-			client->window->geometry.x - client->frame_geometry.x,
-			client->window->geometry.y - client->frame_geometry.y,
-			client->window->geometry.width,
-			client->window->geometry.height);
+	  x = client->window->geometry.x - client->frame_geometry.x;
+	  y = client->window->geometry.y - client->frame_geometry.y;
+	  w = client->window->geometry.width;
+	  h = client->window->geometry.height;
+
+	  XMoveResizeWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+			    x, y, w, h);
+
+	  wgeom[0] = x;
+	  wgeom[1] = client->frame_geometry.width - w - x;
+	  wgeom[2] = y;
+	  wgeom[3] = client->frame_geometry.height - h - y;
+
+	  XChangeProperty(wm->xdpy,
+			  MB_WM_CLIENT_XWIN(client),
+			  wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
+			  XA_CARDINAL, 32, PropModeReplace,
+			  (unsigned char *)&wgeom[0], 4);
 	}
       else
 	{
+	  CARD32 wgeom[4];
+
 	  XMoveResizeWindow(wm->xdpy,
 			    MB_WM_CLIENT_XWIN(client),
 			    client->frame_geometry.x,
 			    client->frame_geometry.y,
 			    client->frame_geometry.width,
 			    client->frame_geometry.height);
+
+	  wgeom[0] = 0;
+	  wgeom[1] = 0;
+	  wgeom[2] = 0;
+	  wgeom[3] = 0;
+
+	  XChangeProperty(wm->xdpy,
+			  MB_WM_CLIENT_XWIN(client),
+			  wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
+			  XA_CARDINAL, 32, PropModeReplace,
+			  (unsigned char *)&wgeom[0], 4);
 	}
 
       /* FIXME: need flags to handle other stuff like configure events etc */
