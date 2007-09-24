@@ -15,6 +15,10 @@ mb_wm_layout_class_init (MBWMObjectClass *klass)
   MBWMLayoutClass * layout_class = MB_WM_LAYOUT_CLASS (klass);
 
   layout_class->update = mb_wm_layout_real_update;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMLayout";
+#endif
 }
 
 static void

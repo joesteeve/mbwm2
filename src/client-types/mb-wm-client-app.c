@@ -30,6 +30,10 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypeApp;
   client->geometry = mb_wm_client_app_request_geometry;
   client_app->construct_buttons = mb_wm_client_app_construct_buttons;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMClientApp";
+#endif
 }
 
 static void

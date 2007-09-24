@@ -27,6 +27,14 @@ static void
 mb_wm_decor_button_sync_window (MBWMDecorButton *button);
 
 static void
+mb_wm_decor_class_init (MBWMObjectClass *klass)
+{
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMDecor";
+#endif
+}
+
+static void
 mb_wm_decor_init (MBWMObject *obj, va_list vap)
 {
   MBWMDecor             *decor = MB_WM_DECOR (obj);
@@ -84,7 +92,7 @@ mb_wm_decor_class_type ()
 	sizeof (MBWMDecor),
 	mb_wm_decor_init,
 	mb_wm_decor_destroy,
-	NULL
+	mb_wm_decor_class_init
       };
 
       type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
@@ -513,6 +521,14 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
 }
 
 static void
+mb_wm_decor_button_class_init (MBWMObjectClass *klass)
+{
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMDecorButton";
+#endif
+}
+
+static void
 mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 {
   MBWMDecorButton             *button = MB_WM_DECOR_BUTTON (obj);
@@ -613,7 +629,7 @@ mb_wm_decor_button_class_type ()
 	sizeof (MBWMDecorButton),
 	mb_wm_decor_button_init,
 	mb_wm_decor_button_destroy,
-	NULL
+	mb_wm_decor_button_class_init
       };
 
       type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);

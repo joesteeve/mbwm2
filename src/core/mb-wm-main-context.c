@@ -76,6 +76,9 @@ struct MBWMFdWatchInfo{
 static void
 mb_wm_main_context_class_init (MBWMObjectClass *klass)
 {
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMMainContext";
+#endif
 }
 
 static void

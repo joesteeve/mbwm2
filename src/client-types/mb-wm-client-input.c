@@ -27,6 +27,10 @@ mb_wm_client_input_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypeInput;
   client->geometry = mb_wm_client_input_request_geometry;
   client->stack = mb_wm_client_input_stack;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMClientInput";
+#endif
 }
 
 static void

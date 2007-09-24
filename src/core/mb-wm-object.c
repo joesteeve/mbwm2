@@ -20,21 +20,61 @@
 
 #include "mb-wm.h"
 
+#ifdef MBWM_WANT_DEBUG
+#include <execinfo.h>
+#endif
+
 static MBWMObjectClassInfo **ObjectClassesInfo  = NULL;
 static MBWMObjectClass     **ObjectClasses  = NULL;
 static int                   ObjectClassesAllocated = 0;
 static int                   NObjectClasses = 0;
 
 #ifdef MBWM_WANT_DEBUG
+#define MBWM_OBJECT_TRACE_DEPTH 3
 /*
  * Increased for each ref call and decreased for each unref call
  */
-static int object_count = 0;
-int
-mb_wm_object_get_object_count (void)
+MBWMList *alloc_objects = NULL;
+
+void
+mb_wm_object_dump ()
 {
-  return object_count;
+  MBWMList * l = alloc_objects;
+
+  if (!l)
+    {
+      fprintf (stderr, "=== There currently are no allocated objects === \n");
+      return;
+    }
+
+  fprintf (stderr, "=== Currently allocated objects === \n");
+
+  while (l)
+    {
+      int i;
+      MBWMObject * o = l->data;
+      MBWMObjectClass * k = MB_WM_OBJECT_GET_CLASS (o);
+
+      fprintf (stderr, "Object of type %s, allocated from:\n",
+	       k->klass_name);
+
+
+      for (i = 1; i < MBWM_OBJECT_TRACE_DEPTH; ++i)
+	{
+	  char * s = o->trace_strings[i];
+	  while (s && *s && *s != '(')
+	    s++;
+
+	  fprintf (stderr, "    %s\n", s);
+	}
+
+      l = l->next;
+    }
+
+  fprintf (stderr, "=== Currently allocated objects end === \n");
+
 }
+
 #endif
 
 #define N_CLASSES_PREALLOC 10
@@ -127,10 +167,6 @@ mb_wm_object_ref (MBWMObject *this)
       return this;
     }
 
-#ifdef MBWM_WANT_DEBUG
-  object_count++;
-#endif
-
   this->refcnt++;
 
   MBWM_TRACE_MSG (OBJ_REF, "### REF ###");
@@ -161,19 +197,6 @@ mb_wm_object_unref (MBWMObject *this)
       return;
     }
 
-  MBWM_TRACE_MSG (OBJ_UNREF, "### UNREF ###");
-
-#ifdef MBWM_WANT_DEBUG
-  object_count--;
-  if (object_count < 0)
-    {
-      /* Note that the trace is not necessarily pointing to the code that is
-       * at fault, but at least it gives us a terminal point before which the
-       * bad unref happened.
-       */
-      MBWM_TRACE_MSG (OBJ_UNREF, "### Unbalanced unref ###");
-    }
-#endif
 
   this->refcnt--;
 
@@ -184,6 +207,12 @@ mb_wm_object_unref (MBWMObject *this)
 
       mb_wm_object_destroy_recursive (MB_WM_OBJECT_GET_CLASS (this),
 				      this);
+
+      free (this);
+
+#ifdef MBWM_WANT_DEBUG
+      alloc_objects = mb_wm_util_list_remove (alloc_objects, this);
+#endif
     }
 }
 
@@ -241,6 +270,16 @@ mb_wm_object_new (int type, ...)
   mb_wm_object_ref (obj);
 
   va_end(vap);
+
+#ifdef MBWM_WANT_DEBUG
+ {
+   void * trace[MBWM_OBJECT_TRACE_DEPTH];
+
+   alloc_objects = mb_wm_util_list_append (alloc_objects, obj);
+   obj->trace_depth   = backtrace (trace, sizeof(trace)/sizeof(void*));
+   obj->trace_strings = backtrace_symbols (trace, obj->trace_depth);
+ }
+#endif
 
   return obj;
 }

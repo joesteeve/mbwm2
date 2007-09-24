@@ -59,6 +59,10 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
   client->geometry = mb_wm_client_dialog_request_geometry;
   client->stack = mb_wm_client_dialog_stack;
   client->show = mb_wm_client_dialog_show;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMClientDialog";
+#endif
 }
 
 static void

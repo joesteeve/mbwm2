@@ -66,6 +66,10 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->process_cmdline = mb_wm_process_cmdline;
   wm_class->client_new      = mb_wm_client_new_func;
   wm_class->theme_init      = mb_wm_theme_init;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWindowManager";
+#endif
 }
 
 static void

@@ -37,11 +37,7 @@ signal_handler (int sig)
       int count;
 
       mb_wm_object_unref (MB_WM_OBJECT (wm));
-
-      count = mb_wm_object_get_object_count();
-
-      if (count)
-	MBWM_NOTE (OBJ, "=== object count at exit %d ===", count);
+      mb_wm_object_dump ();
 
       exit (sig);
     }
@@ -125,13 +121,10 @@ main(int argc, char **argv)
 
   mb_wm_main_loop(wm);
 
-#ifdef MBWM_WANT_DEBUG
- {
-   int count = mb_wm_object_get_object_count();
+  mb_wm_object_unref (wm);
 
-   if (count)
-     MBWM_NOTE (OBJ, "=== object count at exit %d ===", count);
- }
+#ifdef MBWM_WANT_DEBUG
+  mb_wm_object_dump ();
 #endif
 
   return 1;

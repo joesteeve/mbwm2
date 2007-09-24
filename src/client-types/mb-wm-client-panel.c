@@ -18,6 +18,10 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypePanel;
   client->realize  = mb_wm_client_panel_realize;
   client->geometry = mb_wm_client_panel_request_geometry;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMClientPanel";
+#endif
 }
 
 static void

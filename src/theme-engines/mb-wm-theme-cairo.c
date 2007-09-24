@@ -37,6 +37,10 @@ mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
   t_class->paint_decor  = mb_wm_theme_cairo_paint_decor;
   t_class->paint_button = mb_wm_theme_cairo_paint_button;
   t_class->theme_switch = mb_wm_theme_cairo_switch;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMThemeCairo";
+#endif
 }
 
 static void

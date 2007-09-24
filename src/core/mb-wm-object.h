@@ -64,6 +64,10 @@ struct MBWMObjectClass
   MBWMObjVargFunc  init;
   MBWMObjFunc      destroy;
   MBWMClassFunc    class_init;
+
+#ifdef MBWM_WANT_DEBUG
+  const char         *klass_name;
+#endif
 };
 
 struct MBWMObject
@@ -72,6 +76,11 @@ struct MBWMObject
   int              refcnt;
 
   MBWMList        *callbacks;
+
+#ifdef MBWM_WANT_DEBUG
+  char           **trace_strings;
+  int              trace_depth;
+#endif
 };
 
 /* returns True to stop signal emission */
@@ -112,5 +121,10 @@ mb_wm_object_signal_disconnect (MBWMObject    *obj,
 
 void
 mb_wm_object_signal_emit (MBWMObject *obj, unsigned long signal);
+
+#ifdef MBWM_WANT_DEBUG
+void
+mb_wm_object_dump ();
+#endif
 
 #endif

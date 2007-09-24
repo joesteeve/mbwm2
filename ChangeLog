@@ -1,3 +1,27 @@
+2007-09-24  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-desktop.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-input.c:
+        * src/client-types/mb-wm-client-panel.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-layout.c:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+        * src/core/mb-wm-root-window.c:
+        * src/managers/matchbox-window-manager-2-simple.c:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-simple.c:
+	(mb_wm_object_dump):
+	Dumps currently allocated objects + allocation stack trace for
+	each of them; debug build only.
+
 2007-09-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -9,7 +33,7 @@
         * src/core/mb-wm-root-window.c:
         * src/core/mb-wm-types.h:
 	Handling of _NET_SHOWING_DESKTOP.
-	
+
 2007-09-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-panel.c:
@@ -19,17 +43,17 @@
         * src/core/mb-wm-client.h:
 	* src/core/mb-wm-client-base.c:
 	Rudimentary handling of focus.
-	
+
 2007-09-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-panel.h:
 	Added convenience macro MB_WM_IS_CLIENT_PANEL().
-	
+
         * src/core/mb-window-manager.c:
 	(mb_wm_get_desktop_geometry):
 	(mb_wm_update_root_win_rectangles):
 	Handling of _NET_WORKAREA and _NET_DESKTOP_GEOMETRY root win props.
-	
+
 2007-09-20  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -39,7 +63,7 @@
         * src/core/mb-wm-types.h:
 	Setting of _NET_CLIENT_LIST, _NET_CLIENT_LIST_STACKING and
 	_MB_APP_WINDOW_LIST_STACKING root window props.
-	
+
 2007-09-20  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -50,7 +74,7 @@
         * src/core/mb-wm-root-window.c:
         * src/core/mb-wm-root-window.h:
 	Implemented _NET_WM_PING protocol.
-	
+
 2007-09-20  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c
@@ -73,7 +97,7 @@
 	Extracted main loop functionality from MBWindowManager object into
 	MBWMMainContext object. Fixed xeven handlers installation and
 	removal functions.
-	
+
 2007-09-19  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -92,7 +116,7 @@
 
 	(mb_wm_client_input_request_geometry):
 	Made geometry frameless.
-	
+
         * src/client-types/Makefile.am:
         * src/managers/Makefile.am:
         * src/client-types/mb-wm-client-desktop.c:
@@ -117,7 +141,7 @@
         * src/client-types/mb-wm-client-input.h:
 
 	Added object skeleton for MBWMClientInput.
-	
+
 2007-09-19  Tomas Frydrych  <tf@o-hand.com>
 
         * configure.ac:
@@ -145,7 +169,7 @@
 	* src/core/mb-wm-layout.c:
 	(mb_wm_layout_real_update):
 	Clip windows of type LayoutPrefPositionFree as needed.
-	
+
 2007-09-18  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client.c
@@ -154,15 +178,15 @@
 
 	(mb_wm_client_init):
 	Added initial sync with window props.
-	
+
         * src/core/mb-window-manager.c:
 	(mb_wm_handle_property_notify):
 	Added a bunch of previously unhandled properties.
-	
+
         * src/core/mb-wm-client-window.c:
 	(mb_wm_client_window_sync_properties):
 	Signal change in transiency.
-	
+
         * src/core/mb-wm-object.c:
         * src/core/mb-wm-object.h:
 	Do not ignore return value from signal functions.
@@ -171,7 +195,7 @@
 
         * TODO:
 	Removed items already done.
-	
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/core/mb-wm-layout.c:
@@ -179,7 +203,7 @@
         * src/core/mb-wm-types.h:
         * src/managers/matchbox-window-manager-2-simple.c:
 	Objectified layout.
-	
+
 2007-09-18  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client.c:
@@ -224,7 +248,7 @@
         * src/core/mb-wm-decor.h
         * src/theme-engines/mb-wm-theme-cairo.c
 	Implemented client hiding; code toward fullscreen state.
-	
+
 2007-09-17  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:
@@ -232,7 +256,7 @@
 
 	Fixed refcount of MBDecorButton objects; hooked up min button
 	handler to client api.
-	
+
 2007-09-17  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c
@@ -249,7 +273,7 @@
 	Decor buttons owned (and destroyed) by MBWMDecor rather than
 	client (to simplify design of derived client objects).
 	Added simplified construction for stock decor buttons.
-	
+
 2007-09-14  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:
@@ -263,7 +287,7 @@
 
 	* src/core/mb-wm-macros.h:
 	Added missing non-debug definition for MBWM_TRACE_MSG().
-	
+
         * src/client-types/mb-wm-client-app.c
         * src/core/mb-window-manager.c
         * src/core/mb-window-manager.h
@@ -280,17 +304,17 @@
         * src/theme-engines/mb-wm-theme-simple.c:
 	Objectified themes; renamed theme-cairo.c and theme-simple.c to
 	match naming conventions elsewhere in the tree.
-	
+
 2007-09-13  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-object-props.h:
 	Fixed bug in MBWMO_PROP_EAT().
-	
+
 2007-09-13  Tomas Frydrych  <tf@o-hand.com>
 
         * configure.ac:
 	Pass -O0 to compiler when --enable-debug given.
-	
+
         * src/core/Makefile.am:
         * src/core/mb-wm-object.h:
         * src/core/mb-wm-object-props.h:
@@ -311,7 +335,7 @@
 
 	* src/managers/matchbox-window-manager-2-simple.c:
 	Squashed warning.
-	
+
 2007-09-12  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:
@@ -320,20 +344,20 @@
 	MBWMDecor, MBWMDecorButton:
 	Renamed constructors from _create to _new for consistency with
 	other objects; moved initialization from _new into _init functions.
-	
+
 2007-09-12  Tomas Frydrych  <tf@o-hand.com>
-	
+
         * src/core/mb-wm-debug.c:
         * src/core/mb-wm-debug.h:
         * src/core/mb-wm-macros.h:
 	Added obj-ref and obj-unref to debug info types;
 	Added MBWM_TRACE_MSG() macro.
-	
+
         * src/core/mb-wm-object.c:
         * src/core/mb-wm-object.h:
         * src/managers/matchbox-window-manager-2-simple.c:
 	Code to assist in debugging object memory management.
-	
+
         * src/client-types/mb-wm-client-app.c:
         * src/client-types/mb-wm-client-dialog.c:
         * src/client-types/mb-wm-client-panel.c:
@@ -342,11 +366,11 @@
         * src/core/mb-wm-client.h:
 	Moved object initialization from _new() into _init() functions;
 	fixed destruction code.
-	
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
 	Fixed object destructon, added -sn-client-id cmdline parameter.
-	
+
         * src/core/mb-wm-root-window.c:
         * src/core/mb-wm-decor.c:
 	Fixed object destruction.
@@ -367,20 +391,20 @@
 	(mb_wm_handle_hang_client):
 	(mb_wm_handle_show_desktop):
 	New function (for x message handling).
-	
+
         * src/core/mb-wm-client-window.h:
 	MBWMClientWindowStateChange enum for _NET_WM_STATE_xxx message
 	values.
-	
+
         * src/core/mb-wm-client.c:
         * src/core/mb-wm-client.h:
 	(mb_wm_handle_show_desktop):
 	(mb_wm_client_set_state):
-	
+
         * src/core/mb-wm-root-window.c:
 	(mb_wm_root_window_handle_message):
 	Fixed up previously disable parts.
-	
+
 2007-09-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.h:
@@ -388,40 +412,40 @@
         * src/core/mb-wm-client.h:
         * src/core/mb-wm-root-window.c:
 	Implementation of mb_wm_client_deliver_delete() method.
-	
+
 2007-09-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/managers/matchbox-window-manager-2-simple.c:
-	Moved remaning initialization of MBWindowManager object from 
+	Moved remaning initialization of MBWindowManager object from
 	simple manager to the object init function.
-	
+
 2007-09-11  Tomas Frydrych  <tf@o-hand.com>
 
         * configure.ac:
         * src/core/Makefile.am:
         * src/managers/Makefile.am
 	Added --enable-debug.
-	
+
 	* src/managers/matchbox-window-manager-2-simple.c:
 	Pass cmd line args to MBWindowManager object.
 
         * src/core/mb-wm-client.c:
 	(mb_wm_client_init):
 	Fixed signature.
-	
+
         * src/core/mb-wm-debug.c:
         * src/core/mb-wm-debug.h:
         * src/core/mb-wm-macros.h:
         * src/core/mb-wm-object.c:
 	Added MBWM_TRACE() macro and trace option for MB_DEBUG.
-	
+
 2007-09-10  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-props.c:
 	Fixed uninitialized variable.
-	
+
 	* src/core/mb-wm-object.h:
 	* src/core/mb-wm-object.c:
 	* src/core/mb-wm-client.c:
@@ -440,7 +464,7 @@
 	Reorganized class initialization and destruction.
 	(mb_wm_object_new)
 	Made variadic to allow chaining of class init methods.
-	
+
 	* src/core/mb-window-manager.c:
 	* src/managers/matchbox-window-manager-2-simple.c:
 	Put back mb_wm_new() but with parameters.
@@ -450,7 +474,7 @@
 
 	* src/core/mb-wm-types.h:
 	Removed unneed definitions.
-	
+
 2007-09-07  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-object.c:
@@ -462,33 +486,33 @@
 	Must call class_init() method if it exists otherwise the derived
 	classes cannot get at parent implementations of their virtual
 	methods.
-	
+
         * src/client-types/mb-wm-client-app.h:
 	Added MB_WM_IS_CLIENT_APP() macro.
-	
+
         * src/client-types/mb-wm-client-dialog.c:
         * src/client-types/mb-wm-client-dialog.h:
 	MB_WM_IS_CLIENT_DIALOG(c) macro.
 	Implemented virtual show() method.
-	
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
 	Skeletons for mb_wm_activate_client() and
 	mb_wm_get_visible_main_client().
-	
+
         * src/theme-engines/mb-wm-theme.h:
         * src/theme-engines/theme-cairo.c:
         * src/theme-engines/theme-simple.c:
 	Added mb_wm_theme_supports() function.
-	
+
         * src/core/mb-wm-root-window.c:
 	(mb_wm_root_window_init_properties):
 	Added theme-dependent capabilities.
 
 	Skeleton for mb_wm_root_window_handle_message().
-	
+
         * src/core/mb-wm.h
-	
+
 2007-09-07  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-dialog.c:
@@ -503,7 +527,7 @@
 
 	Plugged MBWMRootWindow into MBWindowManger.
 	Made MBWindowManager into a singleton.
-	
+
 2007-09-06  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -512,19 +536,19 @@
 	(mb_wm_client_window_sync_properties):
 
 	Removed unnecessary MBWindowManager parameter.
-	
+
         * src/core/mb-wm-root-window.c:
         * src/core/mb-wm-root-window.h:
 
 	Made into a singleton;
-	Removed unneeded mb_wm_root_window_sync_properties; 
+	Removed unneeded mb_wm_root_window_sync_properties;
 	Initial implementation of mb_wm_root_window_init_properties().
 
         * src/core/mb-wm-atoms.c:
         * src/core/mb-wm-types.h:
 
 	Added CM_TRANSLUCENCY atom.
-	
+
 2007-09-06  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm.h:
@@ -539,15 +563,15 @@
         * src/client-types/mb-wm-client-panel.c
         * src/core/Makefile.am:
 	* configure.ac:
-	
+
 	Objectified MBWindowManager and moved all relevant code to
 	mb-window-manager.h/c (removed empty mb-wm-core.h/c); unified
 	function naming to use mb_wm_ prefix.
-	
+
         * src/core/mb-wm-client-base.h:
 
 	Stripped trailing whitespace.
-	
+
         * src/core/mb-wm-client-window.c:
         * src/core/mb-wm-client-window.h:
 
@@ -558,14 +582,14 @@
         * src/core/mb-wm-root-window.h:
 
 	Skeleton for MBWMRootWindow object.
-	
+
         * src/core/mb-wm-object.c:
         * src/core/mb-wm-object.h:
 	(mb_wm_object_ref):
-	
+
 	Modified to return void* instead of MBWMObject* to avoid endless
 	casting.
-	
+
 2007-09-06  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client-window.c:
@@ -577,7 +601,7 @@
 	(mb_wm_object_signal_connect):
 	(mb_wm_object_signal_disconnect):
 	(mb_wm_object_signal_emit):
-	
+
 	Moved signal handling into MBWMObject.
 
 2007-09-05  Tomas Frydrych  <tf@o-hand.com>
@@ -600,12 +624,12 @@
 	(mb_wm_object_ref):
 	Return object pointer for convenience of use; handle NULL
 	gracefully.
-	
+
 	(mb_wm_object_ref):
 	Handle NULL gracefully.
-	
+
 2007-09-05  Tomas Frydrych  <tf@o-hand.com>
-	
+
         * src/core/mb-wm-client-window.c:
         * src/core/mb-wm-client-window.h:
         * src/core/mb-wm-client.c:
@@ -613,9 +637,9 @@
         * src/core/mb-wm-types.h:
 
 	Objectified MBWMClientWindow.
-	
+
 2007-09-05  Tomas Frydrych  <tf@o-hand.com>
-	
+
 	* src/client-types/mb-wm-client-app.c:
 	* src/client-types/mb-wm-client-app.h:
 	* src/client-types/mb-wm-client-dialog.c:
@@ -637,7 +661,7 @@
 
 	Namespace cleanup: renamed MBWMWindow to MBWMClientWindow; moved
 	mb-wm-window.h/c accordingly; stripped trailing whitespace.
-	
+
 2007-09-04  Matthew Allum  <mallum@openedhand.com>
 
 	* TODO:
@@ -656,7 +680,7 @@
 	* src/core/mb-wm-window.c:
 	* src/core/mb-wm-window.h:
 	(mb_wm_window_sync_properties):
-	
+
 	Handling of _NET_WM_USER_TIME property.
 
 2007-09-04  Matthew Allum  <mallum@openedhand.com>
@@ -669,7 +693,7 @@
 	* src/core/mb-wm-window.c:
 	* src/core/mb-wm-window.h:
 	(mb_wm_window_sync_properties):
-	
+
 	Handling of _NET_WM_ALLOWED_ACTIONS property.
 
 2007-09-04  Tomas Frydrych  <tf@o-hand.com>
@@ -679,31 +703,31 @@
 	* src/core/mb-wm-util.h:
 
 	Added MBWMRgbaIcon type; stripped trailing whitespace.
-	
+
 	* src/core/mb-wm-window.c:
 	* src/core/mb-wm-window.h:
 	(mb_wm_window_sync_properties):
-	
+
 	Handling of _NET_WM_ICON property; stripped trailing whitespace.
-	
+
 2007-09-04  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-object.c:
 	(mb_wm_object_register_class):
 	Reallocate object storage space as needed.
 	Stripped trailing whitespace.
-	
+
 2007-09-03  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-client.c:
 	(mb_wm_client_destroy):
 	Free client window.
-	
+
 	* src/core/mb-wm-core.c:
 	(mb_wm_core_handle_map_request):
 	(mb_wm_manage_preexistsing_wins):
 	Free client window.
-	
+
 	* src/core/mb-wm-window.c:
 	* src/core/mb-wm-window.h:
 	(mb_wm_window_sync_properties):
@@ -719,7 +743,7 @@
 	Add some object types.
 	* src/core/mb-wm-stack.c: (mb_wm_stack_dump):
 	More debug info.
-	
+
 2007-09-03  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-atoms.c:
@@ -733,7 +757,7 @@
 
 	* README:
 	Update with plans/design
-	
+
 2006-11-23  Matthew Allum  <mallum@openedhand.com>
 
 	* src/client-types/mb-wm-client-dialog.c:
@@ -744,7 +768,7 @@
 	* src/core/mb-wm-macros.h:
 	* src/core/mb-wm-util.c:
 	* src/core/mb-wm.h:
-	New debug messaging code + macros. 
+	New debug messaging code + macros.
 
 2006-11-20  Matthew Allum  <mallum@openedhand.com>
 
@@ -780,7 +804,7 @@
 	* src/core/mb-wm-object.c:
 	* src/core/mb-wm-object.h:
 	Improve simple object system as to initiate parent classes
-	on derived classes/objects. 
+	on derived classes/objects.
 
 2006-03-24  Matthew Allum  <mallum@openedhand.com>
 
@@ -809,7 +833,7 @@
 	* src/managers/Makefile.am:
 	* src/managers/matchbox-window-manager-2-simple.c: (client_new):
 	Add ( broken ) dialog window support.
-	
+
 2006-03-16  Matthew Allum  <mallum@openedhand.com>
 
 	* src/core/mb-wm-core.c: (test_key_press), (test_destroy_notify),
@@ -927,7 +951,7 @@
 	* src/core/mb-wm.h:
 	* src/managers/matchbox-window-manager-2-simple.c:
 	(key_binding_func), (main):
-	Implement beginnings of new object system. 
+	Implement beginnings of new object system.
 
 2006-02-11  Matthew Allum  <mallum@openedhand.com>
 
@@ -989,7 +1013,7 @@
 	* src/core/mb-wm-util.h:
 	* src/core/mb-wm-window.c: (mb_wm_client_window_new):
 	* src/core/mb-wm.h:
-	Redo decor handling. 
+	Redo decor handling.
 	Simplify syncing queue a little more.
 	Various up minor cleanups and tweaks.
 
@@ -1059,7 +1083,7 @@
 
 	* src/managers/matchbox-window-manager-2-simple.c: (client_new):
 	* src/matchbox-window-manager-2.c:
-	Move and rename.	
+	Move and rename.
 
 2005-11-17  Matthew Allum  <mallum@openedhand.com>
 

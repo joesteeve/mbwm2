@@ -25,6 +25,10 @@ mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypeDesktop;
   client->geometry = mb_wm_client_desktop_request_geometry;
   client->stack = mb_wm_client_desktop_stack;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMClientDesktop";
+#endif
 }
 
 static void
