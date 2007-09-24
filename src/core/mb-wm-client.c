@@ -691,12 +691,6 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
   if (new_state == old_state)
     return;
 
-  if ((state_flag & MBWMClientWindowEWMHStateHidden))
-    {
-      mb_wm_client_hide (client);
-      return;
-    }
-
   if (new_state)
     {
       win->ewmh_state |= state_flag;
@@ -704,6 +698,12 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
   else
     {
       win->ewmh_state &= ~state_flag;
+    }
+
+  if ((state_flag & MBWMClientWindowEWMHStateHidden))
+    {
+      mb_wm_client_hide (client);
+      return;
     }
 
   if ((state_flag & MBWMClientWindowEWMHStateFullscreen))

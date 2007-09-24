@@ -1,5 +1,13 @@
 2007-09-24  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+        * src/core/mb-wm-client.c:
+	Setting of WM_STATE and _NET_WM_STATE window props.
+	
+2007-09-24  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-types.h:
         * src/core/mb-wm-atoms.c:
         * src/core/mb-wm-root-window.c:

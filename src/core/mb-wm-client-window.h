@@ -60,9 +60,14 @@ typedef enum MBWMClientWindowEWMHState
     MBWMClientWindowEWMHStateFullscreen       = (1<<8),
     MBWMClientWindowEWMHStateAbove            = (1<<9),
     MBWMClientWindowEWMHStateBelow            = (1<<10),
-    MBWMClientWindowEWMHStateDemandsAttention = (1<<11)
+    MBWMClientWindowEWMHStateDemandsAttention = (1<<11),
+    /*
+     * Keep in sync with the MBWMClientWindowEWHMStatesCount define below !!!
+     */
   }
 MBWMClientWindowEWMHState;
+
+#define MBWMClientWindowEWHMStatesCount 12
 
 typedef enum MBWMClientWindowStateChange
   {

@@ -152,26 +152,6 @@ mb_wm_client_window_new (MBWindowManager *wm, Window xwin)
   return win;
 }
 
-void
-mb_wm_window_change_property (MBWMClientWindow *win,
-			      Atom              prop,
-			      Atom              type,
-			      int               format,
-			      void             *data,
-			      int               n_elements)
-{
-  /*
-  XChangeProperty (wm->xdpy,
-		   win->xwindow,
-		   prop,
-		   type,
-		   format,
-		   PropModeReplace,
-		   (unsigned char *)data,
-		   n_elements);
-  */
-}
-
 /*
  * Creates MBWMIcon from raw _NET_WM_ICON property data, returning
  * pointer to where the next icon might be in the data

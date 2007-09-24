@@ -200,6 +200,67 @@ mb_wm_client_base_hide (MBWindowManagerClient *client)
 }
 
 static void
+mb_wm_client_base_set_state_props (MBWindowManagerClient *c)
+{
+  unsigned long     flags = c->window->ewmh_state;
+  Window            xwin  = c->window->xwindow;
+  MBWindowManager  *wm    = c->wmref;
+  Display          *xdpy  = wm->xdpy;
+  CARD32            card32[2];
+  Atom              ewmh_state [MBWMClientWindowEWHMStatesCount];
+  int               ewmh_i = 0;
+
+  card32[1] = None;
+
+  if (mb_wm_client_is_mapped (c))
+    card32[0] = NormalState;
+  else
+    card32[0] = IconicState;
+
+  if (flags & MBWMClientWindowEWMHStateFullscreen)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_FULLSCREEN];
+
+  if (flags & MBWMClientWindowEWMHStateModal)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_MODAL];
+
+  if (flags & MBWMClientWindowEWMHStateSticky)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_STICKY];
+
+  if (flags & MBWMClientWindowEWMHStateMaximisedVert)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_MAXIMIZED_VERT];
+  if (flags & MBWMClientWindowEWMHStateMaximisedHorz)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_MAXIMIZED_HORZ];
+  if (flags & MBWMClientWindowEWMHStateShaded)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_SHADED];
+
+  if (flags & MBWMClientWindowEWMHStateSkipTaskbar)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_SKIP_TASKBAR];
+
+  if (flags & MBWMClientWindowEWMHStateSkipPager)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_SKIP_PAGER];
+
+  if (flags & MBWMClientWindowEWMHStateAbove)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_BELOW];
+
+  if (flags & MBWMClientWindowEWMHStateDemandsAttention)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_DEMANDS_ATTENTION];
+  if (flags & MBWMClientWindowEWMHStateHidden)
+    ewmh_state[ewmh_i++] = wm->atoms[MBWM_ATOM_NET_WM_STATE_HIDDEN];
+
+
+  XChangeProperty(xdpy, xwin, wm->atoms[MBWM_ATOM_WM_STATE],
+		  wm->atoms[MBWM_ATOM_WM_STATE], 32, PropModeReplace,
+		  (void *)&card32[0], 2);
+
+  if (ewmh_i)
+    XChangeProperty (xdpy, xwin, wm->atoms[MBWM_ATOM_NET_WM_STATE],
+		     XA_ATOM, 32, PropModeReplace,
+		     (void*) &ewmh_state[0], ewmh_i);
+  else
+    XDeleteProperty (xdpy, xwin, wm->atoms[MBWM_ATOM_NET_WM_STATE]);
+}
+
+static void
 mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
@@ -322,6 +383,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   if (mb_wm_client_needs_visibility_sync (client))
     {
+
       MBWM_DBG("needs visibility sync");
 
       mb_wm_util_trap_x_errors();
@@ -345,24 +407,6 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    {
 	      XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 	    }
-
-	  if (fullscreen)
-	    mb_wm_window_change_property (wm,
-					  client->window,
-					  wm->atoms[MBWM_ATOM_WM_STATE],
-					  wm->atoms[MBWM_ATOM_WM_STATE],
-					  32,
-					(void *) wm->atoms[MBWM_ATOM_NET_WM_STATE_FULLSCREEN],
-					  1);
-	  else
-	    mb_wm_window_change_property (wm,
-					  client->window,
-					  wm->atoms[MBWM_ATOM_WM_STATE],
-					  wm->atoms[MBWM_ATOM_WM_STATE],
-					  32,
-					  (void *) NormalState,
-					  1);
-
 	}
       else
 	{
@@ -370,18 +414,9 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    XUnmapWindow(wm->xdpy, client->xwin_frame);
 	  else
 	    XUnmapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
-
-	  /* FIXME: iconized state? */
-	  mb_wm_window_change_property (wm,
-					client->window,
-					wm->atoms[MBWM_ATOM_WM_STATE],
-					wm->atoms[MBWM_ATOM_WM_STATE],
-					32,
-					(void *)WithdrawnState,
-					1);
-
 	}
 
+      mb_wm_client_base_set_state_props (client);
       mb_wm_util_untrap_x_errors();
     }
 
