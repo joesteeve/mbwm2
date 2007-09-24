@@ -164,6 +164,9 @@ struct MBWMDecorButton
   MBWMDecorButtonPressedFunc  press;
   MBWMDecorButtonReleasedFunc release;
   void                       *userdata;
+
+  unsigned long               press_cb_id;
+  unsigned long               release_cb_id;
 };
 
 struct MBWMDecorButtonClass

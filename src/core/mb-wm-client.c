@@ -305,6 +305,11 @@ mb_wm_client_show (MBWindowManagerClient *client)
 
   client->priv->mapped = True;
 
+  /* Make sure any Hidden state flag is cleared */
+  mb_wm_client_set_state (client,
+			  MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			  MBWMClientWindowStateChangeRemove);
+
   mb_wm_client_visibility_mark_dirty (client);
 }
 

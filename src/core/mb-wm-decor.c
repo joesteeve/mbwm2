@@ -407,8 +407,10 @@ mb_wm_decor_destroy (MBWMObject* obj)
 
   while (l)
     {
+      MBWMList * old = l;
       mb_wm_object_unref (MB_WM_OBJECT (l->data));
       l = l->next;
+      free (old);
     }
 
   /* XDestroyWindow(wm->dpy, decor->xwin); */
@@ -608,13 +610,15 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   /* the decor assumes a reference, so add one for the caller */
   mb_wm_object_ref (obj);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonPress,
-			      (MBWMXEventFunc)mb_wm_decor_button_press_handler,
-			      button);
-
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonRelease,
-			    (MBWMXEventFunc)mb_wm_decor_button_release_handler,
+  button->press_cb_id =
+    mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonPress,
+			    (MBWMXEventFunc)mb_wm_decor_button_press_handler,
 			    button);
+
+  button->release_cb_id =
+    mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonRelease,
+			   (MBWMXEventFunc)mb_wm_decor_button_release_handler,
+			   button);
 }
 
 int
@@ -641,9 +645,14 @@ mb_wm_decor_button_class_type ()
 static void
 mb_wm_decor_button_destroy (MBWMObject* obj)
 {
-  /*
-  MBWMDecor *decor = MB_WM_DECOR(obj);
-  */
+  MBWMDecorButton * button = MB_WM_DECOR_BUTTON (obj);
+  MBWMMainContext * ctx = button->decor->parent_client->wmref->main_ctx;
+
+  mb_wm_main_context_x_event_handler_remove (ctx, ButtonPress,
+					     button->press_cb_id);
+
+  mb_wm_main_context_x_event_handler_remove (ctx, ButtonRelease,
+					     button->release_cb_id);
 }
 
 static Bool

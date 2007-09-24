@@ -80,9 +80,22 @@ mb_wm_destroy (MBWMObject *this)
 
   while (l)
     {
+      MBWMList * old = l;
       mb_wm_object_unref (l->data);
 
       l = l->next;
+
+      free (old);
+    }
+
+  l = wm->unmapped_clients;
+  while (l)
+    {
+      MBWMList * old = l;
+      mb_wm_object_unref (l->data);
+
+      l = l->next;
+      free (old);
     }
 
   mb_wm_object_unref (MB_WM_OBJECT (wm->root_win));
@@ -177,7 +190,20 @@ test_destroy_notify (XDestroyWindowEvent  *xev,
   if (client)
     {
       MBWM_DBG("Found client, unmanaing!");
-      mb_wm_unmanage_client (wm, client);
+      mb_wm_unmanage_client (wm, client, True);
+    }
+  else
+    {
+      client = mb_wm_unmapped_client_from_xwindow(wm, xev->window);
+
+      if (client)
+	{
+	  wm->unmapped_clients =
+	    mb_wm_util_list_remove (wm->unmapped_clients,
+				    client);
+
+	  mb_wm_object_unref (MB_WM_OBJECT (client));
+	}
     }
 
   return True;
@@ -202,7 +228,7 @@ test_unmap_notify (XUnmapEvent          *xev,
 	}
       else
 	{
-	  mb_wm_unmanage_client (wm, client);
+ 	  mb_wm_unmanage_client (wm, client, False);
 	}
     }
 
@@ -319,9 +345,14 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
 
   MBWM_MARK();
 
-  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_unmapped_client_from_xwindow(wm, xev->window);
 
-  if (!client)
+  if (client)
+    {
+      wm->unmapped_clients = mb_wm_util_list_remove (wm->unmapped_clients,
+						      client);
+    }
+  else
     {
       MBWMClientWindow *win = NULL;
 
@@ -338,11 +369,14 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
 
       client = wm_class->client_new (wm, win);
 
-      if (client)
-	mb_wm_manage_client(wm, client, True);
-      else
-	mb_wm_object_unref (MB_WM_OBJECT (win));
+      if (!client)
+	{
+	  mb_wm_object_unref (MB_WM_OBJECT (win));
+	  return True;
+	}
     }
+
+  mb_wm_manage_client(wm, client, True);
 
   return True;
 }
@@ -448,12 +482,15 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
       Window                *app_wins = NULL;
       int                    app_win_cnt = 0;
       int                    cnt = 0;
-      int                    stack_size = mb_wm_stack_size (wm);
+      int                    list_size;
       MBWindowManagerClient *c;
       MBWMList              *l;
 
-      wins     = mb_wm_util_malloc0 (sizeof(Window) * stack_size);
-      app_wins = mb_wm_util_malloc0 (sizeof(Window) * stack_size);
+      list_size = mb_wm_util_list_length (wm->clients) +
+	mb_wm_util_list_length (wm->unmapped_clients);
+
+      wins      = mb_wm_util_malloc0 (sizeof(Window) * list_size);
+      app_wins  = mb_wm_util_malloc0 (sizeof(Window) * list_size);
 
       mb_wm_stack_enumerate (wm,c)
 	{
@@ -462,17 +499,35 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
 	    app_wins[app_win_cnt++] = c->window->xwindow;
 	}
 
+      /* The MB_APP_WINDOW_LIST_STACKING list is used to construct
+       * application switching menus -- we append anything we have
+       * in the unmapped_windows list that is marked hidden (i.e., mimimized
+       * apps)
+       */
+      l = wm->unmapped_clients;
+      while (l)
+	{
+	  c = l->data;
+
+	  if (MB_WM_IS_CLIENT_APP (c) &&
+	      mb_wm_client_window_is_state_set(c->window,
+				       MBWMClientWindowEWMHStateHidden))
+	    {
+	      app_wins[app_win_cnt++] = c->window->xwindow;
+	    }
+
+	  l = l->next;
+	}
+
       XChangeProperty(wm->xdpy, root_win,
 		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST_STACKING],
 		      XA_WINDOW, 32, PropModeReplace,
-		      (unsigned char *)wins, stack_size);
+		      (unsigned char *)wins, cnt);
 
       XChangeProperty(wm->xdpy, root_win,
 		      wm->atoms[MBWM_ATOM_MB_APP_WINDOW_LIST_STACKING],
 		      XA_WINDOW, 32, PropModeReplace,
 		      (unsigned char *)app_wins, app_win_cnt);
-
-      free(app_wins);
 
       /* Update _NET_CLIENT_LIST but with 'age' order rather than stacking */
       cnt = 0;
@@ -488,8 +543,9 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
       XChangeProperty(wm->xdpy, root_win,
 		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST] ,
 		      XA_WINDOW, 32, PropModeReplace,
-		      (unsigned char *)wins, stack_size);
+		      (unsigned char *)wins, list_size);
 
+      free(app_wins);
       free(wins);
     }
   else
@@ -505,8 +561,8 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
 		      XA_WINDOW, 32, PropModeReplace,
 		      NULL, 0);
 
-      XChangeProperty(wm->xdpy, root_win, wm
-		      ->atoms[MBWM_ATOM_NET_CLIENT_LIST] ,
+      XChangeProperty(wm->xdpy, root_win,
+		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST] ,
 		      XA_WINDOW, 32, PropModeReplace,
 		      NULL, 0);
     }
@@ -532,6 +588,8 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
   if (MB_WM_IS_CLIENT_PANEL(client))
     mb_wm_update_root_win_rectangles (wm);
+  else if (MB_WM_IS_CLIENT_PANEL(client))
+    wm->desktop = mb_wm_util_list_prepend (wm->desktop, client);
 
   /* set flags to map - should this go elsewhere? */
 
@@ -543,7 +601,8 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
 void
 mb_wm_unmanage_client (MBWindowManager       *wm,
-		       MBWindowManagerClient *client)
+		       MBWindowManagerClient *client,
+		       Bool                   destroy)
 {
   /* FIXME: set a managed flag in client object ? */
   MBWindowManagerClient *c;
@@ -567,20 +626,58 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
       /* FIXME -- handle transients ? */
     }
 
-  mb_wm_object_unref (MB_WM_OBJECT(client));
+  if (MB_WM_IS_CLIENT_DESKTOP(client))
+    wm->desktop = mb_wm_util_list_remove (wm->desktop, client);
+
+  if (destroy)
+    mb_wm_object_unref (MB_WM_OBJECT(client));
+  else
+    wm->unmapped_clients = mb_wm_util_list_append (wm->unmapped_clients,
+						  client);
 }
 
 MBWindowManagerClient*
 mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win)
 {
   MBWindowManagerClient *client = NULL;
+  MBWMList *l;
 
   if (win == wm->root_win->xwindow)
     return NULL;
 
-  mb_wm_stack_enumerate(wm, client)
-    if (client->window && client->window->xwindow == win)
+  l = wm->clients;
+  while (l)
+    {
+      client = l->data;
+
+      if (client->window && client->window->xwindow == win)
 	return client;
+
+      l = l->next;
+    }
+
+  return NULL;
+}
+
+MBWindowManagerClient*
+mb_wm_unmapped_client_from_xwindow(MBWindowManager *wm, Window win)
+{
+  MBWindowManagerClient *client = NULL;
+  MBWMList *l;
+
+  if (win == wm->root_win->xwindow)
+    return NULL;
+
+  l = wm->unmapped_clients;
+  while (l)
+    {
+      client = l->data;
+
+      if (client->window && client->window->xwindow == win)
+	return client;
+
+      l = l->next;
+    }
 
   return NULL;
 }
@@ -940,11 +1037,13 @@ mb_wm_handle_hang_client (MBWindowManager * wm, MBWindowManagerClient *c)
 void
 mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show)
 {
-  MBWindowManagerClass  *wm_klass =
-    MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+  MBWindowManagerClient * d;
 
-  if (wm_klass->show_desktop)
-    wm_klass->show_desktop (wm, show);
+  if (!wm->desktop)
+    return;
+
+  d = wm->desktop->data;
+  mb_wm_activate_client (wm, d);
 }
 
 void

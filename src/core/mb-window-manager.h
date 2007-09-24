@@ -38,7 +38,8 @@ struct MBWindowManager
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
-  MBWindowManagerClient       *desktop;
+  MBWMList                    *unmapped_clients;
+  MBWMList                    *desktop;
   MBWindowManagerClient       *stack_top_app;
   MBWindowManagerClient       *focused_client;
 
@@ -67,8 +68,6 @@ struct MBWindowManagerClass
 
   void (*process_cmdline) (MBWindowManager * wm, int argc, char **argv);
 
-  void (*show_desktop) (MBWindowManager *wm, Bool show);
-
   MBWindowManagerClient* (*client_new) (MBWindowManager *wm,
 					MBWMClientWindow *w);
 
@@ -95,6 +94,9 @@ mb_wm_main_loop(MBWindowManager *wm);
 MBWindowManagerClient*
 mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win);
 
+MBWindowManagerClient*
+mb_wm_unmapped_client_from_xwindow(MBWindowManager *wm, Window win);
+
 int
 mb_wm_register_client_type (void);
 
@@ -105,7 +107,8 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
 void
 mb_wm_unmanage_client (MBWindowManager       *wm,
-		       MBWindowManagerClient *client);
+		       MBWindowManagerClient *client,
+		       Bool                   destroy);
 
 void
 mb_wm_display_sync_queue (MBWindowManager* wm);

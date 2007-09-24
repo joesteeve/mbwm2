@@ -1,11 +1,50 @@
 2007-09-24  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	(mb_wm_decor_destroy):
+	Plugged leak.
+
+	(mb_wm_decor_button_destroy):
+	Unregister button callbacks.
+
+        * src/core/mb-wm-util.c:
+        * src/core/mb-wm-util.h:
+	(mb_wm_util_list_prepend):
+	Added.
+
+	(mb_wm_util_list_length):
+	Handle NULL.
+
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+	(mb_wm_client_window_is_state_set):
+	Added.
+
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	(mb_wm_handle_show_desktop):
+	Implemented + removed unneeded show_desktop() virtual from
+	MBWindowManager.
+
+	(mb_wm_update_root_win_lists):
+	Fixed out of bounds write.
+
+	(mb_wm_unmanage_client):
+	(mb_wm_managed_client_from_xwindow):
+	(mb_wm_unmapped_client_from_xwindow):
+	Move unmapped windows to an unmapped windows list; only destroy
+	associated clients on DestroyNotify; this allows us to handle
+	minimized windows more efficiently.
+
+2007-09-24  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client-base.c:
         * src/core/mb-wm-client-window.c:
         * src/core/mb-wm-client-window.h:
         * src/core/mb-wm-client.c:
 	Setting of WM_STATE and _NET_WM_STATE window props.
-	
+
 2007-09-24  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-types.h:

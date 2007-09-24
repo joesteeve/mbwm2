@@ -92,6 +92,9 @@ mb_wm_util_list_get_nth_data(MBWMList *list, int n);
 MBWMList*
 mb_wm_util_list_append(MBWMList *list, void *data);
 
+MBWMList*
+mb_wm_util_list_prepend(MBWMList *list, void *data);
+
 void
 mb_wm_util_list_foreach (const MBWMList *list, MBWMListForEachCB func, void *userdata);
 

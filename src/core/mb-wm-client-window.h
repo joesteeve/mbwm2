@@ -155,4 +155,8 @@ Bool
 mb_wm_client_window_sync_properties (MBWMClientWindow *win,
 				     unsigned long     props_req);
 
+Bool
+mb_wm_client_window_is_state_set (MBWMClientWindow *win,
+				  MBWMClientWindowEWMHState state);
+
 #endif

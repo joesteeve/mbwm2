@@ -411,7 +411,10 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
       else
 	{
 	  if (client->xwin_frame)
-	    XUnmapWindow(wm->xdpy, client->xwin_frame);
+	    {
+	      XUnmapWindow(wm->xdpy, client->xwin_frame);
+	      XUnmapSubwindows(wm->xdpy, client->xwin_frame);
+	    }
 	  else
 	    XUnmapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
 	}

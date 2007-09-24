@@ -88,7 +88,7 @@ mb_wm_client_window_init (MBWMObject *this, va_list vap)
   MBWMObjectProp    prop;
   MBWindowManager  *wm = NULL;
   Window            xwin = None;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -103,7 +103,7 @@ mb_wm_client_window_init (MBWMObject *this, va_list vap)
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
-      
+
       prop = va_arg(vap, MBWMObjectProp);
     }
 
@@ -711,5 +711,12 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
     XFree(xwin_attr);
 
   return True;
+}
+
+Bool
+mb_wm_client_window_is_state_set (MBWMClientWindow *win,
+				  MBWMClientWindowEWMHState state)
+{
+  return (win->ewmh_state & state) ? True : False;
 }
 

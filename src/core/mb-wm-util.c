@@ -90,6 +90,9 @@ mb_wm_util_list_length(MBWMList *list)
 {
   int result = 1;
 
+  if (!list)
+    return 0;
+
   list = mb_wm_util_list_get_first(list);
 
   while ((list = mb_wm_util_list_next(list)) != NULL)
@@ -137,6 +140,18 @@ mb_wm_util_list_get_nth_data(MBWMList *list, int n)
   if (n) return NULL;
 
   return (void *)list->data;
+}
+
+MBWMList*
+mb_wm_util_list_prepend(MBWMList *list, void *data)
+{
+  MBWMList * l = mb_wm_util_list_alloc_item();
+
+  l->data = data;
+  l->next = list;
+  list->prev = l;
+
+  return l;
 }
 
 MBWMList*
