@@ -172,7 +172,7 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
 
   CARD32            num_supported = 0;
   CARD32            card32;
-  unsigned long     val[1];
+  unsigned long     val[2];
   char             *app_name = "matchbox";
 
   val[0] = hwin;
@@ -288,6 +288,13 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP],
 		  XA_CARDINAL, 32, PropModeReplace,
 		  (unsigned char *)&card32, 1);
+
+  val[0] = 0;
+  val[1] = 0;
+
+  XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_DESKTOP_VIEWPORT],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&val[0], 2);
 
   XSync(wm->xdpy, False);
 }

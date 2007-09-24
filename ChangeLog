@@ -1,5 +1,12 @@
 2007-09-24  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-types.h:
+	_NET_DESKTOP_VIEPORT.
+
+2007-09-24  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c:
         * src/client-types/mb-wm-client-desktop.c:
         * src/client-types/mb-wm-client-dialog.c:

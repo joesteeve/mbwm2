@@ -3,7 +3,7 @@
 void
 mb_wm_atoms_init(MBWindowManager *wm)
 {
-  /*  
+  /*
    *   The list below *MUST* be kept in the same order as the corresponding
    *   emun in structs.h or *everything* will break.
    *   Doing it like this avoids a mass of round trips on startup.
@@ -31,7 +31,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_WINDOW_TYPE_SPLASH",
     "_NET_WM_WINDOW_TYPE_DESKTOP",
     "_NET_WM_WINDOW_TYPE_INPUT",
-    
+
     "_NET_WM_STATE",
     "_NET_WM_STATE_FULLSCREEN",
     "_NET_WM_STATE_MODAL",
@@ -45,7 +45,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_STATE_HIDDEN",
     "_NET_WM_STATE_BELOW",
     "_NET_WM_STATE_DEMANDS_ATTENTION",
-    
+
     "_NET_SUPPORTED",
     "_NET_CLIENT_LIST",
     "_NET_NUMBER_OF_DESKTOPS",
@@ -54,7 +54,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_CLOSE_WINDOW",
     "_NET_WM_NAME",
     "_NET_WM_USER_TIME",
-    
+
     "_NET_CLIENT_LIST_STACKING",
     "_NET_CURRENT_DESKTOP",
     "_NET_WM_DESKTOP",
@@ -63,7 +63,8 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WORKAREA",
     "_NET_SHOW_DESKTOP",
     "_NET_SHOWING_DESKTOP",
-    
+    "_NET_DESKTOP_VIEWPORT",
+
     "_NET_WM_ALLOWED_ACTIONS",
     "_NET_WM_ACTION_MOVE",
     "_NET_WM_ACTION_RESIZE",
@@ -75,12 +76,12 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_ACTION_FULLSCREEN",
     "_NET_WM_ACTION_CHANGE_DESKTOP",
     "_NET_WM_ACTION_CLOSE",
-    
+
     "_NET_WM_PING",
     "_NET_WM_PID",
-    
+
     "_NET_STARTUP_ID",
-    
+
     "UTF8_STRING",
     "MOTIF_WM_HINTS",
     "WIN_SUPPORTING_WM_CHECK",
@@ -97,9 +98,9 @@ mb_wm_atoms_init(MBWindowManager *wm)
 
   printf("%i vs %i\n", MBWM_ATOM_COUNT, sizeof (atom_names) / sizeof (char*));
 
-  XInternAtoms (wm->xdpy, 
-		atom_names, 
+  XInternAtoms (wm->xdpy,
+		atom_names,
 		MBWM_ATOM_COUNT,
-                False, 
+                False,
 		wm->atoms);
 }
