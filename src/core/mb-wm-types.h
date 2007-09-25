@@ -335,4 +335,15 @@ typedef enum MBWMDecorType
 
 } MBWMDecorType;
 
+typedef enum MBWMSyncType
+{
+  MBWMSyncStacking          = (1<<1),
+  MBWMSyncGeometry          = (1<<2),
+  MBWMSyncVisibility        = (1<<3),
+  MBWMSyncDecor             = (1<<4),
+  MBWMSyncSyntheticConfigEv = (1<<5),
+  MBWMSyncFullscreen        = (1<<6),
+} MBWMSyncType;
+
+
 #endif

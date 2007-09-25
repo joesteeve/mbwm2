@@ -59,7 +59,7 @@ key_binding_func (MBWindowManager   *wm,
     case KEY_ACTION_PAGE_NEXT:
       {
 	mb_wm_stack_cycle_by_type(wm, MB_WM_TYPE_CLIENT_APP );
-	mb_wm_display_sync_queue (wm);
+	mb_wm_display_sync_queue (wm, MBWMSyncStacking);
 
       }
       break;
@@ -121,7 +121,7 @@ main(int argc, char **argv)
 
   mb_wm_main_loop(wm);
 
-  mb_wm_object_unref (wm);
+  mb_wm_object_unref (MB_WM_OBJECT (wm));
 
 #ifdef MBWM_WANT_DEBUG
   mb_wm_object_dump ();

@@ -1,5 +1,17 @@
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-types.h:
+        * src/managers/matchbox-window-manager-2-simple.c:
+	Introduce global MBWMSyncType type to granualize mb_wm_sync()
+	calls (primarily to avoid unnecessary recalculations of the
+	stack).
+	
+2007-09-25  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client-base.c:
         * src/core/mb-wm-client.c:
         * src/core/mb-wm-decor.c:

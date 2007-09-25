@@ -317,7 +317,7 @@ mb_wm_main_context_loop(MBWMMainContext *ctx)
 	  while (mb_wm_main_context_spin_xevent (ctx, False));
 	}
 
-      if (wm->need_display_sync)
+      if (wm->sync_type)
 	mb_wm_sync (wm);
     }
 }

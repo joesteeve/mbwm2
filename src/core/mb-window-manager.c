@@ -407,8 +407,6 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list)
     else
       win_list[i++] = MB_WM_CLIENT_XWIN(client);
   }
-
-  return win_list;
 }
 
 static void
@@ -454,7 +452,8 @@ mb_wm_sync (MBWindowManager *wm)
   /* FIXME: Can we restack an unmapped window ? - problem of new
    *        clients mapping below existing ones.
   */
-  stack_sync_to_display (wm);
+  if (wm->sync_type & MBWMSyncStacking)
+    stack_sync_to_display (wm);
 
   /* Now do updates per individual client - maps, paints etc, main work here */
   mb_wm_stack_enumerate(wm, client)
@@ -467,7 +466,7 @@ mb_wm_sync (MBWindowManager *wm)
 
   XUngrabServer(wm->xdpy);
 
-  wm->need_display_sync = False;
+  wm->sync_type = 0;
 }
 
 static void
@@ -594,7 +593,8 @@ mb_wm_manage_client (MBWindowManager       *wm,
   else
     mb_wm_client_show (client);
 
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref,
+			    MBWMSyncStacking | MBWMSyncVisibility);
 }
 
 void
@@ -633,7 +633,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
     wm->unmapped_clients = mb_wm_util_list_append (wm->unmapped_clients,
 						  client);
 
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncStacking);
 }
 
 MBWindowManagerClient*
@@ -699,9 +699,9 @@ mb_wm_get_display_geometry (MBWindowManager  *wm,
 }
 
 void
-mb_wm_display_sync_queue (MBWindowManager* wm)
+mb_wm_display_sync_queue (MBWindowManager* wm, MBWMSyncType sync)
 {
-  wm->need_display_sync = True;
+  wm->sync_type |= sync;
 }
 
 static void
@@ -972,7 +972,7 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
 		      (unsigned char *)&card, 1);
     }
 
-  mb_wm_display_sync_queue (wm);
+  mb_wm_display_sync_queue (wm, MBWMSyncStacking | MBWMSyncVisibility);
 }
 
 MBWindowManagerClient*
@@ -1044,7 +1044,7 @@ void
 mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 {
   wm->layout = layout;
-  wm->need_display_sync = True;
+  wm->sync_type = MBWMSyncGeometry | MBWMSyncVisibility;
 }
 
 static void

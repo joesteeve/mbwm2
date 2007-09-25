@@ -20,21 +20,11 @@
 
 #include "mb-wm.h"
 
-enum
-  {
-    StackingNeedsSync      = (1<<1),
-    GeometryNeedsSync      = (1<<2),
-    VisibilityNeedsSync    = (1<<3),
-    DecorNeedsSync         = (1<<4),
-    SyntheticConfigEvSync  = (1<<5),
-    FullscreenSync         = (1<<6),
-  };
-
 struct MBWindowManagerClientPriv
 {
-  Bool realized;
-  Bool mapped;
-  int  sync_state;
+  Bool          realized;
+  Bool          mapped;
+  MBWMSyncType  sync_state;
 };
 
 static void
@@ -48,7 +38,7 @@ mb_wm_client_destroy (MBWMObject *obj)
     mb_wm_main_context_timeout_handler_remove (client->wmref->main_ctx,
 					       client->ping_cb_id);
 
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncStacking);
 
   mb_wm_object_unref (MB_WM_OBJECT (client->window));
 
@@ -139,33 +129,36 @@ void
 mb_wm_client_fullscreen_mark_dirty (MBWindowManagerClient *client)
 {
   /* fullscreen implies geometry and visibility sync */
-  mb_wm_display_sync_queue (client->wmref);
-  client->priv->sync_state |= (FullscreenSync |
-			       GeometryNeedsSync |
-			       VisibilityNeedsSync);
+  mb_wm_display_sync_queue (client->wmref,
+			    MBWMSyncFullscreen |
+			    MBWMSyncVisibility | MBWMSyncGeometry);
+
+  client->priv->sync_state |= (MBWMSyncFullscreen |
+			       MBWMSyncGeometry   |
+			       MBWMSyncVisibility);
 }
 
 void
 mb_wm_client_stacking_mark_dirty (MBWindowManagerClient *client)
 {
-  mb_wm_display_sync_queue (client->wmref);
-  client->priv->sync_state |= StackingNeedsSync;
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncStacking);
+  client->priv->sync_state |= MBWMSyncStacking;
 }
 
 void
 mb_wm_client_geometry_mark_dirty (MBWindowManagerClient *client)
 {
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncGeometry);
 
-  client->priv->sync_state |= GeometryNeedsSync;
+  client->priv->sync_state |= MBWMSyncGeometry;
 }
 
 void
 mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client)
 {
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncVisibility);
 
-  client->priv->sync_state |= VisibilityNeedsSync;
+  client->priv->sync_state |= MBWMSyncVisibility;
 
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
 }
@@ -173,9 +166,9 @@ mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client)
 void
 mb_wm_client_synthetic_config_event_queue (MBWindowManagerClient *client)
 {
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncSyntheticConfigEv);
 
-  client->priv->sync_state |= SyntheticConfigEvSync;
+  client->priv->sync_state |= MBWMSyncSyntheticConfigEv;
 
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
 }
@@ -183,15 +176,15 @@ mb_wm_client_synthetic_config_event_queue (MBWindowManagerClient *client)
 Bool
 mb_wm_client_needs_synthetic_config_event (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & SyntheticConfigEvSync);
+  return (client->priv->sync_state & MBWMSyncSyntheticConfigEv);
 }
 
 void
 mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client)
 {
-  mb_wm_display_sync_queue (client->wmref);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncDecor);
 
-  client->priv->sync_state |= DecorNeedsSync;
+  client->priv->sync_state |= MBWMSyncDecor;
 
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
 }
@@ -199,7 +192,7 @@ mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client)
 Bool
 mb_wm_client_needs_fullscreen_sync (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & FullscreenSync);
+  return (client->priv->sync_state & MBWMSyncFullscreen);
 }
 
 static Bool
@@ -287,7 +280,7 @@ mb_wm_client_stack (MBWindowManagerClient *client,
 Bool
 mb_wm_client_needs_stack_sync (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & StackingNeedsSync);
+  return (client->priv->sync_state & MBWMSyncStacking);
 }
 
 void
@@ -361,19 +354,19 @@ mb_wm_client_want_focus (MBWindowManagerClient *client)
 Bool
 mb_wm_client_needs_visibility_sync (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & VisibilityNeedsSync);
+  return (client->priv->sync_state & MBWMSyncVisibility);
 }
 
 Bool
 mb_wm_client_needs_geometry_sync (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & GeometryNeedsSync);
+  return (client->priv->sync_state & MBWMSyncGeometry);
 }
 
 Bool
 mb_wm_client_needs_decor_sync (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & DecorNeedsSync);
+  return (client->priv->sync_state & MBWMSyncDecor);
 }
 
 Bool

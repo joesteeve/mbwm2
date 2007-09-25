@@ -50,7 +50,7 @@ struct MBWindowManager
   XasContext                  *xas_context;
 
   /* ### Private ### */
-  Bool                         need_display_sync;
+  MBWMSyncType                 sync_type;
   int                          client_type_cnt;
   int                          stack_n_clients;
   MBWMRootWindow              *root_win;
@@ -111,7 +111,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 		       Bool                   destroy);
 
 void
-mb_wm_display_sync_queue (MBWindowManager* wm);
+mb_wm_display_sync_queue (MBWindowManager* wm, MBWMSyncType sync);
 
 void
 mb_wm_get_display_geometry (MBWindowManager  *wm,
