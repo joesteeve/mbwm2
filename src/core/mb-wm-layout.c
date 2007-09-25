@@ -345,6 +345,109 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 
   /* ### Now inner reservations ### */
 
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints ==
+	(LayoutPrefReserveNorth|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_X|SET_Y|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_HEIGHT);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+	  /* FIXME: what if this returns False ? */
+
+	avail_geom.y      = coverage.y + coverage.height;
+	avail_geom.height = avail_geom.height - coverage.height;
+      }
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints ==
+	(LayoutPrefReserveSouth|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_X|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_HEIGHT);
+
+	if (coverage.y != avail_geom.y + avail_geom.height - coverage.height)
+	  {
+	    coverage.y = avail_geom.y + avail_geom.height - coverage.height;
+	    need_change = True;
+	  }
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	avail_geom.height = avail_geom.height - coverage.height;
+      }
+
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefReserveWest|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_X|SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	avail_geom.x      = coverage.x + coverage.width;
+	avail_geom.width  = avail_geom.width - coverage.width;
+      }
+
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefReserveEast|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      &avail_geom,
+						      SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   &avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	if (coverage.x != avail_geom.x + avail_geom.width - coverage.width)
+	  {
+	    coverage.x = avail_geom.x + avail_geom.width - coverage.width;
+	    need_change = True;
+	  }
+
+	avail_geom.width  = avail_geom.width - coverage.width;
+      }
+
   /* final one */
   mb_wm_stack_enumerate(wm, client)
     if (client->layout_hints == (LayoutPrefGrowToFreeSpace|LayoutPrefVisible))

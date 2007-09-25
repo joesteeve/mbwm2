@@ -41,7 +41,7 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 
       return mb_wm_client_desktop_new (wm, win);
     }
-  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_INPUT])
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_TOOLBAR])
     {
       printf("### is input ###\n");
       return mb_wm_client_input_new (wm, win);
@@ -1025,10 +1025,7 @@ mb_wm_get_visible_main_client(MBWindowManager *wm)
   if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
     return wm->desktop;
 
-  if (wm->stack_top_app)
-    return wm->stack_top_app;
-
-  return NULL;
+  return mb_wm_stack_get_highest_by_type (wm, MBWMClientTypeApp);
 }
 
 void
@@ -1083,7 +1080,8 @@ mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show)
     mb_wm_activate_client (wm, wm->desktop);
   else
     {
-      MBWindowManagerClient * c = wm->stack_top;
+      MBWindowManagerClient * c =
+	mb_wm_stack_get_highest_by_type (wm, MBWMClientTypeApp);
 
       if (c)
 	mb_wm_activate_client (wm, c);

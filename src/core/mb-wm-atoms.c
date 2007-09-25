@@ -30,7 +30,6 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_WINDOW_TYPE_DIALOG",
     "_NET_WM_WINDOW_TYPE_SPLASH",
     "_NET_WM_WINDOW_TYPE_DESKTOP",
-    "_NET_WM_WINDOW_TYPE_INPUT",
 
     "_NET_WM_STATE",
     "_NET_WM_STATE_FULLSCREEN",

@@ -297,7 +297,9 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	  else
 	    {
 	      XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
-			      wm->root_win->xwindow, 0, 0);
+			      wm->root_win->xwindow,
+			      client->window->geometry.x,
+			      client->window->geometry.y);
 	    }
 	}
     }
@@ -306,23 +308,37 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   if (mb_wm_client_needs_geometry_sync (client))
     {
+      int x, y, w, h;
+      CARD32 wgeom[4];
+
       mb_wm_util_trap_x_errors();
 
-      if (!fullscreen)
+      if (fullscreen || !client->xwin_frame)
 	{
-	  int x, y, w, h;
-	  CARD32 wgeom[4];
+	      x = client->window->geometry.x;
+	      y = client->window->geometry.y;
+	      w = client->window->geometry.width;
+	      h = client->window->geometry.height;
 
-	  if (client->xwin_frame)
-	    XMoveResizeWindow(wm->xdpy,
-			      client->xwin_frame,
-			      client->frame_geometry.x,
-			      client->frame_geometry.y,
-			      client->frame_geometry.width,
-			      client->frame_geometry.height);
+	      XMoveResizeWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+				x, y, w, h);
+	      wgeom[0] = 0;
+	      wgeom[1] = 0;
+	      wgeom[2] = 0;
+	      wgeom[3] = 0;
+	}
+      else
+	{
+	  XMoveResizeWindow(wm->xdpy,
+			    client->xwin_frame,
+			    client->frame_geometry.x,
+			    client->frame_geometry.y,
+			    client->frame_geometry.width,
+			    client->frame_geometry.height);
 
-	  /* FIXME: Call XConfigureWindow(w->dpy, e->window, value_mask,&xwc);
-	   *        here instead as can set border width = 0.
+	  /* FIXME: Call XConfigureWindow(w->dpy, e->window,
+	   *        value_mask,&xwc); here instead as can set border
+	   *        width = 0.
 	   */
 	  x = client->window->geometry.x - client->frame_geometry.x;
 	  y = client->window->geometry.y - client->frame_geometry.y;
@@ -336,35 +352,13 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	  wgeom[1] = client->frame_geometry.width - w - x;
 	  wgeom[2] = y;
 	  wgeom[3] = client->frame_geometry.height - h - y;
-
-	  XChangeProperty(wm->xdpy,
-			  MB_WM_CLIENT_XWIN(client),
-			  wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
-			  XA_CARDINAL, 32, PropModeReplace,
-			  (unsigned char *)&wgeom[0], 4);
 	}
-      else
-	{
-	  CARD32 wgeom[4];
 
-	  XMoveResizeWindow(wm->xdpy,
-			    MB_WM_CLIENT_XWIN(client),
-			    client->frame_geometry.x,
-			    client->frame_geometry.y,
-			    client->frame_geometry.width,
-			    client->frame_geometry.height);
-
-	  wgeom[0] = 0;
-	  wgeom[1] = 0;
-	  wgeom[2] = 0;
-	  wgeom[3] = 0;
-
-	  XChangeProperty(wm->xdpy,
-			  MB_WM_CLIENT_XWIN(client),
-			  wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
-			  XA_CARDINAL, 32, PropModeReplace,
-			  (unsigned char *)&wgeom[0], 4);
-	}
+      XChangeProperty(wm->xdpy,
+		      MB_WM_CLIENT_XWIN(client),
+		      wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
+		      XA_CARDINAL, 32, PropModeReplace,
+		      (unsigned char *)&wgeom[0], 4);
 
       /* FIXME: need flags to handle other stuff like configure events etc */
 

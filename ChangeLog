@@ -1,5 +1,28 @@
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-input.c:
+	Changed default layout pref from LayoutPrefReserveEdgeSouth to
+	LayoutPrefReserveSouth.
+
+        * src/core/mb-wm-layout.c:
+	Implemented LayoutPrefReserveNorth, LayoutPrefReserveSouth,
+	LayoutPrefReserveWest, LayoutPrefReserveEast.
+
+        * src/core/mb-window-manager.h
+        * src/core/mb-window-manager.c:
+	Fixed default client_new func for Input windows.
+	Removed unneeded stack_top_app member from MBWindowManager object.
+
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_display_sync):
+	Fixed positioning of frameless windows.
+
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-types.h:
+	Removed non-existent atom _NET_WM_WINDOW_TYPE_INPUT.
+
+2007-09-25  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-wm-decor.c:
         * src/core/mb-wm-main-context.c:

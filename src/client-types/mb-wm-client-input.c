@@ -80,7 +80,7 @@ mb_wm_client_input_init (MBWMObject *this, va_list vap)
   client->stacking_layer = MBWMStackLayerMid;
 
   mb_wm_client_set_layout_hints (client,
-				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
+				 LayoutPrefReserveSouth|LayoutPrefVisible);
 }
 
 int

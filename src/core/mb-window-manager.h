@@ -46,7 +46,6 @@ struct MBWindowManager
   MBWMList                    *clients;
   MBWMList                    *unmapped_clients;
   MBWindowManagerClient       *desktop;
-  MBWindowManagerClient       *stack_top_app;
   MBWindowManagerClient       *focused_client;
 
   Atom                         atoms[MBWM_ATOM_COUNT];
