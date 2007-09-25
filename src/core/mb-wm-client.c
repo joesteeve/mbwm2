@@ -38,8 +38,6 @@ mb_wm_client_destroy (MBWMObject *obj)
     mb_wm_main_context_timeout_handler_remove (client->wmref->main_ctx,
 					       client->ping_cb_id);
 
-  mb_wm_display_sync_queue (client->wmref, MBWMSyncStacking);
-
   mb_wm_object_unref (MB_WM_OBJECT (client->window));
 
   while (l)
@@ -292,8 +290,6 @@ mb_wm_client_show (MBWindowManagerClient *client)
 
   MBWM_ASSERT (klass->show != NULL);
 
-  /* FIXME: Need to re-add to stack here ? */
-
   klass->show(client);
 
   client->priv->mapped = True;
@@ -440,12 +436,16 @@ void  /* needs to be boolean, client may not have any coverage */
 mb_wm_client_get_coverage (MBWindowManagerClient *client,
 			   MBGeometry            *coverage)
 {
-  MBGeometry *geometry;
+  MBGeometry *geometry = &client->frame_geometry;
 
-  if (client->xwin_frame)
-    geometry = &client->frame_geometry;
-  else
-    geometry = &client->window->geometry;
+  if (!client->xwin_frame)
+    {
+      MBGeometry *win_geo = &client->window->geometry;
+      geometry->x      = win_geo->x;
+      geometry->y      = win_geo->y;
+      geometry->width  = win_geo->width;
+      geometry->height = win_geo->height;
+    }
 
   coverage->x      = geometry->x;
   coverage->y      = geometry->y;

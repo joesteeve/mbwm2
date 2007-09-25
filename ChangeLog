@@ -1,5 +1,16 @@
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_destroy):
+	Removed unncessary call to mb_wm_display_sync_queue().
+
+	(mb_wm_client_get_coverage):
+	If reporting geometry based on the client window, make sure that
+	the frame geometry is initialized to the same values to avoid
+	ending up with frame window 0x0.
+
+2007-09-25  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/core/mb-wm-client.c:
@@ -9,7 +20,7 @@
 	Introduce global MBWMSyncType type to granualize mb_wm_sync()
 	calls (primarily to avoid unnecessary recalculations of the
 	stack).
-	
+
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client-base.c:
