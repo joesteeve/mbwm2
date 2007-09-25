@@ -35,6 +35,10 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP])
     {
       printf("### is desktop ###\n");
+      /* Only one desktop allowed */
+      if (wm->desktop)
+	return NULL;
+
       return mb_wm_client_desktop_new (wm, win);
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_INPUT])
@@ -400,8 +404,19 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list)
   if (!wm->stack_n_clients)
     return;
 
+  if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
+    {
+      if (wm->desktop->xwin_frame)
+	win_list[i++] = wm->desktop->xwin_frame;
+      else
+	win_list[i++] = MB_WM_CLIENT_XWIN(wm->desktop);
+    }
+
   mb_wm_stack_enumerate_reverse(wm, client)
   {
+    if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop == client)
+      continue;
+
     if (client->xwin_frame)
       win_list[i++] = client->xwin_frame;
     else
@@ -443,7 +458,7 @@ mb_wm_sync (MBWindowManager *wm)
   if (wm->layout)
     mb_wm_layout_update (wm->layout);
 
-  /* Create the actual window */
+  /* Create the actual windows */
   mb_wm_stack_enumerate(wm, client)
     if (!mb_wm_client_is_realized (client))
       mb_wm_client_realize (client);
@@ -490,9 +505,19 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
       wins      = alloca (sizeof(Window) * list_size);
       app_wins  = alloca (sizeof(Window) * list_size);
 
+      if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
+	{
+	  if (wm->desktop->xwin_frame)
+	    wins[cnt++] = wm->desktop->xwin_frame;
+	  else
+	    wins[cnt++] = MB_WM_CLIENT_XWIN(wm->desktop);
+	}
+
       mb_wm_stack_enumerate (wm,c)
 	{
-	  wins[cnt++] = c->window->xwindow;
+	  if (!(wm->flags & MBWindowManagerFlagDesktop) || c != wm->desktop)
+	    wins[cnt++] = c->window->xwindow;
+
 	  if (MB_WM_IS_CLIENT_APP (c))
 	    app_wins[app_win_cnt++] = c->window->xwindow;
 	}
@@ -583,8 +608,8 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
   if (MB_WM_IS_CLIENT_PANEL(client))
     mb_wm_update_root_win_rectangles (wm);
-  else if (MB_WM_IS_CLIENT_PANEL(client))
-    wm->desktop = mb_wm_util_list_prepend (wm->desktop, client);
+  else if (MB_WM_IS_CLIENT_DESKTOP(client))
+    wm->desktop = client;
 
   /* set flags to map - should this go elsewhere? */
 
@@ -624,8 +649,8 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
       /* FIXME -- handle transients ? */
     }
 
-  if (MB_WM_IS_CLIENT_DESKTOP(client))
-    wm->desktop = mb_wm_util_list_remove (wm->desktop, client);
+  if (client == wm->desktop)
+    wm->desktop = NULL;
 
   if (destroy)
     mb_wm_object_unref (MB_WM_OBJECT(client));
@@ -955,8 +980,13 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
   if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
     return; /* Handled by derived class */
 
-  was_desktop = (wm->stack_top && MB_WM_IS_CLIENT_DESKTOP(wm->stack_top));
+  was_desktop = (wm->flags & MBWindowManagerFlagDesktop);
   is_desktop  = (MB_WM_IS_CLIENT_DESKTOP(c));
+
+  if (is_desktop)
+    wm->flags |= MBWindowManagerFlagDesktop;
+  else
+    wm->flags &= ~MBWindowManagerFlagDesktop;
 
   mb_wm_client_show (c);
 
@@ -978,17 +1008,11 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
 MBWindowManagerClient*
 mb_wm_get_visible_main_client(MBWindowManager *wm)
 {
-#if 0
-  if (w->flags & DESKTOP_RAISED_FLAG)
-    {
-      return wm->desktop;
-    }
-#endif
+  if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
+    return wm->desktop;
 
   if (wm->stack_top_app)
-    {
-      return wm->stack_top_app;
-    }
+    return wm->stack_top_app;
 
   return NULL;
 }
@@ -1029,15 +1053,27 @@ mb_wm_handle_hang_client (MBWindowManager * wm, MBWindowManagerClient *c)
 }
 
 void
+mb_wm_toggle_desktop (MBWindowManager * wm)
+{
+  Bool show = !(wm->flags & MBWindowManagerFlagDesktop);
+  mb_wm_handle_show_desktop (wm, show);
+}
+
+void
 mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show)
 {
-  MBWindowManagerClient * d;
-
   if (!wm->desktop)
     return;
 
-  d = wm->desktop->data;
-  mb_wm_activate_client (wm, d);
+  if (show)
+    mb_wm_activate_client (wm, wm->desktop);
+  else
+    {
+      MBWindowManagerClient * c = wm->stack_top;
+
+      if (c)
+	mb_wm_activate_client (wm, c);
+    }
 }
 
 void
@@ -1127,5 +1163,18 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 
   if (next)
     mb_wm_activate_client (wm, next);
+}
+
+void
+mb_wm_cycle_apps (MBWindowManager *wm)
+{
+  if (wm->flags & MBWindowManagerFlagDesktop)
+    {
+      mb_wm_handle_show_desktop (wm, False);
+      return;
+    }
+
+  mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp);
+  mb_wm_display_sync_queue (wm, MBWMSyncStacking);
 }
 

@@ -57,11 +57,7 @@ key_binding_func (MBWindowManager   *wm,
   switch (action)
     {
     case KEY_ACTION_PAGE_NEXT:
-      {
-	mb_wm_stack_cycle_by_type(wm, MB_WM_TYPE_CLIENT_APP );
-	mb_wm_display_sync_queue (wm, MBWMSyncStacking);
-
-      }
+      mb_wm_cycle_apps (wm);
       break;
     case KEY_ACTION_PAGE_PREV:
       printf(" ### KEY_ACTION_PAGE_PREV ### \n");
@@ -71,6 +67,7 @@ key_binding_func (MBWindowManager   *wm,
       break;
     case KEY_ACTION_TOGGLE_DESKTOP:
       printf(" ### KEY_ACTION_TOGGLE_DESKTOP ### \n");
+      mb_wm_toggle_desktop (wm);
       break;
     }
 }

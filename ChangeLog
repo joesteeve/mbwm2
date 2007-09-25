@@ -1,5 +1,12 @@
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/managers/matchbox-window-manager-2-simple.c:
+	Implemented desktop toggling and application cycling.
+
+2007-09-25  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client.c:
 	(mb_wm_client_destroy):
 	Removed unncessary call to mb_wm_display_sync_queue().

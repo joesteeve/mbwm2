@@ -28,6 +28,12 @@ typedef struct MBWindowManagerPriv    MBWindowManagerPriv;
 #define MB_WINDOW_MANAGER_CLASS(c) ((MBWindowManagerClass*)(c))
 #define MB_TYPE_WINDOW_MANAGER     (mb_wm_class_type ())
 
+typedef enum MBWindowManagerFlag
+{
+  MBWindowManagerFlagDesktop = (1<<0),
+} MBWindowManagerFlag;
+
+
 struct MBWindowManager
 {
   MBWMObject                   parent;
@@ -39,7 +45,7 @@ struct MBWindowManager
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
   MBWMList                    *unmapped_clients;
-  MBWMList                    *desktop;
+  MBWindowManagerClient       *desktop;
   MBWindowManagerClient       *stack_top_app;
   MBWindowManagerClient       *focused_client;
 
@@ -60,6 +66,7 @@ struct MBWindowManager
   MBWMTheme                   *theme;
   MBWMLayout                  *layout;
   MBWMMainContext             *main_ctx;
+  MBWindowManagerFlag          flags;
 };
 
 struct MBWindowManagerClass
@@ -129,10 +136,16 @@ mb_wm_handle_hang_client (MBWindowManager * wm, MBWindowManagerClient *c);
 void
 mb_wm_handle_show_desktop (MBWindowManager * wm, Bool show);
 
+void
+mb_wm_toggle_desktop (MBWindowManager * wm);
+
 MBWindowManagerClient*
 mb_wm_get_visible_main_client(MBWindowManager *wm);
 
 void
 mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client);
+
+void
+mb_wm_cycle_apps (MBWindowManager *wm);
 
 #endif
