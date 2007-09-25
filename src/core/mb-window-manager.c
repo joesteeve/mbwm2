@@ -906,31 +906,45 @@ mb_wm_init (MBWMObject *this, va_list vap)
   mb_wm_update_root_win_rectangles (wm);
 
   wm->main_ctx = mb_wm_main_context_new (wm);
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, MapRequest,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     MapRequest,
 			     (MBWMXEventFunc)mb_wm_handle_map_request,
 			     wm);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ConfigureRequest,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     ConfigureRequest,
 			     (MBWMXEventFunc)mb_wm_handle_config_request,
 			     wm);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, PropertyNotify,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+  			     None,
+			     PropertyNotify,
 			     (MBWMXEventFunc)mb_wm_handle_property_notify,
 			     wm);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, DestroyNotify,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     DestroyNotify,
 			     (MBWMXEventFunc)test_destroy_notify,
 			     wm);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, UnmapNotify,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     UnmapNotify,
 			     (MBWMXEventFunc)test_unmap_notify,
 			     wm);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, KeyPress,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     KeyPress,
 			     (MBWMXEventFunc)test_key_press,
 			     wm);
 
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx, ButtonPress,
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     ButtonPress,
 			     (MBWMXEventFunc)test_button_press,
 			     wm);
 

@@ -75,6 +75,7 @@ mb_wm_main_context_new(MBWindowManager *wm);
 
 unsigned long
 mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
+					Window           xwin,
 					int              type,
 					MBWMXEventFunc   func,
 					void            *userdata);

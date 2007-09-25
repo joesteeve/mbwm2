@@ -312,6 +312,7 @@ typedef Bool (*MBWindowManagerFdWatchFunc)
 typedef struct MBWMXEventFuncInfo
 {
   MBWMXEventFunc func;
+  Window         xwindow;
   void          *userdata;
   unsigned long  id;
 }

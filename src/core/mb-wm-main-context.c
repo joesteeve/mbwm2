@@ -149,6 +149,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
   MBWindowManager *wm = ctx->wm;
   MBWMEventFuncs  *xev_funcs = &ctx->event_funcs;
   MBWMList        *iter;
+  Window           xwin = xev->xany.window;
 
 #if (MBWM_WANT_DEBUG)
  {
@@ -171,6 +172,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
 #define XE_ITER_GET_FUNC(i) (((MBWMXEventFuncInfo *)((i)->data))->func)
 #define XE_ITER_GET_DATA(i) ((MBWMXEventFuncInfo *)((i)->data))->userdata
+#define XE_ITER_GET_XWIN(i) ((MBWMXEventFuncInfo *)((i)->data))->xwindow
 
   switch (xev->type)
     {
@@ -186,89 +188,172 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
     case MapRequest:
       iter = ctx->event_funcs.map_request;
 
-      while (iter &&
-	     ((MBWindowManagerMapRequestFunc)XE_ITER_GET_FUNC(iter))
-	     ((XMapRequestEvent*)&xev->xmaprequest, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerMapRequestFunc)XE_ITER_GET_FUNC(iter)
+		  ((XMapRequestEvent*)&xev->xmaprequest,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case MapNotify:
       iter = ctx->event_funcs.map_notify;
 
-      while (iter &&
-	     ((MBWindowManagerMapNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     ((XMapEvent*)&xev->xmap, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerMapNotifyFunc)XE_ITER_GET_FUNC(iter)
+		  ((XMapEvent*)&xev->xmap,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case UnmapNotify:
       iter = ctx->event_funcs.unmap_notify;
 
-      while (iter &&
-	     ((MBWindowManagerUnmapNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     ((XUnmapEvent*)&xev->xunmap, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerUnmapNotifyFunc)XE_ITER_GET_FUNC(iter)
+		  ((XUnmapEvent*)&xev->xunmap,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case DestroyNotify:
       iter = ctx->event_funcs.destroy_notify;
 
-      while (iter &&
-	     ((MBWindowManagerDestroyNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     ((XDestroyWindowEvent*)&xev->xdestroywindow, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerDestroyNotifyFunc)XE_ITER_GET_FUNC(iter)
+		  ((XDestroyWindowEvent*)&xev->xdestroywindow,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
+
+	  iter = iter->next;
+	}
       break;
     case ConfigureNotify:
       iter = ctx->event_funcs.configure_notify;
 
-      while (iter &&
-	  ((MBWindowManagerConfigureNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     ((XConfigureEvent*)&xev->xconfigure, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerConfigureNotifyFunc)XE_ITER_GET_FUNC(iter)
+		  ((XConfigureEvent*)&xev->xconfigure,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case ConfigureRequest:
       iter = ctx->event_funcs.configure_request;
 
-      while (iter &&
-	     ((MBWindowManagerConfigureRequestFunc)XE_ITER_GET_FUNC(iter))
-	     ((XConfigureRequestEvent*)&xev->xconfigurerequest, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerConfigureRequestFunc)XE_ITER_GET_FUNC(iter)
+		  ((XConfigureRequestEvent*)&xev->xconfigurerequest,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case KeyPress:
       iter = ctx->event_funcs.key_press;
 
-      while (iter &&
-	     ((MBWindowManagerKeyPressFunc)XE_ITER_GET_FUNC(iter))
-	     ((XKeyEvent*)&xev->xkey, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerKeyPressFunc)XE_ITER_GET_FUNC(iter)
+		  ((XKeyEvent*)&xev->xkey,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case PropertyNotify:
       iter = ctx->event_funcs.property_notify;
 
-      while (iter &&
-	     ((MBWindowManagerPropertyNotifyFunc)XE_ITER_GET_FUNC(iter))
-	     ((XPropertyEvent*)&xev->xproperty, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerPropertyNotifyFunc)XE_ITER_GET_FUNC(iter)
+		  ((XPropertyEvent*)&xev->xproperty,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
 
+	  iter = iter->next;
+	}
       break;
     case ButtonPress:
       iter = ctx->event_funcs.button_press;
 
-      while (iter &&
-	     ((MBWindowManagerButtonPressFunc)XE_ITER_GET_FUNC(iter))
-	     ((XButtonEvent*)&xev->xbutton, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerButtonPressFunc)XE_ITER_GET_FUNC(iter)
+		  ((XButtonEvent*)&xev->xbutton,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
+
+	  iter = iter->next;
+	}
       break;
     case ButtonRelease:
       iter = ctx->event_funcs.button_release;
 
-      while (iter &&
-	     ((MBWindowManagerButtonReleaseFunc)XE_ITER_GET_FUNC(iter))
-	     ((XButtonEvent*)&xev->xbutton, XE_ITER_GET_DATA(iter)))
-	iter = iter->next;
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerButtonReleaseFunc)XE_ITER_GET_FUNC(iter)
+		  ((XButtonEvent*)&xev->xbutton,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
+
+	  iter = iter->next;
+	}
       break;
 
     }
@@ -324,6 +409,7 @@ mb_wm_main_context_loop(MBWMMainContext *ctx)
 
 unsigned long
 mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
+					Window           xwin,
 					int              type,
 					MBWMXEventFunc   func,
 					void            *userdata)
@@ -335,6 +421,7 @@ mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
 
   func_info           = mb_wm_util_malloc0(sizeof(MBWMXEventFuncInfo));
   func_info->func     = func;
+  func_info->xwindow  = xwin;
   func_info->userdata = userdata;
   func_info->id       = ids;
 

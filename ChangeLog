@@ -1,6 +1,16 @@
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-main-context.h:
+        * src/core/mb-wm-types.h:
+	Per-window x-event handler registration for more efficient
+	filtering.
+
+2007-09-25  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/managers/matchbox-window-manager-2-simple.c:
 	Implemented desktop toggling and application cycling.
