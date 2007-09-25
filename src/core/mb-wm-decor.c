@@ -450,15 +450,11 @@ mb_wm_decor_button_stock_button_pressed (MBWMDecorButton *button)
       mb_wm_client_set_state (client,
 			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
 			      MBWMClientWindowStateChangeAdd);
-
-      mb_wm_client_display_sync (client);
       break;
     case MBWMDecorButtonFullscreen:
       mb_wm_client_set_state (client,
 			      MBWM_ATOM_NET_WM_STATE_FULLSCREEN,
 			      MBWMClientWindowStateChangeAdd);
-
-      mb_wm_client_display_sync (client);
       break;
     case MBWMDecorButtonAccept:
       mb_wm_client_deliver_wm_protocol (client,

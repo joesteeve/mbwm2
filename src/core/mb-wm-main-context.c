@@ -273,9 +273,6 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
     }
 
-  if (wm->need_display_sync)
-    mb_wm_sync (wm);
-
   return False;
 }
 
@@ -319,6 +316,9 @@ mb_wm_main_context_loop(MBWMMainContext *ctx)
 	  /* Process any pending xevents */
 	  while (mb_wm_main_context_spin_xevent (ctx, False));
 	}
+
+      if (wm->need_display_sync)
+	mb_wm_sync (wm);
     }
 }
 

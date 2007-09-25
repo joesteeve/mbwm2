@@ -383,9 +383,6 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   if (mb_wm_client_needs_visibility_sync (client))
     {
-
-      MBWM_DBG("needs visibility sync");
-
       mb_wm_util_trap_x_errors();
 
       if (mb_wm_client_is_mapped (client))

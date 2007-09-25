@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -26,7 +26,7 @@ mb_wm_stack_ensure_trans_foreach (MBWindowManagerClient *client, void *data)
 {
   mb_wm_stack_move_top (client);
 
-  mb_wm_util_list_foreach 
+  mb_wm_util_list_foreach
     (mb_wm_client_get_transients (client),
      (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach,
      NULL);
@@ -95,27 +95,27 @@ mb_wm_stack_ensure (MBWindowManager *wm)
 
       while (client != seen && client != NULL)
 	{
-	  /* get the next valid client ( ignore transients ) before 
-	   * modifying the list  
+	  /* get the next valid client ( ignore transients ) before
+	   * modifying the list
 	  */
 	  next = client->stacked_above;
 
 	  while (next && mb_wm_client_get_transient_for (next))
 	    next = next->stacked_above;
 
-	  if (client->stacking_layer == i 
+	  if (client->stacking_layer == i
 	      && mb_wm_client_get_transient_for (client) == NULL)
 	    {
-	      /* Keep track of the first client modified so we 
+	      /* Keep track of the first client modified so we
                * know when to stop iterating.
 	      */
 	      if (seen == NULL)
 		seen = client;
 
 	      mb_wm_stack_move_top (client);
-	      
+
 	      /* push transients to the top also */
-	      mb_wm_util_list_foreach 
+	      mb_wm_util_list_foreach
 		(mb_wm_client_get_transients (client),
 		 (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach,
 		 NULL);
@@ -132,7 +132,7 @@ mb_wm_stack_ensure (MBWindowManager *wm)
 }
 
 void
-mb_wm_stack_insert_above_client (MBWindowManagerClient *client, 
+mb_wm_stack_insert_above_client (MBWindowManagerClient *client,
 				 MBWindowManagerClient *client_below)
 {
   MBWindowManager *wm = client->wmref;
@@ -142,7 +142,7 @@ mb_wm_stack_insert_above_client (MBWindowManagerClient *client,
   if (client_below == NULL)
     {
       /* NULL so nothing below add at bottom */
-      if (wm->stack_bottom) 
+      if (wm->stack_bottom)
 	{
 	  client->stacked_above = wm->stack_bottom;
 	  wm->stack_bottom->stacked_below = client;
@@ -165,7 +165,7 @@ mb_wm_stack_insert_above_client (MBWindowManagerClient *client,
 }
 
 
-void 
+void
 mb_wm_stack_append_top (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
@@ -173,14 +173,14 @@ mb_wm_stack_append_top (MBWindowManagerClient *client)
   mb_wm_stack_insert_above_client(client, wm->stack_top);
 }
 
-void 
+void
 mb_wm_stack_prepend_bottom (MBWindowManagerClient *client)
 {
   mb_wm_stack_insert_above_client(client, NULL);
 }
 
 void
-mb_wm_stack_move_client_above_type (MBWindowManagerClient *client, 
+mb_wm_stack_move_client_above_type (MBWindowManagerClient *client,
 				    MBWMClientType         type_below)
 {
   MBWindowManager       *wm = client->wmref;
@@ -190,11 +190,11 @@ mb_wm_stack_move_client_above_type (MBWindowManagerClient *client,
 
   if (highest_client)
     mb_wm_stack_move_above_client(client, highest_client);
-} 
+}
 
 
 void
-mb_wm_stack_move_above_client (MBWindowManagerClient *client, 
+mb_wm_stack_move_above_client (MBWindowManagerClient *client,
 			       MBWindowManagerClient *client_below)
 {
   if (client == client_below) return;
@@ -207,7 +207,7 @@ mb_wm_stack_move_above_client (MBWindowManagerClient *client,
 }
 
 MBWindowManagerClient*
-mb_wm_stack_get_highest_by_type (MBWindowManager       *wm, 
+mb_wm_stack_get_highest_by_type (MBWindowManager       *wm,
 				 MBWMClientType         type)
 {
   MBWindowManagerClient *highest_client = NULL, *c = NULL;
@@ -265,9 +265,9 @@ mb_wm_stack_remove (MBWindowManagerClient *client)
       if (client == wm->stack_bottom)
 	wm->stack_bottom = client->stacked_above;
 
-      if (client->stacked_below != NULL) 
+      if (client->stacked_below != NULL)
 	client->stacked_below->stacked_above = client->stacked_above;
-      if (client->stacked_above != NULL) 
+      if (client->stacked_above != NULL)
 	client->stacked_above->stacked_below = client->stacked_below;
     }
 

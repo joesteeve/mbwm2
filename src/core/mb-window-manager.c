@@ -345,6 +345,15 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
 
   MBWM_MARK();
 
+  if ((client = mb_wm_managed_client_from_xwindow(wm, xev->window)))
+    {
+      /* This client is already managed, but for some reason not mapped
+       * -- try to activate it.
+       */
+      mb_wm_activate_client (wm, client);
+      return;
+    }
+
   client = mb_wm_unmapped_client_from_xwindow(wm, xev->window);
 
   if (client)
@@ -382,19 +391,14 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
 }
 
 
-static Window*
-stack_get_window_list (MBWindowManager *wm)
+static void
+stack_get_window_list (MBWindowManager *wm, Window * win_list)
 {
-  Window                *win_list;
   MBWindowManagerClient *client;
   int                    i = 0;
 
-  if (!wm->stack_n_clients) return NULL;
-
-  /* FIXME: avoid mallocing all the time - cache the memory */
-  win_list = malloc(sizeof(Window)*(wm->stack_n_clients));
-
-  MBWM_DBG("start");
+  if (!wm->stack_n_clients)
+    return;
 
   mb_wm_stack_enumerate_reverse(wm, client)
   {
@@ -402,11 +406,7 @@ stack_get_window_list (MBWindowManager *wm)
       win_list[i++] = client->xwin_frame;
     else
       win_list[i++] = MB_WM_CLIENT_XWIN(client);
-
-    MBWM_DBG("added %lx", win_list[i-1]);
   }
-
-  MBWM_DBG("end");
 
   return win_list;
 }
@@ -416,18 +416,17 @@ stack_sync_to_display (MBWindowManager *wm)
 {
   Window *win_list = NULL;
 
+  if (!wm->stack_n_clients)
+    return;
+
   mb_wm_stack_ensure (wm);
 
-  win_list = stack_get_window_list(wm);
+  win_list = alloca (sizeof(Window)*(wm->stack_n_clients));
+  stack_get_window_list(wm, win_list);
 
-  if (win_list)
-    {
-      mb_wm_util_trap_x_errors();
-      XRestackWindows(wm->xdpy, win_list, wm->stack_n_clients);
-      mb_wm_util_untrap_x_errors();
-
-      free(win_list);
-    }
+  mb_wm_util_trap_x_errors();
+  XRestackWindows(wm->xdpy, win_list, wm->stack_n_clients);
+  mb_wm_util_untrap_x_errors();
 }
 
 void
@@ -489,8 +488,8 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
       list_size = mb_wm_util_list_length (wm->clients) +
 	mb_wm_util_list_length (wm->unmapped_clients);
 
-      wins      = mb_wm_util_malloc0 (sizeof(Window) * list_size);
-      app_wins  = mb_wm_util_malloc0 (sizeof(Window) * list_size);
+      wins      = alloca (sizeof(Window) * list_size);
+      app_wins  = alloca (sizeof(Window) * list_size);
 
       mb_wm_stack_enumerate (wm,c)
 	{
@@ -543,10 +542,7 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
       XChangeProperty(wm->xdpy, root_win,
 		      wm->atoms[MBWM_ATOM_NET_CLIENT_LIST] ,
 		      XA_WINDOW, 32, PropModeReplace,
-		      (unsigned char *)wins, list_size);
-
-      free(app_wins);
-      free(wins);
+		      (unsigned char *)wins, cnt);
     }
   else
     {
@@ -597,6 +593,8 @@ mb_wm_manage_client (MBWindowManager       *wm,
     mb_wm_activate_client (wm, client);
   else
     mb_wm_client_show (client);
+
+  mb_wm_display_sync_queue (client->wmref);
 }
 
 void
@@ -634,6 +632,8 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   else
     wm->unmapped_clients = mb_wm_util_list_append (wm->unmapped_clients,
 						  client);
+
+  mb_wm_display_sync_queue (client->wmref);
 }
 
 MBWindowManagerClient*
@@ -955,10 +955,6 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
   if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
     return; /* Handled by derived class */
 
-  mb_wm_util_trap_x_errors ();
-
-  XGrabServer(wm->xdpy);
-
   was_desktop = (wm->stack_top && MB_WM_IS_CLIENT_DESKTOP(wm->stack_top));
   is_desktop  = (MB_WM_IS_CLIENT_DESKTOP(c));
 
@@ -976,9 +972,7 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
 		      (unsigned char *)&card, 1);
     }
 
-  XSync(wm->xdpy, False);
-  XUngrabServer(wm->xdpy);
-  mb_wm_util_untrap_x_errors ();
+  mb_wm_display_sync_queue (wm);
 }
 
 MBWindowManagerClient*
@@ -1060,7 +1054,20 @@ mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
     return;
 
   if (!mb_wm_client_is_realized (client))
-    mb_wm_sync (wm);
+    {
+      /* We need the window mapped before we can focus it, but do not
+       * want to do a full-scale mb_wm_sync ():
+       *
+       * First We need to update layout, othewise the window will get frame
+       * size of 0x0; then we can realize it, and do a display sync (i.e.,
+       * map).
+       */
+      if (wm->layout)
+	mb_wm_layout_update (wm->layout);
+
+      mb_wm_client_realize (client);
+      mb_wm_client_display_sync (client);
+    }
 
   if (mb_wm_client_focus (client))
     {
@@ -1110,7 +1117,7 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 
       mb_wm_stack_enumerate_reverse (wm, c)
 	{
-	  if (mb_wm_client_want_focus (c))
+	  if (c != client && mb_wm_client_want_focus (c))
 	    {
 	      next = c;
 	      break;

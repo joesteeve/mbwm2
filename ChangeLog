@@ -1,3 +1,20 @@
+2007-09-25  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-window-manager.c:
+	Numerous synchronization fixes.
+
+        * src/core/mb-window-manager.c:
+	(stack_get_window_list):
+	(mb_wm_update_root_win_lists):
+	Use alloca for temporary storage instead of malloc.
+
+        * src/core/mb-wm-stack.c:
+	Stripped trailing whitespace.
+
 2007-09-24  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:

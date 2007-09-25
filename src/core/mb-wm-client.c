@@ -327,10 +327,7 @@ mb_wm_client_hide (MBWindowManagerClient *client)
 
   client->priv->mapped = False;
 
-  /* remove it from stack */
-  mb_wm_stack_remove (client);
   mb_wm_unfocus_client (client->wmref, client);
-
   mb_wm_client_visibility_mark_dirty (client);
 }
 
@@ -705,7 +702,7 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
       win->ewmh_state &= ~state_flag;
     }
 
-  if ((state_flag & MBWMClientWindowEWMHStateHidden))
+  if (new_state && (state_flag & MBWMClientWindowEWMHStateHidden))
     {
       mb_wm_client_hide (client);
       return;
