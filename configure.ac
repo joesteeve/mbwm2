@@ -53,6 +53,9 @@ if test "$use_cairo" = yes; then
 fi
 
 AM_CONDITIONAL(THEME_PNG, [test "x$png_theme" = "xyes"])
+if test "$png_theme" = yes; then
+  AC_DEFINE(THEME_PNG, 1, [Build PNG-image based theme engine])
+fi
 
 # only build simple theme if cairo theme disabled
 AM_CONDITIONAL(THEME_SIMPLE, [test "x$use_cairo" != "xyes"])
@@ -85,6 +88,9 @@ src/client-types/Makefile
 src/managers/Makefile
 src/managers/simple/Makefile
 src/theme-engines/Makefile
+data/Makefile
+data/themes/Makefile
+data/themes/Default/Makefile
 ])
 
 echo "

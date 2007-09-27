@@ -737,29 +737,9 @@ mb_wm_unmapped_client_from_xwindow(MBWindowManager *wm, Window win)
   return NULL;
 }
 
-static void
-mb_wm_check_init_ok (MBWindowManager * wm)
-{
-  /* There are some things that have to be satisfied before we can
-   * run ...
-   */
-  Bool err = False;
-
-  if (!wm->theme)
-    {
-      err = True;
-      fprintf (stderr, "Error: theme was not initialized correctly\n");
-    }
-
-  if (err)
-    exit (-1);
-}
-
 void
 mb_wm_main_loop(MBWindowManager *wm)
 {
-  mb_wm_check_init_ok (wm);
-
   mb_wm_main_context_loop (wm->main_ctx);
 }
 

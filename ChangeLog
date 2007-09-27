@@ -1,5 +1,18 @@
 2007-09-27  Tomas Frydrych  <tf@o-hand.com>
 
+        * Makefile.am:
+        * configure.ac:
+        * data/themes/Default/Makefile.am:
+        * data/themes/Default/theme.xml:
+        * src/core/mb-window-manager.c:
+        * src/theme-engines/mb-wm-theme.c:
+	Added data/themes and populated with Default theme from MBWM1.
+	Added initial theme version and type parsing.
+	Made mb_wm_theme API safe with NULL theme; allow WM to run without
+	a theme.
+
+2007-09-27  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/core/mb-wm-atoms.c:

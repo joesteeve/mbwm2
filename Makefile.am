@@ -1,4 +1,4 @@
-SUBDIRS = src
+SUBDIRS = src data
 
 # Extra clean files so that maintainer-clean removes *everything*
 
