@@ -83,6 +83,7 @@ src/Makefile
 src/core/Makefile
 src/client-types/Makefile
 src/managers/Makefile
+src/managers/simple/Makefile
 src/theme-engines/Makefile
 ])
 

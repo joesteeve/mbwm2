@@ -193,13 +193,286 @@ mb_wm_layout_get_edge_offset (MBWindowManager *wm,
 }
 
 static void
+mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
+{
+  MBWindowManagerClient *client;
+  MBGeometry             coverage;
+  Bool                   need_change;
+  int                    min_x, max_x, min_y, max_y;
+
+  /* FIXME: need to enumerate by *age* in case multiple panels ? */
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints ==
+	(LayoutPrefReserveEdgeNorth|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_X|SET_Y|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_HEIGHT);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+	  /* FIXME: what if this returns False ? */
+
+	avail_geom->y      = coverage.y + coverage.height;
+	avail_geom->height = avail_geom->height - coverage.height;
+      }
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints ==
+	(LayoutPrefReserveEdgeSouth|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_X|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_HEIGHT);
+
+	if (coverage.y != avail_geom->y + avail_geom->height - coverage.height)
+	  {
+	    coverage.y = avail_geom->y + avail_geom->height - coverage.height;
+	    need_change = True;
+	  }
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	avail_geom->height = avail_geom->height - coverage.height;
+      }
+
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefReserveEdgeWest|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_X|SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	avail_geom->x      = coverage.x + coverage.width;
+	avail_geom->width  = avail_geom->width - coverage.width;
+      }
+
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefReserveEdgeEast|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	if (coverage.x != avail_geom->x + avail_geom->width - coverage.width)
+	  {
+	    coverage.x = avail_geom->x + avail_geom->width - coverage.width;
+	    need_change = True;
+	  }
+
+	avail_geom->width  = avail_geom->width - coverage.width;
+      }
+}
+
+static void
+mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
+{
+  MBWindowManagerClient *client;
+  MBGeometry             coverage;
+  Bool                   need_change;
+  int                    min_x, max_x, min_y, max_y;
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints ==
+	(LayoutPrefReserveNorth|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_X|SET_Y|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_HEIGHT);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+	  /* FIXME: what if this returns False ? */
+
+	avail_geom->y      = coverage.y + coverage.height;
+	avail_geom->height = avail_geom->height - coverage.height;
+      }
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints ==
+	(LayoutPrefReserveSouth|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_X|SET_WIDTH);
+	/* Too high */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_HEIGHT);
+
+	if (coverage.y != avail_geom->y + avail_geom->height - coverage.height)
+	  {
+	    coverage.y = avail_geom->y + avail_geom->height - coverage.height;
+	    need_change = True;
+	  }
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	avail_geom->height = avail_geom->height - coverage.height;
+      }
+
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefReserveWest|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_X|SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	avail_geom->x      = coverage.x + coverage.width;
+	avail_geom->width  = avail_geom->width - coverage.width;
+      }
+
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefReserveEast|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	/* set x,y to avail and max width */
+	need_change = mb_wm_layout_maximise_geometry (&coverage,
+						      avail_geom,
+						      SET_Y|SET_HEIGHT);
+	/* Too wide */
+	need_change |= mb_wm_layout_clip_geometry (&coverage,
+						   avail_geom, SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+
+	if (coverage.x != avail_geom->x + avail_geom->width - coverage.width)
+	  {
+	    coverage.x = avail_geom->x + avail_geom->width - coverage.width;
+	    need_change = True;
+	  }
+
+	avail_geom->width  = avail_geom->width - coverage.width;
+      }
+}
+
+static void
+mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
+{
+  MBWindowManagerClient *client;
+  MBGeometry             coverage;
+  Bool                   need_change;
+  int                    min_x, max_x, min_y, max_y;
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefGrowToFreeSpace|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	if (coverage.x != avail_geom->x
+	    || coverage.width != avail_geom->width
+	    || coverage.y != avail_geom->y
+	    || coverage.height != avail_geom->height)
+	  {
+	    MBWM_DBG("available geom for free space: %i+%i %ix%i",
+		     min_x, min_y, max_x - min_x, max_y - min_y);
+
+	    coverage.width  = avail_geom->width;
+	    coverage.height = avail_geom->height;
+	    coverage.x      = avail_geom->x;
+	    coverage.y      = avail_geom->y;
+
+	    mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+	  }
+      }
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefPositionFree|LayoutPrefVisible))
+      {
+	/* Clip if needed */
+	mb_wm_client_get_coverage (client, &coverage);
+
+	need_change = mb_wm_layout_clip_geometry (&coverage,
+						  avail_geom,
+						  SET_X | SET_Y |
+						  SET_HEIGHT | SET_WIDTH);
+
+	if (need_change)
+	  mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+      }
+}
+
+static void
 mb_wm_layout_real_update (MBWMLayout * layout)
 {
   MBWindowManager       *wm = layout->wm;
-  int                    min_x, max_x, min_y, max_y;
   MBGeometry             coverage, avail_geom;
   MBWindowManagerClient *client = NULL;
-  Bool                   need_change;
 
   mb_wm_get_display_geometry (wm, &avail_geom);
 
@@ -238,257 +511,9 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 
  */
 
-  /* FIXME: need to enumerate by *age* in case multiple panels ? */
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints ==
-	(LayoutPrefReserveEdgeNorth|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_X|SET_Y|SET_WIDTH);
-	/* Too high */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_HEIGHT);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-	  /* FIXME: what if this returns False ? */
-
-	avail_geom.y      = coverage.y + coverage.height;
-	avail_geom.height = avail_geom.height - coverage.height;
-      }
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints ==
-	(LayoutPrefReserveEdgeSouth|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_X|SET_WIDTH);
-	/* Too high */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_HEIGHT);
-
-	if (coverage.y != avail_geom.y + avail_geom.height - coverage.height)
-	  {
-	    coverage.y = avail_geom.y + avail_geom.height - coverage.height;
-	    need_change = True;
-	  }
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-
-	avail_geom.height = avail_geom.height - coverage.height;
-      }
-
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveEdgeWest|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_X|SET_Y|SET_HEIGHT);
-	/* Too wide */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_WIDTH);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-
-	avail_geom.x      = coverage.x + coverage.width;
-	avail_geom.width  = avail_geom.width - coverage.width;
-      }
-
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveEdgeEast|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_Y|SET_HEIGHT);
-	/* Too wide */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_WIDTH);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-
-	if (coverage.x != avail_geom.x + avail_geom.width - coverage.width)
-	  {
-	    coverage.x = avail_geom.x + avail_geom.width - coverage.width;
-	    need_change = True;
-	  }
-
-	avail_geom.width  = avail_geom.width - coverage.width;
-      }
-
-
-  /* ### Now inner reservations ### */
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints ==
-	(LayoutPrefReserveNorth|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_X|SET_Y|SET_WIDTH);
-	/* Too high */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_HEIGHT);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-	  /* FIXME: what if this returns False ? */
-
-	avail_geom.y      = coverage.y + coverage.height;
-	avail_geom.height = avail_geom.height - coverage.height;
-      }
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints ==
-	(LayoutPrefReserveSouth|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_X|SET_WIDTH);
-	/* Too high */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_HEIGHT);
-
-	if (coverage.y != avail_geom.y + avail_geom.height - coverage.height)
-	  {
-	    coverage.y = avail_geom.y + avail_geom.height - coverage.height;
-	    need_change = True;
-	  }
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-
-	avail_geom.height = avail_geom.height - coverage.height;
-      }
-
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveWest|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_X|SET_Y|SET_HEIGHT);
-	/* Too wide */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_WIDTH);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-
-	avail_geom.x      = coverage.x + coverage.width;
-	avail_geom.width  = avail_geom.width - coverage.width;
-      }
-
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveEast|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      &avail_geom,
-						      SET_Y|SET_HEIGHT);
-	/* Too wide */
-	need_change |= mb_wm_layout_clip_geometry (&coverage,
-						   &avail_geom, SET_WIDTH);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-
-	if (coverage.x != avail_geom.x + avail_geom.width - coverage.width)
-	  {
-	    coverage.x = avail_geom.x + avail_geom.width - coverage.width;
-	    need_change = True;
-	  }
-
-	avail_geom.width  = avail_geom.width - coverage.width;
-      }
-
-  /* final one */
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefGrowToFreeSpace|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	if (coverage.x != avail_geom.x
-	    || coverage.width != avail_geom.width
-	    || coverage.y != avail_geom.y
-	    || coverage.height != avail_geom.height)
-	  {
-	    MBWM_DBG("available geom for free space: %i+%i %ix%i",
-		     min_x, min_y, max_x - min_x, max_y - min_y);
-
-	    coverage.width  = avail_geom.width;
-	    coverage.height = avail_geom.height;
-	    coverage.x      = avail_geom.x;
-	    coverage.y      = avail_geom.y;
-
-	    mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-	  }
-      }
-
-  mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefPositionFree|LayoutPrefVisible))
-      {
-	/* Clip if needed */
-	mb_wm_client_get_coverage (client, &coverage);
-
-	need_change = mb_wm_layout_clip_geometry (&coverage,
-						  &avail_geom,
-						  SET_X | SET_Y |
-						  SET_HEIGHT | SET_WIDTH);
-
-	if (need_change)
-	  mb_wm_client_request_geometry (client,
-					 &coverage,
-					 MBWMClientReqGeomIsViaLayoutManager);
-      }
+  mb_wm_layout_panels (wm, &avail_geom);
+  mb_wm_layout_input  (wm, &avail_geom);
+  mb_wm_layout_free   (wm, &avail_geom);
 }
 
 void

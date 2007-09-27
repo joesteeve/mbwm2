@@ -1,3 +1,15 @@
+2007-09-27  Tomas Frydrych  <tf@o-hand.com>
+
+	configure.ac:
+	src/core/managers/Makefile.am:
+	src/core/managers/simple/Makefile.am:
+	src/core/managers/simple/matchbox-window-manager-2-simple:
+	Moved the simple manager into a subdirectory 'simple'.
+
+	src/core/mb-wm-layout.c:
+	(mb_wm_layout_real_update):
+	Split function into smaller, more manageable, chunks.
+
 2007-09-25  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-input.c:
