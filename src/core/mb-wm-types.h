@@ -206,6 +206,8 @@ typedef enum MBWMAtom
   MBWM_ATOM_CM_TRANSLUCENCY,
 
   MBWM_ATOM_MB_APP_WINDOW_LIST_STACKING,
+  MBWM_ATOM_MB_THEME,
+  MBWM_ATOM_MB_THEME_NAME,
 
   /* FIXME: Custom/Unused to sort out
    *
@@ -223,8 +225,6 @@ typedef enum MBWMAtom
    *
    * WINDOW_TYPE_MESSAGE,
    *
-   * _MB_THEME,
-   * _MB_THEME_NAME,
   */
 
   MBWM_ATOM_COUNT

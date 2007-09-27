@@ -17,9 +17,6 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor);
 static void
 mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
 
-static Bool
-mb_wm_theme_png_switch (MBWMTheme *theme, const char *detail);
-
 static void
 mb_wm_theme_png_class_init (MBWMObjectClass *klass)
 {
@@ -27,7 +24,6 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
 
   t_class->paint_decor  = mb_wm_theme_png_paint_decor;
   t_class->paint_button = mb_wm_theme_png_paint_button;
-  t_class->theme_switch = mb_wm_theme_png_switch;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMThemePng";
@@ -77,10 +73,3 @@ static void
 mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 {
 }
-
-static Bool
-mb_wm_theme_png_switch (MBWMTheme   *theme,
-			  const char  *detail)
-{
-}
-

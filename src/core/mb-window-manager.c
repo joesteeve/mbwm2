@@ -53,9 +53,12 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 }
 
 static MBWMTheme *
-mb_wm_theme_init (MBWindowManager * wm)
+mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
 {
-  return mb_wm_theme_new (wm);
+  /*
+   *  FIXME -- load the selected theme from some configuration
+   */
+  return mb_wm_theme_new (wm, path);
 }
 
 static void
@@ -69,7 +72,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
 
   wm_class->process_cmdline = mb_wm_process_cmdline;
   wm_class->client_new      = mb_wm_client_new_func;
-  wm_class->theme_init      = mb_wm_theme_init;
+  wm_class->theme_new       = mb_wm_real_theme_new;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWindowManager";
@@ -246,6 +249,33 @@ mb_wm_handle_property_notify (XPropertyEvent          *xev,
   MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client;
   int flag = 0;
+
+  if (xev->window == wm->root_win->xwindow)
+    {
+      if (xev->atom == wm->atoms[MBWM_ATOM_MB_THEME])
+	{
+	  Atom type;
+	  int  format;
+	  unsigned long items;
+	  unsigned long left;
+	  char         *theme_path;
+
+	  XGetWindowProperty (wm->xdpy, wm->root_win->xwindow,
+			      xev->atom, 0, 8192, False,
+			      XA_STRING, &type, &format,
+			      &items, &left,
+			      (unsigned char **)&theme_path);
+
+	  if (!type || !items)
+	    return True;
+
+	  mb_wm_set_theme_from_path (wm, theme_path);
+
+	  XFree (theme_path);
+	}
+
+      return True;
+    }
 
   client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
@@ -707,9 +737,29 @@ mb_wm_unmapped_client_from_xwindow(MBWindowManager *wm, Window win)
   return NULL;
 }
 
+static void
+mb_wm_check_init_ok (MBWindowManager * wm)
+{
+  /* There are some things that have to be satisfied before we can
+   * run ...
+   */
+  Bool err = False;
+
+  if (!wm->theme)
+    {
+      err = True;
+      fprintf (stderr, "Error: theme was not initialized correctly\n");
+    }
+
+  if (err)
+    exit (-1);
+}
+
 void
 mb_wm_main_loop(MBWindowManager *wm)
 {
+  mb_wm_check_init_ok (wm);
+
   mb_wm_main_context_loop (wm->main_ctx);
 }
 
@@ -899,7 +949,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_atoms_init(wm);
 
-  wm->theme = wm_class->theme_init (wm);
+  mb_wm_set_theme_from_path (wm, NULL);
 
   wm->root_win = mb_wm_root_window_get (wm);
 
@@ -1188,5 +1238,52 @@ mb_wm_cycle_apps (MBWindowManager *wm)
 
   mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp);
   mb_wm_display_sync_queue (wm, MBWMSyncStacking);
+}
+
+void
+mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme)
+{
+  if (!theme)
+    return;
+
+  XGrabServer(wm->xdpy);
+
+  if (wm->theme)
+    mb_wm_object_unref (MB_WM_OBJECT (wm->theme));
+
+  wm->theme = theme;
+  wm->sync_type |= (MBWMSyncGeometry | MBWMSyncVisibility | MBWMSyncDecor);
+
+  /* When initializing the MBWindowManager object, the theme gets created
+   * before the root window, so that the root window can interogate it,
+   * so we can get here before the window is in place
+   */
+  if (wm->root_win)
+    mb_wm_root_window_update_supported_props (wm->root_win);
+
+  XUngrabServer(wm->xdpy);
+}
+
+void
+mb_wm_set_theme_from_path (MBWindowManager *wm, const char *theme_path)
+{
+  MBWMTheme            *theme;
+  MBWindowManagerClass *wm_class;
+
+  wm_class = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+
+  if (wm->theme)
+    {
+      if (wm->theme->path && theme_path &&
+	  !strcmp (theme_path, wm->theme->path))
+	return;
+
+      if (!wm->theme->path && !theme_path)
+	return;
+    }
+
+  theme = wm_class->theme_new (wm, theme_path);
+
+  mb_wm_set_theme (wm, theme);
 }
 

@@ -51,4 +51,7 @@ mb_wm_root_window_class_type ();
 int
 mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e);
 
+void
+mb_wm_root_window_update_supported_props (MBWMRootWindow *win);
+
 #endif

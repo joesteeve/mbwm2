@@ -82,7 +82,7 @@ struct MBWindowManagerClass
   Bool (*client_responding) (MBWindowManager *wm, MBWindowManagerClient *c);
   Bool (*client_hang)       (MBWindowManager *wm, MBWindowManagerClient *c);
 
-  MBWMTheme * (*theme_init) (MBWindowManager *wm);
+  MBWMTheme * (*theme_new)  (MBWindowManager *wm, const char * path);
 };
 
 MBWindowManager *
@@ -146,5 +146,11 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client);
 
 void
 mb_wm_cycle_apps (MBWindowManager *wm);
+
+void
+mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme);
+
+void
+mb_wm_set_theme_from_path (MBWindowManager *wm, const char *theme_path);
 
 #endif

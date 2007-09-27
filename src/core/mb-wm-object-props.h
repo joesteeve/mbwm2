@@ -79,6 +79,8 @@ typedef enum MBWMObjectProp
     MBWMObjectPropDecorButtonType         = _MKOPROP(17, int),
     MBWMObjectPropDecorButtonPack         = _MKOPROP(18, int),
 
+    MBWMObjectPropThemePath               = _MKOPROP(19, void*),
+
     _MBWMObjectPropLastGlobal = 0x00fffff0,
   }
 MBWMObjectProp;

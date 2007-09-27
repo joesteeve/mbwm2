@@ -93,6 +93,8 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_SYNC_REQUEST",
     "CM_TRANSLUCENCY",
     "_MB_APP_WINDOW_LIST_STACKING",
+    "_MB_THEME",
+    "_MB_THEME_NAME",
   };
 
   /* FIXME: Error Traps */

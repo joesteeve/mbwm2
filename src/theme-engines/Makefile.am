@@ -16,6 +16,6 @@ noinst_LIBRARIES = libmb-theme.a
 
 libmb_theme_a_SOURCES = $(COMMON_SRC) $(CAIRO_SRC) $(SIMPLE_SRC) $(PNG_SRC)
 
-INCLUDES = @MBWM_INCS@ @MBWM_CFLAGS@
+INCLUDES = @MBWM_INCS@ @MBWM_CFLAGS@ -DDATADIR=\"$(datadir)\"
 
 MAINTAINERCLEANFILES = config.h.in Makefile.in

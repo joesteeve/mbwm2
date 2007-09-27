@@ -163,54 +163,12 @@ mb_wm_root_window_init_attributes (MBWMRootWindow * win)
   return True;
 }
 
-static void
-mb_wm_root_window_init_properties (MBWMRootWindow * win)
+void
+mb_wm_root_window_update_supported_props (MBWMRootWindow *win)
 {
   MBWindowManager  *wm = win->wm;
   Window            rwin = win->xwindow;
-  Window            hwin = win->hidden_window;
-
   CARD32            num_supported = 0;
-  CARD32            card32;
-  unsigned long     val[2];
-  char             *app_name = "matchbox";
-
-  val[0] = hwin;
-
-  /*
-   * The compliance info
-   */
-
-  /* Crack Needed to stop gnome session hanging ? */
-  XChangeProperty(wm->xdpy, rwin,
-		  wm->atoms[MBWM_ATOM_WIN_SUPPORTING_WM_CHECK],
-		  XA_WINDOW, 32, PropModeReplace, (unsigned char *)val,
-		  1);
-
-  XChangeProperty(wm->xdpy, hwin,
-		  wm->atoms[MBWM_ATOM_WIN_SUPPORTING_WM_CHECK],
-		  XA_WINDOW, 32, PropModeReplace,
-		  (unsigned char *)val, 1);
-
-  /* Correct way of doing it */
-  XChangeProperty(wm->xdpy, rwin,
-		  wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
-		  XA_WINDOW, 32, PropModeReplace, (unsigned char *)val,
-		  1);
-
-  XChangeProperty(wm->xdpy, hwin,
-		  wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
-		  XA_WINDOW, 32, PropModeReplace,
-		  (unsigned char *)val, 1);
-
-
-  XChangeProperty(wm->xdpy, hwin,
-		  wm->atoms[MBWM_ATOM_NET_WM_NAME],
-		  wm->atoms[MBWM_ATOM_UTF8_STRING],
-		  8, PropModeReplace,
-		  (unsigned char *)app_name, strlen(app_name)+1);
-
-  XStoreName(wm->xdpy, hwin, app_name);
 
   /*
    * Supported info
@@ -256,23 +214,85 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
   num_supported = sizeof(supported)/sizeof(Atom) - 2;
 
   /* Check to see if the theme supports help / accept buttons */
-  if (( mb_wm_theme_supports (wm->theme,
-			      MBWMThemeCapsFrameMainButtonActionAccept)
-	/*|| w->config->use_title == False */)
-      && mb_wm_theme_supports (wm->theme,
-			       MBWMThemeCapsFrameMainButtonActionAccept))
-    supported[num_supported++] = wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT];
+  if (wm->theme)
+    {
+      if (( mb_wm_theme_supports (wm->theme,
+				  MBWMThemeCapsFrameMainButtonActionAccept)
+	    /*|| w->config->use_title == False */)
+	  && mb_wm_theme_supports (wm->theme,
+				   MBWMThemeCapsFrameMainButtonActionAccept))
+	supported[num_supported++]=wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT];
 
-  if (( mb_wm_theme_supports (wm->theme,
-			      MBWMThemeCapsFrameMainButtonActionHelp)
-	/*|| w->config->use_title == False*/ )
-      && mb_wm_theme_supports (wm->theme,
-			       MBWMThemeCapsFrameMainButtonActionHelp))
-    supported[num_supported++] = wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP];
+      if (( mb_wm_theme_supports (wm->theme,
+				  MBWMThemeCapsFrameMainButtonActionHelp)
+	    /*|| w->config->use_title == False*/ )
+	  && mb_wm_theme_supports (wm->theme,
+				   MBWMThemeCapsFrameMainButtonActionHelp))
+	supported[num_supported++] = wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP];
+    }
 
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_SUPPORTED],
 		  XA_ATOM, 32, PropModeReplace, (unsigned char *)supported,
 		  num_supported);
+
+  if (wm->theme)
+    {
+      if (wm->theme->path)
+	XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_MB_THEME],
+			XA_STRING, 8, PropModeReplace,
+			(unsigned char *)wm->theme->path,
+			strlen (wm->theme->path) + 1);
+      else
+	XDeleteProperty (wm->xdpy, rwin, wm->atoms[MBWM_ATOM_MB_THEME]);
+    }
+}
+
+static void
+mb_wm_root_window_init_properties (MBWMRootWindow * win)
+{
+  MBWindowManager  *wm = win->wm;
+  Window            rwin = win->xwindow;
+  Window            hwin = win->hidden_window;
+
+  CARD32            num_supported = 0;
+  CARD32            card32;
+  unsigned long     val[2];
+  char             *app_name = "matchbox";
+
+  val[0] = hwin;
+
+  /* Window name */
+  XChangeProperty(wm->xdpy, hwin,
+		  wm->atoms[MBWM_ATOM_NET_WM_NAME],
+		  wm->atoms[MBWM_ATOM_UTF8_STRING],
+		  8, PropModeReplace,
+		  (unsigned char *)app_name, strlen(app_name)+1);
+
+  XStoreName(wm->xdpy, hwin, app_name);
+
+  /* Crack Needed to stop gnome session hanging ? */
+  XChangeProperty(wm->xdpy, rwin,
+		  wm->atoms[MBWM_ATOM_WIN_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace, (unsigned char *)val,
+		  1);
+
+  XChangeProperty(wm->xdpy, hwin,
+		  wm->atoms[MBWM_ATOM_WIN_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace,
+		  (unsigned char *)val, 1);
+
+  /* Correct way of doing it */
+  XChangeProperty(wm->xdpy, rwin,
+		  wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace, (unsigned char *)val,
+		  1);
+
+  XChangeProperty(wm->xdpy, hwin,
+		  wm->atoms[MBWM_ATOM_NET_SUPPORTING_WM_CHECK],
+		  XA_WINDOW, 32, PropModeReplace,
+		  (unsigned char *)val, 1);
+
+  mb_wm_root_window_update_supported_props (win);
 
   /*
    * Desktop info

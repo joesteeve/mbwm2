@@ -20,12 +20,15 @@
 
 #include "mb-wm-theme.h"
 
+#include <sys/stat.h>
+
 static void
 mb_wm_theme_destroy (MBWMObject *obj)
 {
-  /*
-       MBWMTheme * theme = MB_WM_THEME(obj);
-   */
+  MBWMTheme *theme = MB_WM_THEME (obj);
+
+  if (theme->path)
+    free (theme->path);
 }
 
 static void
@@ -34,6 +37,7 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
   MBWMTheme        *theme = MB_WM_THEME (obj);
   MBWindowManager  *wm = NULL;
   MBWMObjectProp    prop;
+  char             *path = NULL;
 
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -43,6 +47,8 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropWm:
 	  wm = va_arg(vap, MBWindowManager *);
 	  break;
+	case MBWMObjectPropThemePath:
+	  path = va_arg(vap, char *);
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -51,6 +57,9 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
     }
 
   theme->wm = wm;
+
+  if (path)
+    theme->path = strdup (path);
 }
 
 int
@@ -95,17 +104,6 @@ mb_wm_theme_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 }
 
 Bool
-mb_wm_theme_switch (MBWMTheme *theme, const char *detail)
-{
-  MBWMThemeClass *klass =
-    MB_WM_THEME_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(theme)));
-
-  if (klass->theme_switch)
-    klass->theme_switch (theme, detail);
-}
-
-
-Bool
 mb_wm_theme_supports (MBWMTheme *theme, MBWMThemeCaps capability)
 {
   if (theme)
@@ -115,16 +113,76 @@ mb_wm_theme_supports (MBWMTheme *theme, MBWMThemeCaps capability)
 }
 
 MBWMTheme *
-mb_wm_theme_new (MBWindowManager * wm)
+mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 {
-#ifdef USE_CAIRO
+  MBWMTheme *theme;
+  int        theme_type = 0;
+  char      *path = NULL;
+
+  if (theme_path)
+    {
+      struct stat  st;
+
+      if (*theme_path == '/')
+	{
+	  if (!stat (path, &st))
+	    path = (char *) theme_path;
+	}
+      else
+	{
+	  const char  *fmt = "%s/.themes/%s/matchbox2/theme.xml";
+	  const char  *home = getenv("HOME");
+	  int          size;
+
+	  if (home)
+	    {
+	      size = strlen (theme_path) + strlen (fmt) + strlen (home);
+	      path = alloca (size);
+	      snprintf (path, size, fmt, home, theme_path);
+
+	      if (stat (path, &st))
+		path = NULL;
+	    }
+
+	  if (!path)
+	    {
+	      size = strlen (theme_path) + strlen (fmt) + strlen (DATADIR);
+	      path = alloca (size);
+	      snprintf (path, size, fmt, DATADIR, theme_path);
+
+	      if (stat (path, &st))
+		path = NULL;
+	    }
+	}
+
+      if (path)
+	{
+	  /*
+	   * FIXME -- retrieve engine type from theme so we can create the
+	   * appropriate object
+	   */
+	}
+      else
+	{
+	  MBWM_DBG ("Could not locate theme [%s]", theme_path);
+	}
+  }
+
+  if (theme_type)
+    {
+      theme =
+	MB_WM_THEME (mb_wm_object_new (theme_type,
+				       MBWMObjectPropWm,        wm,
+				       MBWMObjectPropThemePath, path,
+				       NULL));
+
+      if (theme)
+	return theme;
+    }
+
+  /* Fall back on the default cairo theme */
   return MB_WM_THEME (mb_wm_object_new (MB_WM_TYPE_THEME_CAIRO,
-		      MBWMObjectPropWm, wm,
-		      NULL));
-#else
-  return MB_WM_THEME (mb_wm_object_new (MB_WM_TYPE_THEME_SIMPLE,
-		      MBWMObjectPropWm, wm,
-		      NULL));
-#endif
+					MBWMObjectPropWm, wm,
+					NULL));
 }
 

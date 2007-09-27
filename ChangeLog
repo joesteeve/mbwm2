@@ -1,12 +1,29 @@
 2007-09-27  Tomas Frydrych  <tf@o-hand.com>
 
-	configure.ac:
-	src/core/managers/Makefile.am:
-	src/core/managers/simple/Makefile.am:
-	src/core/managers/simple/matchbox-window-manager-2-simple:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-object-props.h:
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-root-window.h:
+        * src/core/mb-wm-types.h:
+	* src/theme-engines/Makefile.am:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	* src/theme-engines/mb-wm-theme-cairo.c:
+	* src/theme-engines/mb-wm-theme-simple.c:
+	* src/theme-engines/mb-wm-theme-png.c:
+	Handling of _MB_THEME root window property.
+
+2007-09-27  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	* src/core/managers/Makefile.am:
+	* src/core/managers/simple/Makefile.am:
+	* src/core/managers/simple/matchbox-window-manager-2-simple:
 	Moved the simple manager into a subdirectory 'simple'.
 
-	src/core/mb-wm-layout.c:
+	* src/core/mb-wm-layout.c:
 	(mb_wm_layout_real_update):
 	Split function into smaller, more manageable, chunks.
 

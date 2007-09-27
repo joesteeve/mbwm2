@@ -58,9 +58,6 @@ struct MBWMThemeClass
 
   void (*paint_button) (MBWMTheme       *theme,
 			MBWMDecorButton *button);
-
-  Bool (*theme_switch) (MBWMTheme       *theme,
-			const char      *detail);
 };
 
 struct MBWMTheme
@@ -69,10 +66,11 @@ struct MBWMTheme
 
   MBWindowManager  *wm;
   MBWMThemeCaps     caps;
+  char             *path;
 };
 
 MBWMTheme *
-mb_wm_theme_new (MBWindowManager * wm);
+mb_wm_theme_new (MBWindowManager * wm,  const char * theme_path);
 
 void
 mb_wm_theme_paint_decor (MBWMTheme *theme,
@@ -81,10 +79,6 @@ mb_wm_theme_paint_decor (MBWMTheme *theme,
 void
 mb_wm_theme_paint_button (MBWMTheme       *theme,
 			  MBWMDecorButton *button);
-
-Bool
-mb_wm_theme_switch (MBWMTheme   *theme,
-		    const char  *detail);
 
 Bool
 mb_wm_theme_supports (MBWMTheme     *theme,
