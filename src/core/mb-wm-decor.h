@@ -196,8 +196,6 @@ MBWMDecorButton*
 mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecorButtonPack         pack,
 			MBWMDecor                  *decor,
-			int                         width,
-			int                         height,
 			MBWMDecorButtonPressedFunc  press,
 			MBWMDecorButtonReleasedFunc release,
 			MBWMDecorButtonRepaintFunc  paint,
@@ -210,8 +208,6 @@ mb_wm_decor_button_stock_new (MBWindowManager            *wm,
 			      MBWMDecorButtonType         type,
 			      MBWMDecorButtonPack         pack,
 			      MBWMDecor                  *decor,
-			      int                         width,
-			      int                         height,
 			      MBWMDecorButtonFlags        flags);
 
 #endif

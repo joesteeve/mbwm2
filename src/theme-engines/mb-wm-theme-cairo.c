@@ -21,18 +21,29 @@
 #include <pango/pango-context.h>
 #include <pango/pangocairo.h>
 
+#define FRAME_TITLEBAR_HEIGHT 20
+#define FRAME_EDGE_SIZE 3
+
 static void
 mb_wm_theme_cairo_paint_decor (MBWMTheme *theme, MBWMDecor *decor);
 static void
 mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
+static void
+mb_wm_theme_cairo_get_decor_dimensions (MBWMTheme *, MBWindowManagerClient *,
+					int *, int *, int *, int *);
+static void
+mb_wm_theme_cairo_get_button_size (MBWMTheme *, MBWindowManagerClient *,
+				   int *, int *);
 
 static void
 mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
 {
   MBWMThemeClass *t_class = MB_WM_THEME_CLASS (klass);
 
-  t_class->paint_decor  = mb_wm_theme_cairo_paint_decor;
-  t_class->paint_button = mb_wm_theme_cairo_paint_button;
+  t_class->paint_decor      = mb_wm_theme_cairo_paint_decor;
+  t_class->paint_button     = mb_wm_theme_cairo_paint_button;
+  t_class->decor_dimensions = mb_wm_theme_cairo_get_decor_dimensions;
+  t_class->button_size      = mb_wm_theme_cairo_get_button_size;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMThemeCairo";
@@ -102,6 +113,75 @@ mb_wm_theme_cairo_class_type ()
     }
 
   return type;
+}
+
+static void
+mb_wm_theme_cairo_get_button_size (MBWMTheme             *theme,
+				   MBWindowManagerClient *client,
+				   int                   *width,
+				   int                   *height)
+{
+  MBWMClientType c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  switch (c_type)
+    {
+    case MBWMClientTypeApp:
+    case MBWMClientTypeDialog:
+    case MBWMClientTypePanel:
+    case MBWMClientTypeDesktop:
+    case MBWMClientTypeInput:
+    default:
+      if (width)
+	*width = FRAME_TITLEBAR_HEIGHT-2;
+
+      if (height)
+	*height = FRAME_TITLEBAR_HEIGHT-2;
+    }
+}
+
+static void
+mb_wm_theme_cairo_get_decor_dimensions (MBWMTheme             *theme,
+					MBWindowManagerClient *client,
+					int                   *north,
+					int                   *south,
+					int                   *west,
+					int                   *east)
+{
+  MBWMClientType c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  switch (c_type)
+    {
+    case MBWMClientTypeApp:
+      if (north)
+	*north = FRAME_TITLEBAR_HEIGHT;
+
+      if (south)
+	*south = FRAME_EDGE_SIZE;
+
+      if (west)
+	*west = FRAME_EDGE_SIZE;
+
+      if (east)
+	*east = FRAME_EDGE_SIZE;
+      break;
+
+    case MBWMClientTypeDialog:
+    case MBWMClientTypePanel:
+    case MBWMClientTypeDesktop:
+    case MBWMClientTypeInput:
+    default:
+      if (north)
+	*north = 0;
+
+      if (south)
+	*south = 0;
+
+      if (west)
+	*west = 0;
+
+      if (east)
+	*east = 0;
+    }
 }
 
 static void

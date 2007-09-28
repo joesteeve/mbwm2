@@ -51,13 +51,25 @@ enum MBWMThemeCaps
 
 struct MBWMThemeClass
 {
-  MBWMObjectClass              parent;
+  MBWMObjectClass           parent;
 
-  void (*paint_decor)  (MBWMTheme       *theme,
-			MBWMDecor       *decor);
+  void (*paint_decor)      (MBWMTheme              *theme,
+			    MBWMDecor              *decor);
 
-  void (*paint_button) (MBWMTheme       *theme,
-			MBWMDecorButton *button);
+  void (*paint_button)     (MBWMTheme              *theme,
+			    MBWMDecorButton        *button);
+
+  void (*decor_dimensions) (MBWMTheme              *theme,
+			    MBWindowManagerClient  *client,
+			    int                    *north,
+			    int                    *south,
+			    int                    *west,
+			    int                    *east);
+
+  void (*button_size)      (MBWMTheme              *theme,
+			    MBWindowManagerClient  *client,
+			    int                    *width,
+			    int                    *height);
 };
 
 struct MBWMTheme
@@ -83,5 +95,19 @@ mb_wm_theme_paint_button (MBWMTheme       *theme,
 Bool
 mb_wm_theme_supports (MBWMTheme     *theme,
 		      MBWMThemeCaps  capability);
+
+void
+mb_wm_theme_get_decor_dimensions (MBWMTheme             *theme,
+				  MBWindowManagerClient *client,
+				  int                   *north,
+				  int                   *south,
+				  int                   *west,
+				  int                   *east);
+
+void
+mb_wm_theme_get_button_size (MBWMTheme             *theme,
+			     MBWindowManagerClient *client,
+			     int                   *width,
+			     int                   *height);
 
 #endif

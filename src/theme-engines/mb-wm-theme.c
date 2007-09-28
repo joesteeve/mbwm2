@@ -85,6 +85,46 @@ mb_wm_theme_class_type ()
 }
 
 void
+mb_wm_theme_get_button_size (MBWMTheme             *theme,
+			     MBWindowManagerClient *client,
+			     int                   *width,
+			     int                   *height)
+{
+  MBWMThemeClass *klass;
+
+  MBWM_ASSERT (client);
+
+  if (!theme || !client)
+    return;
+
+  klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
+
+  if (klass->button_size)
+    klass->button_size (theme, client, width, height);
+}
+
+void
+mb_wm_theme_get_decor_dimensions (MBWMTheme             *theme,
+				  MBWindowManagerClient *client,
+				  int                   *north,
+				  int                   *south,
+				  int                   *west,
+				  int                   *east)
+{
+  MBWMThemeClass *klass;
+
+  MBWM_ASSERT (client);
+
+  if (!theme || !client)
+    return;
+
+  klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
+
+  if (klass->decor_dimensions)
+    klass->decor_dimensions (theme, client, north, south, west, east);
+}
+
+void
 mb_wm_theme_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 {
   MBWMThemeClass *klass;
@@ -92,7 +132,7 @@ mb_wm_theme_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   if (!theme)
     return;
 
-  klass = MB_WM_THEME_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(theme)));
+  klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
 
   if (klass->paint_decor)
     klass->paint_decor (theme, decor);
@@ -106,7 +146,7 @@ mb_wm_theme_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   if (!theme)
     return;
 
-  klass = MB_WM_THEME_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(theme)));
+  klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
 
   if (klass->paint_button)
     klass->paint_button (theme, button);

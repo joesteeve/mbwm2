@@ -2,9 +2,6 @@
 
 #include "mb-wm-theme.h"
 
-#define FRAME_TITLEBAR_HEIGHT 20
-#define FRAME_EDGE_SIZE 3
-
 static Bool
 mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBGeometry            *new_geometry,
@@ -103,8 +100,6 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
 					 MBWMDecorButtonClose,
 					 MBWMDecorButtonPackEnd,
 					 decor,
-					 FRAME_TITLEBAR_HEIGHT-2,
-					 FRAME_TITLEBAR_HEIGHT-2,
 					 0);
 
   mb_wm_decor_button_show (button);
@@ -119,8 +114,6 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
 					 MBWMDecorButtonFullscreen,
 					 MBWMDecorButtonPackEnd,
 					 decor,
-					 FRAME_TITLEBAR_HEIGHT-2,
-					 FRAME_TITLEBAR_HEIGHT-2,
 					 0);
 
   mb_wm_decor_button_show (button);
@@ -130,8 +123,6 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
 					 MBWMDecorButtonHelp,
 					 MBWMDecorButtonPackEnd,
 					 decor,
-					 FRAME_TITLEBAR_HEIGHT-2,
-					 FRAME_TITLEBAR_HEIGHT-2,
 					 0);
 
   mb_wm_decor_button_show (button);
@@ -141,8 +132,6 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
 					 MBWMDecorButtonAccept,
 					 MBWMDecorButtonPackEnd,
 					 decor,
-					 FRAME_TITLEBAR_HEIGHT-2,
-					 FRAME_TITLEBAR_HEIGHT-2,
 					 0);
 
   mb_wm_decor_button_show (button);
@@ -153,8 +142,6 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
 					 MBWMDecorButtonMinimize,
 					 MBWMDecorButtonPackEnd,
 					 decor,
-					 FRAME_TITLEBAR_HEIGHT-2,
-					 FRAME_TITLEBAR_HEIGHT-2,
 					 0);
 
   mb_wm_decor_button_show (button);
@@ -164,8 +151,6 @@ mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
 					 MBWMDecorButtonMenu,
 					 MBWMDecorButtonPackStart,
 					 decor,
-					 FRAME_TITLEBAR_HEIGHT-2,
-					 FRAME_TITLEBAR_HEIGHT-2,
 					 0);
 
   mb_wm_decor_button_show (button);
@@ -218,10 +203,10 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   decor = mb_wm_decor_new (wm, MBWMDecorTypeNorth,
 			   decor_resize, decor_repaint, client_app);
 
+  mb_wm_decor_attach (decor, client);
+
   if (app_class->construct_buttons)
     app_class->construct_buttons (client_app, decor);
-
-  mb_wm_decor_attach (decor, client);
 
   /* Borders */
   decor = mb_wm_decor_new (wm, MBWMDecorTypeSouth,
@@ -264,20 +249,25 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 {
   if (flags & MBWMClientReqGeomIsViaLayoutManager)
     {
+      int north, south, west, east;
+      MBWindowManager *wm = client->wmref;
+
+      mb_wm_theme_get_decor_dimensions (wm->theme, client,
+					&north, &south, &west, &east);
+
       client->frame_geometry.x      = new_geometry->x;
       client->frame_geometry.y      = new_geometry->y;
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
 
       client->window->geometry.x
-	= client->frame_geometry.x + FRAME_EDGE_SIZE;
+	= client->frame_geometry.x + west;
       client->window->geometry.y
-	= client->frame_geometry.y + FRAME_TITLEBAR_HEIGHT;
+	= client->frame_geometry.y + north;
       client->window->geometry.width
-	= client->frame_geometry.width - (2*FRAME_EDGE_SIZE);
+	= client->frame_geometry.width - (west + east);
       client->window->geometry.height
-	= client->frame_geometry.height
-            - FRAME_EDGE_SIZE - FRAME_TITLEBAR_HEIGHT;
+	= client->frame_geometry.height - (south + north);
 
       mb_wm_client_geometry_mark_dirty (client);
 
