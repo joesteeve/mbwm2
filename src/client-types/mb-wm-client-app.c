@@ -8,10 +8,6 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBWMClientReqGeomType  flags);
 
 static void
-mb_wm_client_app_construct_buttons (MBWMClientApp * client,
-				    MBWMDecor * decor);
-
-static void
 mb_wm_client_app_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -26,7 +22,6 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 
   client->client_type = MBWMClientTypeApp;
   client->geometry = mb_wm_client_app_request_geometry;
-  client_app->construct_buttons = mb_wm_client_app_construct_buttons;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientApp";
@@ -40,122 +35,6 @@ mb_wm_client_app_destroy (MBWMObject *this)
 
 }
 
-static void
-decor_resize (MBWindowManager   *wm,
-	      MBWMDecor         *decor,
-	      void              *userdata)
-{
-  const MBGeometry *geom;
-  MBWMClientApp    *client_app;
-  MBWMList         *l;
-  int               btn_x_start, btn_x_end;
-
-  client_app = (MBWMClientApp *)userdata;
-
-  geom = mb_wm_decor_get_geometry (decor);
-
-  btn_x_end = geom->width - 2;
-  btn_x_start = 2;
-
-  l = decor->buttons;
-  while (l)
-    {
-      MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
-
-      if (btn->pack == MBWMDecorButtonPackEnd)
-	{
-	  btn_x_end -= (btn->geom.width + 2);
-	  mb_wm_decor_button_move_to (btn, btn_x_end, 2);
-	}
-      else
-	{
-	  mb_wm_decor_button_move_to (btn, btn_x_start, 2);
-	  btn_x_start += (btn->geom.width + 2);
-	}
-
-      l = l->next;
-    }
-
-  decor->pack_start_x = btn_x_start;
-  decor->pack_end_x   = btn_x_end;
-}
-
-static void
-decor_repaint (MBWindowManager   *wm,
-	       MBWMDecor         *decor,
-	       void              *userdata)
-{
-  mb_wm_theme_paint_decor (wm->theme, decor);
-}
-
-static void
-mb_wm_client_app_construct_buttons (MBWMClientApp * client_app,
-				    MBWMDecor * decor)
-{
-  MBWindowManagerClient *client = MB_WM_CLIENT (client_app);
-  MBWindowManager       *wm     = client->wmref;
-  MBWMDecorButton       *button;
-
-  button = mb_wm_decor_button_stock_new (wm,
-					 MBWMDecorButtonClose,
-					 MBWMDecorButtonPackEnd,
-					 decor,
-					 0);
-
-  mb_wm_decor_button_show (button);
-  mb_wm_object_unref (MB_WM_OBJECT (button));
-
-#if 0
-  /*
-   * We probably do not want this in the default client, but for now
-   * it is useful for testing purposes
-   */
-  button = mb_wm_decor_button_stock_new (wm,
-					 MBWMDecorButtonFullscreen,
-					 MBWMDecorButtonPackEnd,
-					 decor,
-					 0);
-
-  mb_wm_decor_button_show (button);
-  mb_wm_object_unref (MB_WM_OBJECT (button));
-
-  button = mb_wm_decor_button_stock_new (wm,
-					 MBWMDecorButtonHelp,
-					 MBWMDecorButtonPackEnd,
-					 decor,
-					 0);
-
-  mb_wm_decor_button_show (button);
-  mb_wm_object_unref (MB_WM_OBJECT (button));
-
-  button = mb_wm_decor_button_stock_new (wm,
-					 MBWMDecorButtonAccept,
-					 MBWMDecorButtonPackEnd,
-					 decor,
-					 0);
-
-  mb_wm_decor_button_show (button);
-  mb_wm_object_unref (MB_WM_OBJECT (button));
-#endif
-
-  button = mb_wm_decor_button_stock_new (wm,
-					 MBWMDecorButtonMinimize,
-					 MBWMDecorButtonPackEnd,
-					 decor,
-					 0);
-
-  mb_wm_decor_button_show (button);
-  mb_wm_object_unref (MB_WM_OBJECT (button));
-
-  button = mb_wm_decor_button_stock_new (wm,
-					 MBWMDecorButtonMenu,
-					 MBWMDecorButtonPackStart,
-					 decor,
-					 0);
-
-  mb_wm_decor_button_show (button);
-  mb_wm_object_unref (MB_WM_OBJECT (button));
-}
 
 static void
 mb_wm_client_app_init (MBWMObject *this, va_list vap)
@@ -199,27 +78,10 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
 
-  /* Titlebar */
-  decor = mb_wm_decor_new (wm, MBWMDecorTypeNorth,
-			   decor_resize, decor_repaint, client_app);
-
-  mb_wm_decor_attach (decor, client);
-
-  if (app_class->construct_buttons)
-    app_class->construct_buttons (client_app, decor);
-
-  /* Borders */
-  decor = mb_wm_decor_new (wm, MBWMDecorTypeSouth,
-			   NULL, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, client);
-
-  decor = mb_wm_decor_new (wm, MBWMDecorTypeEast,
-			   NULL, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, client);
-
-  decor = mb_wm_decor_new (wm, MBWMDecorTypeWest,
-			   NULL, decor_repaint, NULL);
-  mb_wm_decor_attach (decor, client);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeNorth);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
 }
 
 int

@@ -70,6 +70,11 @@ struct MBWMThemeClass
 			    MBWindowManagerClient  *client,
 			    int                    *width,
 			    int                    *height);
+
+  MBWMDecor* (*create_decor) (MBWMTheme             *theme,
+			      MBWindowManagerClient *client,
+			      MBWMDecorType          type);
+
 };
 
 struct MBWMTheme
@@ -109,5 +114,10 @@ mb_wm_theme_get_button_size (MBWMTheme             *theme,
 			     MBWindowManagerClient *client,
 			     int                   *width,
 			     int                   *height);
+
+MBWMDecor *
+mb_wm_theme_create_decor (MBWMTheme             *theme,
+			  MBWindowManagerClient *client,
+			  MBWMDecorType          type);
 
 #endif

@@ -1,5 +1,14 @@
 2007-09-28  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-app.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	Moved decor creation from ClientApp into theme.
+
+2007-09-28  Tomas Frydrych  <tf@o-hand.com>
+
         * ChangeLog:
         * src/client-types/mb-wm-client-app.c:
         * src/core/mb-wm-decor.c:
@@ -9,7 +18,7 @@
         * src/theme-engines/mb-wm-theme.h:
 	Them API for decoration and button size; removed hard-wired
 	values from ClientApp.
-	
+
 2007-09-27  Tomas Frydrych  <tf@o-hand.com>
 
         * Makefile.am:

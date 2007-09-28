@@ -34,6 +34,9 @@ mb_wm_theme_cairo_get_decor_dimensions (MBWMTheme *, MBWindowManagerClient *,
 static void
 mb_wm_theme_cairo_get_button_size (MBWMTheme *, MBWindowManagerClient *,
 				   int *, int *);
+static MBWMDecor *
+mb_wm_theme_cairo_create_decor (MBWMTheme *, MBWindowManagerClient *,
+				MBWMDecorType);
 
 static void
 mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
@@ -44,6 +47,7 @@ mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
   t_class->paint_button     = mb_wm_theme_cairo_paint_button;
   t_class->decor_dimensions = mb_wm_theme_cairo_get_decor_dimensions;
   t_class->button_size      = mb_wm_theme_cairo_get_button_size;
+  t_class->create_decor     = mb_wm_theme_cairo_create_decor;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMThemeCairo";
@@ -113,6 +117,158 @@ mb_wm_theme_cairo_class_type ()
     }
 
   return type;
+}
+
+static void
+decor_resize (MBWindowManager   *wm,
+	      MBWMDecor         *decor,
+	      void              *userdata)
+{
+  const MBGeometry *geom;
+  MBWMList         *l;
+  int               btn_x_start, btn_x_end;
+
+  geom = mb_wm_decor_get_geometry (decor);
+
+  btn_x_end = geom->width - 2;
+  btn_x_start = 2;
+
+  l = decor->buttons;
+  while (l)
+    {
+      MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
+
+      if (btn->pack == MBWMDecorButtonPackEnd)
+	{
+	  btn_x_end -= (btn->geom.width + 2);
+	  mb_wm_decor_button_move_to (btn, btn_x_end, 2);
+	}
+      else
+	{
+	  mb_wm_decor_button_move_to (btn, btn_x_start, 2);
+	  btn_x_start += (btn->geom.width + 2);
+	}
+
+      l = l->next;
+    }
+
+  decor->pack_start_x = btn_x_start;
+  decor->pack_end_x   = btn_x_end;
+}
+
+static void
+decor_repaint (MBWindowManager   *wm,
+	       MBWMDecor         *decor,
+	       void              *userdata)
+{
+  mb_wm_theme_paint_decor (wm->theme, decor);
+}
+
+static void
+construct_buttons (MBWMDecor * decor, MBWindowManagerClient * client)
+{
+  MBWindowManager       *wm     = client->wmref;
+  MBWMDecorButton       *button;
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonClose,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+#if 0
+  /*
+   * We probably do not want this in the default client, but for now
+   * it is useful for testing purposes
+   */
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonFullscreen,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonHelp,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonAccept,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+#endif
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonMinimize,
+					 MBWMDecorButtonPackEnd,
+					 decor,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+  button = mb_wm_decor_button_stock_new (wm,
+					 MBWMDecorButtonMenu,
+					 MBWMDecorButtonPackStart,
+					 decor,
+					 0);
+
+  mb_wm_decor_button_show (button);
+  mb_wm_object_unref (MB_WM_OBJECT (button));
+}
+
+static MBWMDecor *
+mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
+				MBWindowManagerClient *client,
+				MBWMDecorType          type)
+{
+  MBWMClientType   c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+  MBWMDecor       *decor = NULL;
+  MBWindowManager *wm = client->wmref;
+
+  switch (c_type)
+    {
+    case MBWMClientTypeApp:
+      switch (type)
+	{
+	case MBWMDecorTypeNorth:
+	  decor = mb_wm_decor_new (wm, type, decor_resize, decor_repaint,
+				   client);
+	  mb_wm_decor_attach (decor, client);
+	  construct_buttons (decor, client);
+	  break;
+	default:
+	  decor = mb_wm_decor_new (wm, type,
+				   decor_resize, decor_repaint, client);
+	  mb_wm_decor_attach (decor, client);
+	}
+      break;
+
+    case MBWMClientTypeDialog:
+    case MBWMClientTypePanel:
+    case MBWMClientTypeDesktop:
+    case MBWMClientTypeInput:
+    default:
+	  decor = mb_wm_decor_new (wm, type,
+				   decor_resize, decor_repaint, client);
+	  mb_wm_decor_attach (decor, client);
+    }
+
+  return decor;
 }
 
 static void

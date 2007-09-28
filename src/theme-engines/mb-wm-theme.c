@@ -322,3 +322,21 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 					NULL));
 }
 
+MBWMDecor *
+mb_wm_theme_create_decor (MBWMTheme             *theme,
+			  MBWindowManagerClient *client,
+			  MBWMDecorType          type)
+{
+  MBWMThemeClass *klass;
+
+  MBWM_ASSERT (client);
+
+  if (!theme || !client)
+    return;
+
+  klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
+
+  if (klass->create_decor)
+    klass->create_decor (theme, client, type);
+}
+
