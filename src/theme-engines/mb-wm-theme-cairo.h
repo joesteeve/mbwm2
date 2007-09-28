@@ -36,6 +36,8 @@ struct MBWMThemeCairoClass
 struct MBWMThemeCairo
 {
   MBWMTheme        parent;
+
+  MBWMList * xml_clients;
 };
 
 #endif

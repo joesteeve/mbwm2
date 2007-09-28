@@ -149,7 +149,9 @@ mb_wm_util_list_prepend(MBWMList *list, void *data)
 
   l->data = data;
   l->next = list;
-  list->prev = l;
+
+  if (list)
+    list->prev = l;
 
   return l;
 }

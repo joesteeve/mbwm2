@@ -86,21 +86,22 @@ mb_wm_theme_class_type ()
 
 void
 mb_wm_theme_get_button_size (MBWMTheme             *theme,
-			     MBWindowManagerClient *client,
+			     MBWMDecor             *decor,
+			     MBWMDecorButtonType    type,
 			     int                   *width,
 			     int                   *height)
 {
   MBWMThemeClass *klass;
 
-  MBWM_ASSERT (client);
+  MBWM_ASSERT (decor && decor->parent_client);
 
-  if (!theme || !client)
+  if (!theme || !decor || !decor->parent_client)
     return;
 
   klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
 
   if (klass->button_size)
-    klass->button_size (theme, client, width, height);
+    klass->button_size (theme, decor, type, width, height);
 }
 
 void
@@ -192,11 +193,10 @@ xml_element_start_cb(void *data, const char *tag, const char **expat_attr)
 	    {
 	      seen_type = True;
 
+	      if (!strcmp (*(p+1), "default"))
 #ifdef USE_CAIRO
-	      if (!strcmp (*(p+1), "cairo"))
 		d->theme_type = MB_WM_TYPE_THEME_CAIRO;
 #else
-	      if (!strcmp (*(p+1), "simple"))
 		d->theme_type = MB_WM_TYPE_THEME_SIMPLE;
 #endif
 #ifdef THEME_PNG

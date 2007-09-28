@@ -1,5 +1,17 @@
 2007-09-28  Tomas Frydrych  <tf@o-hand.com>
 
+        * data/themes/Default/theme.xml:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-util.c:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-cairo.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	Basic xml default theme.
+	
+2007-09-28  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-app.c:
         * src/client-types/mb-wm-client-app.h:
         * src/theme-engines/mb-wm-theme-cairo.c:

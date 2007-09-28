@@ -328,7 +328,7 @@ typedef enum MBWMDecorButtonFlags
 
 typedef enum MBWMDecorType
 {
-  MBWMDecorTypeNorth,
+  MBWMDecorTypeNorth = 1,
   MBWMDecorTypeSouth,
   MBWMDecorTypeEast,
   MBWMDecorTypeWest,
