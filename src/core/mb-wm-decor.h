@@ -47,6 +47,7 @@ struct MBWMDecor
   MBWindowManagerClient *parent_client;
   MBGeometry             geom;
   Bool                   dirty;
+  Bool                   absolute_packing;
   MBWMList              *buttons;
   int                    pack_start_x;
   int                    pack_end_x;

@@ -36,6 +36,8 @@ struct MBWMThemePngClass
 struct MBWMThemePng
 {
   MBWMTheme        parent;
+
+  XImage          *ximg;
 };
 
 #endif

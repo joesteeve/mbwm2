@@ -1,4 +1,5 @@
 #include "mb-wm-theme-cairo.h"
+#include "mb-wm-theme-private.h"
 
 #include <math.h>
 
@@ -10,8 +11,6 @@
 #include <gtk/gtkwindow.h>
 #include <gdk/gdkx.h>
 #endif
-
-#include <expat.h>
 
 #include <cairo.h>
 #include <cairo-xlib.h>
@@ -39,392 +38,14 @@ mb_wm_theme_cairo_get_decor_dimensions (MBWMTheme *, MBWindowManagerClient *,
 static void
 mb_wm_theme_cairo_get_button_size (MBWMTheme *, MBWMDecor *,
 				   MBWMDecorButtonType, int *, int *);
+
+static void
+mb_wm_theme_cairo_get_button_position (MBWMTheme *, MBWMDecor *,
+				       MBWMDecorButtonType, int*, int*);
+
 static MBWMDecor *
 mb_wm_theme_cairo_create_decor (MBWMTheme *, MBWindowManagerClient *,
 				MBWMDecorType);
-
-/*
- * Helper structs for xml theme
- */
-struct Clr
-{
-  double r;
-  double g;
-  double b;
-
-  Bool set;
-};
-
-struct Button
-{
-  MBWMDecorButtonType type;
-  MBWMDecorButtonPack packing;
-
-  struct Clr clr_fg;
-  struct Clr clr_bg;
-
-  int width;
-  int height;
-};
-
-static struct Button *
-button_new ()
-{
-  struct Button * b = mb_wm_util_malloc0 (sizeof (struct Button));
-  return b;
-}
-
-static void
-button_free (struct Button * b)
-{
-  free (b);
-}
-
-struct Decor
-{
-  MBWMDecorType type;
-
-  struct Clr clr_fg;
-  struct Clr clr_bg;
-  struct Clr clr_bg2;
-  struct Clr clr_frame;
-
-  int size;
-  int font_size;
-
-  char * font_family;
-
-  MBWMList * buttons;
-};
-
-static struct Decor *
-decor_new ()
-{
-  struct Decor * d = mb_wm_util_malloc0 (sizeof (struct Decor));
-  return d;
-}
-
-static void
-decor_free (struct Decor * d)
-{
-  MBWMList * l;
-
-  if (!d)
-    return;
-
-  l = d->buttons;
-  while (l)
-    {
-      struct Button * b = l->data;
-      MBWMList * n = l->next;
-      button_free (b);
-      free (l);
-
-      l = n;
-    }
-
-  if (d->font_family)
-    free (d->font_family);
-
-  free (d);
-}
-
-struct Client
-{
-  MBWMClientType  type;
-  MBWMList       *decors;
-};
-
-static struct Client *
-client_new ()
-{
-  struct Client * c = mb_wm_util_malloc0 (sizeof (struct Client));
-  return c;
-}
-
-static void
-client_free (struct Client * c)
-{
-  MBWMList * l;
-
-  if (!c)
-    return;
-
-  l = c->decors;
-  while (l)
-    {
-      struct Decor * d = l->data;
-      MBWMList * n = l->next;
-      decor_free (d);
-      free (l);
-
-      l = n;
-    }
-
-  free (c);
-}
-
-static void
-clr_from_string (struct Clr * clr, const char *s)
-{
-  int  r, g, b;
-
-  if (!s || *s != '#')
-    return;
-
-  sscanf (s+1,"%2x%2x%2x", &r, &g, &b);
-  clr->r = (double) r / 255.0;
-  clr->g = (double) g / 255.0;
-  clr->b = (double) b / 255.0;
-
-  clr->set = True;
-}
-
-/*
- * expat callbacks
- */
-static void
-xml_element_start_cb(void *data, const char *tag, const char **expat_attr)
-{
-  MBWMThemeCairo *theme = data;
-
-  if (!expat_attr)
-    return;
-
-  if (!strcmp (tag, "client"))
-    {
-      struct Client * c = client_new ();
-      const char **p = expat_attr;
-
-      while (*p)
-	{
-	  if (!strcmp (*p, "type"))
-	    {
-	      if (!strcmp (*(p+1), "app"))
-		c->type = MBWMClientTypeApp;
-	      else if (!strcmp (*(p+1), "dialog"))
-		c->type = MBWMClientTypeDialog;
-	      else if (!strcmp (*(p+1), "panel"))
-		c->type = MBWMClientTypePanel;
-	      else if (!strcmp (*(p+1), "input"))
-		c->type = MBWMClientTypeInput;
-	      else if (!strcmp (*(p+1), "desktop"))
-		c->type = MBWMClientTypeDesktop;
-	    }
-
-	  p += 2;
-	}
-
-      if (!c->type)
-	client_free (c);
-      else
-	theme->xml_clients = mb_wm_util_list_prepend (theme->xml_clients, c);
-
-      return;
-    }
-
-  if (!strcmp (tag, "decor"))
-    {
-      struct Decor * d = decor_new ();
-
-      const char **p = expat_attr;
-
-      while (*p)
-	{
-	  if (!strcmp (*p, "clr-fg"))
-	    clr_from_string (&d->clr_fg, *(p+1));
-	  else if (!strcmp (*p, "clr-bg"))
-	    clr_from_string (&d->clr_bg, *(p+1));
-	  else if (!strcmp (*p, "clr-bg2"))
-	    clr_from_string (&d->clr_bg2, *(p+1));
-	  else if (!strcmp (*p, "clr-frame"))
-	    clr_from_string (&d->clr_frame, *(p+1));
-	  else if (!strcmp (*p, "type"))
-	    {
-	      if (!strcmp (*(p+1), "north"))
-		d->type = MBWMDecorTypeNorth;
-	      else if (!strcmp (*(p+1), "south"))
-		d->type = MBWMDecorTypeSouth;
-	      else if (!strcmp (*(p+1), "east"))
-		d->type = MBWMDecorTypeEast;
-	      else if (!strcmp (*(p+1), "west"))
-		d->type = MBWMDecorTypeWest;
-	    }
-	  else if (!strcmp (*p, "size"))
-	    {
-	      d->size = atoi (*(p+1));
-	    }
-	  else if (!strcmp (*p, "font-size"))
-	    {
-	      d->font_size = atoi (*(p+1));
-	    }
-	  else if (!strcmp (*p, "font-family"))
-	    {
-	      d->font_family = strdup (*(p+1));
-	    }
-
-	  p += 2;
-	}
-
-      if (!d->type || !theme->xml_clients)
-	  decor_free (d);
-      else
-	{
-	  struct Client * c = theme->xml_clients->data;
-	  c->decors = mb_wm_util_list_prepend (c->decors, d);
-	}
-
-      return;
-    }
-
-  if (!strcmp (tag, "button"))
-    {
-      struct Button * b = button_new ();
-
-      const char **p = expat_attr;
-
-      while (*p)
-	{
-	  if (!strcmp (*p, "clr-fg"))
-	    clr_from_string (&b->clr_fg, *(p+1));
-	  else if (!strcmp (*p, "clr-bg"))
-	    clr_from_string (&b->clr_bg, *(p+1));
-	  else if (!strcmp (*p, "type"))
-	    {
-	      if (!strcmp (*(p+1), "minimize"))
-		b->type = MBWMDecorButtonMinimize;
-	      else if (!strcmp (*(p+1), "close"))
-		b->type = MBWMDecorButtonClose;
-	      else if (!strcmp (*(p+1), "menu"))
-		b->type = MBWMDecorButtonMenu;
-	      else if (!strcmp (*(p+1), "accept"))
-		b->type = MBWMDecorButtonAccept;
-	      else if (!strcmp (*(p+1), "fullscreen"))
-		b->type = MBWMDecorButtonFullscreen;
-	      else if (!strcmp (*(p+1), "help"))
-		b->type = MBWMDecorButtonHelp;
-	    }
-	  else if (!strcmp (*p, "packing"))
-	    {
-	      if (!strcmp (*(p+1), "end"))
-		b->packing = MBWMDecorButtonPackEnd;
-	      else if (!strcmp (*(p+1), "start"))
-		b->packing = MBWMDecorButtonPackStart;
-	    }
-	  else if (!strcmp (*p, "width"))
-	    {
-	      b->width = atoi (*(p+1));
-	    }
-	  else if (!strcmp (*p, "height"))
-	    {
-	      b->height = atoi (*(p+1));
-	    }
-
-	  p += 2;
-	}
-
-      if (!b->type ||
-	  !theme->xml_clients ||
-	  !theme->xml_clients->data)
-	{
-	  button_free (b);
-	  return;
-	}
-
-      struct Client * c = theme->xml_clients->data;
-
-      if (!c->decors || !c->decors->data)
-	{
-	  button_free (b);
-	  return;
-	}
-
-      struct Decor  * d = c->decors->data;
-      d->buttons = mb_wm_util_list_append (d->buttons, b);
-
-      return;
-    }
-
-}
-
-static struct Client *
-client_find_by_type (MBWMList *l, MBWMClientType type)
-{
-  while (l)
-    {
-      struct Client * c = l->data;
-      if (c->type == type)
-	return c;
-
-      l = l->next;
-    }
-
-  return NULL;
-}
-
-static struct Decor *
-decor_find_by_type (MBWMList *l, MBWMDecorType type)
-{
-  while (l)
-    {
-      struct Decor * d = l->data;
-      if (d->type == type)
-	return d;
-
-      l = l->next;
-    }
-
-  return NULL;
-}
-
-static struct Button *
-button_find_by_type (MBWMList *l, MBWMDecorButtonType type)
-{
-  while (l)
-    {
-      struct Button * b = l->data;
-      if (b->type == type)
-	return b;
-
-      l = l->next;
-    }
-
-  return NULL;
-}
-
-#if 0
-static void
-client_dump (MBWMList * l)
-{
-  printf ("=== XML Clients =====\n");
-  while (l)
-    {
-      struct Client * c = l->data;
-      MBWMList *l2 = c->decors;
-      printf ("===== client type %d =====\n", c->type);
-
-      while (l2)
-	{
-	  struct Decor * d = l2->data;
-	  MBWMList *l3 = d->buttons;
-	  printf ("======= decor type %d =====\n", d->type);
-
-	  while (l3)
-	    {
-	      struct Button * b = l3->data;
-	      printf ("========= button type %d =====\n", d->type);
-
-	      l3 = l3->next;
-	    }
-
-	  l2 = l2->next;
-	}
-
-      l = l->next;
-    }
-  printf ("=== XML Clients End =====\n");
-}
-#endif
 
 /*******************************************************************/
 
@@ -437,6 +58,7 @@ mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
   t_class->paint_button     = mb_wm_theme_cairo_paint_button;
   t_class->decor_dimensions = mb_wm_theme_cairo_get_decor_dimensions;
   t_class->button_size      = mb_wm_theme_cairo_get_button_size;
+  t_class->button_position  = mb_wm_theme_cairo_get_button_position;
   t_class->create_decor     = mb_wm_theme_cairo_create_decor;
 
 #ifdef MBWM_WANT_DEBUG
@@ -447,28 +69,12 @@ mb_wm_theme_cairo_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_theme_cairo_destroy (MBWMObject *obj)
 {
-  MBWMThemeCairo * theme = MB_WM_THEME_CAIRO (obj);
-  MBWMList *l = theme->xml_clients;
-
-  while (l)
-    {
-      struct Client * c = l->data;
-      MBWMList * n = l->next;
-      client_free (c);
-      free (l);
-
-      l = n;
-    }
-
 }
 
 static void
 mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
 {
   MBWMTheme         *theme = MB_WM_THEME (obj);
-  char               buf[256];
-  FILE              *file = NULL;
-  XML_Parser         par = NULL;
 
 #ifdef USE_GTK
   GtkWidget            *gwin;
@@ -482,27 +88,6 @@ mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
   gwin = gtk_window_new (GTK_WINDOW_POPUP);
   gtk_widget_ensure_style (gwin);
 #endif
-
-  if (!theme->path)
-    return;
-
-  if (!(file = fopen (theme->path, "r")) || !(par = XML_ParserCreate(NULL)))
-    goto done;
-
-  XML_SetElementHandler (par, xml_element_start_cb, NULL);
-  XML_SetUserData(par, (void *) theme);
-
-  while (fgets (buf, sizeof (buf), file) &&
-	 XML_Parse(par, buf, strlen(buf), 0));
-
-  XML_Parse(par, NULL, 0, 1);
-
- done:
-  if (file)
-    fclose (file);
-
-  if (par)
-    XML_ParserFree (par);
 }
 
 
@@ -537,7 +122,7 @@ construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor)
   struct Client         *c;
   struct Decor          *d;
 
-  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
+  if ((c = client_find_by_type (MB_WM_THEME (theme)->xml_clients, c_type)) &&
       (d = decor_find_by_type (c->decors, decor->type)))
     {
       MBWMList * l = d->buttons;
@@ -672,7 +257,7 @@ mb_wm_theme_cairo_get_button_size (MBWMTheme             *theme,
   struct Decor  * d;
 
   /* FIXME -- assumes button on the north decor only */
-  if ((c = client_find_by_type (c_theme->xml_clients, c_type)) &&
+  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
       (d = decor_find_by_type (c->decors, decor->type)))
     {
       struct Button * b = button_find_by_type (d->buttons, type);
@@ -709,6 +294,50 @@ mb_wm_theme_cairo_get_button_size (MBWMTheme             *theme,
 }
 
 static void
+mb_wm_theme_cairo_get_button_position (MBWMTheme             *theme,
+				       MBWMDecor             *decor,
+				       MBWMDecorButtonType    type,
+				       int                   *x,
+				       int                   *y)
+{
+  MBWindowManagerClient * client = decor->parent_client;
+  MBWMClientType  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+  MBWMThemeCairo *c_theme = MB_WM_THEME_CAIRO (theme);
+  struct Client * c;
+  struct Decor  * d;
+
+  /* FIXME -- assumes button on the north decor only */
+  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
+      (d = decor_find_by_type (c->decors, decor->type)))
+    {
+      struct Button * b = button_find_by_type (d->buttons, type);
+
+      if (b)
+	{
+	  if (x)
+	    if (b->x >= 0)
+	      *x = b->x;
+	    else
+	      *x = 2;
+
+	  if (y)
+	    if (b->y >= 0)
+	      *y = b->y;
+	    else
+	      *y = 2;
+
+	  return;
+	}
+    }
+
+  if (x)
+    *x = 2;
+
+  if (y)
+    *y = 2;
+}
+
+static void
 mb_wm_theme_cairo_get_decor_dimensions (MBWMTheme             *theme,
 					MBWindowManagerClient *client,
 					int                   *north,
@@ -721,29 +350,29 @@ mb_wm_theme_cairo_get_decor_dimensions (MBWMTheme             *theme,
   struct Client * c;
   struct Decor  * d;
 
-  if ((c = client_find_by_type (c_theme->xml_clients, c_type)))
+  if ((c = client_find_by_type (theme->xml_clients, c_type)))
     {
       if (north)
 	if ((d = decor_find_by_type (c->decors, MBWMDecorTypeNorth)))
-	  *north = d->size;
+	  *north = d->height;
 	else
 	  *north = FRAME_TITLEBAR_HEIGHT;
 
       if (south)
 	if ((d = decor_find_by_type (c->decors, MBWMDecorTypeSouth)))
-	  *south = d->size;
+	  *south = d->height;
 	else
 	  *south = FRAME_EDGE_SIZE;
 
       if (west)
 	if ((d = decor_find_by_type (c->decors, MBWMDecorTypeWest)))
-	  *west = d->size;
+	  *west = d->width;
 	else
 	  *west = FRAME_EDGE_SIZE;
 
       if (east)
 	if ((d = decor_find_by_type (c->decors, MBWMDecorTypeEast)))
-	  *east = d->size;
+	  *east = d->width;
 	else
 	  *east = FRAME_EDGE_SIZE;
 
@@ -840,7 +469,7 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   geom   = mb_wm_decor_get_geometry (decor);
   c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
 
-  if ((c = client_find_by_type (c_theme->xml_clients, c_type)) &&
+  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
       (d = decor_find_by_type (c->decors, decor->type)))
     {
       if (d->clr_fg.set)
@@ -1024,7 +653,7 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
   c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
 
-  if ((c = client_find_by_type (c_theme->xml_clients, c_type)) &&
+  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
       (d = decor_find_by_type (c->decors, decor->type)) &&
       (b = button_find_by_type (d->buttons, button->type)))
     {

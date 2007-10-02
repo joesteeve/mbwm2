@@ -39,6 +39,10 @@
 #define MB_WM_THEME_CAIRO_CLASS(c) ((MBWMThemeCairoClass*)(c))
 #define MB_WM_TYPE_THEME_CAIRO (mb_wm_theme_cairo_class_type ())
 
+#define MB_WM_THEME_PNG(c) ((MBWMThemePng*)(c))
+#define MB_WM_THEME_PNG_CLASS(c) ((MBWMThemePngClass*)(c))
+#define MB_WM_TYPE_THEME_PNG (mb_wm_theme_png_class_type ())
+
 enum MBWMThemeCaps
 {
   MBWMThemeCapsFrameMainButtonActionAccept = (1<<0),
@@ -72,6 +76,12 @@ struct MBWMThemeClass
 			    int                    *width,
 			    int                    *height);
 
+  void (*button_position)  (MBWMTheme              *theme,
+			    MBWMDecor              *decor,
+			    MBWMDecorButtonType     type,
+			    int                    *x,
+			    int                    *y);
+
   MBWMDecor* (*create_decor) (MBWMTheme             *theme,
 			      MBWindowManagerClient *client,
 			      MBWMDecorType          type);
@@ -85,6 +95,7 @@ struct MBWMTheme
   MBWindowManager  *wm;
   MBWMThemeCaps     caps;
   char             *path;
+  MBWMList         *xml_clients;
 };
 
 MBWMTheme *
@@ -117,9 +128,17 @@ mb_wm_theme_get_button_size (MBWMTheme             *theme,
 			     int                   *width,
 			     int                   *height);
 
+void
+mb_wm_theme_get_button_position (MBWMTheme             *theme,
+				 MBWMDecor             *decor,
+				 MBWMDecorButtonType    type,
+				 int                   *x,
+				 int                   *y);
+
 MBWMDecor *
 mb_wm_theme_create_decor (MBWMTheme             *theme,
 			  MBWindowManagerClient *client,
 			  MBWMDecorType          type);
+
 
 #endif

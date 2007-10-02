@@ -3,11 +3,14 @@
        desc="" version="1.0" engine_version="2" engine_type="default">
 
 <client type="app">
- <decor type="north" clr-bg="#6c76fc" clr-bg2="#ffffff" clr-fg="#ffffff"
-size="20" font-family="Sans" font-size="18" clr-frame="#000000">
-  <button type="close"    packing="end"   clr-fg="#ffffff" clr-bg="#59595f" width="18" height="18"/>
-  <button type="minimize" packing="end"   clr-fg="#ffffff" clr-bg="#59595f" width="18" height="18"/>
-  <button type="menu"     packing="start" clr-fg="#ffffff" clr-bg="#59595f" width="18" height="18"/>
+ <decor type="north" clr-bg="#ff0000" clr-bg2="#ffffff" clr-fg="#ffffff"
+height="22" font-family="Sans" font-size="18" clr-frame="#000000">
+  <button type="close"    packing="end"   clr-fg="#ffffff" clr-bg="#59595f"
+  width="18" height="18" x="2" y="2"/>
+  <button type="minimize" packing="end"   clr-fg="#ffffff" clr-bg="#59595f"
+  width="18" height="18"  x="2" y="2"/>
+  <button type="menu"     packing="start" clr-fg="#ffffff" clr-bg="#59595f"
+  width="18" height="18"  x="2" y="2"/>
  </decor>
 </client>
 

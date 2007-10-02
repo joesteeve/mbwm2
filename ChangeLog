@@ -1,5 +1,25 @@
 2007-10-01  Tomas Frydrych  <tf@o-hand.com>
 
+        * data/themes/Default/theme.xml:
+        * src/core/mb-wm-object-props.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-cairo.h:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-png.h:
+        * src/theme-engines/mb-wm-theme-private.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	* src/theme-engines/Makefile.am:
+	Refactored xml parser into MBWMTheme to minimize code duplication
+	between engines.
+	
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	Implemented absolute positioning of buttons alongside automatic
+	packing (need for png-like themes).
+	
+2007-10-01  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-decor.c:
         * src/core/mb-wm-decor.h:
         * src/core/mb-wm-object-props.h:

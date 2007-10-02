@@ -42,6 +42,7 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   MBWMDecorType          type = 0;
   MBWMObjectProp         prop;
   int                    i = 0;
+  int                    abs_packing = 0;
 
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -54,6 +55,8 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropDecorType:
 	  type = va_arg(vap, MBWMDecorType);
 	  break;
+	case MBWMObjectPropDecorAbsolutePacking:
+	  abs_packing = va_arg(vap, int);
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -63,6 +66,7 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
 
   decor->type     = type;
   decor->dirty    = True; 	/* Needs painting */
+  decor->absolute_packing = abs_packing;
 }
 
 int
@@ -98,31 +102,56 @@ static void
 mb_wm_decor_resize (MBWMDecor *decor)
 {
   const MBGeometry *geom;
+  MBWMTheme        *theme = decor->parent_client->wmref->theme;
   MBWMList         *l;
   int               btn_x_start, btn_x_end;
+  int               abs_packing = decor->absolute_packing;
 
   geom = mb_wm_decor_get_geometry (decor);
 
-  btn_x_end = geom->width - 2;
-  btn_x_start = 2;
+  btn_x_end = geom->width;
+  btn_x_start = 0;
 
   l = decor->buttons;
-  while (l)
+
+  if (abs_packing)
     {
-      MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
-
-      if (btn->pack == MBWMDecorButtonPackEnd)
+      while (l)
 	{
-	  btn_x_end -= (btn->geom.width + 2);
-	  mb_wm_decor_button_move_to (btn, btn_x_end, 2);
-	}
-      else
-	{
-	  mb_wm_decor_button_move_to (btn, btn_x_start, 2);
-	  btn_x_start += (btn->geom.width + 2);
-	}
+	  int off_x, off_y;
 
-      l = l->next;
+	  MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
+	  mb_wm_theme_get_button_position (theme, decor, btn->type,
+					   &off_x, &off_y);
+
+	  mb_wm_decor_button_move_to (btn, off_x, off_y);
+
+	  l = l->next;
+	}
+    }
+  else
+    {
+      while (l)
+	{
+	  int off_x, off_y;
+
+	  MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
+	  mb_wm_theme_get_button_position (theme, decor, btn->type,
+					   &off_x, &off_y);
+
+	  if (btn->pack == MBWMDecorButtonPackEnd)
+	    {
+	      btn_x_end -= (btn->geom.width + off_x);
+	      mb_wm_decor_button_move_to (btn, btn_x_end, off_y);
+	    }
+	  else
+	    {
+	      mb_wm_decor_button_move_to (btn, btn_x_start + off_x, off_y);
+	      btn_x_start += btn->geom.width;
+	    }
+
+	  l = l->next;
+	}
     }
 
   decor->pack_start_x = btn_x_start;
