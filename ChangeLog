@@ -1,3 +1,12 @@
+2007-10-01  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/core/mb-wm-object-props.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+	Removed MBWMDecor resize callback (handled by object itself).
+	Removed MBWMDecor repaint callback (handled by theme).
+
 2007-09-28  Tomas Frydrych  <tf@o-hand.com>
 
         * data/themes/Default/theme.xml:
@@ -9,7 +18,7 @@
         * src/theme-engines/mb-wm-theme.c:
         * src/theme-engines/mb-wm-theme.h:
 	Basic xml default theme.
-	
+
 2007-09-28  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:

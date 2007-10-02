@@ -67,19 +67,17 @@ typedef enum MBWMObjectProp
 
     MBWMObjectPropDecor                   = _MKOPROP(7,  void*),
     MBWMObjectPropDecorType               = _MKOPROP(8,  MBWMDecorType),
-    MBWMObjectPropDecorResizedFunc        = _MKOPROP(9,  void*),
-    MBWMObjectPropDecorRepaintFunc        = _MKOPROP(10, void*),
-    MBWMObjectPropDecorUserData           = _MKOPROP(11, void*),
+    MBWMObjectPropDecorUserData           = _MKOPROP(9,  void*),
 
-    MBWMObjectPropDecorButtonRepaintFunc  = _MKOPROP(12, void*),
-    MBWMObjectPropDecorButtonPressedFunc  = _MKOPROP(13, void*),
-    MBWMObjectPropDecorButtonReleasedFunc = _MKOPROP(14, void*),
-    MBWMObjectPropDecorButtonFlags        = _MKOPROP(15, MBWMDecorButtonFlags),
-    MBWMObjectPropDecorButtonUserData     = _MKOPROP(16, void*),
-    MBWMObjectPropDecorButtonType         = _MKOPROP(17, int),
-    MBWMObjectPropDecorButtonPack         = _MKOPROP(18, int),
+    MBWMObjectPropDecorButtonRepaintFunc  = _MKOPROP(10, void*),
+    MBWMObjectPropDecorButtonPressedFunc  = _MKOPROP(11, void*),
+    MBWMObjectPropDecorButtonReleasedFunc = _MKOPROP(12, void*),
+    MBWMObjectPropDecorButtonFlags        = _MKOPROP(13, MBWMDecorButtonFlags),
+    MBWMObjectPropDecorButtonUserData     = _MKOPROP(14, void*),
+    MBWMObjectPropDecorButtonType         = _MKOPROP(15, int),
+    MBWMObjectPropDecorButtonPack         = _MKOPROP(16, int),
 
-    MBWMObjectPropThemePath               = _MKOPROP(19, void*),
+    MBWMObjectPropThemePath               = _MKOPROP(17, void*),
 
     _MBWMObjectPropLastGlobal = 0x00fffff0,
   }

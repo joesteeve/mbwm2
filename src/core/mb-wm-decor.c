@@ -40,9 +40,6 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   MBWMDecor             *decor = MB_WM_DECOR (obj);
   MBWindowManager       *wm = NULL;
   MBWMDecorType          type = 0;
-  MBWMDecorResizedFunc   resize = NULL;
-  MBWMDecorRepaintFunc   repaint = NULL;
-  void                  *userdata = NULL;
   MBWMObjectProp         prop;
   int                    i = 0;
 
@@ -57,15 +54,6 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropDecorType:
 	  type = va_arg(vap, MBWMDecorType);
 	  break;
-	case MBWMObjectPropDecorResizedFunc:
-	  resize = va_arg(vap, MBWMDecorResizedFunc);
-	  break;
-	case MBWMObjectPropDecorRepaintFunc:
-	  repaint = va_arg(vap, MBWMDecorRepaintFunc);
-	  break;
-	case MBWMObjectPropDecorUserData:
-	  userdata = va_arg(vap, void*);
-	  break;
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -75,9 +63,6 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
 
   decor->type     = type;
   decor->dirty    = True; 	/* Needs painting */
-  decor->resize   = resize;
-  decor->repaint  = repaint;
-  decor->userdata = userdata;
 }
 
 int
@@ -99,6 +84,49 @@ mb_wm_decor_class_type ()
     }
 
   return type;
+}
+
+static void
+mb_wm_decor_repaint (MBWMDecor *decor)
+{
+  MBWMTheme   *theme = decor->parent_client->wmref->theme;
+
+  mb_wm_theme_paint_decor (theme, decor);
+}
+
+static void
+mb_wm_decor_resize (MBWMDecor *decor)
+{
+  const MBGeometry *geom;
+  MBWMList         *l;
+  int               btn_x_start, btn_x_end;
+
+  geom = mb_wm_decor_get_geometry (decor);
+
+  btn_x_end = geom->width - 2;
+  btn_x_start = 2;
+
+  l = decor->buttons;
+  while (l)
+    {
+      MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
+
+      if (btn->pack == MBWMDecorButtonPackEnd)
+	{
+	  btn_x_end -= (btn->geom.width + 2);
+	  mb_wm_decor_button_move_to (btn, btn_x_end, 2);
+	}
+      else
+	{
+	  mb_wm_decor_button_move_to (btn, btn_x_start, 2);
+	  btn_x_start += (btn->geom.width + 2);
+	}
+
+      l = l->next;
+    }
+
+  decor->pack_start_x = btn_x_start;
+  decor->pack_end_x   = btn_x_end;
 }
 
 static Bool
@@ -145,9 +173,7 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
       if (mb_wm_util_untrap_x_errors())
 	return False;
 
-      /* Fire resize now so calling code knows initial size */
-      if (decor->resize)
-	decor->resize(decor->parent_client->wmref, decor, decor->userdata);
+      mb_wm_decor_resize(decor);
 
       mb_wm_util_list_foreach(decor->buttons,
 		             (MBWMListForEachCB)mb_wm_decor_button_sync_window,
@@ -277,8 +303,7 @@ mb_wm_decor_handle_repaint (MBWMDecor *decor)
 
   if (decor->dirty)
     {
-      if(decor->repaint)
-	decor->repaint(decor->parent_client->wmref, decor, decor->userdata);
+      mb_wm_decor_repaint(decor);
 
       l = decor->buttons;
       while (l)
@@ -304,8 +329,7 @@ mb_wm_decor_handle_resize (MBWMDecor *decor)
   mb_wm_decor_sync_window (decor);
 
   /* Fire resize callback */
-  if (decor->resize)
-    decor->resize(decor->parent_client->wmref, decor, decor->userdata);
+  mb_wm_decor_resize(decor);
 
   /* Fire repaint callback */
   mb_wm_decor_mark_dirty (decor);
@@ -313,19 +337,13 @@ mb_wm_decor_handle_resize (MBWMDecor *decor)
 
 MBWMDecor*
 mb_wm_decor_new (MBWindowManager      *wm,
-		 MBWMDecorType         type,
-		 MBWMDecorResizedFunc  resize,
-		 MBWMDecorRepaintFunc  repaint,
-		 void                 *userdata)
+		 MBWMDecorType         type)
 {
   MBWMObject *decor;
 
   decor = mb_wm_object_new (MB_WM_TYPE_DECOR,
 			    MBWMObjectPropWm,               wm,
 			    MBWMObjectPropDecorType,        type,
-			    MBWMObjectPropDecorResizedFunc, resize,
-			    MBWMObjectPropDecorRepaintFunc, repaint,
-			    MBWMObjectPropDecorUserData,    userdata,
 			    NULL);
 
   return MB_WM_DECOR(decor);
@@ -534,7 +552,6 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   MBWMDecor                   *decor = NULL;
   MBWMDecorButtonPressedFunc   press = NULL;
   MBWMDecorButtonReleasedFunc  release = NULL;
-  MBWMDecorButtonRepaintFunc   paint = NULL;
   MBWMDecorButtonFlags         flags = 0;
   MBWMDecorButtonType          type = 0;
   MBWMDecorButtonPack          pack = MBWMDecorButtonPackEnd;
@@ -557,9 +574,6 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 	  break;
 	case MBWMObjectPropDecorButtonReleasedFunc:
 	  release = va_arg(vap, MBWMDecorButtonReleasedFunc);
-	  break;
-	case MBWMObjectPropDecorButtonRepaintFunc:
-	  paint = va_arg(vap, MBWMDecorButtonRepaintFunc);
 	  break;
 	case MBWMObjectPropDecorButtonFlags:
 	  flags = va_arg(vap, MBWMDecorButtonFlags);
@@ -600,7 +614,6 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 
   button->press    = press;
   button->release  = release;
-  button->repaint  = paint;
   button->userdata = userdata;
   button->decor    = decor;
   button->type = type;
@@ -763,7 +776,6 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecor                  *decor,
 			MBWMDecorButtonPressedFunc  press,
 			MBWMDecorButtonReleasedFunc release,
-			MBWMDecorButtonRepaintFunc  paint,
 			MBWMDecorButtonFlags        flags,
 			void                       *userdata)
 {
@@ -775,7 +787,6 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			     MBWMObjectPropDecor,                   decor,
 			     MBWMObjectPropDecorButtonPressedFunc,  press,
 			     MBWMObjectPropDecorButtonReleasedFunc, release,
-			     MBWMObjectPropDecorButtonRepaintFunc,  paint,
 			     MBWMObjectPropDecorButtonFlags,        flags,
 			     MBWMObjectPropDecorButtonUserData,     userdata,
 			     NULL);
@@ -807,16 +818,10 @@ void
 mb_wm_decor_button_handle_repaint (MBWMDecorButton *button)
 {
   MBWMDecor * decor = button->decor;
+  MBWMTheme * theme = decor->parent_client->wmref->theme;
 
   if (decor->parent_client == NULL)
     return;
 
-  if (button->repaint)
-    button->repaint(decor->parent_client->wmref, button, button->userdata);
-  else
-    {
-      MBWMTheme * theme = decor->parent_client->wmref->theme;
-
-      mb_wm_theme_paint_button (theme, button);
-    }
+  mb_wm_theme_paint_button (theme, button);
 }

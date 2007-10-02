@@ -30,18 +30,6 @@
 #define MB_WM_DECOR_BUTTON_CLASS(c) ((MBWMDecorButtonClass*)(c))
 #define MB_WM_TYPE_DECOR_BUTTON (mb_wm_decor_button_class_type ())
 
-typedef void (*MBWMDecorResizedFunc) (MBWindowManager   *wm,
-				      MBWMDecor         *decor,
-				      void              *userdata);
-
-typedef void (*MBWMDecorRepaintFunc) (MBWindowManager   *wm,
-				      MBWMDecor         *decor,
-				      void              *userdata);
-
-typedef void (*MBWMDecorButtonRepaintFunc) (MBWindowManager   *wm,
-					    MBWMDecorButton   *button,
-					    void              *userdata);
-
 typedef void (*MBWMDecorButtonPressedFunc) (MBWindowManager   *wm,
 					    MBWMDecorButton   *button,
 					    void              *userdata);
@@ -59,9 +47,6 @@ struct MBWMDecor
   MBWindowManagerClient *parent_client;
   MBGeometry             geom;
   Bool                   dirty;
-  MBWMDecorResizedFunc   resize;
-  MBWMDecorRepaintFunc   repaint;
-  void                  *userdata;
   MBWMList              *buttons;
   int                    pack_start_x;
   int                    pack_end_x;
@@ -75,10 +60,7 @@ struct MBWMDecorClass
 
 MBWMDecor*
 mb_wm_decor_new (MBWindowManager     *wm,
-		 MBWMDecorType        type,
-		 MBWMDecorResizedFunc resize,
-		 MBWMDecorRepaintFunc repaint,
-		 void                *userdata);
+		 MBWMDecorType        type);
 
 static Bool
 mb_wm_decor_reparent (MBWMDecor *decor);
@@ -160,7 +142,6 @@ struct MBWMDecorButton
   Bool                        needs_sync;
   MBWMDecorButtonState        state;
 
-  MBWMDecorButtonRepaintFunc  repaint;
   MBWMDecorButtonPressedFunc  press;
   MBWMDecorButtonReleasedFunc release;
   void                       *userdata;
@@ -198,7 +179,6 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecor                  *decor,
 			MBWMDecorButtonPressedFunc  press,
 			MBWMDecorButtonReleasedFunc release,
-			MBWMDecorButtonRepaintFunc  paint,
 			MBWMDecorButtonFlags        flags,
 			void                       *userdata);
 

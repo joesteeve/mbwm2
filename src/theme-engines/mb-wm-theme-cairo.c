@@ -528,51 +528,6 @@ mb_wm_theme_cairo_class_type ()
 }
 
 static void
-decor_resize (MBWindowManager   *wm,
-	      MBWMDecor         *decor,
-	      void              *userdata)
-{
-  const MBGeometry *geom;
-  MBWMList         *l;
-  int               btn_x_start, btn_x_end;
-
-  geom = mb_wm_decor_get_geometry (decor);
-
-  btn_x_end = geom->width - 2;
-  btn_x_start = 2;
-
-  l = decor->buttons;
-  while (l)
-    {
-      MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
-
-      if (btn->pack == MBWMDecorButtonPackEnd)
-	{
-	  btn_x_end -= (btn->geom.width + 2);
-	  mb_wm_decor_button_move_to (btn, btn_x_end, 2);
-	}
-      else
-	{
-	  mb_wm_decor_button_move_to (btn, btn_x_start, 2);
-	  btn_x_start += (btn->geom.width + 2);
-	}
-
-      l = l->next;
-    }
-
-  decor->pack_start_x = btn_x_start;
-  decor->pack_end_x   = btn_x_end;
-}
-
-static void
-decor_repaint (MBWindowManager   *wm,
-	       MBWMDecor         *decor,
-	       void              *userdata)
-{
-  mb_wm_theme_paint_decor (wm->theme, decor);
-}
-
-static void
 construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor)
 {
   MBWindowManagerClient *client = decor->parent_client;
@@ -681,14 +636,12 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
       switch (type)
 	{
 	case MBWMDecorTypeNorth:
-	  decor = mb_wm_decor_new (wm, type, decor_resize, decor_repaint,
-				   client);
+	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
 	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor);
 	  break;
 	default:
-	  decor = mb_wm_decor_new (wm, type,
-				   decor_resize, decor_repaint, client);
+	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
 	}
       break;
@@ -698,8 +651,7 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
     case MBWMClientTypeDesktop:
     case MBWMClientTypeInput:
     default:
-	  decor = mb_wm_decor_new (wm, type,
-				   decor_resize, decor_repaint, client);
+	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
     }
 
