@@ -19,13 +19,19 @@
  */
 
 #include "mb-wm-theme.h"
-#include "mb-wm-theme-private.h"
+#include "mb-wm-theme-xml.h"
 
 #include <sys/stat.h>
 #include <expat.h>
 
 static void
 xml_element_start_cb (void *data, const char *tag, const char **expat_attr);
+
+static void
+xml_element_end_cb (void *data, const char *tag);
+
+static void
+xml_stack_free (MBWMList *stack);
 
 static void
 mb_wm_theme_destroy (MBWMObject *obj)
@@ -39,21 +45,22 @@ mb_wm_theme_destroy (MBWMObject *obj)
 
   while (l)
     {
-      struct Client * c = l->data;
+      MBWMXmlClient * c = l->data;
       MBWMList * n = l->next;
-      client_free (c);
+      mb_wm_xml_client_free (c);
       free (l);
 
       l = n;
     }
 }
 
-static void
+static int
 mb_wm_theme_init (MBWMObject *obj, va_list vap)
 {
   MBWMTheme        *theme = MB_WM_THEME (obj);
   MBWindowManager  *wm = NULL;
   MBWMObjectProp    prop;
+  MBWMList         *xml_clients = NULL;
   char             *path = NULL;
 
   prop = va_arg(vap, MBWMObjectProp);
@@ -66,6 +73,10 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
 	  break;
 	case MBWMObjectPropThemePath:
 	  path = va_arg(vap, char *);
+	  break;
+	case MBWMObjectPropThemeXmlClients:
+	  xml_clients = va_arg(vap, MBWMList *);
+	  break;
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -74,9 +85,12 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
     }
 
   theme->wm = wm;
+  theme->xml_clients = xml_clients;
 
   if (path)
     theme->path = strdup (path);
+
+  return 1;
 }
 
 int
@@ -211,24 +225,43 @@ mb_wm_theme_supports (MBWMTheme *theme, MBWMThemeCaps capability)
   return ((capability & theme->caps != False));
 }
 
+typedef enum
+{
+  XML_CTX_UNKNOWN = 0,
+  XML_CTX_THEME,
+  XML_CTX_CLIENT,
+  XML_CTX_DECOR,
+  XML_CTX_BUTTON,
+  XML_CTX_IMG,
+} XmlCtx;
+
+struct stack_data
+{
+  XmlCtx  ctx;
+  void   *data;
+};
+
 struct expat_data
 {
   XML_Parser   par;
   int          theme_type;
   int          version;
   MBWMList     *xml_clients;
+  char         *img;
+  MBWMList     *stack;
 };
 
 MBWMTheme *
 mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 {
-  MBWMTheme *theme;
+  MBWMTheme *theme = NULL;
   int        theme_type = 0;
   char      *path = NULL;
   char       buf[256];
   XML_Parser par = NULL;
   FILE      *file = NULL;
   MBWMList  *xml_clients = NULL;
+  char      *img = NULL;
 
   /* Attempt to parse the xml theme, if any, retrieving the theme type
    *
@@ -282,22 +315,16 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 	  if (!(file = fopen (path, "r")) ||
 	      !(par = XML_ParserCreate(NULL)))
 	    {
-	      path = NULL;
-
-	      if (file)
-		{
-		  fclose (file);
-		  file = NULL;
-		}
 	      goto default_theme;
 	    }
 
-	  udata.theme_type  = 0;
-	  udata.version     = 0;
-	  udata.par         = par;
-	  udata.xml_clients = NULL;
+	  memset (&udata, 0, sizeof (struct expat_data));
+	  udata.par = par;
 
-	  XML_SetElementHandler (par, xml_element_start_cb, NULL);
+	  XML_SetElementHandler (par,
+				 xml_element_start_cb,
+				 xml_element_end_cb);
+
 	  XML_SetUserData(par, (void *)&udata);
 
 	  printf ("========= parsing [%s]\n", path);
@@ -309,12 +336,39 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 
 	  if (udata.version == 2)
 	    {
-	      theme_type = udata.theme_type;
+	      theme_type  = udata.theme_type;
 	      xml_clients = udata.xml_clients;
+
+	      if (udata.img)
+		{
+		  if (*udata.img == '/')
+		    img = udata.img;
+		  else
+		    {
+		      int len = strlen (path) + strlen (udata.img);
+		      char * s;
+		      char * p = malloc (len + 1);
+		      strncpy (p, path, len);
+
+		      s = strrchr (p, '/');
+
+		      if (s)
+			{
+			  *(s+1) = 0;
+			  strcat (p, udata.img);
+			}
+		      else
+			{
+			  strncpy (p, udata.img, len);
+			}
+
+		      img = p;
+		      free (udata.img);
+		    }
+		}
 	    }
 
-	  fclose (file);
-	  XML_ParserFree (par);
+	  xml_stack_free (udata.stack);
 	}
   }
 
@@ -322,26 +376,38 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
     {
       theme =
 	MB_WM_THEME (mb_wm_object_new (theme_type,
-				       MBWMObjectPropWm,        wm,
-				       MBWMObjectPropThemePath, path,
-				       NULL));
-
-      if (theme)
-	{
-	  theme->xml_clients = xml_clients;
-	  return theme;
-	}
+				   MBWMObjectPropWm,        wm,
+				   MBWMObjectPropThemePath, path,
+				   MBWMObjectPropThemeImg,  img,
+				   MBWMObjectPropThemeXmlClients, xml_clients,
+				   NULL));
     }
 
  default_theme:
 
+  if (!theme)
+    {
+      theme = MB_WM_THEME (mb_wm_object_new (
+#ifdef USE_CAIRO
+				   MB_WM_TYPE_THEME_CAIRO,
+#else
+				   MB_WM_TYPE_THEME_SIMPLE,
+#endif
+			           MBWMObjectPropWm, wm,
+				   MBWMObjectPropThemeXmlClients, xml_clients,
+			           NULL));
+    }
+
   if (par)
     XML_ParserFree (par);
 
-  /* Fall back on the default cairo theme */
-  return MB_WM_THEME (mb_wm_object_new (MB_WM_TYPE_THEME_CAIRO,
-					MBWMObjectPropWm, wm,
-					NULL));
+  if (file)
+    fclose (file);
+
+  if (img)
+    free (img);
+
+  return theme;
 }
 
 MBWMDecor *
@@ -362,200 +428,82 @@ mb_wm_theme_create_decor (MBWMTheme             *theme,
     klass->create_decor (theme, client, type);
 }
 
-/*****************************************************************
- * XML Parser stuff
+/*
+ * Expat callback stuff
  */
-struct Button *
-button_new ()
+
+static void
+xml_stack_push (MBWMList ** stack, XmlCtx ctx)
 {
-  struct Button * b = mb_wm_util_malloc0 (sizeof (struct Button));
+  struct stack_data * s = malloc (sizeof (struct stack_data));
 
-  b->x = -1;
-  b->y = -1;
+  s->ctx = ctx;
+  s->data = NULL;
 
-  return b;
+  *stack = mb_wm_util_list_prepend (*stack, s);
 }
 
-void
-button_free (struct Button * b)
+static XmlCtx
+xml_stack_top_ctx (MBWMList *stack)
 {
-  free (b);
+  struct stack_data * s = stack->data;
+
+  return s->ctx;
 }
 
-struct Decor *
-decor_new ()
+static void *
+xml_stack_top_data (MBWMList *stack)
 {
-  struct Decor * d = mb_wm_util_malloc0 (sizeof (struct Decor));
-  return d;
-}
+  struct stack_data * s = stack->data;
 
-void
-decor_free (struct Decor * d)
-{
-  MBWMList * l;
-
-  if (!d)
-    return;
-
-  l = d->buttons;
-  while (l)
-    {
-      struct Button * b = l->data;
-      MBWMList * n = l->next;
-      button_free (b);
-      free (l);
-
-      l = n;
-    }
-
-  if (d->font_family)
-    free (d->font_family);
-
-  free (d);
-}
-
-struct Client *
-client_new ()
-{
-  struct Client * c = mb_wm_util_malloc0 (sizeof (struct Client));
-  return c;
-}
-
-void
-client_free (struct Client * c)
-{
-  MBWMList * l;
-
-  if (!c)
-    return;
-
-  l = c->decors;
-  while (l)
-    {
-      struct Decor * d = l->data;
-      MBWMList * n = l->next;
-      decor_free (d);
-      free (l);
-
-      l = n;
-    }
-
-  free (c);
-}
-
-void
-clr_from_string (struct Clr * clr, const char *s)
-{
-  int  r, g, b;
-
-  if (!s || *s != '#')
-    return;
-
-  sscanf (s+1,"%2x%2x%2x", &r, &g, &b);
-  clr->r = (double) r / 255.0;
-  clr->g = (double) g / 255.0;
-  clr->b = (double) b / 255.0;
-
-  clr->set = True;
+  return s->data;
 }
 
 static void
-xml_element_start_cb_2 (void *data, const char *tag, const char **expat_attr)
+xml_stack_top_set_data (MBWMList *stack, void * data)
 {
-  MBWMTheme *theme = data;
+  struct stack_data * s = stack->data;
 
-  if (!expat_attr)
-    return;
-
+  s->data = data;
 }
 
-struct Client *
-client_find_by_type (MBWMList *l, MBWMClientType type)
+static void
+xml_stack_pop (MBWMList ** stack)
 {
+  MBWMList * top = *stack;
+  struct stack_data * s = top->data;
+
+  *stack = top->next;
+  free (s);
+  free (top);
+}
+
+static void
+xml_stack_free (MBWMList *stack)
+{
+  MBWMList * l = stack;
   while (l)
     {
-      struct Client * c = l->data;
-      if (c->type == type)
-	return c;
+      MBWMList * n = l->next;
+      free (l->data);
+      free (l);
 
-      l = l->next;
+      l = n;
     }
-
-  return NULL;
 }
-
-struct Decor *
-decor_find_by_type (MBWMList *l, MBWMDecorType type)
-{
-  while (l)
-    {
-      struct Decor * d = l->data;
-      if (d->type == type)
-	return d;
-
-      l = l->next;
-    }
-
-  return NULL;
-}
-
-struct Button *
-button_find_by_type (MBWMList *l, MBWMDecorButtonType type)
-{
-  while (l)
-    {
-      struct Button * b = l->data;
-      if (b->type == type)
-	return b;
-
-      l = l->next;
-    }
-
-  return NULL;
-}
-
-#if 0
-void
-client_dump (MBWMList * l)
-{
-  printf ("=== XML Clients =====\n");
-  while (l)
-    {
-      struct Client * c = l->data;
-      MBWMList *l2 = c->decors;
-      printf ("===== client type %d =====\n", c->type);
-
-      while (l2)
-	{
-	  struct Decor * d = l2->data;
-	  MBWMList *l3 = d->buttons;
-	  printf ("======= decor type %d =====\n", d->type);
-
-	  while (l3)
-	    {
-	      struct Button * b = l3->data;
-	      printf ("========= button type %d =====\n", d->type);
-
-	      l3 = l3->next;
-	    }
-
-	  l2 = l2->next;
-	}
-
-      l = l->next;
-    }
-  printf ("=== XML Clients End =====\n");
-}
-#endif
 
 static void
 xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 {
   struct expat_data * exd = data;
 
+  MBWM_DBG ("tag <%s>\n", tag);
+
   if (!strcmp (tag, "theme"))
     {
       const char ** p = expat_attr;
+
+      xml_stack_push (&exd->stack, XML_CTX_THEME);
 
       while (*p)
 	{
@@ -581,8 +529,18 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
   if (!strcmp (tag, "client"))
     {
-      struct Client * c = client_new ();
+      MBWMXmlClient * c = mb_wm_xml_client_new ();
       const char **p = expat_attr;
+
+      XmlCtx ctx = xml_stack_top_ctx (exd->stack);
+
+      xml_stack_push (&exd->stack, XML_CTX_CLIENT);
+
+      if (ctx != XML_CTX_THEME)
+	{
+	  MBWM_DBG ("Expected context theme");
+	  return;
+	}
 
       while (*p)
 	{
@@ -599,34 +557,63 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	      else if (!strcmp (*(p+1), "desktop"))
 		c->type = MBWMClientTypeDesktop;
 	    }
+	  else if (!strcmp (*p, "width"))
+	    {
+	      c->width = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "height"))
+	    {
+	      c->height = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "x"))
+	    {
+	      c->x = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "y"))
+	    {
+	      c->y = atoi (*(p+1));
+	    }
 
 	  p += 2;
 	}
 
       if (!c->type)
-	client_free (c);
+	mb_wm_xml_client_free (c);
       else
-	exd->xml_clients = mb_wm_util_list_prepend (exd->xml_clients, c);
+	{
+	  exd->xml_clients = mb_wm_util_list_prepend (exd->xml_clients, c);
+	  xml_stack_top_set_data (exd->stack, c);
+	}
+
 
       return;
     }
 
   if (!strcmp (tag, "decor"))
     {
-      struct Decor * d = decor_new ();
-
+      MBWMXmlDecor * d = mb_wm_xml_decor_new ();
       const char **p = expat_attr;
+      XmlCtx ctx = xml_stack_top_ctx (exd->stack);
+      MBWMXmlClient * c = xml_stack_top_data (exd->stack);
+
+      xml_stack_push (&exd->stack, XML_CTX_DECOR);
+
+      if (ctx != XML_CTX_CLIENT || !c)
+	{
+	  MBWM_DBG ("Expected context client");
+	  return;
+	}
 
       while (*p)
 	{
 	  if (!strcmp (*p, "clr-fg"))
-	    clr_from_string (&d->clr_fg, *(p+1));
+	    mb_wm_xml_clr_from_string (&d->clr_fg, *(p+1));
 	  else if (!strcmp (*p, "clr-bg"))
-	    clr_from_string (&d->clr_bg, *(p+1));
+	    mb_wm_xml_clr_from_string (&d->clr_bg, *(p+1));
 	  else if (!strcmp (*p, "clr-bg2"))
-	    clr_from_string (&d->clr_bg2, *(p+1));
+	    mb_wm_xml_clr_from_string (&d->clr_bg2, *(p+1));
 	  else if (!strcmp (*p, "clr-frame"))
-	    clr_from_string (&d->clr_frame, *(p+1));
+	    mb_wm_xml_clr_from_string (&d->clr_frame, *(p+1));
 	  else if (!strcmp (*p, "type"))
 	    {
 	      if (!strcmp (*(p+1), "north"))
@@ -666,12 +653,12 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  p += 2;
 	}
 
-      if (!d->type || !exd->xml_clients)
-	  decor_free (d);
+      if (!d->type)
+	mb_wm_xml_decor_free (d);
       else
 	{
-	  struct Client * c = exd->xml_clients->data;
 	  c->decors = mb_wm_util_list_prepend (c->decors, d);
+	  xml_stack_top_set_data (exd->stack, d);
 	}
 
       return;
@@ -679,16 +666,25 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
   if (!strcmp (tag, "button"))
     {
-      struct Button * b = button_new ();
-
+      MBWMXmlButton * b = mb_wm_xml_button_new ();
       const char **p = expat_attr;
+      XmlCtx ctx = xml_stack_top_ctx (exd->stack);
+      MBWMXmlDecor * d = xml_stack_top_data (exd->stack);
+
+      xml_stack_push (&exd->stack, XML_CTX_BUTTON);
+
+      if (ctx != XML_CTX_DECOR || !d)
+	{
+	  MBWM_DBG ("Expected context decor");
+	  return;
+	}
 
       while (*p)
 	{
 	  if (!strcmp (*p, "clr-fg"))
-	    clr_from_string (&b->clr_fg, *(p+1));
+	    mb_wm_xml_clr_from_string (&b->clr_fg, *(p+1));
 	  else if (!strcmp (*p, "clr-bg"))
-	    clr_from_string (&b->clr_bg, *(p+1));
+	    mb_wm_xml_clr_from_string (&b->clr_bg, *(p+1));
 	  else if (!strcmp (*p, "type"))
 	    {
 	      if (!strcmp (*(p+1), "minimize"))
@@ -723,25 +719,96 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  p += 2;
 	}
 
-      if (!b->type ||
-	  !exd->xml_clients ||
-	  !exd->xml_clients->data)
+      if (!b->type)
 	{
-	  button_free (b);
+	  mb_wm_xml_button_free (b);
 	  return;
 	}
 
-      struct Client * c = exd->xml_clients->data;
-
-      if (!c->decors || !c->decors->data)
-	{
-	  button_free (b);
-	  return;
-	}
-
-      struct Decor  * d = c->decors->data;
       d->buttons = mb_wm_util_list_append (d->buttons, b);
+
+      xml_stack_top_set_data (exd->stack, b);
 
       return;
     }
+
+  if (!strcmp (tag, "img"))
+    {
+      const char **p = expat_attr;
+      XmlCtx ctx = xml_stack_top_ctx (exd->stack);
+
+      xml_stack_push (&exd->stack, XML_CTX_IMG);
+
+      if (ctx != XML_CTX_THEME)
+	{
+	  MBWM_DBG ("Expected context theme");
+	  return;
+	}
+
+      while (*p)
+	{
+	  if (!strcmp (*p, "src"))
+	    {
+	      exd->img = strdup (*(p+1));
+	      return;
+	    }
+
+	  p += 2;
+	}
+
+      return;
+    }
+
 }
+
+static void
+xml_element_end_cb (void *data, const char *tag)
+{
+  struct expat_data * exd = data;
+
+  XmlCtx ctx = xml_stack_top_ctx (exd->stack);
+
+  MBWM_DBG ("tag </%s>\n", tag);
+
+  if (!strcmp (tag, "theme"))
+    {
+      XML_StopParser (exd->par, 0);
+    }
+  else if (!strcmp (tag, "client"))
+    {
+      if (ctx == XML_CTX_CLIENT)
+	{
+	  xml_stack_pop (&exd->stack);
+	}
+      else
+	MBWM_DBG ("Expected client on the top of the stack!");
+    }
+  else if (!strcmp (tag, "decor"))
+    {
+      if (ctx == XML_CTX_DECOR)
+	{
+	  xml_stack_pop (&exd->stack);
+	}
+      else
+	MBWM_DBG ("Expected decor on the top of the stack!");
+    }
+  else if (!strcmp (tag, "button"))
+    {
+      if (ctx == XML_CTX_BUTTON)
+	{
+	  xml_stack_pop (&exd->stack);
+	}
+      else
+	MBWM_DBG ("Expected button on the top of the stack!");
+    }
+  else if (!strcmp (tag, "img"))
+    {
+      if (ctx == XML_CTX_IMG)
+	{
+	  xml_stack_pop (&exd->stack);
+	}
+      else
+	MBWM_DBG ("Expected img on the top of the stack!");
+    }
+}
+

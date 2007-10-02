@@ -216,7 +216,7 @@ mb_wm_object_unref (MBWMObject *this)
     }
 }
 
-static void
+static int
 mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent,
 			   va_list vap)
 {
@@ -225,15 +225,19 @@ mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent,
   va_copy (vap2, vap);
 
   if (parent->parent)
-    mb_wm_object_init_recurse (obj, parent->parent, vap2);
+    if (!mb_wm_object_init_recurse (obj, parent->parent, vap2))
+      return 0;
 
   if (parent->init)
-    parent->init (obj, vap);
+    if (!parent->init (obj, vap))
+      return;
 
   va_end (vap2);
+
+  return 1;
 }
 
-static void
+static int
 mb_wm_object_init_object (MBWMObject *obj, va_list vap)
 {
   va_list vap2;
@@ -241,12 +245,16 @@ mb_wm_object_init_object (MBWMObject *obj, va_list vap)
   va_copy(vap2, vap);
 
   if (obj->klass->parent)
-    mb_wm_object_init_recurse (obj, obj->klass->parent, vap2);
+    if (!mb_wm_object_init_recurse (obj, obj->klass->parent, vap2))
+      return 0;
 
   if (obj->klass->init)
-    obj->klass->init(obj, vap);
+    if (!obj->klass->init(obj, vap))
+      return 0;
 
   va_end(vap2);
+
+  return 1;
 }
 
 
@@ -265,7 +273,12 @@ mb_wm_object_new (int type, ...)
 
   obj->klass = MB_WM_OBJECT_CLASS(ObjectClasses[type-1]);
 
-  mb_wm_object_init_object (obj, vap);
+  if (!mb_wm_object_init_object (obj, vap))
+    {
+      free (obj);
+      return NULL;
+    }
+
 
   mb_wm_object_ref (obj);
 

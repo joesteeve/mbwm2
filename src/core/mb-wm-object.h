@@ -28,7 +28,7 @@ typedef struct MBWMObject       MBWMObject;
 typedef struct MBWMObjectClass  MBWMObjectClass;
 
 typedef void (*MBWMObjFunc)     (MBWMObject* obj);
-typedef void (*MBWMObjVargFunc) (MBWMObject* obj, va_list vap);
+typedef int  (*MBWMObjVargFunc) (MBWMObject* obj, va_list vap);
 typedef void (*MBWMClassFunc)   (MBWMObjectClass* klass);
 
 #define MB_WM_TYPE_OBJECT 0

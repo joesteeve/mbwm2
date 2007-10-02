@@ -78,7 +78,7 @@ mb_wm_client_dialog_destroy (MBWMObject *this)
 {
 }
 
-static void
+static int
 mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 {
   MBWindowManagerClient *client = MB_WM_CLIENT (this);
@@ -147,6 +147,7 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
   client->frame_geometry.width  = client->window->geometry.width;
   client->frame_geometry.height = client->window->geometry.height;
 
+  return 1;
 }
 
 int

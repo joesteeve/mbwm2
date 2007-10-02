@@ -26,7 +26,7 @@ mb_wm_layout_destroy (MBWMObject *this)
 {
 }
 
-static void
+static int
 mb_wm_layout_init (MBWMObject *this, va_list vap)
 {
   MBWMLayout *layout = MB_WM_LAYOUT (this);
@@ -51,6 +51,8 @@ mb_wm_layout_init (MBWMObject *this, va_list vap)
   MBWM_ASSERT (wm);
 
   layout->wm = wm;
+
+  return 1;
 }
 
 int

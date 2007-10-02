@@ -51,7 +51,7 @@ mb_wm_root_window_init_attributes (MBWMRootWindow * win);
 static void
 mb_wm_root_window_init_properties (MBWMRootWindow * win);
 
-static void
+static int
 mb_wm_root_window_init (MBWMObject *this, va_list vap)
 {
   MBWMRootWindow       *root_window = MB_WM_ROOT_WINDOW (this);
@@ -92,6 +92,8 @@ mb_wm_root_window_init (MBWMObject *this, va_list vap)
 					     CWOverrideRedirect, &attr);
 
   mb_wm_root_window_init_properties (root_window);
+
+  return 1;
 }
 
 int

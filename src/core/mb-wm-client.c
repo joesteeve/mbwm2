@@ -55,7 +55,7 @@ mb_wm_client_on_property_change (MBWMClientWindow *window,
 				 int               property,
 				 void             *userdata);
 
-static void
+static int
 mb_wm_client_init (MBWMObject *obj, va_list vap)
 {
   MBWindowManagerClient *client;
@@ -100,6 +100,8 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 		 MBWM_WINDOW_PROP_ALL,
 		 (MBWMObjectCallbackFunc)mb_wm_client_on_property_change,
 		 client);
+
+  return 1;
 }
 
 int

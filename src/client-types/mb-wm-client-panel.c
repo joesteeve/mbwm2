@@ -24,7 +24,7 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 #endif
 }
 
-static void
+static int
 mb_wm_client_panel_init (MBWMObject *this, va_list vap)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT (this);
@@ -34,6 +34,8 @@ mb_wm_client_panel_init (MBWMObject *this, va_list vap)
 
   mb_wm_client_set_layout_hints (client,
 			      LayoutPrefReserveEdgeSouth|LayoutPrefVisible);
+
+  return 1;
 }
 
 static void

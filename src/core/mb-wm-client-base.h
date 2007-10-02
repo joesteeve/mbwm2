@@ -38,9 +38,6 @@ typedef struct MBWMClientBaseClass
 }
 MBWMClientBaseClass;
 
-void
-mb_wm_client_base_class_init (MBWMObjectClass *klass);
-
 void base_foo(void);
 
 #endif

@@ -38,7 +38,7 @@ mb_wm_client_desktop_destroy (MBWMObject *this)
 
 }
 
-static void
+static int
 mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
 {
   MBWMClientDesktop        *client_desktop = MB_WM_CLIENT_DESKTOP (this);
@@ -73,12 +73,14 @@ mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
   wm = client->wmref;
 
   if (!wm)
-    return;
+    return 0;
 
   client->stacking_layer = MBWMStackLayerBottom;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
+
+  return 1;
 }
 
 int

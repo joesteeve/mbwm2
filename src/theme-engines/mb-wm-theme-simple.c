@@ -23,9 +23,11 @@ mb_wm_theme_simple_destroy (MBWMObject *obj)
 {
 }
 
-static void
+static int
 mb_wm_theme_simple_init (MBWMObject *obj, va_list vap)
 {
+
+  return 1;
 }
 
 int

@@ -45,7 +45,7 @@ mb_wm_client_base_request_geometry (MBWindowManagerClient *client,
 static Bool
 mb_wm_client_base_focus (MBWindowManagerClient *client);
 
-void
+static void
 mb_wm_client_base_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -93,9 +93,10 @@ mb_wm_client_base_destroy (MBWMObject *this)
     mb_wm_client_remove_transient (parent, MB_WM_CLIENT(this));
 }
 
-static void
+static int
 mb_wm_client_base_init (MBWMObject *this, va_list vap)
 {
+  return 1;
 }
 
 int

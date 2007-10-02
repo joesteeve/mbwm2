@@ -36,7 +36,7 @@ mb_wm_client_app_destroy (MBWMObject *this)
 }
 
 
-static void
+static int
 mb_wm_client_app_init (MBWMObject *this, va_list vap)
 {
   MBWMClientApp            *client_app = MB_WM_CLIENT_APP (this);
@@ -71,7 +71,7 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   wm = client->wmref;
 
   if (!wm)
-    return;
+    return 0;
 
   client->stacking_layer = MBWMStackLayerMid;
 
@@ -82,6 +82,8 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
   mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
   mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
+
+  return 1;
 }
 
 int

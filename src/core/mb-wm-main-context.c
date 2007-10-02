@@ -86,7 +86,7 @@ mb_wm_main_context_destroy (MBWMObject *this)
 {
 }
 
-static void
+static int
 mb_wm_main_context_init (MBWMObject *this, va_list vap)
 {
   MBWMMainContext  *ctx = MB_WM_MAIN_CONTEXT (this);
@@ -108,6 +108,8 @@ mb_wm_main_context_init (MBWMObject *this, va_list vap)
     }
 
   ctx->wm = wm;
+
+  return 1;
 }
 
 int

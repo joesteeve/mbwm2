@@ -111,7 +111,7 @@ mb_wm_destroy (MBWMObject *this)
   mb_wm_object_unref (MB_WM_OBJECT (wm->main_ctx));
 }
 
-static void
+static int
 mb_wm_init (MBWMObject *this, va_list vap);
 
 int
@@ -872,7 +872,7 @@ mb_wm_register_client_type (void)
   return ++type_cnt;
 }
 
-static void
+static int
 mb_wm_init (MBWMObject *this, va_list vap)
 {
   MBWindowManager      *wm = MB_WINDOW_MANAGER (this);
@@ -911,7 +911,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
     {
       /* FIXME: Error codes */
       mb_wm_util_fatal_error("Display connection failed");
-      return;
+      return 0;
     }
 
   if (getenv("MB_SYNC"))
@@ -985,6 +985,8 @@ mb_wm_init (MBWMObject *this, va_list vap)
   base_foo ();
 
   mb_wm_manage_preexistsing_wins (wm);
+
+  return 1;
 }
 
 static void

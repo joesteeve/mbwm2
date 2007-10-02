@@ -81,7 +81,7 @@ mb_wm_client_window_destroy (MBWMObject *this)
     }
 }
 
-static void
+static int
 mb_wm_client_window_init (MBWMObject *this, va_list vap)
 {
   MBWMClientWindow *win = MB_WM_CLIENT_WINDOW (this);
@@ -110,13 +110,15 @@ mb_wm_client_window_init (MBWMObject *this, va_list vap)
   if (!wm || !xwin)
     {
       fprintf (stderr, "--- error, no wm or xwin ---\n");
-      return;
+      return 0;
     }
 
   win->xwindow = xwin;
   win->wm = wm;
 
   mb_wm_client_window_sync_properties (win, MBWM_WINDOW_PROP_ALL);
+
+  return 1;
 }
 
 int

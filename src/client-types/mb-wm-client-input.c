@@ -40,7 +40,7 @@ mb_wm_client_input_destroy (MBWMObject *this)
 
 }
 
-static void
+static int
 mb_wm_client_input_init (MBWMObject *this, va_list vap)
 {
   MBWMClientInput          *client_input = MB_WM_CLIENT_INPUT (this);
@@ -75,12 +75,14 @@ mb_wm_client_input_init (MBWMObject *this, va_list vap)
   wm = client->wmref;
 
   if (!wm)
-    return;
+    return 0;
 
   client->stacking_layer = MBWMStackLayerMid;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefReserveSouth|LayoutPrefVisible);
+
+  return 1;
 }
 
 int

@@ -34,7 +34,7 @@ mb_wm_decor_class_init (MBWMObjectClass *klass)
 #endif
 }
 
-static void
+static int
 mb_wm_decor_init (MBWMObject *obj, va_list vap)
 {
   MBWMDecor             *decor = MB_WM_DECOR (obj);
@@ -67,6 +67,8 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   decor->type     = type;
   decor->dirty    = True; 	/* Needs painting */
   decor->absolute_packing = abs_packing;
+
+  return 1;
 }
 
 int
@@ -573,7 +575,7 @@ mb_wm_decor_button_class_init (MBWMObjectClass *klass)
 #endif
 }
 
-static void
+static int
 mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 {
   MBWMDecorButton             *button = MB_WM_DECOR_BUTTON (obj);
@@ -624,7 +626,7 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
     }
 
   if (!wm || !decor)
-    return;
+    return 0;
 
   /*
    * Decors must be attached before we can start adding buttons to them,
@@ -652,6 +654,8 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 
   /* the decor assumes a reference, so add one for the caller */
   mb_wm_object_ref (obj);
+
+  return 1;
 }
 
 int

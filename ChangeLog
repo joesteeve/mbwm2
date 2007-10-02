@@ -1,3 +1,36 @@
+2007-10-02  Tomas Frydrych  <tf@o-hand.com>
+	
+        * data/themes/Default/theme.xml:
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-desktop.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-input.c:
+        * src/client-types/mb-wm-client-panel.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client-base.h:
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-layout.c:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-object-props.h:
+        * src/core/mb-wm-object.c:
+        * src/core/mb-wm-object.h:
+        * src/core/mb-wm-root-window.c:
+        * src/theme-engines/Makefile.am
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-simple.c:
+        * src/theme-engines/mb-wm-theme-xml.c:
+        * src/theme-engines/mb-wm-theme-xml.h:
+        * src/theme-engines/mb-wm-theme.c:
+
+	Added return value to object init functions to catch
+	initialization failures.
+
+	Improvements to xml parser; name space cleanup.
+	
 2007-10-01  Tomas Frydrych  <tf@o-hand.com>
 
         * data/themes/Default/theme.xml:

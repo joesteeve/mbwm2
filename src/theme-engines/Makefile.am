@@ -10,7 +10,7 @@ if THEME_PNG
 PNG_SRC = mb-wm-theme-png.c mb-wm-theme-png.h
 endif
 
-COMMON_SRC = mb-wm-theme.h mb-wm-theme.c mb-wm-theme-private.h
+COMMON_SRC = mb-wm-theme.h mb-wm-theme.c mb-wm-theme-xml.h mb-wm-theme-xml.c
 
 noinst_LIBRARIES = libmb-theme.a
 

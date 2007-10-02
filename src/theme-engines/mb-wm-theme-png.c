@@ -1,5 +1,5 @@
 #include "mb-wm-theme-png.h"
-#include "mb-wm-theme-private.h"
+#include "mb-wm-theme-xml.h"
 
 #include <math.h>
 #include <png.h>
@@ -55,11 +55,12 @@ mb_wm_theme_png_destroy (MBWMObject *obj)
     XFree (theme->ximg);
 }
 
-static void
+static int
 mb_wm_theme_png_init (MBWMObject *obj, va_list vap)
 {
   MBWMThemePng * theme = MB_WM_THEME_PNG (obj);
 
+  return 1;
 }
 
 int
