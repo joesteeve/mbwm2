@@ -57,7 +57,6 @@ struct MBWMDecor
 
   void                     *themedata;
   MBWMDecorDestroyUserData  destroy_themedata;
-  unsigned long             sig_theme_change_id;
 };
 
 struct MBWMDecorClass

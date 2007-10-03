@@ -1228,9 +1228,6 @@ mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme)
   if (!theme)
     return;
 
-  mb_wm_object_signal_emit (MB_WM_OBJECT (wm),
-			    MBWindowManagerSignalThemeChange);
-
   XGrabServer(wm->xdpy);
 
   if (wm->theme)
@@ -1245,6 +1242,10 @@ mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme)
    */
   if (wm->root_win)
     mb_wm_root_window_update_supported_props (wm->root_win);
+
+  mb_wm_object_signal_emit (MB_WM_OBJECT (wm),
+			    MBWindowManagerSignalThemeChange);
+
 
   XUngrabServer(wm->xdpy);
 }

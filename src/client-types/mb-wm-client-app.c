@@ -8,6 +8,9 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBWMClientReqGeomType  flags);
 
 static void
+mb_wm_client_app_theme_change (MBWindowManagerClient *client);
+
+static void
 mb_wm_client_app_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -22,6 +25,7 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 
   client->client_type = MBWMClientTypeApp;
   client->geometry = mb_wm_client_app_request_geometry;
+  client->theme_change = mb_wm_client_app_theme_change;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientApp";
@@ -137,6 +141,33 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 
       return True; /* Geometry accepted */
     }
+}
+
+static void
+mb_wm_client_app_theme_change (MBWindowManagerClient *client)
+{
+  MBWMList * l = client->decor;
+
+  while (l)
+    {
+      MBWMDecor * d = l->data;
+      MBWMList * n = l->next;
+
+      mb_wm_object_unref (MB_WM_OBJECT (d));
+      free (l);
+
+      l = n;
+    }
+
+  client->decor = NULL;
+
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeNorth);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeSouth);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeWest);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeEast);
+
+  mb_wm_client_geometry_mark_dirty (client);
+  mb_wm_client_visibility_mark_dirty (client);
 }
 
 MBWindowManagerClient*

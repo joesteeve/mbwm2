@@ -35,7 +35,7 @@ typedef enum MBWindowManagerFlag
 
 typedef enum
 {
-  MBWindowManagerSignalThemeChange = 0,
+  MBWindowManagerSignalThemeChange = 1,
 } MBWindowManagerSingal;
 
 struct MBWindowManager

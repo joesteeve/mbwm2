@@ -103,6 +103,7 @@ typedef  void (*MBWMClientSyncMethod) (MBWindowManagerClient *client);
 
 typedef  Bool (*MBWMClientFocusMethod)(MBWindowManagerClient *client);
 
+typedef  void (*MBWMClientThemeChangeMethod) (MBWindowManagerClient *client);
 
 struct MBWindowManagerClientClass
 {
@@ -117,6 +118,7 @@ struct MBWindowManagerClientClass
   MBWMClientHideMethod         hide;
   MBWMClientSyncMethod         sync;     /* sync internal changes to display */
   MBWMClientFocusMethod        focus;
+  MBWMClientThemeChangeMethod  theme_change;
 };
 
 struct MBWindowManagerClient
@@ -151,6 +153,7 @@ struct MBWindowManagerClient
   MBWindowManagerClientPriv   *priv;
   unsigned long                sig_prop_change_id;
   unsigned long                ping_cb_id;
+  unsigned long                sig_theme_change_id;
   int                          ping_timeout;
 };
 
@@ -291,5 +294,8 @@ mb_wm_client_ping_in_progress (MBWindowManagerClient * client);
 
 void
 mb_wm_client_ping_stop (MBWindowManagerClient *client);
+
+void
+mb_wm_client_theme_change (MBWindowManagerClient *client);
 
 #endif

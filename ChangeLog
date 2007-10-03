@@ -1,5 +1,18 @@
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	Added virtual theme_change() to MBWindowMangerClient so decors are
+	correctly updated when theme changes.
+	
+2007-10-03  Tomas Frydrych  <tf@o-hand.com>
+
         * src/theme-engines/mb-wm-theme-png.c:
 	(mb_wm_theme_png_paint_decor):
 	Use PictOpOver instead of PictOpSrc.

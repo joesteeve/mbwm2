@@ -11,6 +11,9 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 				      MBWMClientReqGeomType  flags);
 
 static void
+mb_wm_client_dialog_theme_change (MBWindowManagerClient *client);
+
+static void
 mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 			   int                    flags);
 
@@ -55,10 +58,11 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   client = (MBWindowManagerClientClass *)klass;
 
-  client->client_type = MBWMClientTypeDialog;
-  client->geometry = mb_wm_client_dialog_request_geometry;
-  client->stack = mb_wm_client_dialog_stack;
-  client->show = mb_wm_client_dialog_show;
+  client->client_type  = MBWMClientTypeDialog;
+  client->geometry     = mb_wm_client_dialog_request_geometry;
+  client->stack        = mb_wm_client_dialog_stack;
+  client->show         = mb_wm_client_dialog_show;
+  client->theme_change = mb_wm_client_dialog_theme_change;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientDialog";
@@ -214,6 +218,33 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
     }
 
   return True; /* Geometry accepted */
+}
+
+static void
+mb_wm_client_dialog_theme_change (MBWindowManagerClient *client)
+{
+  MBWMList * l = client->decor;
+
+  while (l)
+    {
+      MBWMDecor * d = l->data;
+      MBWMList * n = l->next;
+
+      mb_wm_object_unref (MB_WM_OBJECT (d));
+      free (l);
+
+      l = n;
+    }
+
+  client->decor = NULL;
+
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeNorth);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeSouth);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeWest);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeEast);
+
+  mb_wm_client_geometry_mark_dirty (client);
+  mb_wm_client_visibility_mark_dirty (client);
 }
 
 

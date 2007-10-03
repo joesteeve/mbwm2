@@ -34,19 +34,6 @@ mb_wm_decor_class_init (MBWMObjectClass *klass)
 #endif
 }
 
-static Bool
-mb_wm_decor_on_theme_change (MBWindowManager * wm, int signal,
-			     MBWMDecor * decor)
-{
-  if (decor->themedata && decor->destroy_themedata)
-    decor->destroy_themedata (decor, decor->themedata);
-
-  decor->themedata = NULL;
-  decor->destroy_themedata = NULL;
-
-  return False;
-}
-
 static int
 mb_wm_decor_init (MBWMObject *obj, va_list vap)
 {
@@ -83,12 +70,6 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   decor->type     = type;
   decor->dirty    = True; 	/* Needs painting */
   decor->absolute_packing = abs_packing;
-
-  decor->sig_theme_change_id =
-    mb_wm_object_signal_connect (MB_WM_OBJECT (wm),
-		 MBWM_WINDOW_PROP_ALL,
-		 (MBWMObjectCallbackFunc)mb_wm_decor_on_theme_change,
-		 decor);
 
   return 1;
 }
@@ -220,12 +201,13 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 
   wm = decor->parent_client->wmref;
 
-  attr.override_redirect = True;
-  attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
-  attr.event_mask = ButtonPressMask|ButtonReleaseMask;
 
   if (decor->xwin == None)
     {
+      attr.override_redirect = True;
+      attr.background_pixel  = BlackPixel(wm->xdpy, wm->xscreen);
+      attr.event_mask = ButtonPressMask|ButtonReleaseMask;
+
       mb_wm_util_trap_x_errors();
 
       decor->xwin
@@ -499,12 +481,6 @@ mb_wm_decor_destroy (MBWMObject* obj)
 {
   MBWMDecor *decor = MB_WM_DECOR(obj);
   MBWMList * l = decor->buttons;
-
-  if (decor->sig_theme_change_id)
-    mb_wm_object_signal_disconnect (MB_WM_OBJECT (decor->parent_client->wmref),
-				    decor->sig_theme_change_id);
-
-  decor->sig_theme_change_id = 0;
 
   if (decor->themedata && decor->destroy_themedata)
     {

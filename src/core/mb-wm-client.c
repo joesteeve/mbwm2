@@ -34,6 +34,12 @@ mb_wm_client_destroy (MBWMObject *obj)
   MBWindowManagerClient * c;
   MBWMList * l = client->decor;
 
+  if (client->sig_theme_change_id)
+    mb_wm_object_signal_disconnect (MB_WM_OBJECT (client->wmref),
+				    client->sig_theme_change_id);
+
+  client->sig_theme_change_id = 0;
+
   if (client->ping_cb_id)
     mb_wm_main_context_timeout_handler_remove (client->wmref->main_ctx,
 					       client->ping_cb_id);
@@ -54,6 +60,15 @@ static Bool
 mb_wm_client_on_property_change (MBWMClientWindow *window,
 				 int               property,
 				 void             *userdata);
+
+static Bool
+mb_wm_client_on_theme_change (MBWindowManager * wm, int signal,
+			      MBWindowManagerClient * client)
+{
+  mb_wm_client_theme_change (client);
+  return False;
+}
+
 
 static int
 mb_wm_client_init (MBWMObject *obj, va_list vap)
@@ -100,6 +115,13 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 		 MBWM_WINDOW_PROP_ALL,
 		 (MBWMObjectCallbackFunc)mb_wm_client_on_property_change,
 		 client);
+
+  client->sig_theme_change_id =
+    mb_wm_object_signal_connect (MB_WM_OBJECT (wm),
+		 MBWindowManagerSignalThemeChange,
+		 (MBWMObjectCallbackFunc)mb_wm_client_on_theme_change,
+		 client);
+
 
   return 1;
 }
@@ -720,5 +742,16 @@ Bool
 mb_wm_client_ping_in_progress (MBWindowManagerClient * client)
 {
   return (client->ping_cb_id != 0);
+}
+
+void
+mb_wm_client_theme_change (MBWindowManagerClient *client)
+{
+  MBWindowManagerClientClass *klass;
+
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  if (klass->theme_change)
+    klass->theme_change (client);
 }
 
