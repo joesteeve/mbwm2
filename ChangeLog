@@ -1,21 +1,26 @@
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
+	* data/themes/PngSamle
+	Added elementary Png-based theme.
+
+2007-10-03  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-dialog.c:
 	Hook into theme decoration api.
-	
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
 	Added MBWindowManagerSignalThemeChange.
-	
+
         * src/core/mb-wm-decor.c:
         * src/core/mb-wm-decor.h:
-	Added mb_wm_decor_set_theme_data(); 
+	Added mb_wm_decor_set_theme_data();
 	Hooked into MBWindowManagerSignalThemeChange.
-	
+
         * src/theme-engines/mb-wm-theme-cairo.c:
         * src/theme-engines/mb-wm-theme-png.c:
 	Fixed to decor drawing.
-	
+
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:

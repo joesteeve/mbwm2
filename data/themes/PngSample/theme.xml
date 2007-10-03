@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<theme name="Default" author="Tomas Frydrych, tf@o-hand.com"
+       desc="" version="1.0" engine_version="2" engine_type="png">
+<img src="background.png" />
+<client type="app">
+ <decor type="north" clr-fg="#ffffff" x="0" y="0" width="320"
+height="20" font-family="Sans" font-size="12" clr-frame="#000000">
+  <button type="close"    width="16" height="16"  x="302" y="2"/>
+  <button type="minimize" width="16" height="16"  x="284" y="2"/>
+  <button type="menu"     width="16" height="16"  x="2"   y="2"/>
+ </decor>
+</client>
+
+<client type="dialog">
+ <decor type="north" x="83"  y="73"  width="146" height="3"   />
+ <decor type="south" x="83"  y="190" width="146" height="3"   />
+ <decor type="west"  x="83"  y="76"  width="3"   height="114" />
+ <decor type="east"  x="263" y="76"  width="3"   height="114" />
+</client>
+
+</theme>
