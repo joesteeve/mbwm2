@@ -1228,6 +1228,9 @@ mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme)
   if (!theme)
     return;
 
+  mb_wm_object_signal_emit (MB_WM_OBJECT (wm),
+			    MBWindowManagerSignalThemeChange);
+
   XGrabServer(wm->xdpy);
 
   if (wm->theme)

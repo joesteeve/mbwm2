@@ -163,15 +163,17 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
     {
       Display * xdpy    = theme->wm->xdpy;
       int       xscreen = theme->wm->xscreen;
-      struct DecorData * data = mb_wm_decor_get_user_data (decor);
+      struct DecorData * data = mb_wm_decor_get_theme_data (decor);
       const char * title;
+      int x, y;
 
       if (!data)
 	{
 	  XRenderColor rclr;
 
 	  data = malloc (sizeof (struct DecorData));
-	  data->xpix = XCreatePixmap(xdpy, decor->xwin, d->width, d->height,
+	  data->xpix = XCreatePixmap(xdpy, decor->xwin,
+				     decor->geom.width, decor->geom.height,
 				     DefaultDepth(xdpy, xscreen));
 
 	  data->xftdraw = XftDrawCreate (xdpy, data->xpix,
@@ -198,14 +200,18 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
 
 	  XSetWindowBackgroundPixmap(xdpy, decor->xwin, data->xpix);
 
-	  mb_wm_decor_set_user_data (decor, data, decordata_free);
+	  mb_wm_decor_set_theme_data (decor, data, decordata_free);
 	}
 
-      XRenderComposite(xdpy, PictOpOver,
-		       p_theme->xpic,
-		       None,
-		       XftDrawPicture (data->xftdraw),
-		       d->x, d->y, 0, 0, 0, 0, d->width, d->height);
+      for (x = 0; x < decor->geom.width; x += d->width)
+	for (y = 0; y < decor->geom.height; y += d->height)
+	  {
+	    XRenderComposite(xdpy, PictOpSrc,
+			     p_theme->xpic,
+			     None,
+			     XftDrawPicture (data->xftdraw),
+			     d->x, d->y, 0, 0, x, y, d->width, d->height);
+	  }
 
       title = mb_wm_client_get_name (client);
 
@@ -216,7 +222,8 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
 	  int pack_start_x = mb_wm_decor_get_pack_start_x (decor);
 	  int pack_end_x = mb_wm_decor_get_pack_end_x (decor);
 	  int west_width = mb_wm_client_frame_west_width (client);
-	  int y = (d->height - (data->font->ascent + data->font->descent)) / 2
+	  int y = (decor->geom.height -
+		   (data->font->ascent + data->font->descent)) / 2
 	    + data->font->ascent;
 
 	  rec.x = 0;

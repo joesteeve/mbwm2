@@ -34,6 +34,19 @@ mb_wm_decor_class_init (MBWMObjectClass *klass)
 #endif
 }
 
+static Bool
+mb_wm_decor_on_theme_change (MBWindowManager * wm, int signal,
+			     MBWMDecor * decor)
+{
+  if (decor->themedata && decor->destroy_themedata)
+    decor->destroy_themedata (decor, decor->themedata);
+
+  decor->themedata = NULL;
+  decor->destroy_themedata = NULL;
+
+  return False;
+}
+
 static int
 mb_wm_decor_init (MBWMObject *obj, va_list vap)
 {
@@ -64,9 +77,18 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
       prop = va_arg(vap, MBWMObjectProp);
     }
 
+  if (!wm)
+    return 0;
+
   decor->type     = type;
   decor->dirty    = True; 	/* Needs painting */
   decor->absolute_packing = abs_packing;
+
+  decor->sig_theme_change_id =
+    mb_wm_object_signal_connect (MB_WM_OBJECT (wm),
+		 MBWM_WINDOW_PROP_ALL,
+		 (MBWMObjectCallbackFunc)mb_wm_decor_on_theme_change,
+		 decor);
 
   return 1;
 }
@@ -478,11 +500,17 @@ mb_wm_decor_destroy (MBWMObject* obj)
   MBWMDecor *decor = MB_WM_DECOR(obj);
   MBWMList * l = decor->buttons;
 
-  if (decor->userdata && decor->destroy_userdata)
+  if (decor->sig_theme_change_id)
+    mb_wm_object_signal_disconnect (MB_WM_OBJECT (decor->parent_client->wmref),
+				    decor->sig_theme_change_id);
+
+  decor->sig_theme_change_id = 0;
+
+  if (decor->themedata && decor->destroy_themedata)
     {
-      decor->destroy_userdata (decor, decor->userdata);
-      decor->userdata = NULL;
-      decor->destroy_userdata = NULL;
+      decor->destroy_themedata (decor, decor->themedata);
+      decor->themedata = NULL;
+      decor->destroy_themedata = NULL;
     }
 
   mb_wm_decor_detach (decor);
@@ -498,17 +526,20 @@ mb_wm_decor_destroy (MBWMObject* obj)
 }
 
 void
-mb_wm_decor_set_user_data (MBWMDecor * decor, void *userdata,
-			   MBWMDecorDestroyUserData destroy)
+mb_wm_decor_set_theme_data (MBWMDecor * decor, void *userdata,
+			    MBWMDecorDestroyUserData destroy)
 {
-  decor->userdata = userdata;
-  decor->destroy_userdata = destroy;
+  if (decor->themedata && decor->destroy_themedata)
+    decor->destroy_themedata (decor, decor->themedata);
+
+  decor->themedata = userdata;
+  decor->destroy_themedata = destroy;
 }
 
 void *
-mb_wm_decor_get_user_data (MBWMDecor * decor)
+mb_wm_decor_get_theme_data (MBWMDecor * decor)
 {
-  return decor->userdata;
+  return decor->themedata;
 }
 
 /* Buttons */

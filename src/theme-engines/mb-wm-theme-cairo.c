@@ -251,7 +251,7 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
 	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
-	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
+	  mb_wm_decor_set_theme_data (decor, dd, decordata_free);
 	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor, d);
 	}
 
@@ -267,14 +267,14 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
 	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
-	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
+	  mb_wm_decor_set_theme_data (decor, dd, decordata_free);
 	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor, NULL);
 	  break;
 	default:
 	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
-	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
+	  mb_wm_decor_set_theme_data (decor, dd, decordata_free);
 	}
       break;
 
@@ -286,7 +286,7 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
 	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
-	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
+	  mb_wm_decor_set_theme_data (decor, dd, decordata_free);
     }
 
   return decor;
@@ -513,7 +513,7 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   if (client == NULL || xwin == None)
     return;
 
-  dd = mb_wm_decor_get_user_data (decor);
+  dd = mb_wm_decor_get_theme_data (decor);
 
   type   = mb_wm_decor_get_type (decor);
   geom   = mb_wm_decor_get_geometry (decor);
@@ -697,7 +697,7 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   decor = button->decor;
   client = mb_wm_decor_get_parent (decor);
   xwin = decor->xwin;
-  dd = mb_wm_decor_get_user_data (decor);
+  dd = mb_wm_decor_get_theme_data (decor);
 
   if (client == NULL || xwin == None || dd->xpix == None || !dd->surface)
     return;

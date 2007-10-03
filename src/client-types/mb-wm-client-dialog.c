@@ -88,7 +88,7 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
   MBWindowManager       *wm;
   MBWMClientWindow      *win;
   MBWMObjectProp         prop;
-  
+
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
     {
@@ -109,6 +109,11 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);
+
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeNorth);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
 
   if (win->xwin_transient_for
       && win->xwin_transient_for != win->xwindow
@@ -142,10 +147,12 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 	  = (avail_geom.height - client->window->geometry.height) / 2;
     }
 
+#if 0
   client->frame_geometry.x      = client->window->geometry.x;
   client->frame_geometry.y      = client->window->geometry.y;
   client->frame_geometry.width  = client->window->geometry.width;
   client->frame_geometry.height = client->window->geometry.height;
+#endif
 
   return 1;
 }
@@ -181,16 +188,29 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
       || client->window->geometry.width  != new_geometry->width
       || client->window->geometry.height != new_geometry->height)
     {
-      client->frame_geometry.x        = new_geometry->x;
-      client->frame_geometry.y        = new_geometry->y;
-      client->frame_geometry.width    = new_geometry->width;
-      client->frame_geometry.height   = new_geometry->height;
-      client->window->geometry.x      = new_geometry->x;
-      client->window->geometry.y      = new_geometry->y;
-      client->window->geometry.width  = new_geometry->width;
-      client->window->geometry.height = new_geometry->height;
+      int north, south, west, east;
+      MBWindowManager *wm = client->wmref;
+
+      mb_wm_theme_get_decor_dimensions (wm->theme, client,
+					&north, &south, &west, &east);
+
+      client->frame_geometry.x      = new_geometry->x;
+      client->frame_geometry.y      = new_geometry->y;
+      client->frame_geometry.width  = new_geometry->width;
+      client->frame_geometry.height = new_geometry->height;
+
+      client->window->geometry.x
+	= client->frame_geometry.x + west;
+      client->window->geometry.y
+	= client->frame_geometry.y + north;
+      client->window->geometry.width
+	= client->frame_geometry.width - (west + east);
+      client->window->geometry.height
+	= client->frame_geometry.height - (south + north);
 
       mb_wm_client_geometry_mark_dirty (client);
+
+      return True; /* Geometry accepted */
     }
 
   return True; /* Geometry accepted */

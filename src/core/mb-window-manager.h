@@ -33,6 +33,10 @@ typedef enum MBWindowManagerFlag
   MBWindowManagerFlagDesktop = (1<<0),
 } MBWindowManagerFlag;
 
+typedef enum
+{
+  MBWindowManagerSignalThemeChange = 0,
+} MBWindowManagerSingal;
 
 struct MBWindowManager
 {

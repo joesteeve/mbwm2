@@ -55,8 +55,9 @@ struct MBWMDecor
   int                       pack_start_x;
   int                       pack_end_x;
 
-  void                     *userdata;
-  MBWMDecorDestroyUserData  destroy_userdata;
+  void                     *themedata;
+  MBWMDecorDestroyUserData  destroy_themedata;
+  unsigned long             sig_theme_change_id;
 };
 
 struct MBWMDecorClass
@@ -110,11 +111,11 @@ void
 mb_wm_decor_detach (MBWMDecor *decor);
 
 void
-mb_wm_decor_set_user_data (MBWMDecor * decor, void *userdata,
-			   MBWMDecorDestroyUserData destroy);
+mb_wm_decor_set_theme_data (MBWMDecor * decor, void *userdata,
+			    MBWMDecorDestroyUserData destroy);
 
 void *
-mb_wm_decor_get_user_data (MBWMDecor* decor);
+mb_wm_decor_get_theme_data (MBWMDecor* decor);
 
 typedef enum MBWMDecorButtonState
 {
