@@ -155,7 +155,7 @@ mb_wm_theme_get_button_position (MBWMTheme             *theme,
 
   klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
 
-  if (klass->button_size)
+  if (klass->button_position)
     klass->button_position (theme, decor, type, x, y);
   else
     {
@@ -706,6 +706,14 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		b->packing = MBWMDecorButtonPackEnd;
 	      else if (!strcmp (*(p+1), "start"))
 		b->packing = MBWMDecorButtonPackStart;
+	    }
+	  else if (!strcmp (*p, "x"))
+	    {
+	      b->x = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "y"))
+	    {
+	      b->y = atoi (*(p+1));
 	    }
 	  else if (!strcmp (*p, "width"))
 	    {

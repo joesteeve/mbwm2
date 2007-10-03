@@ -55,6 +55,7 @@ fi
 AM_CONDITIONAL(THEME_PNG, [test "x$png_theme" = "xyes"])
 if test "$png_theme" = yes; then
   AC_DEFINE(THEME_PNG, 1, [Build PNG-image based theme engine])
+  PKG_CHECK_MODULES(THEME_PNG, xft libpng12)
 fi
 
 # only build simple theme if cairo theme disabled
@@ -69,7 +70,8 @@ MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_src
 MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
 MBWM_THEME_LIBS='$(top_builddir)/src/theme-engines'
-MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS"
+MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS"
+MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS"
 
 AC_SUBST([MBWM_CFLAGS])
 AC_SUBST([MBWM_LIBS])

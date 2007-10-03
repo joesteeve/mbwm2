@@ -118,15 +118,39 @@ mb_wm_decor_resize (MBWMDecor *decor)
 
   if (abs_packing)
     {
+      int width = btn_x_end;
+
+      width /= 2;
+
       while (l)
 	{
-	  int off_x, off_y;
+	  int off_x, off_y, bw, bh;
 
 	  MBWMDecorButton  *btn = (MBWMDecorButton  *)l->data;
 	  mb_wm_theme_get_button_position (theme, decor, btn->type,
 					   &off_x, &off_y);
+	  mb_wm_theme_get_button_size (theme, decor, btn->type,
+				       &bw, &bh);
 
 	  mb_wm_decor_button_move_to (btn, off_x, off_y);
+
+	  /*
+	   * We need to simulate packing when placing buttons at absolute
+	   * positions (e.g., in png-based theme) so that we know the size
+	   * of the area into which we can place the document title
+	   */
+	  if (off_x + bw < width)
+	    {
+	      int x = off_x + bw;
+
+	      if (x > btn_x_start)
+		btn_x_start = x + 2;
+	    }
+	  else
+	    {
+	      if (off_x < btn_x_end)
+		btn_x_end = off_x - 2;
+	    }
 
 	  l = l->next;
 	}
@@ -329,6 +353,7 @@ void
 mb_wm_decor_handle_repaint (MBWMDecor *decor)
 {
   MBWMList *l;
+
   if (decor->parent_client == NULL)
     return;
 
@@ -452,6 +477,13 @@ mb_wm_decor_destroy (MBWMObject* obj)
   MBWMDecor *decor = MB_WM_DECOR(obj);
   MBWMList * l = decor->buttons;
 
+  if (decor->userdata && decor->destroy_userdata)
+    {
+      decor->destroy_userdata (decor, decor->userdata);
+      decor->userdata = NULL;
+      decor->destroy_userdata = NULL;
+    }
+
   mb_wm_decor_detach (decor);
 
   while (l)
@@ -462,7 +494,20 @@ mb_wm_decor_destroy (MBWMObject* obj)
       free (old);
     }
 
-  /* XDestroyWindow(wm->dpy, decor->xwin); */
+}
+
+void
+mb_wm_decor_set_user_data (MBWMDecor * decor, void *userdata,
+			   MBWMDecorDestroyUserData destroy)
+{
+  decor->userdata = userdata;
+  decor->destroy_userdata = destroy;
+}
+
+void *
+mb_wm_decor_get_user_data (MBWMDecor * decor)
+{
+  return decor->userdata;
 }
 
 /* Buttons */
@@ -586,7 +631,6 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
   MBWMDecorButtonFlags         flags = 0;
   MBWMDecorButtonType          type = 0;
   MBWMDecorButtonPack          pack = MBWMDecorButtonPackEnd;
-  void                        *userdata = NULL;
   MBWMObjectProp               prop;
 
   prop = va_arg(vap, MBWMObjectProp);
@@ -608,9 +652,6 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 	  break;
 	case MBWMObjectPropDecorButtonFlags:
 	  flags = va_arg(vap, MBWMDecorButtonFlags);
-	  break;
-	case MBWMObjectPropDecorButtonUserData:
-	  userdata = va_arg(vap, void*);
 	  break;
 	case MBWMObjectPropDecorButtonType:
 	  type = va_arg(vap, MBWMDecorButtonType);
@@ -645,7 +686,6 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 
   button->press    = press;
   button->release  = release;
-  button->userdata = userdata;
   button->decor    = decor;
   button->type = type;
   button->pack = pack;
@@ -684,6 +724,13 @@ mb_wm_decor_button_destroy (MBWMObject* obj)
 {
   MBWMDecorButton * button = MB_WM_DECOR_BUTTON (obj);
   MBWMMainContext * ctx = button->decor->parent_client->wmref->main_ctx;
+
+  if (button->userdata && button->destroy_userdata)
+    {
+      button->destroy_userdata (button, button->userdata);
+      button->userdata = NULL;
+      button->destroy_userdata = NULL;
+    }
 
   mb_wm_main_context_x_event_handler_remove (ctx, ButtonPress,
 					     button->press_cb_id);
@@ -797,10 +844,7 @@ mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
   button->geom.x = x;
   button->geom.y = y;
 
-  MBWM_DBG("#######  moving to %i, %i\n",
-	   button->geom.x,
-	   button->geom.y);
-
+  MBWM_DBG ("#######  moving to %i, %i\n", button->geom.x, button->geom.y);
 }
 
 MBWMDecorButton*
@@ -809,8 +853,7 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecor                  *decor,
 			MBWMDecorButtonPressedFunc  press,
 			MBWMDecorButtonReleasedFunc release,
-			MBWMDecorButtonFlags        flags,
-			void                       *userdata)
+			MBWMDecorButtonFlags        flags)
 {
   MBWMObject  *button;
 
@@ -821,7 +864,6 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			     MBWMObjectPropDecorButtonPressedFunc,  press,
 			     MBWMObjectPropDecorButtonReleasedFunc, release,
 			     MBWMObjectPropDecorButtonFlags,        flags,
-			     MBWMObjectPropDecorButtonUserData,     userdata,
 			     NULL);
 
   return MB_WM_DECOR_BUTTON(button);
@@ -857,4 +899,18 @@ mb_wm_decor_button_handle_repaint (MBWMDecorButton *button)
     return;
 
   mb_wm_theme_paint_button (theme, button);
+}
+
+void
+mb_wm_decor_button_set_user_data (MBWMDecorButton * button, void *userdata,
+				  MBWMDecorButtonDestroyUserData destroy)
+{
+  button->userdata = userdata;
+  button->destroy_userdata = destroy;
+}
+
+void *
+mb_wm_decor_button_get_user_data (MBWMDecorButton * button)
+{
+  return button->userdata;
 }

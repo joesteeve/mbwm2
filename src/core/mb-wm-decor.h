@@ -39,18 +39,24 @@ typedef void (*MBWMDecorButtonReleasedFunc) (MBWindowManager   *wm,
 					     void              *userdata);
 
 
+typedef void (*MBWMDecorDestroyUserData) (MBWMDecor *, void *);
+typedef void (*MBWMDecorButtonDestroyUserData) (MBWMDecorButton *, void *);
+
 struct MBWMDecor
 {
-  MBWMObject             parent;
-  MBWMDecorType          type;
-  Window                 xwin;
-  MBWindowManagerClient *parent_client;
-  MBGeometry             geom;
-  Bool                   dirty;
-  Bool                   absolute_packing;
-  MBWMList              *buttons;
-  int                    pack_start_x;
-  int                    pack_end_x;
+  MBWMObject                parent;
+  MBWMDecorType             type;
+  Window                    xwin;
+  MBWindowManagerClient    *parent_client;
+  MBGeometry                geom;
+  Bool                      dirty;
+  Bool                      absolute_packing;
+  MBWMList                 *buttons;
+  int                       pack_start_x;
+  int                       pack_end_x;
+
+  void                     *userdata;
+  MBWMDecorDestroyUserData  destroy_userdata;
 };
 
 struct MBWMDecorClass
@@ -103,6 +109,13 @@ mb_wm_decor_attach (MBWMDecor             *decor,
 void
 mb_wm_decor_detach (MBWMDecor *decor);
 
+void
+mb_wm_decor_set_user_data (MBWMDecor * decor, void *userdata,
+			   MBWMDecorDestroyUserData destroy);
+
+void *
+mb_wm_decor_get_user_data (MBWMDecor* decor);
+
 typedef enum MBWMDecorButtonState
 {
   MBWMDecorButtonStateInactive = 0,
@@ -145,10 +158,12 @@ struct MBWMDecorButton
 
   MBWMDecorButtonPressedFunc  press;
   MBWMDecorButtonReleasedFunc release;
-  void                       *userdata;
 
   unsigned long               press_cb_id;
   unsigned long               release_cb_id;
+
+  void                       *userdata;
+  MBWMDecorButtonDestroyUserData    destroy_userdata;
 };
 
 struct MBWMDecorButtonClass
@@ -180,8 +195,7 @@ mb_wm_decor_button_new (MBWindowManager            *wm,
 			MBWMDecor                  *decor,
 			MBWMDecorButtonPressedFunc  press,
 			MBWMDecorButtonReleasedFunc release,
-			MBWMDecorButtonFlags        flags,
-			void                       *userdata);
+			MBWMDecorButtonFlags        flags);
 
 
 MBWMDecorButton*
@@ -190,5 +204,12 @@ mb_wm_decor_button_stock_new (MBWindowManager            *wm,
 			      MBWMDecorButtonPack         pack,
 			      MBWMDecor                  *decor,
 			      MBWMDecorButtonFlags        flags);
+
+void
+mb_wm_decor_button_set_user_data (MBWMDecorButton * button, void *userdata,
+				  MBWMDecorButtonDestroyUserData destroy);
+
+void *
+mb_wm_decor_button_get_user_data (MBWMDecorButton * button);
 
 #endif

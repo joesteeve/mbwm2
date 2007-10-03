@@ -4,6 +4,11 @@
 #include <math.h>
 #include <png.h>
 
+#include <X11/Xft/Xft.h>
+
+static int
+mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img);
+
 static unsigned char*
 mb_wm_theme_png_load_file (const char *file, int *width, int *height);
 
@@ -39,6 +44,7 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
   t_class->paint_button     = mb_wm_theme_png_paint_button;
   t_class->decor_dimensions = mb_wm_theme_png_get_decor_dimensions;
   t_class->button_size      = mb_wm_theme_png_get_button_size;
+  t_class->button_position  = mb_wm_theme_png_get_button_position;
   t_class->create_decor     = mb_wm_theme_png_create_decor;
 
 #ifdef MBWM_WANT_DEBUG
@@ -50,15 +56,37 @@ static void
 mb_wm_theme_png_destroy (MBWMObject *obj)
 {
   MBWMThemePng * theme = MB_WM_THEME_PNG (obj);
+  Display * dpy = MB_WM_THEME (obj)->wm->xdpy;
 
-  if (theme->ximg)
-    XFree (theme->ximg);
+  XRenderFreePicture (dpy, theme->xpic);
+  XFreePixmap (dpy, theme->xdraw);
 }
 
 static int
 mb_wm_theme_png_init (MBWMObject *obj, va_list vap)
 {
-  MBWMThemePng * theme = MB_WM_THEME_PNG (obj);
+  MBWMThemePng     *theme = MB_WM_THEME_PNG (obj);
+  MBWindowManager  *wm = MB_WM_THEME (obj)->wm;
+  MBWMObjectProp    prop;
+  char             *img = NULL;
+
+  prop = va_arg(vap, MBWMObjectProp);
+  while (prop)
+    {
+      switch (prop)
+	{
+	case MBWMObjectPropThemeImg:
+	  img = va_arg(vap, char *);
+	  break;
+	default:
+	  MBWMO_PROP_EAT (vap, prop);
+	}
+
+      prop = va_arg(vap, MBWMObjectProp);
+    }
+
+  if (!img || !mb_wm_theme_png_ximg (theme, img))
+    return 0;
 
   return 1;
 }
@@ -84,10 +112,131 @@ mb_wm_theme_png_class_type ()
   return type;
 }
 
+struct DecorData
+{
+  Pixmap    xpix;
+  XftDraw  *xftdraw;
+  XftColor  clr;
+  XftFont  *font;
+};
+
+static void
+decordata_free (MBWMDecor * decor, void *data)
+{
+  struct DecorData * dd = data;
+  Display * xdpy = decor->parent_client->wmref->xdpy;
+
+  XFreePixmap (xdpy, dd->xpix);
+  XftDrawDestroy (dd->xftdraw);
+
+  if (dd->font)
+    XftFontClose (xdpy, dd->font);
+}
+
+static XftFont *
+xft_load_font(MBWMDecor * decor, MBWMXmlDecor *d)
+{
+  char desc[512];
+  XftFont *font;
+  Display * xdpy = decor->parent_client->wmref->xdpy;
+  int       xscreen = decor->parent_client->wmref->xscreen;
+
+  snprintf (desc, sizeof (desc), "%s-%i",
+	    d->font_family ? d->font_family : "Sans",
+	    d->font_size ? d->font_size : 18);
+
+  font = XftFontOpenName (xdpy, xscreen, desc);
+
+  return font;
+}
+
 static void
 mb_wm_theme_png_paint_decor (MBWMTheme *theme,
 			     MBWMDecor *decor)
 {
+  MBWMThemePng           * p_theme = MB_WM_THEME_PNG (theme);
+  MBWindowManagerClient  * client = decor->parent_client;
+  MBWMClientType           c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+  MBWMXmlClient          * c;
+  MBWMXmlDecor           * d;
+
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
+      (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type)))
+    {
+      Display * xdpy    = theme->wm->xdpy;
+      int       xscreen = theme->wm->xscreen;
+      struct DecorData * data = mb_wm_decor_get_user_data (decor);
+      const char * title;
+
+      if (!data)
+	{
+	  XRenderColor rclr;
+
+	  data = malloc (sizeof (struct DecorData));
+	  data->xpix = XCreatePixmap(xdpy, decor->xwin, d->width, d->height,
+				     DefaultDepth(xdpy, xscreen));
+
+	  data->xftdraw = XftDrawCreate (xdpy, data->xpix,
+					 DefaultVisual (xdpy, xscreen),
+					 DefaultColormap (xdpy, xscreen));
+
+	  rclr.red = 0;
+	  rclr.green = 0;
+	  rclr.blue  = 0;
+	  rclr.alpha = 0xffff;
+
+	  if (d->clr_fg.set)
+	    {
+	      rclr.red   = (int)(d->clr_fg.r * (double)0xffff);
+	      rclr.green = (int)(d->clr_fg.g * (double)0xffff);
+	      rclr.blue  = (int)(d->clr_fg.b * (double)0xffff);
+	    }
+
+	  XftColorAllocValue (xdpy, DefaultVisual (xdpy, xscreen),
+			      DefaultColormap (xdpy, xscreen),
+			      &rclr, &data->clr);
+
+	  data->font = xft_load_font (decor, d);
+
+	  XSetWindowBackgroundPixmap(xdpy, decor->xwin, data->xpix);
+
+	  mb_wm_decor_set_user_data (decor, data, decordata_free);
+	}
+
+      XRenderComposite(xdpy, PictOpOver,
+		       p_theme->xpic,
+		       None,
+		       XftDrawPicture (data->xftdraw),
+		       d->x, d->y, 0, 0, 0, 0, d->width, d->height);
+
+      title = mb_wm_client_get_name (client);
+
+      if (title && data->font)
+	{
+	  XRectangle rec;
+
+	  int pack_start_x = mb_wm_decor_get_pack_start_x (decor);
+	  int pack_end_x = mb_wm_decor_get_pack_end_x (decor);
+	  int west_width = mb_wm_client_frame_west_width (client);
+	  int y = (d->height - (data->font->ascent + data->font->descent)) / 2
+	    + data->font->ascent;
+
+	  rec.x = 0;
+	  rec.y = 0;
+	  rec.width = pack_end_x;
+	  rec.height = d->height;
+
+	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
+
+	  XftDrawStringUtf8(data->xftdraw,
+			    &data->clr,
+			    data->font,
+			    west_width + pack_start_x, y,
+			    title, strlen (title));
+	}
+
+      XClearWindow (xdpy, decor->xwin);
+    }
 }
 
 static void
@@ -95,11 +244,60 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 {
 }
 
+static void
+construct_buttons (MBWMThemePng * theme, MBWMDecor * decor, MBWMXmlDecor *d)
+{
+  MBWindowManagerClient *client = decor->parent_client;
+  MBWindowManager       *wm     = client->wmref;
+  MBWMDecorButton       *button;
+
+  if (d)
+    {
+      MBWMList * l = d->buttons;
+      while (l)
+	{
+	  MBWMXmlButton * b = l->data;
+
+	  button = mb_wm_decor_button_stock_new (wm,
+						 b->type,
+						 b->packing,
+						 decor,
+						 0);
+
+	  mb_wm_decor_button_show (button);
+	  mb_wm_object_unref (MB_WM_OBJECT (button));
+
+	  l = l->next;
+	}
+    }
+}
+
 static MBWMDecor *
 mb_wm_theme_png_create_decor (MBWMTheme             *theme,
 			      MBWindowManagerClient *client,
 			      MBWMDecorType          type)
 {
+  MBWMClientType   c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+  MBWMDecor       *decor = NULL;
+  MBWindowManager *wm = client->wmref;
+  MBWMXmlClient   *c;
+
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)))
+    {
+      MBWMXmlDecor *d;
+
+      d = mb_wm_xml_decor_find_by_type (c->decors, type);
+
+      if (d)
+	{
+	  decor = mb_wm_decor_new (wm, type);
+	  decor->absolute_packing = True;
+	  mb_wm_decor_attach (decor, client);
+	  construct_buttons (MB_WM_THEME_PNG (theme), decor, d);
+	}
+    }
+
+  return decor;
 }
 
 static void
@@ -112,14 +310,14 @@ mb_wm_theme_png_get_button_size (MBWMTheme             *theme,
   MBWindowManagerClient * client = decor->parent_client;
   MBWMClientType  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
   MBWMThemePng  *p_theme = MB_WM_THEME_PNG (theme);
-  struct Client * c;
-  struct Decor  * d;
+  MBWMXmlClient * c;
+  MBWMXmlDecor  * d;
 
   /* FIXME -- assumes button on the north decor only */
-  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
-      (d = decor_find_by_type (c->decors, decor->type)))
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
+      (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type)))
     {
-      struct Button * b = button_find_by_type (d->buttons, type);
+      MBWMXmlButton * b = mb_wm_xml_button_find_by_type (d->buttons, type);
 
       if (b)
 	{
@@ -150,22 +348,22 @@ mb_wm_theme_png_get_button_position (MBWMTheme             *theme,
   MBWindowManagerClient * client = decor->parent_client;
   MBWMClientType  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
   MBWMThemePng  *p_theme = MB_WM_THEME_PNG (theme);
-  struct Client * c;
-  struct Decor  * d;
+  MBWMXmlClient * c;
+  MBWMXmlDecor  * d;
 
   /* FIXME -- assumes button on the north decor only */
-  if ((c = client_find_by_type (theme->xml_clients, c_type)) &&
-      (d = decor_find_by_type (c->decors, decor->type)))
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
+      (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type)))
     {
-      struct Button * b = button_find_by_type (d->buttons, type);
+      MBWMXmlButton * b = mb_wm_xml_button_find_by_type (d->buttons, type);
 
       if (b)
 	{
 	  if (x)
-	    *x = b->x;
+	    *x = b->x - d->x - client->frame_geometry.x;
 
 	  if (y)
-	    *y = b->y;
+	    *y = b->y - d->y - client->frame_geometry.y;
 
 	  return;
 	}
@@ -188,15 +386,15 @@ mb_wm_theme_png_get_decor_dimensions (MBWMTheme             *theme,
 {
   MBWMClientType  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
   MBWMThemePng  *p_theme = MB_WM_THEME_PNG (theme);
-  struct Client * c;
-  struct Decor  * d;
+  MBWMXmlClient * c;
+  MBWMXmlDecor  * d;
 
   /* FIXME -- assumes button on the north decor only */
-  if ((c = client_find_by_type (theme->xml_clients, c_type)))
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)))
     {
       if (north)
 	{
-	  d = decor_find_by_type (c->decors, MBWMDecorTypeNorth);
+	  d = mb_wm_xml_decor_find_by_type (c->decors, MBWMDecorTypeNorth);
 
 	  if (d)
 	    *north = d->height;
@@ -206,7 +404,7 @@ mb_wm_theme_png_get_decor_dimensions (MBWMTheme             *theme,
 
       if (south)
 	{
-	  d = decor_find_by_type (c->decors, MBWMDecorTypeSouth);
+	  d = mb_wm_xml_decor_find_by_type (c->decors, MBWMDecorTypeSouth);
 
 	  if (d)
 	    *south = d->height;
@@ -216,7 +414,7 @@ mb_wm_theme_png_get_decor_dimensions (MBWMTheme             *theme,
 
       if (west)
 	{
-	  d = decor_find_by_type (c->decors, MBWMDecorTypeWest);
+	  d = mb_wm_xml_decor_find_by_type (c->decors, MBWMDecorTypeWest);
 
 	  if (d)
 	    *west = d->width;
@@ -226,7 +424,7 @@ mb_wm_theme_png_get_decor_dimensions (MBWMTheme             *theme,
 
       if (east)
 	{
-	  d = decor_find_by_type (c->decors, MBWMDecorTypeEast);
+	  d = mb_wm_xml_decor_find_by_type (c->decors, MBWMDecorTypeEast);
 
 	  if (d)
 	    *east = d->width;
@@ -361,3 +559,72 @@ mb_wm_theme_png_load_file (const char *file,
   return data;
 }
 
+static int
+mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
+{
+  MBWindowManager * wm = MB_WM_THEME (theme)->wm;
+  Display * dpy = wm->xdpy;
+  int       screen = wm->xscreen;
+
+  XImage * ximg;
+  GC       gc;
+  int x;
+  int y;
+  int width;
+  int height;
+  XRenderPictFormat       *ren_fmt;
+  XRenderPictureAttributes ren_attr;
+  unsigned char * p;
+  unsigned char * png_data = mb_wm_theme_png_load_file (img, &width, &height);
+
+  if (!png_data || !width || !height)
+    return 0;
+
+  ren_fmt = XRenderFindStandardFormat(dpy, PictStandardARGB32);
+
+  theme->xdraw =
+    XCreatePixmap (dpy, wm->root_win->xwindow, width, height, ren_fmt->depth);
+
+  XSync (dpy, False);
+
+  ren_attr.dither          = True;
+  ren_attr.component_alpha = True;
+  ren_attr.repeat          = False;
+
+  gc = XCreateGC (dpy, theme->xdraw, 0, NULL);
+
+  ximg = XCreateImage(dpy, DefaultVisual (dpy, screen),
+		      ren_fmt->depth, ZPixmap,
+		      0, NULL, width, height, 32, 0);
+
+  ximg->data = malloc (ximg->bytes_per_line * ximg->height);
+
+  p = png_data;
+
+  for (y = 0; y < height; y++)
+    for (x = 0; x < width; x++)
+      {
+	unsigned char a, r, g, b;
+	r = *p++; g = *p++; b = *p++; a = *p++;
+	r = (r * (a + 1)) / 256;
+	g = (g * (a + 1)) / 256;
+	b = (b * (a + 1)) / 256;
+	XPutPixel(ximg, x, y, (a << 24) | (r << 16) | (g << 8) | b);
+      }
+
+  XPutImage (dpy, theme->xdraw, gc, ximg, 0, 0, 0, 0, width, height);
+
+  theme->xpic = XRenderCreatePicture (dpy, theme->xdraw, ren_fmt,
+				     CPRepeat|CPDither|CPComponentAlpha,
+				     &ren_attr);
+
+  free (ximg->data);
+  ximg->data = NULL;
+  XDestroyImage (ximg);
+
+  XFreeGC (dpy, gc);
+
+  free (png_data);
+
+  return 1;
+}

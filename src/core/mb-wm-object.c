@@ -53,7 +53,7 @@ mb_wm_object_dump ()
     {
       int i;
       MBWMObject * o = l->data;
-      MBWMObjectClass * k = MB_WM_OBJECT_GET_CLASS (o);
+      const MBWMObjectClass * k = MB_WM_OBJECT_GET_CLASS (o);
 
       fprintf (stderr, "Object of type %s, allocated from:\n",
 	       k->klass_name);

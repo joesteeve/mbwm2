@@ -27,6 +27,8 @@
 #include "config.h"
 #endif
 
+#include <X11/extensions/Xrender.h>
+
 struct MBWMThemePngClass
 {
   MBWMThemeClass    parent;
@@ -37,7 +39,8 @@ struct MBWMThemePng
 {
   MBWMTheme        parent;
 
-  XImage          *ximg;
+  Pixmap           xdraw;
+  Picture          xpic;
 };
 
 #endif

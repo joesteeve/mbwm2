@@ -115,19 +115,13 @@ mb_wm_theme_cairo_class_type ()
 }
 
 static void
-construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor)
+construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor, MBWMXmlDecor *d)
 {
   MBWindowManagerClient *client = decor->parent_client;
   MBWindowManager       *wm     = client->wmref;
   MBWMDecorButton       *button;
-  MBWMClientType         c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
-  MBWMXmlClient         *c;
-  MBWMXmlDecor          *d;
 
-  if ((c = mb_wm_xml_client_find_by_type (MB_WM_THEME (theme)->xml_clients,
-					  c_type)) &&
-      (d = mb_wm_xml_decor_find_by_type (c->decors,
-					 decor->type)))
+  if (d)
     {
       MBWMList * l = d->buttons;
       while (l)
@@ -218,6 +212,25 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
   MBWMClientType   c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
   MBWMDecor       *decor = NULL;
   MBWindowManager *wm = client->wmref;
+  MBWMXmlClient   *c;
+
+  if (MB_WM_THEME (theme)->xml_clients &&
+      (c = mb_wm_xml_client_find_by_type (MB_WM_THEME (theme)->xml_clients,
+					  c_type)))
+    {
+      MBWMXmlDecor *d;
+
+      d = mb_wm_xml_decor_find_by_type (c->decors, type);
+
+      if (d)
+	{
+	  decor = mb_wm_decor_new (wm, type);
+	  mb_wm_decor_attach (decor, client);
+	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor, d);
+	}
+
+      return decor;
+    }
 
   switch (c_type)
     {
@@ -227,7 +240,7 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
 	case MBWMDecorTypeNorth:
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
-	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor);
+	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor, NULL);
 	  break;
 	default:
 	  decor = mb_wm_decor_new (wm, type);
