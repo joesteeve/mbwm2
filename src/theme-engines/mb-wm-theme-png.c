@@ -206,7 +206,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
       for (x = 0; x < decor->geom.width; x += d->width)
 	for (y = 0; y < decor->geom.height; y += d->height)
 	  {
-	    XRenderComposite(xdpy, PictOpSrc,
+	    XRenderComposite(xdpy, PictOpOver,
 			     p_theme->xpic,
 			     None,
 			     XftDrawPicture (data->xftdraw),

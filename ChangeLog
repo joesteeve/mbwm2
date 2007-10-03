@@ -1,5 +1,11 @@
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/theme-engines/mb-wm-theme-png.c:
+	(mb_wm_theme_png_paint_decor):
+	Use PictOpOver instead of PictOpSrc.
+
+2007-10-03  Tomas Frydrych  <tf@o-hand.com>
+
 	* data/themes/PngSamle
 	Added elementary Png-based theme.
 
