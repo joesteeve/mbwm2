@@ -16,9 +16,6 @@ static void
 mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor);
 
 static void
-mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
-
-static void
 mb_wm_theme_png_get_decor_dimensions (MBWMTheme *, MBWindowManagerClient *,
 				      int*, int*, int*, int*);
 
@@ -41,7 +38,6 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
   MBWMThemeClass *t_class = MB_WM_THEME_CLASS (klass);
 
   t_class->paint_decor      = mb_wm_theme_png_paint_decor;
-  t_class->paint_button     = mb_wm_theme_png_paint_button;
   t_class->decor_dimensions = mb_wm_theme_png_get_decor_dimensions;
   t_class->button_size      = mb_wm_theme_png_get_button_size;
   t_class->button_position  = mb_wm_theme_png_get_button_position;
@@ -131,6 +127,8 @@ decordata_free (MBWMDecor * decor, void *data)
 
   if (dd->font)
     XftFontClose (xdpy, dd->font);
+
+  free (dd);
 }
 
 static XftFont *
@@ -237,11 +235,6 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
 
       XClearWindow (xdpy, decor->xwin);
     }
-}
-
-static void
-mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
-{
 }
 
 static void

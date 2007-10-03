@@ -204,6 +204,29 @@ construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor, MBWMXmlDecor *d)
   mb_wm_object_unref (MB_WM_OBJECT (button));
 }
 
+struct DecorData
+{
+  Pixmap            xpix;
+  cairo_surface_t  *surface;
+};
+
+static void
+decordata_free (MBWMDecor * decor, void *data)
+{
+  struct DecorData * dd = data;
+  Display * xdpy = decor->parent_client->wmref->xdpy;
+
+  XFreePixmap (xdpy, dd->xpix);
+  cairo_surface_destroy (dd->surface);
+  free (dd);
+}
+
+static struct DecorData *
+decordata_new ()
+{
+  return mb_wm_util_malloc0 (sizeof (struct DecorData));
+}
+
 static MBWMDecor *
 mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
 				MBWindowManagerClient *client,
@@ -213,6 +236,7 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
   MBWMDecor       *decor = NULL;
   MBWindowManager *wm = client->wmref;
   MBWMXmlClient   *c;
+  struct DecorData *dd;
 
   if (MB_WM_THEME (theme)->xml_clients &&
       (c = mb_wm_xml_client_find_by_type (MB_WM_THEME (theme)->xml_clients,
@@ -224,8 +248,10 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
 
       if (d)
 	{
+	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
+	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
 	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor, d);
 	}
 
@@ -238,13 +264,17 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
       switch (type)
 	{
 	case MBWMDecorTypeNorth:
+	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
+	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
 	  construct_buttons (MB_WM_THEME_CAIRO (theme), decor, NULL);
 	  break;
 	default:
+	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
+	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
 	}
       break;
 
@@ -253,8 +283,10 @@ mb_wm_theme_cairo_create_decor (MBWMTheme             *theme,
     case MBWMClientTypeDesktop:
     case MBWMClientTypeInput:
     default:
+	  dd = decordata_new ();
 	  decor = mb_wm_decor_new (wm, type);
 	  mb_wm_decor_attach (decor, client);
+	  mb_wm_decor_set_user_data (decor, dd, decordata_free);
     }
 
   return decor;
@@ -442,11 +474,9 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   const MBGeometry      *geom;
   MBWindowManagerClient *client;
   Window                 xwin;
-  Pixmap                 xpxmp;
   MBWindowManager       *wm = theme->wm;
   cairo_pattern_t       *pattern;
   cairo_matrix_t         matrix;
-  cairo_surface_t       *surface;
   cairo_t               *cr;
   double                 x, y, w, h;
   struct Clr             clr_bg;
@@ -459,6 +489,7 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   MBWMXmlDecor  * d;
   int                    font_size = 0;
   const char            *font_family = "Sans Serif";
+  struct DecorData      *dd;
 
   clr_fg.r = 1.0;
   clr_fg.g = 1.0;
@@ -481,6 +512,8 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
 
   if (client == NULL || xwin == None)
     return;
+
+  dd = mb_wm_decor_get_user_data (decor);
 
   type   = mb_wm_decor_get_type (decor);
   geom   = mb_wm_decor_get_geometry (decor);
@@ -524,15 +557,18 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
 	font_family = d->font_family;
     }
 
-  xpxmp = XCreatePixmap (wm->xdpy, xwin, geom->width, geom->height,
-			DefaultDepth(wm->xdpy, wm->xscreen));
+  if (dd->xpix == None)
+    dd->xpix = XCreatePixmap (wm->xdpy, xwin, geom->width, geom->height,
+			      DefaultDepth(wm->xdpy, wm->xscreen));
 
-  surface = cairo_xlib_surface_create  (wm->xdpy,
-					xpxmp,
-					DefaultVisual(wm->xdpy, wm->xscreen),
-					geom->width,
-					geom->height);
-  cr = cairo_create(surface);
+  if (!dd->surface)
+    dd->surface = cairo_xlib_surface_create  (wm->xdpy,
+					  dd->xpix,
+					  DefaultVisual(wm->xdpy, wm->xscreen),
+					  geom->width,
+					  geom->height);
+
+  cr = cairo_create (dd->surface);
 
   cairo_set_line_width (cr, 1.0);
 
@@ -627,10 +663,8 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
 
   cairo_destroy (cr);
 
-  XSetWindowBackgroundPixmap (wm->xdpy, xwin, xpxmp);
+  XSetWindowBackgroundPixmap (wm->xdpy, xwin, dd->xpix);
   XClearWindow (wm->xdpy, xwin);
-
-  XFreePixmap (wm->xdpy, xpxmp);
 }
 
 static void
@@ -639,9 +673,7 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   MBWMDecor             *decor;
   MBWindowManagerClient *client;
   Window                 xwin;
-  Pixmap                 xpxmp;
   MBWindowManager       *wm = theme->wm;
-  cairo_surface_t       *surface;
   cairo_t               *cr;
   int                    xi, yi, wi, hi;
   double                 x, y, w, h;
@@ -653,7 +685,7 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   MBWMXmlClient * c;
   MBWMXmlDecor  * d;
   MBWMXmlButton * b;
-
+  struct DecorData * dd;
   clr_fg.r = 1.0;
   clr_fg.g = 1.0;
   clr_fg.b = 1.0;
@@ -664,8 +696,10 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
   decor = button->decor;
   client = mb_wm_decor_get_parent (decor);
-  xwin = button->xwin;
-  if (client == NULL || xwin == None)
+  xwin = decor->xwin;
+  dd = mb_wm_decor_get_user_data (decor);
+
+  if (client == NULL || xwin == None || dd->xpix == None || !dd->surface)
     return;
 
   c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
@@ -693,18 +727,11 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   x = xi;
   y = yi;
 
-  xpxmp = XCreatePixmap (wm->xdpy, xwin, wi, hi,
-			 DefaultDepth(wm->xdpy, wm->xscreen));
-
-  surface = cairo_xlib_surface_create (wm->xdpy,
-				       xpxmp,
-				       DefaultVisual(wm->xdpy, wm->xscreen),
-				       wi, hi);
-  cr = cairo_create(surface);
+  cr = cairo_create (dd->surface);
 
   cairo_set_line_width (cr, 0.04);
   cairo_set_source_rgb (cr, clr_bg.r, clr_bg.g, clr_bg.b);
-  cairo_rectangle( cr, 0.0, 0.0, w, h);
+  cairo_rectangle( cr, x, y, w, h);
   cairo_fill (cr);
 
   cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);
@@ -713,27 +740,27 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
   if (button->type == MBWMDecorButtonClose)
     {
-      cairo_move_to (cr, 3.0, 3.0);
-      cairo_line_to (cr, w-3.0, h-3.0);
+      cairo_move_to (cr, x + 3.0, y + 3.0);
+      cairo_line_to (cr, x + w-3.0, y + h-3.0);
       cairo_stroke (cr);
 
-      cairo_move_to (cr, 3.0, h-3.0);
-      cairo_line_to (cr, w-3.0, 3.0);
+      cairo_move_to (cr, x + 3.0, y + h-3.0);
+      cairo_line_to (cr, x + w-3.0, y + 3.0);
       cairo_stroke (cr);
     }
   else if (button->type == MBWMDecorButtonFullscreen)
     {
-      cairo_move_to (cr, 3.0, 3.0);
-      cairo_line_to (cr, 3.0, h-3.0);
-      cairo_line_to (cr, w-3.0, h-3.0);
-      cairo_line_to (cr, w-3.0, 3.0);
-      cairo_line_to (cr, 3.0, 3.0);
+      cairo_move_to (cr, x + 3.0, y + 3.0);
+      cairo_line_to (cr, x + 3.0, y + h-3.0);
+      cairo_line_to (cr, x + w-3.0, y + h-3.0);
+      cairo_line_to (cr, x + w-3.0, y + 3.0);
+      cairo_line_to (cr, x + 3.0, y + 3.0);
       cairo_stroke (cr);
     }
   else if (button->type == MBWMDecorButtonMinimize)
     {
-      cairo_move_to (cr, 3.0, h-5.0);
-      cairo_line_to (cr, w-3.0, h-5.0);
+      cairo_move_to (cr, x + 3.0, y + h-5.0);
+      cairo_line_to (cr, x + w-3.0, y + h-5.0);
       cairo_stroke (cr);
     }
   else if (button->type == MBWMDecorButtonHelp)
@@ -748,31 +775,29 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
 
       cairo_move_to (cr,
-		     4.0,
-		     (h - (font_extents.ascent + font_extents.descent)) / 2
+		     x + 4.0,
+		     y + (h - (font_extents.ascent + font_extents.descent)) / 2
 		     + font_extents.ascent);
 
       cairo_show_text (cr, "?");
     }
   else if (button->type == MBWMDecorButtonMenu)
     {
-      cairo_move_to (cr, 3.0, 5.0);
-      cairo_line_to (cr, w/2.0, h-7.0);
+      cairo_move_to (cr, x + 3.0, y + 5.0);
+      cairo_line_to (cr, x + w/2.0, y +h-7.0);
       cairo_stroke (cr);
 
-      cairo_move_to (cr, w/2.0, h-7.0);
-      cairo_line_to (cr, w-3.0, 5.0);
+      cairo_move_to (cr, x + w/2.0, y + h-7.0);
+      cairo_line_to (cr, x + w-3.0, y + 5.0);
       cairo_stroke (cr);
     }
   else if (button->type == MBWMDecorButtonAccept)
     {
-      cairo_arc (cr, w/2.0, h/2.0, (w-8.0)/2.0, 0.0, 2.0 * M_PI);
+      cairo_arc (cr, x + w/2.0, y + h/2.0, (w-8.0)/2.0, 0.0, 2.0 * M_PI);
       cairo_stroke (cr);
     }
 
   cairo_destroy (cr);
 
-  XSetWindowBackgroundPixmap (wm->xdpy, xwin, xpxmp);
   XClearWindow (wm->xdpy, xwin);
-  XFreePixmap (wm->xdpy, xpxmp);
 }

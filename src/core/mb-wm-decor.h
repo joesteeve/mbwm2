@@ -39,7 +39,7 @@ typedef void (*MBWMDecorButtonReleasedFunc) (MBWindowManager   *wm,
 					     void              *userdata);
 
 
-typedef void (*MBWMDecorDestroyUserData) (MBWMDecor *, void *);
+typedef void (*MBWMDecorDestroyUserData)       (MBWMDecor *, void *);
 typedef void (*MBWMDecorButtonDestroyUserData) (MBWMDecorButton *, void *);
 
 struct MBWMDecor
@@ -147,13 +147,13 @@ struct MBWMDecorButton
   MBWMDecorButtonType         type;
   MBWMDecorButtonPack         pack;
   MBWMDecor                  *decor;
-  Window                      xwin;
 
   MBGeometry                  geom;
 
   /* in priv ? */
   Bool                        visible;
   Bool                        needs_sync;
+  Bool                        realized;
   MBWMDecorButtonState        state;
 
   MBWMDecorButtonPressedFunc  press;

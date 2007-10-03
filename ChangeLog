@@ -1,5 +1,13 @@
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-png.c:
+	Draw buttons directly on parent decor drawable.
+
+2007-10-03  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
         * src/core/mb-wm-client-base.c:
         * src/core/mb-wm-decor.c:
@@ -12,9 +20,9 @@
         * src/theme-engines/mb-wm-theme-png.h:
         * src/theme-engines/mb-wm-theme.c:
 	Rudimentary decor drawing in png theme.
-	
+
 2007-10-02  Tomas Frydrych  <tf@o-hand.com>
-	
+
         * data/themes/Default/theme.xml:
         * src/client-types/mb-wm-client-app.c:
         * src/client-types/mb-wm-client-desktop.c:
@@ -45,7 +53,7 @@
 	initialization failures.
 
 	Improvements to xml parser; name space cleanup.
-	
+
 2007-10-01  Tomas Frydrych  <tf@o-hand.com>
 
         * data/themes/Default/theme.xml:
@@ -60,12 +68,12 @@
 	* src/theme-engines/Makefile.am:
 	Refactored xml parser into MBWMTheme to minimize code duplication
 	between engines.
-	
+
         * src/core/mb-wm-decor.c:
         * src/core/mb-wm-decor.h:
 	Implemented absolute positioning of buttons alongside automatic
 	packing (need for png-like themes).
-	
+
 2007-10-01  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:
