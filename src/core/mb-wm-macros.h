@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -25,7 +25,7 @@
 #define MBWM_NOTE(type,x,a...)  do {                                  \
         if (mbwm_debug_flags & MBWM_DEBUG_##type)                     \
           { fprintf (stderr, "[" #type "] " __FILE__ ":%d,%s() " ": " x "\n", __LINE__, __func__, ##a); } \
-        } while (0); 
+        } while (0);
 
 #define MBWM_MARK() MBWM_NOTE(MISC, "== mark ==")
 #define MBWM_DBG(x, a...) MBWM_NOTE(MISC, x, ##a)
@@ -60,7 +60,7 @@ do                                                                \
   free (strings);                                                 \
 }while (0)
 
-#define MBWM_TRACE() _MBWM_TRACE(MBWM_DEBUG_TRACE, "### TRACE ###")
+#define MBWM_TRACE() _MBWM_TRACE(TRACE, "### TRACE ###")
 #define MBWM_TRACE_MSG(type,x,a...) _MBWM_TRACE(type, x, ##a)
 
 #else /* !MBWM_ENABLE_DEBUG */

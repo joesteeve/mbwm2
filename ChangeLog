@@ -1,5 +1,24 @@
 2007-10-04  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	Detransitise transitive clients when unmanaging to prevent stack
+	corruption.
+	
+        * src/core/mb-wm-macros.h:
+	Fixed MBWM_TRACE() definition.
+	
+        * src/core/mb-wm-stack.c:
+	(mb_wm_stack_remove):
+	Added sanity check.
+	
+        * src/theme-engines/mb-wm-theme-simple.c:
+	(mb_wm_theme_simple_paint_decor):
+	Fixed some uninitialized variables.
+	
+2007-10-04  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac
         * src/theme-engines/mb-wm-theme-simple.c
 	Basic X/Xft only theme engine implementation.

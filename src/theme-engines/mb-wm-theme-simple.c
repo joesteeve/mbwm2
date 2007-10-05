@@ -469,8 +469,8 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   struct Clr             clr_fg;
   struct Clr             clr_frame;
   MBWMClientType         c_type;
-  MBWMXmlClient         *c;
-  MBWMXmlDecor          *d;
+  MBWMXmlClient         *c = NULL;
+  MBWMXmlDecor          *d = NULL;
   int                    font_size = 0;
   const char            *font_family = "Sans Serif";
   struct DecorData      *dd;

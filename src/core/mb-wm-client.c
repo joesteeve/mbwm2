@@ -37,8 +37,13 @@ mb_wm_client_destroy (MBWMObject *obj)
   if (client->sig_theme_change_id)
     mb_wm_object_signal_disconnect (MB_WM_OBJECT (client->wmref),
 				    client->sig_theme_change_id);
-
   client->sig_theme_change_id = 0;
+
+  if (client->sig_prop_change_id)
+    mb_wm_object_signal_disconnect (MB_WM_OBJECT (client->window),
+				    client->sig_prop_change_id);
+
+  client->sig_prop_change_id = 0;
 
   if (client->ping_cb_id)
     mb_wm_main_context_timeout_handler_remove (client->wmref->main_ctx,
@@ -52,8 +57,8 @@ mb_wm_client_destroy (MBWMObject *obj)
       l = l->next;
     }
 
-  mb_wm_object_signal_disconnect (MB_WM_OBJECT (client->window),
-				  client->sig_prop_change_id);
+  if (client->transient_for)
+    mb_wm_client_remove_transient (client->transient_for, client);
 }
 
 static Bool
@@ -753,5 +758,14 @@ mb_wm_client_theme_change (MBWindowManagerClient *client)
 
   if (klass->theme_change)
     klass->theme_change (client);
+}
+
+void
+mb_wm_client_detransitise (MBWindowManagerClient *client)
+{
+  if (!client->transient_for)
+    return;
+
+  mb_wm_client_remove_transient (client->transient_for, client);
 }
 

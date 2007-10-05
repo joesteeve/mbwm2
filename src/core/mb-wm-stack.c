@@ -255,12 +255,19 @@ mb_wm_stack_remove (MBWindowManagerClient *client)
 
   if (wm->stack_top == wm->stack_bottom)
     {
-      wm->stack_top = wm->stack_bottom = NULL;
+      if (wm->stack_top != client)
+	{
+	  MBWM_DBG("Client stack corruption !!!");
+	}
+      else
+	wm->stack_top = wm->stack_bottom = NULL;
     }
   else
     {
       if (client == wm->stack_top)
-	wm->stack_top = client->stacked_below;
+	{
+	  wm->stack_top = client->stacked_below;
+	}
 
       if (client == wm->stack_bottom)
 	wm->stack_bottom = client->stacked_above;

@@ -298,4 +298,7 @@ mb_wm_client_ping_stop (MBWindowManagerClient *client);
 void
 mb_wm_client_theme_change (MBWindowManagerClient *client);
 
+void
+mb_wm_client_detransitise (MBWindowManagerClient *client);
+
 #endif

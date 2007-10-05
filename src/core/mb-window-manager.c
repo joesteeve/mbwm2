@@ -671,6 +671,12 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   if (wm->focused_client == client)
     mb_wm_unfocus_client (wm, client);
 
+  /*
+   * Must remove client from any transient list, otherwise when we call
+   * _stack_enumerate() everything will go pear shape
+   */
+  mb_wm_client_detransitise (client);
+
   mb_wm_stack_enumerate (wm, c)
     {
       if (c->next_focused_client == client)
