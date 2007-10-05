@@ -34,6 +34,8 @@ AC_ARG_ENABLE(debug,
 
 if test "x$use_cairo" = "xyes"; then
   needed_pkgs="$needed_pkgs pangocairo "
+else
+  needed_pkgs="$needed_pkgs xft "
 fi
 
 if test "x$use_gtk" = "xyes"; then

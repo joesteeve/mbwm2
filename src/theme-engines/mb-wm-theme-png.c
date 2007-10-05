@@ -228,7 +228,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
 
 	  rec.x = 0;
 	  rec.y = 0;
-	  rec.width = pack_end_x;
+	  rec.width = pack_end_x - 2;
 	  rec.height = d->height;
 
 	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);

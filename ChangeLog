@@ -1,3 +1,12 @@
+2007-10-04  Tomas Frydrych  <tf@o-hand.com>
+
+        * configure.ac
+        * src/theme-engines/mb-wm-theme-simple.c
+	Basic X/Xft only theme engine implementation.
+
+        * src/theme-engines/mb-wm-theme-png.c
+	Fixed north decor text cliping rect.
+
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:
@@ -10,7 +19,7 @@
         * src/core/mb-wm-decor.h:
 	Added virtual theme_change() to MBWindowMangerClient so decors are
 	correctly updated when theme changes.
-	
+
 2007-10-03  Tomas Frydrych  <tf@o-hand.com>
 
         * src/theme-engines/mb-wm-theme-png.c:
