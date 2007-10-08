@@ -1218,14 +1218,22 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 void
 mb_wm_cycle_apps (MBWindowManager *wm)
 {
+  MBWindowManagerClient *c;
+
   if (wm->flags & MBWindowManagerFlagDesktop)
     {
       mb_wm_handle_show_desktop (wm, False);
       return;
     }
 
+  c = wm->stack_top;
+
   mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp);
-  mb_wm_display_sync_queue (wm, MBWMSyncStacking);
+
+  if (wm->stack_top != c)
+    {
+      mb_wm_activate_client (wm, c);
+    }
 }
 
 void

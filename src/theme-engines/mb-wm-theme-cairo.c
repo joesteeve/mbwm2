@@ -183,7 +183,6 @@ construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor, MBWMXmlDecor *d)
 
   mb_wm_decor_button_show (button);
   mb_wm_object_unref (MB_WM_OBJECT (button));
-#endif
 
   button = mb_wm_decor_button_stock_new (wm,
 					 MBWMDecorButtonMinimize,
@@ -202,6 +201,7 @@ construct_buttons (MBWMThemeCairo * theme, MBWMDecor * decor, MBWMXmlDecor *d)
 
   mb_wm_decor_button_show (button);
   mb_wm_object_unref (MB_WM_OBJECT (button));
+#endif
 }
 
 struct DecorData

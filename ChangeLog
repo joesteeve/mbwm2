@@ -1,5 +1,19 @@
 2007-10-08  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_cycle_apps):
+	Call mb_wm_activate_client () so that root window props, etc., are
+	correctly updated.
+
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-simple.c:
+	Removed minimize and menu buttons from the decor creation fallback
+	(these require external frameworks the presence of which cannot be
+	assumed; WM implementation requiring these should specify so
+	through the theme description).
+
+2007-10-08  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-decor.c:
 	Ignore button button events on main window buttons if transient
 	children are present.
