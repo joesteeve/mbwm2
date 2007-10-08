@@ -523,7 +523,7 @@ static void
 mb_wm_decor_button_destroy (MBWMObject* obj);
 
 static void
-mb_wm_decor_button_stock_button_pressed (MBWMDecorButton *button)
+mb_wm_decor_button_stock_button_released (MBWMDecorButton *button)
 {
   MBWindowManagerClient *client = button->decor->parent_client;
   MBWindowManager       *wm = client->wmref;
@@ -601,8 +601,6 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 
       if (button->press)
 	button->press(wm, button, button->userdata);
-      else
-	mb_wm_decor_button_stock_button_pressed (button);
 
       return False;
     }
@@ -636,6 +634,8 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
 
       if (button->release)
 	button->release(wm, button, button->userdata);
+      else
+	mb_wm_decor_button_stock_button_released (button);
 
       return False;
     }
