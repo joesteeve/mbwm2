@@ -1,6 +1,12 @@
 2007-10-08  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:
+	Ignore button button events on main window buttons if transient
+	children are present.
+
+2007-10-08  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-decor.c:
 	Fire stock button actions on button release, not press.
 
 2007-10-04  Tomas Frydrych  <tf@o-hand.com>

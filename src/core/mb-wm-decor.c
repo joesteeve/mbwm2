@@ -528,21 +528,6 @@ mb_wm_decor_button_stock_button_released (MBWMDecorButton *button)
   MBWindowManagerClient *client = button->decor->parent_client;
   MBWindowManager       *wm = client->wmref;
 
-#if 0
-  /* FIXME -- deal with modality -- these should perhaps be ignored
-   * if system modal dialog is present ??
-   */
-  switch (type)
-    {
-    case MBWMDecorButtonClose:
-    case MBWMDecorButtonMinimize:
-    case MBWMDecorButtonFullscreen:
-      return;
-    default:
-      ;
-    }
-#endif
-
   switch (button->type)
     {
     case MBWMDecorButtonClose:
@@ -586,10 +571,18 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 
   if (xev->window == decor->xwin)
     {
-      int xmin = button->geom.x;
-      int ymin = button->geom.y;
-      int xmax = button->geom.x + button->geom.width;
-      int ymax = button->geom.y + button->geom.height;
+      int xmin, ymin, xmax, ymax;
+
+      /* Ignore events on the main window decor if transients are
+       * present
+       */
+      if (decor->parent_client->transients)
+	return True;
+
+      xmin = button->geom.x;
+      ymin = button->geom.y;
+      xmax = button->geom.x + button->geom.width;
+      ymax = button->geom.y + button->geom.height;
 
       button->state = MBWMDecorButtonStatePressed;
 
@@ -618,10 +611,18 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
 
   if (xev->window == decor->xwin)
     {
-      int xmin = button->geom.x;
-      int ymin = button->geom.y;
-      int xmax = button->geom.x + button->geom.width;
-      int ymax = button->geom.y + button->geom.height;
+      int xmin, ymin, xmax, ymax;
+
+      /* Ignore events on the main window decor if transients are
+       * present
+       */
+      if (decor->parent_client->transients)
+	return True;
+
+      xmin = button->geom.x;
+      ymin = button->geom.y;
+      xmax = button->geom.x + button->geom.width;
+      ymax = button->geom.y + button->geom.height;
 
       button->state = MBWMDecorButtonStateInactive;
 
