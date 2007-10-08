@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -23,11 +23,11 @@
 
 #define mb_wm_stack_enumerate(w,c)                               \
  if ((w)->stack_bottom)                                          \
-   for ((c)=(w)->stack_bottom; (c) != NULL; (c)=(c)->stacked_above) 
+   for ((c)=(w)->stack_bottom; (c) != NULL; (c)=(c)->stacked_above)
 
 #define mb_wm_stack_enumerate_reverse(w,c)                       \
  if ((w)->stack_top)                                             \
-   for ((c)=(w)->stack_top; (c) != NULL; (c)=(c)->stacked_below) 
+   for ((c)=(w)->stack_top; (c) != NULL; (c)=(c)->stacked_below)
 
 #define mb_wm_stack_enumerate_transients(w,c,t)                   \
  if ((w)->stack_bottom)                                           \
@@ -53,28 +53,28 @@ void
 mb_wm_stack_ensure (MBWindowManager *wm);
 
 void
-mb_wm_stack_insert_above_client (MBWindowManagerClient *client, 
+mb_wm_stack_insert_above_client (MBWindowManagerClient *client,
 				 MBWindowManagerClient *client_below);
 
-void 
+void
 mb_wm_stack_append_top (MBWindowManagerClient *client);
 
-void 
+void
 mb_wm_stack_prepend_bottom (MBWindowManagerClient *client);
 
 void
-mb_wm_stack_move_client_above_type (MBWindowManagerClient *client, 
+mb_wm_stack_move_client_above_type (MBWindowManagerClient *client,
 				    MBWMClientType         type_below);
 
 void
-mb_wm_stack_move_client_above_type (MBWindowManagerClient *client, 
+mb_wm_stack_move_client_above_type (MBWindowManagerClient *client,
 				    MBWMClientType         type_below);
 
-void
+MBWindowManagerClient *
 mb_wm_stack_cycle_by_type(MBWindowManager *w, MBWMClientType type);
 
 void
-mb_wm_stack_move_above_client (MBWindowManagerClient *client, 
+mb_wm_stack_move_above_client (MBWindowManagerClient *client,
 			       MBWindowManagerClient *client_below);
 
 MBWindowManagerClient*

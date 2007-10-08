@@ -1,4 +1,12 @@
 2007-10-08  Tomas Frydrych  <tf@o-hand.com>
+	
+        * src/core/mb-window-manager.c
+        * src/core/mb-wm-stack.c:
+        * src/core/mb-wm-stack.h:
+	(mb_wm_stack_cycle_by_type):
+	Return the highest client to simplify handling of stack changes.
+	
+2007-10-08  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
 	(mb_wm_cycle_apps):

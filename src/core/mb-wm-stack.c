@@ -234,7 +234,7 @@ mb_wm_stack_get_lowest_by_type(MBWindowManager *w, MBWMClientType wanted_type)
   return NULL;
 }
 
-void
+MBWindowManagerClient *
 mb_wm_stack_cycle_by_type(MBWindowManager *wm, MBWMClientType type)
 {
   MBWindowManagerClient *lowest, *highest;
@@ -246,6 +246,8 @@ mb_wm_stack_cycle_by_type(MBWindowManager *wm, MBWMClientType type)
     {
       mb_wm_stack_move_above_client (lowest, highest);
     }
+
+  return lowest;
 }
 
 void

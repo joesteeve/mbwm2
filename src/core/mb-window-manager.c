@@ -1218,7 +1218,7 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 void
 mb_wm_cycle_apps (MBWindowManager *wm)
 {
-  MBWindowManagerClient *c;
+  MBWindowManagerClient *old_top, *new_top;
 
   if (wm->flags & MBWindowManagerFlagDesktop)
     {
@@ -1226,13 +1226,13 @@ mb_wm_cycle_apps (MBWindowManager *wm)
       return;
     }
 
-  c = wm->stack_top;
+  old_top = mb_wm_stack_get_highest_by_type (wm, MBWMClientTypeApp);
 
-  mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp);
+  new_top = mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp);
 
-  if (wm->stack_top != c)
+  if (old_top != new_top)
     {
-      mb_wm_activate_client (wm, c);
+      mb_wm_activate_client (wm, new_top);
     }
 }
 
