@@ -140,5 +140,9 @@ mb_wm_theme_create_decor (MBWMTheme             *theme,
 			  MBWindowManagerClient *client,
 			  MBWMDecorType          type);
 
+Bool
+mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
+				 MBWindowManagerClient * client,
+				 MBGeometry            * geom);
 
 #endif

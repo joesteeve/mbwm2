@@ -1,6 +1,43 @@
 2007-10-09  Tomas Frydrych  <tf@o-hand.com>
 
-        *src/core/mb-window-manager.c:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-layout.c:
+	Added LayoutPrefFixedX, LayoutPrefFixedY to allow for themes to
+	specify client size (e.g., png theme may want to specify height of
+	a horizontal panel to tie with size of other elements on screen).
+
+	Added LayoutPrefOverlaps to indicate that client expects to
+	overlap with other clients rather than lay exclusive claim to its
+	allocated real-estate (e.g., maemo toolbar).
+
+        * src/core/mb-wm-types.h:
+	Changed MBGeom.width and MBGeom.height from unsigned to signed so
+	that negative values can be used to indicate that value is not set
+	when querying theme for client geometry.
+
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	(mb_wm_theme_get_client_geometry):
+	Function to query if theme requests specific geometry values for
+	particular client type.
+	
+        * src/theme-engines/mb-wm-theme-xml.c
+	(mb_wm_xml_client_new):
+	Initialized x, y, width and height values to -1.
+	
+        * configure.ac:
+        * src/managers/Makefile.am:
+        * src/managers/maemo/Makefile.am:
+        * src/managers/maemo/maemo-toolbar.c:
+        * src/managers/maemo/maemo-toolbar.h:
+        * src/managers/maemo/maemo-window-manager.c:
+        * src/managers/maemo/maemo-window-manager.h:
+        * src/managers/maemo/matchbox-window-manager-2-maemo.c:
+	Added maemo directory for maemo-specific WM.
+
+2007-10-09  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
 	(mb_wm_process_cmdline):
 	Added -theme to the default commandline handler.
 

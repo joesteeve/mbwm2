@@ -429,6 +429,38 @@ mb_wm_theme_create_decor (MBWMTheme             *theme,
 }
 
 /*
+ * Returns True if the theme prescribes at least one value for the geometry
+ */
+Bool
+mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
+				 MBWindowManagerClient * client,
+				 MBGeometry            * geom)
+{
+  MBWMXmlClient * c;
+  MBWMClientType  c_type;
+
+  if (!geom || !client || !theme)
+    return False;
+
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if (!theme || !theme->xml_clients ||
+      !(c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) ||
+      (c->x < 0 && c->y < 0 && c->width < 0 && c->height < 0))
+    {
+      return False;
+    }
+
+  geom->x      = c->x;
+  geom->y      = c->y;
+  geom->width  = c->width;
+  geom->height = c->height;
+
+  return True;
+}
+
+
+/*
  * Expat callback stuff
  */
 

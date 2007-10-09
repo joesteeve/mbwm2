@@ -50,18 +50,21 @@ MBWMStackLayerType;
  */
 typedef enum MBWMClientLayoutHints
   {
-    LayoutPrefReserveEdgeNorth = (1<<1), /* panels */
-    LayoutPrefReserveEdgeSouth = (1<<2),
-    LayoutPrefReserveEdgeEast = (1<<3),
-    LayoutPrefReserveEdgeWest = (1<<4),
-    LayoutPrefReserveNorth = (1<<5),     /* Input wins */
-    LayoutPrefReserveSouth = (1<<6),
-    LayoutPrefReserveEast = (1<<7),
-    LayoutPrefReserveWest = (1<<8),
-    LayoutPrefGrowToFreeSpace  = (1<<9), /* Free space left by above   */
-    LayoutPrefFullscreen  = (1<<10),      /* Fullscreen and desktop wins */
-    LayoutPrefPositionFree = (1<<11),    /* Dialog, panel in titlebar */
-    LayoutPrefVisible = (1<<12),         /* Flag is toggled by stacking */
+    LayoutPrefReserveEdgeNorth = (1<< 0), /* panels */
+    LayoutPrefReserveEdgeSouth = (1<< 1),
+    LayoutPrefReserveEdgeEast  = (1<< 2),
+    LayoutPrefReserveEdgeWest  = (1<< 3),
+    LayoutPrefReserveNorth     = (1<< 4), /* Input wins */
+    LayoutPrefReserveSouth     = (1<< 5),
+    LayoutPrefReserveEast      = (1<< 6),
+    LayoutPrefReserveWest      = (1<< 7),
+    LayoutPrefGrowToFreeSpace  = (1<< 8), /* Free space left by above   */
+    LayoutPrefFullscreen       = (1<< 9), /* Fullscreen and desktop wins */
+    LayoutPrefPositionFree     = (1<<10), /* Dialog */
+    LayoutPrefVisible          = (1<<11), /* Flag is toggled by stacking */
+    LayoutPrefFixedX           = (1<<12), /* X and width are fixed*/
+    LayoutPrefFixedY           = (1<<13),
+    LayoutPrefOverlaps         = (1<<14), /* stacked over other windows */
   }
 MBWMClientLayoutHints;
 

@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager 2 - A lightweight window manager not for the
  *                            desktop.
  *
@@ -76,6 +76,12 @@ MBWMXmlClient *
 mb_wm_xml_client_new ()
 {
   MBWMXmlClient * c = mb_wm_util_malloc0 (sizeof (MBWMXmlClient));
+
+  c->x      = -1;
+  c->y      = -1;
+  c->width  = -1;
+  c->height = -1;
+
   return c;
 }
 

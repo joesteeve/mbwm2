@@ -68,6 +68,24 @@ if test "$use_gtk" = yes; then
   AC_DEFINE(USE_GTK, 1, [GTK Integration])
 fi
 
+AC_ARG_ENABLE(simple-manager,
+  [  --disable-simple-manager   Do not build simple window manager],
+  [simple_manager=$enableval], [simple_manager=yes])
+
+AC_ARG_ENABLE(maemo-manager,
+  [  --enable-maemo-manager   Build maemo window manager],
+  [maemo_manager=$enableval], [maemo_manager=no])
+
+if test $simple_manager = yes; then
+   MANAGERS="$MANAGERS simple"
+fi
+
+if test $maemo_manager = yes; then
+   MANAGERS="$MANAGERS maemo"
+fi
+
+AC_SUBST(MANAGERS)
+
 MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_srcdir)/src/theme-engines'
 MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
@@ -86,11 +104,12 @@ AC_SUBST([MBWM_DEBUG_LDFLAGS])
 
 AC_OUTPUT([
 Makefile
-src/Makefile  
+src/Makefile
 src/core/Makefile
 src/client-types/Makefile
 src/managers/Makefile
 src/managers/simple/Makefile
+src/managers/maemo/Makefile
 src/theme-engines/Makefile
 data/Makefile
 data/themes/Makefile
@@ -107,5 +126,8 @@ echo "
 	Cairo theme:            ${use_cairo}
 	PNG theme:              ${png_theme}
 	GTK integration:	${use_gtk}
+
+	Simple manager:		${simple_manager}
+	Maemo manager:		${maemo_manager}
 	Debugging output:       ${want_debug}
 "
