@@ -1,5 +1,11 @@
 2007-10-09  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_unfocus_client):
+	Fixed danling pointer.
+
+2007-10-09  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client.h:
         * src/core/mb-wm-layout.c:
 	Added LayoutPrefFixedX, LayoutPrefFixedY to allow for themes to
@@ -20,11 +26,11 @@
 	(mb_wm_theme_get_client_geometry):
 	Function to query if theme requests specific geometry values for
 	particular client type.
-	
+
         * src/theme-engines/mb-wm-theme-xml.c
 	(mb_wm_xml_client_new):
 	Initialized x, y, width and height values to -1.
-	
+
         * configure.ac:
         * src/managers/Makefile.am:
         * src/managers/maemo/Makefile.am:

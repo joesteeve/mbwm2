@@ -1223,6 +1223,8 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 
   if (next)
     mb_wm_activate_client (wm, next);
+  else
+    wm->focused_client = NULL;
 }
 
 void
