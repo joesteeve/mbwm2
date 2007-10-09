@@ -935,7 +935,8 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_atoms_init(wm);
 
-  mb_wm_set_theme_from_path (wm, NULL);
+  if (!wm->theme)
+    mb_wm_set_theme_from_path (wm, NULL);
 
   wm->root_win = mb_wm_root_window_get (wm);
 
@@ -1012,6 +1013,15 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 	  else if (!strcmp ("-sm-client-id", argv[i]))
 	    {
 	      wm->sm_client_id = argv[++i];
+	    }
+	  else if (!strcmp ("-theme", argv[i]))
+	    {
+	      const char *theme = argv[++i];
+	      MBWindowManagerClass *wm_class;
+	      wm_class =
+		MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+
+	      wm->theme = wm_class->theme_new (wm, theme);
 	    }
 	}
     }
