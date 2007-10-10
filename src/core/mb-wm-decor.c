@@ -572,12 +572,20 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
   if (xev->window == decor->xwin)
     {
       int xmin, ymin, xmax, ymax;
+      MBWMList * l = decor->parent_client->transients;
 
-      /* Ignore events on the main window decor if transients are
-       * present
+      /* Ignore events on the main window decor if transients other than
+       * input methods are present
        */
-      if (decor->parent_client->transients)
-	return True;
+      while (l)
+	{
+	  MBWindowManagerClient * c = l->data;
+
+	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput)
+	    return True;
+
+	  l = l->next;
+	}
 
       xmin = button->geom.x;
       ymin = button->geom.y;
@@ -612,12 +620,20 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
   if (xev->window == decor->xwin)
     {
       int xmin, ymin, xmax, ymax;
+      MBWMList * l = decor->parent_client->transients;
 
-      /* Ignore events on the main window decor if transients are
-       * present
+      /* Ignore events on the main window decor if transients other than
+       * input methods are present
        */
-      if (decor->parent_client->transients)
-	return True;
+      while (l)
+	{
+	  MBWindowManagerClient * c = l->data;
+
+	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput)
+	    return True;
+
+	  l = l->next;
+	}
 
       xmin = button->geom.x;
       ymin = button->geom.y;

@@ -1,3 +1,40 @@
+2007-10-10  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-dialog.c:
+	Removed dead code.
+
+        * src/client-types/mb-wm-client-input.c:
+        * src/client-types/mb-wm-client-input.h:
+	Added mb_wm_client_input_realize () to override base.
+	Implemented MBWindowManagerClient virtual detransitise().
+	Handling of transient_for in init function.
+
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	Added new virtual detransitise() to allow derrived classes to
+	carry out any special processing when transient windows are unmanaged.
+
+	(mb_wm_client_destroy):
+	Deal with transiency.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_sync):
+	(mb_wm_manage_client):
+	(mb_wm_unmanage_client):
+	Only redo layout when indicated by sync flags.
+
+        * src/core/mb-wm-decor.c:
+	(mb_wm_decor_button_press_handler):
+	(mb_wm_decor_button_release_handler):
+	Do not block events on decor buttons if transients are only input
+	windows.
+
+        * src/managers/maemo/Makefile.am:
+        * src/managers/maemo/maemo-input.c:
+        * src/managers/maemo/maemo-input.h:
+        * src/managers/maemo/maemo-window-manager.c:
+	Added maemo-input client.
+
 2007-10-09  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

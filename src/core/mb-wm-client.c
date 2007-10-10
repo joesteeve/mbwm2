@@ -59,6 +59,20 @@ mb_wm_client_destroy (MBWMObject *obj)
 
   if (client->transient_for)
     mb_wm_client_remove_transient (client->transient_for, client);
+
+#if 1
+  /* If we have transient windows, we need to make sure they are unmapped; for
+   * application  dialogs this will happen automatically, but not for external
+   * transients, such as input windows .
+   */
+  l = client->transients;
+  while (l)
+    {
+      MBWindowManagerClient * c = l->data;
+      XUnmapWindow (client->wmref->xdpy, c->window->xwindow);
+      l = l->next;
+    }
+#endif
 }
 
 static Bool
@@ -763,8 +777,15 @@ mb_wm_client_theme_change (MBWindowManagerClient *client)
 void
 mb_wm_client_detransitise (MBWindowManagerClient *client)
 {
+  MBWindowManagerClientClass *klass;
+
   if (!client->transient_for)
     return;
+
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  if (klass->detransitise)
+    klass->detransitise (client);
 
   mb_wm_client_remove_transient (client->transient_for, client);
 }

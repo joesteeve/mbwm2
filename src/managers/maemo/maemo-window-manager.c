@@ -20,6 +20,7 @@
 
 #include "maemo-window-manager.h"
 #include "maemo-toolbar.h"
+#include "maemo-input.h"
 #include "mb-wm-client-app.h"
 #include "mb-wm-client-panel.h"
 #include "mb-wm-client-dialog.h"
@@ -58,7 +59,7 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_TOOLBAR])
     {
       printf("### is input ###\n");
-      return mb_wm_client_input_new (wm, win);
+      return maemo_input_new (wm, win);
     }
   else
     {
@@ -135,7 +136,8 @@ static void
 maemo_window_manager_process_cmdline (MBWindowManager *wm,
 				      int argc, char **argv)
 {
-  MBWindowManagerClass * wm_class = MB_WM_OBJECT_GET_PARENT_CLASS (wm);
+  MBWindowManagerClass * wm_class =
+    MB_WINDOW_MANAGER (MB_WM_OBJECT_GET_PARENT_CLASS (MB_WM_OBJECT (wm)));
 
   if (wm_class->process_cmdline)
     wm_class->process_cmdline (wm, argc, argv);

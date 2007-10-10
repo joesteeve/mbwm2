@@ -108,6 +108,8 @@ typedef  Bool (*MBWMClientFocusMethod)(MBWindowManagerClient *client);
 
 typedef  void (*MBWMClientThemeChangeMethod) (MBWindowManagerClient *client);
 
+typedef  void (*MBWMClientDetransitise) (MBWindowManagerClient *client);
+
 struct MBWindowManagerClientClass
 {
   MBWMObjectClass              parent;
@@ -122,6 +124,7 @@ struct MBWindowManagerClientClass
   MBWMClientSyncMethod         sync;     /* sync internal changes to display */
   MBWMClientFocusMethod        focus;
   MBWMClientThemeChangeMethod  theme_change;
+  MBWMClientDetransitise       detransitise;
 };
 
 struct MBWindowManagerClient

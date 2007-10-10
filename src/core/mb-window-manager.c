@@ -485,7 +485,7 @@ mb_wm_sync (MBWindowManager *wm)
   /* Size stuff first assume newly managed windows unmapped ?
    *
   */
-  if (wm->layout)
+  if (wm->layout && (wm->sync_type & MBWMSyncGeometry))
     mb_wm_layout_update (wm->layout);
 
   /* Create the actual windows */
@@ -649,7 +649,9 @@ mb_wm_manage_client (MBWindowManager       *wm,
     mb_wm_client_show (client);
 
   mb_wm_display_sync_queue (client->wmref,
-			    MBWMSyncStacking | MBWMSyncVisibility);
+			    MBWMSyncStacking   |
+			    MBWMSyncVisibility |
+			    MBWMSyncGeometry);
 }
 
 void
@@ -659,6 +661,11 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 {
   /* FIXME: set a managed flag in client object ? */
   MBWindowManagerClient *c;
+  MBWMClientType c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+  MBWMSyncType sync_flags = MBWMSyncStacking;
+
+  if (c_type & (MBWMClientTypePanel | MBWMClientTypeInput))
+    sync_flags |= MBWMSyncGeometry;
 
   wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
 
@@ -694,7 +701,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
     wm->unmapped_clients = mb_wm_util_list_append (wm->unmapped_clients,
 						  client);
 
-  mb_wm_display_sync_queue (client->wmref, MBWMSyncStacking);
+  mb_wm_display_sync_queue (client->wmref, sync_flags);
 }
 
 MBWindowManagerClient*

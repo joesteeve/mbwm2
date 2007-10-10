@@ -3,6 +3,12 @@
 #define FRAME_TITLEBAR_HEIGHT 20
 #define FRAME_EDGE_SIZE 3
 
+static void
+mb_wm_client_input_detransitise (MBWindowManagerClient *client);
+
+static void
+mb_wm_client_input_realize (MBWindowManagerClient *client);
+
 static Bool
 mb_wm_client_input_request_geometry (MBWindowManagerClient *client,
 				     MBGeometry            *new_geometry,
@@ -24,9 +30,11 @@ mb_wm_client_input_class_init (MBWMObjectClass *klass)
 
   MBWM_DBG("client->stack is %p", client->stack);
 
-  client->client_type = MBWMClientTypeInput;
-  client->geometry = mb_wm_client_input_request_geometry;
-  client->stack = mb_wm_client_input_stack;
+  client->client_type  = MBWMClientTypeInput;
+  client->geometry     = mb_wm_client_input_request_geometry;
+  client->stack        = mb_wm_client_input_stack;
+  client->realize      = mb_wm_client_input_realize;
+  client->detransitise = mb_wm_client_input_detransitise;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientInput";
@@ -45,39 +53,29 @@ mb_wm_client_input_init (MBWMObject *this, va_list vap)
 {
   MBWMClientInput          *client_input = MB_WM_CLIENT_INPUT (this);
   MBWindowManagerClient    *client       = MB_WM_CLIENT (this);
-  MBWMDecor                *decor;
-  MBWMDecorButton          *button;
-  MBWindowManager          *wm = NULL;
-  MBWMClientInputClass     *inp_class;
+  MBWindowManager          *wm = client->wmref;
+  MBWMClientWindow         *win = client->window;
 
-  inp_class = MB_WM_CLIENT_INPUT_CLASS (MB_WM_OBJECT_GET_CLASS (this));
-
-#if 0
-  /*
-   * Property parsing not needed for now, as there are no ClientInput specific
-   * properties
-   */
-  prop = va_arg(vap, MBWMObjectProp);
-  while (prop)
+  if (win->xwin_transient_for
+      && win->xwin_transient_for != win->xwindow
+      && win->xwin_transient_for != wm->root_win->xwindow)
     {
-      if (prop == MBWMObjectPropWm)
-	{
-	  wm = va_arg(vap, MBWindowManager *);
-	  break;
-	}
-      else
-	MBWMO_PROP_EAT (vap, prop);
+      MBWindowManagerClient * t =
+	mb_wm_managed_client_from_xwindow (wm,
+					   win->xwin_transient_for);
 
-      prop = va_arg (vap, MBWMObjectProp);
+      mb_wm_client_get_coverage (t, & client_input->transient_geom);
+
+      MBWM_DBG ("Adding to '%lx' transient list", win->xwin_transient_for);
+      mb_wm_client_add_transient (t, client);
+      client->stacking_layer = 0;  /* We stack with whatever transient too */
     }
-#endif
-
-  wm = client->wmref;
-
-  if (!wm)
-    return 0;
-
-  client->stacking_layer = MBWMStackLayerMid;
+  else
+    {
+      MBWM_DBG ("Input is transient to root");
+      /* Stack with 'always on top' */
+      client->stacking_layer = MBWMStackLayerTopMid;
+    }
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefReserveSouth|LayoutPrefVisible);
@@ -103,6 +101,13 @@ mb_wm_client_input_class_type ()
     }
 
   return type;
+}
+
+static void
+mb_wm_client_input_realize (MBWindowManagerClient *client)
+{
+  /* Just skip creating frame... */
+  return;
 }
 
 static Bool
@@ -148,5 +153,21 @@ mb_wm_client_input_new (MBWindowManager *wm, MBWMClientWindow *win)
 					  NULL));
 
   return client;
+}
+
+static void
+mb_wm_client_input_detransitise (MBWindowManagerClient *client)
+{
+  MBWMClientInput * input = MB_WM_CLIENT_INPUT (client);
+
+  if (!client->transient_for)
+    return;
+
+  if (input->transient_geom.width && input->transient_geom.height)
+    {
+      mb_wm_client_request_geometry (client->transient_for,
+				     &input->transient_geom,
+				     MBWMClientReqGeomForced);
+    }
 }
 

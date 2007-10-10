@@ -16,6 +16,7 @@ bin_PROGRAMS = matchbox-window-manager-2-maemo
 
 matchbox_window_manager_2_maemo_SOURCES =             \
 	maemo-toolbar.c                               \
+	maemo-input.c                                 \
 	maemo-window-manager.c                        \
 	matchbox-window-manager-2-maemo.c
 

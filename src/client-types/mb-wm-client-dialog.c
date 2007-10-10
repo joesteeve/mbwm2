@@ -87,29 +87,8 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 {
   MBWindowManagerClient *client = MB_WM_CLIENT (this);
   MBWMClientDialog      *client_dialog = MB_WM_CLIENT_DIALOG (this);
-  MBWMDecor             *decor;
-  MBWMDecorButton       *button;
-  MBWindowManager       *wm;
-  MBWMClientWindow      *win;
-  MBWMObjectProp         prop;
-
-  prop = va_arg(vap, MBWMObjectProp);
-  while (prop)
-    {
-      switch (prop)
-	{
-	case MBWMObjectPropWm:
-	  wm = va_arg(vap, MBWindowManager *);
-	  break;
-	case MBWMObjectPropClientWindow:
-	  win = va_arg(vap, MBWMClientWindow *);
-	  break;
-	default:
-	  MBWMO_PROP_EAT (vap, prop);
-	}
-
-      prop = va_arg(vap, MBWMObjectProp);
-    }
+  MBWindowManager       *wm = client->wmref;
+  MBWMClientWindow      *win = client->window;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);
@@ -150,13 +129,6 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 	client->window->geometry.y
 	  = (avail_geom.height - client->window->geometry.height) / 2;
     }
-
-#if 0
-  client->frame_geometry.x      = client->window->geometry.x;
-  client->frame_geometry.y      = client->window->geometry.y;
-  client->frame_geometry.width  = client->window->geometry.width;
-  client->frame_geometry.height = client->window->geometry.height;
-#endif
 
   return 1;
 }

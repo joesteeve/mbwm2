@@ -34,6 +34,8 @@ typedef struct MBWMClientInputClass MBWMClientInputClass;
 struct MBWMClientInput
 {
   MBWMClientBase    parent;
+
+  MBGeometry        transient_geom;
 };
 
 struct MBWMClientInputClass
@@ -42,7 +44,7 @@ struct MBWMClientInputClass
 };
 
 MBWindowManagerClient*
-mb_wm_client_input_new(MBWindowManager *wm, MBWMClientWindow *win);
+mb_wm_client_input_new (MBWindowManager *wm, MBWMClientWindow *win);
 
 int
 mb_wm_client_input_class_type ();
