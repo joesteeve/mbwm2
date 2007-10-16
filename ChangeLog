@@ -1,3 +1,8 @@
+2007-10-16  Tomas Frydrych  <tf@o-hand.com>
+
+	* data/themes/README:
+	Brief description of the theme.xml format.
+
 2007-10-10  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-dialog.c:
