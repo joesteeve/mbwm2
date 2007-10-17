@@ -70,6 +70,9 @@ struct MBWindowManager
   MBWMLayout                  *layout;
   MBWMMainContext             *main_ctx;
   MBWindowManagerFlag          flags;
+
+  /* Temporary stuff, only valid during object initialization */
+  const char                  *theme_path;
 };
 
 struct MBWindowManagerClass

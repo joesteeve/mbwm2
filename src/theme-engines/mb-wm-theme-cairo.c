@@ -730,8 +730,28 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   cr = cairo_create (dd->surface);
 
   cairo_set_line_width (cr, 0.04);
-  cairo_set_source_rgb (cr, clr_bg.r, clr_bg.g, clr_bg.b);
   cairo_rectangle( cr, x, y, w, h);
+
+  if (button->state == MBWMDecorButtonStateInactive)
+    {
+      cairo_set_source_rgb (cr, clr_bg.r, clr_bg.g, clr_bg.b);
+    }
+  else
+    {
+      if (d && d->clr_bg.set)
+	{
+	  cairo_set_source_rgba (cr, d->clr_bg.r, d->clr_bg.g, d->clr_bg.b,
+				 0.25);
+	}
+      else
+	{
+	  cairo_set_source_rgba (cr, 0.7, 0.7, 0.7, 0.25);
+	}
+
+      cairo_fill (cr);
+      cairo_set_source_rgba (cr, clr_bg.r, clr_bg.g, clr_bg.b, 0.5);
+    }
+
   cairo_fill (cr);
 
   cairo_set_line_cap (cr, CAIRO_LINE_CAP_ROUND);

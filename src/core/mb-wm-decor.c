@@ -561,6 +561,24 @@ mb_wm_decor_button_stock_button_released (MBWMDecorButton *button)
   return;
 }
 
+void
+mb_wm_decor_button_set_theme_data (MBWMDecorButton * button, void *themedata,
+			    MBWMDecorButtonDestroyUserData destroy)
+{
+  if (button->themedata && button->destroy_themedata)
+    button->destroy_themedata (button, button->themedata);
+
+  button->themedata = themedata;
+  button->destroy_themedata = destroy;
+}
+
+void *
+mb_wm_decor_button_get_theme_data (MBWMDecorButton * button)
+{
+  return button->themedata;
+}
+
+
 static Bool
 mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 				  void            *userdata)
@@ -592,13 +610,17 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
       xmax = button->geom.x + button->geom.width;
       ymax = button->geom.y + button->geom.height;
 
-      button->state = MBWMDecorButtonStatePressed;
-
       if (xev->x < xmin ||
 	  xev->x > xmax ||
 	  xev->y < ymin ||
 	  xev->y > ymax)
 	return True;
+
+      if (button->state != MBWMDecorButtonStatePressed)
+	{
+	  button->state = MBWMDecorButtonStatePressed;
+	  mb_wm_theme_paint_button (wm->theme, button);
+	}
 
       if (button->press)
 	button->press(wm, button, button->userdata);
@@ -640,14 +662,17 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
       xmax = button->geom.x + button->geom.width;
       ymax = button->geom.y + button->geom.height;
 
-      button->state = MBWMDecorButtonStateInactive;
-
       if (xev->x < xmin ||
 	  xev->x > xmax ||
 	  xev->y < ymin ||
 	  xev->y > ymax)
 	return True;
 
+      if (button->state != MBWMDecorButtonStateInactive)
+	{
+	  button->state = MBWMDecorButtonStateInactive;
+	  mb_wm_theme_paint_button (wm->theme, button);
+	}
 
       if (button->release)
 	button->release(wm, button, button->userdata);
@@ -778,6 +803,13 @@ mb_wm_decor_button_destroy (MBWMObject* obj)
       button->destroy_userdata (button, button->userdata);
       button->userdata = NULL;
       button->destroy_userdata = NULL;
+    }
+
+  if (button->themedata && button->destroy_themedata)
+    {
+      button->destroy_themedata (button, button->themedata);
+      button->themedata = NULL;
+      button->destroy_themedata = NULL;
     }
 
   mb_wm_main_context_x_event_handler_remove (ctx, ButtonPress,

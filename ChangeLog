@@ -1,3 +1,21 @@
+2007-10-17  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	(mb_wm_process_cmdline):
+	(mb_wm_init_xdpy):
+	(mb_wm_init):
+	Be smarter about opening display connection so that we can use it
+	early in the initialization stage.
+
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/theme-engines/mb-wm-theme-cairo.c:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-simple.c:
+	Handle button active state (needs more work to handle LeaveNotify
+	situation).
+
 2007-10-16  Tomas Frydrych  <tf@o-hand.com>
 
 	* data/themes/README:

@@ -16,6 +16,9 @@ static void
 mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor);
 
 static void
+mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button);
+
+static void
 mb_wm_theme_png_get_decor_dimensions (MBWMTheme *, MBWindowManagerClient *,
 				      int*, int*, int*, int*);
 
@@ -38,6 +41,7 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
   MBWMThemeClass *t_class = MB_WM_THEME_CLASS (klass);
 
   t_class->paint_decor      = mb_wm_theme_png_paint_decor;
+  t_class->paint_button     = mb_wm_theme_png_paint_button;
   t_class->decor_dimensions = mb_wm_theme_png_get_decor_dimensions;
   t_class->button_size      = mb_wm_theme_png_get_button_size;
   t_class->button_position  = mb_wm_theme_png_get_button_position;
@@ -62,7 +66,6 @@ static int
 mb_wm_theme_png_init (MBWMObject *obj, va_list vap)
 {
   MBWMThemePng     *theme = MB_WM_THEME_PNG (obj);
-  MBWindowManager  *wm = MB_WM_THEME (obj)->wm;
   MBWMObjectProp    prop;
   char             *img = NULL;
 
@@ -131,6 +134,28 @@ decordata_free (MBWMDecor * decor, void *data)
   free (dd);
 }
 
+struct ButtonData
+{
+  Pixmap    xpix_i;
+  XftDraw  *xftdraw_i;
+  Pixmap    xpix_a;
+  XftDraw  *xftdraw_a;
+};
+
+static void
+buttondata_free (MBWMDecorButton * button, void *data)
+{
+  struct ButtonData * bd = data;
+  Display * xdpy = button->decor->parent_client->wmref->xdpy;
+
+  XFreePixmap (xdpy, bd->xpix_i);
+  XftDrawDestroy (bd->xftdraw_i);
+  XFreePixmap (xdpy, bd->xpix_a);
+  XftDrawDestroy (bd->xftdraw_a);
+
+  free (bd);
+}
+
 static XftFont *
 xft_load_font(MBWMDecor * decor, MBWMXmlDecor *d)
 {
@@ -149,8 +174,109 @@ xft_load_font(MBWMDecor * decor, MBWMXmlDecor *d)
 }
 
 static void
-mb_wm_theme_png_paint_decor (MBWMTheme *theme,
-			     MBWMDecor *decor)
+mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
+{
+  MBWMDecor              * decor;
+  MBWMThemePng           * p_theme = MB_WM_THEME_PNG (theme);
+  MBWindowManagerClient  * client;
+  MBWMClientType           c_type;;
+  MBWMXmlClient          * c;
+  MBWMXmlDecor           * d;
+  MBWMXmlButton          * b;
+
+  /*
+   * We do not paint inactive buttons, as they get painted with the decor
+   */
+  decor  = button->decor;
+  client = mb_wm_decor_get_parent (decor);
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
+      (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type))      &&
+      (b = mb_wm_xml_button_find_by_type (d->buttons, button->type)))
+    {
+      Display * xdpy    = theme->wm->xdpy;
+      int       xscreen = theme->wm->xscreen;
+      struct DecorData  * ddata = mb_wm_decor_get_theme_data (decor);
+      struct ButtonData * bdata;
+      int x, y;
+
+      if (!ddata)
+	return;
+
+      bdata = mb_wm_decor_button_get_theme_data (button);
+
+      if (!bdata)
+	{
+	  XRenderColor rclr;
+
+	  bdata = malloc (sizeof (struct ButtonData));
+
+	  bdata->xpix_a = XCreatePixmap(xdpy, decor->xwin,
+				      button->geom.width, button->geom.height,
+				      DefaultDepth(xdpy, xscreen));
+
+	  bdata->xftdraw_a = XftDrawCreate (xdpy, bdata->xpix_a,
+					    DefaultVisual (xdpy, xscreen),
+					    DefaultColormap (xdpy, xscreen));
+
+	  rclr.red   = 0x7fff;
+	  rclr.green = 0x7fff;
+	  rclr.blue  = 0x7fff;
+	  rclr.alpha = 0x9fff;
+
+	  if (b->clr_fg.set)
+	    {
+	      rclr.red   = (int)(d->clr_fg.r * (double)0xffff);
+	      rclr.green = (int)(d->clr_fg.g * (double)0xffff);
+	      rclr.blue  = (int)(d->clr_fg.b * (double)0xffff);
+	    }
+
+	  XRenderComposite (xdpy, PictOpSrc,
+			    p_theme->xpic,
+			    None,
+			    XftDrawPicture (bdata->xftdraw_a),
+			    b->x, b->y, 0, 0, 0, 0, b->width, b->height);
+
+	  XRenderFillRectangle (xdpy, PictOpOver,
+				XftDrawPicture (bdata->xftdraw_a),
+				&rclr,
+				0, 0, b->width, b->height);
+
+	  bdata->xpix_i = XCreatePixmap(xdpy, decor->xwin,
+				      button->geom.width, button->geom.height,
+				      DefaultDepth(xdpy, xscreen));
+
+	  bdata->xftdraw_i = XftDrawCreate (xdpy, bdata->xpix_i,
+					    DefaultVisual (xdpy, xscreen),
+					    DefaultColormap (xdpy, xscreen));
+
+	  XRenderComposite (xdpy, PictOpSrc,
+			    p_theme->xpic,
+			    None,
+			    XftDrawPicture (bdata->xftdraw_i),
+			    b->x, b->y, 0, 0, 0, 0, b->width, b->height);
+
+	  mb_wm_decor_button_set_theme_data (button, bdata, buttondata_free);
+	}
+
+      x = b->x - d->x;
+      y = b->y - d->y;
+
+      XRenderComposite (xdpy, PictOpSrc,
+			button->state == MBWMDecorButtonStatePressed ?
+			XftDrawPicture (bdata->xftdraw_a) :
+			XftDrawPicture (bdata->xftdraw_i),
+			None,
+			XftDrawPicture (ddata->xftdraw),
+			0, 0, 0, 0, x, y, b->width, b->height);
+
+      XClearWindow (xdpy, decor->xwin);
+    }
+}
+
+static void
+mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 {
   MBWMThemePng           * p_theme = MB_WM_THEME_PNG (theme);
   MBWindowManagerClient  * client = decor->parent_client;
@@ -206,7 +332,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme,
       for (x = 0; x < decor->geom.width; x += d->width)
 	for (y = 0; y < decor->geom.height; y += d->height)
 	  {
-	    XRenderComposite(xdpy, PictOpOver,
+	    XRenderComposite(xdpy, PictOpSrc,
 			     p_theme->xpic,
 			     None,
 			     XftDrawPicture (data->xftdraw),
@@ -583,7 +709,7 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
   ren_fmt = XRenderFindStandardFormat(dpy, PictStandardARGB32);
 
   theme->xdraw =
-    XCreatePixmap (dpy, wm->root_win->xwindow, width, height, ren_fmt->depth);
+    XCreatePixmap (dpy, RootWindow(dpy,screen), width, height, ren_fmt->depth);
 
   XSync (dpy, False);
 
@@ -615,8 +741,8 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
   XPutImage (dpy, theme->xdraw, gc, ximg, 0, 0, 0, 0, width, height);
 
   theme->xpic = XRenderCreatePicture (dpy, theme->xdraw, ren_fmt,
-				     CPRepeat|CPDither|CPComponentAlpha,
-				     &ren_attr);
+				      CPRepeat|CPDither|CPComponentAlpha,
+				      &ren_attr);
 
   free (ximg->data);
   ximg->data = NULL;

@@ -162,8 +162,14 @@ struct MBWMDecorButton
   unsigned long               press_cb_id;
   unsigned long               release_cb_id;
 
+  /* Data for any custom button callbacks */
   void                       *userdata;
-  MBWMDecorButtonDestroyUserData    destroy_userdata;
+  MBWMDecorButtonDestroyUserData destroy_userdata;
+
+  /* Data utilized by the theme engine */
+  void                       *themedata;
+  MBWMDecorButtonDestroyUserData destroy_themedata;
+
 };
 
 struct MBWMDecorButtonClass
@@ -211,5 +217,12 @@ mb_wm_decor_button_set_user_data (MBWMDecorButton * button, void *userdata,
 
 void *
 mb_wm_decor_button_get_user_data (MBWMDecorButton * button);
+
+void
+mb_wm_decor_button_set_theme_data (MBWMDecorButton * button, void *themedata,
+				   MBWMDecorButtonDestroyUserData destroy);
+
+void *
+mb_wm_decor_button_get_theme_data (MBWMDecorButton* button);
 
 #endif

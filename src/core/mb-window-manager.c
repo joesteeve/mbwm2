@@ -886,6 +886,28 @@ mb_wm_register_client_type (void)
 }
 
 static int
+mb_wm_init_xdpy (MBWindowManager * wm, const char * display)
+{
+  if (!wm->xdpy)
+    {
+      wm->xdpy = XOpenDisplay(display ? display : getenv("DISPLAY"));
+
+      if (!wm->xdpy)
+	{
+	  /* FIXME: Error codes */
+	  mb_wm_util_fatal_error("Display connection failed");
+	  return 0;
+	}
+
+      wm->xscreen     = DefaultScreen(wm->xdpy);
+      wm->xdpy_width  = DisplayWidth(wm->xdpy, wm->xscreen);
+      wm->xdpy_height = DisplayHeight(wm->xdpy, wm->xscreen);
+    }
+
+  return 1;
+}
+
+static int
 mb_wm_init (MBWMObject *this, va_list vap)
 {
   MBWindowManager      *wm = MB_WINDOW_MANAGER (this);
@@ -917,15 +939,8 @@ mb_wm_init (MBWMObject *this, va_list vap)
   if (argc && argv && wm_class->process_cmdline)
     wm_class->process_cmdline (wm, argc, argv);
 
-  if (!wm->xdpy)
-    wm->xdpy = XOpenDisplay(getenv("DISPLAY"));
-
-  if (!wm->xdpy)
-    {
-      /* FIXME: Error codes */
-      mb_wm_util_fatal_error("Display connection failed");
-      return 0;
-    }
+  if (!wm->xdpy && !mb_wm_init_xdpy (wm, NULL))
+    return 0;
 
   if (getenv("MB_SYNC"))
     XSynchronize (wm->xdpy, True);
@@ -933,10 +948,6 @@ mb_wm_init (MBWMObject *this, va_list vap)
   mb_wm_debug_init (getenv("MB_DEBUG"));
 
   /* FIXME: Multiple screen handling */
-
-  wm->xscreen     = DefaultScreen(wm->xdpy);
-  wm->xdpy_width  = DisplayWidth(wm->xdpy, wm->xscreen);
-  wm->xdpy_height = DisplayHeight(wm->xdpy, wm->xscreen);
 
   wm->xas_context = xas_context_new(wm->xdpy);
 
@@ -1007,6 +1018,7 @@ static void
 mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 {
   int i;
+  const char * theme_path = NULL;
 
   for (i = 0; i < argc; ++i)
     {
@@ -1015,7 +1027,7 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 	{
 	  if (!strcmp(argv[i], "-display"))
 	    {
-	      wm->xdpy = XOpenDisplay(argv[++i]);
+	      mb_wm_init_xdpy (wm, argv[++i]);
 	    }
 	  else if (!strcmp ("-sm-client-id", argv[i]))
 	    {
@@ -1023,14 +1035,25 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 	    }
 	  else if (!strcmp ("-theme", argv[i]))
 	    {
-	      const char *theme = argv[++i];
-	      MBWindowManagerClass *wm_class;
-	      wm_class =
-		MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
-
-	      wm->theme = wm_class->theme_new (wm, theme);
+	      theme_path = argv[++i];
 	    }
 	}
+    }
+
+  /*
+   * Anything below here needs a display conection
+   */
+  if (!wm->xdpy && !mb_wm_init_xdpy (wm, NULL))
+    return;
+
+  if (theme_path)
+    {
+
+      MBWindowManagerClass *wm_class;
+      wm_class =
+	MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+
+      wm->theme = wm_class->theme_new (wm, theme_path);
     }
 }
 

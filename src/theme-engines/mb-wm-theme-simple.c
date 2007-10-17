@@ -666,8 +666,23 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   gc = XCreateGC (xdpy, dd->xpix, 0, NULL);
 
   XSetLineAttributes (xdpy, gc, 1, LineSolid, CapRound, JoinRound);
+
+
   XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
-  XSetBackground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
+
+  if (button->state == MBWMDecorButtonStateInactive)
+    {
+      XSetBackground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
+    }
+  else
+    {
+      /* FIXME -- think of a better way of doing this */
+      MBWMXmlColor clr;
+      clr.r = clr_bg.r + 0x20;
+      clr.g = clr_bg.g + 0x20;
+      clr.b = clr_bg.b + 0x20;
+      XSetBackground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
+    }
 
   XFillRectangle (xdpy, dd->xpix, gc, x, y, w+1, h+1);
 
