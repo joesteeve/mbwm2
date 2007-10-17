@@ -662,17 +662,17 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
       xmax = button->geom.x + button->geom.width;
       ymax = button->geom.y + button->geom.height;
 
-      if (xev->x < xmin ||
-	  xev->x > xmax ||
-	  xev->y < ymin ||
-	  xev->y > ymax)
-	return True;
-
       if (button->state != MBWMDecorButtonStateInactive)
 	{
 	  button->state = MBWMDecorButtonStateInactive;
 	  mb_wm_theme_paint_button (wm->theme, button);
 	}
+
+      if (xev->x < xmin ||
+	  xev->x > xmax ||
+	  xev->y < ymin ||
+	  xev->y > ymax)
+	return True;
 
       if (button->release)
 	button->release(wm, button, button->userdata);

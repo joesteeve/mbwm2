@@ -1,5 +1,12 @@
 2007-10-17  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-decor.c:
+	(mb_wm_decor_button_release_handler):
+	Handle repaint correctly on ButtonRelase events outwith the button
+	area.
+
+2007-10-17  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
 	(mb_wm_process_cmdline):
