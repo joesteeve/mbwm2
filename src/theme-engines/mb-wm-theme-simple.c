@@ -668,20 +668,20 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   XSetLineAttributes (xdpy, gc, 1, LineSolid, CapRound, JoinRound);
 
 
-  XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
 
   if (button->state == MBWMDecorButtonStateInactive)
     {
-      XSetBackground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
+      XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
     }
   else
     {
       /* FIXME -- think of a better way of doing this */
-      MBWMXmlColor clr;
-      clr.r = clr_bg.r + 0x20;
-      clr.g = clr_bg.g + 0x20;
-      clr.b = clr_bg.b + 0x20;
-      XSetBackground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
+      MBWMXmlClr clr;
+      clr.r = clr_bg.r + 0.2;
+      clr.g = clr_bg.g + 0.2;
+      clr.b = clr_bg.b + 0.2;
+
+      XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr));
     }
 
   XFillRectangle (xdpy, dd->xpix, gc, x, y, w+1, h+1);

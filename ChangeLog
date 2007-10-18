@@ -1,5 +1,10 @@
 2007-10-18  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/theme-engines/mb-wm-theme-simple.c:
+	Fixed painting of button in active state.
+
+2007-10-18  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-types.h:
         * src/core/mb-wm-main-context.c:
         * src/core/mb-wm-main-context.h:
