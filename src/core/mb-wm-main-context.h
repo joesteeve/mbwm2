@@ -44,6 +44,7 @@ typedef struct MBWMEventFuncs
   MBWMList *property_notify;
   MBWMList *button_press;
   MBWMList *button_release;
+  MBWMList *motion_notify;
 
   MBWMList *timeout;
   MBWMList *fd_watch;

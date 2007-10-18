@@ -364,6 +364,12 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			    data->font,
 			    west_width + pack_start_x, y,
 			    title, strlen (title));
+
+	  /* Unset the clipping rectangle */
+	  rec.width = decor->geom.width;
+	  rec.height = decor->geom.height;
+
+	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
 	}
 
       XClearWindow (xdpy, decor->xwin);

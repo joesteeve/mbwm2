@@ -161,6 +161,7 @@ struct MBWMDecorButton
 
   unsigned long               press_cb_id;
   unsigned long               release_cb_id;
+  unsigned long               motion_cb_id;
 
   /* Data for any custom button callbacks */
   void                       *userdata;

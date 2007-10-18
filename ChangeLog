@@ -1,3 +1,20 @@
+2007-10-18  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-main-context.h:
+	Added MotionNotify to callbacks.
+
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	Handle button on state on pointer entering/leaving the button
+	area.
+
+        * src/theme-engines/mb-wm-theme-png.c:
+	(mb_wm_theme_png_paint_decor):
+	Fixed dangling clipping region preventing end-packed buttons from
+	getting repainted.
+
 2007-10-17  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-decor.c:

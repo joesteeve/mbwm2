@@ -300,6 +300,10 @@ typedef Bool (*MBWindowManagerButtonReleaseFunc)
      (XButtonEvent            *xev,
       void                    *userdata);
 
+typedef Bool (*MBWindowManagerMotionNotifyFunc)
+     (XMotionEvent            *xev,
+      void                    *userdata);
+
 typedef Bool (*MBWindowManagerTimeOutFunc)
      (void                    *userdata);
 

@@ -357,7 +357,23 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 	  iter = iter->next;
 	}
       break;
+    case MotionNotify:
+      iter = ctx->event_funcs.motion_notify;
 
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWindowManagerMotionNotifyFunc)XE_ITER_GET_FUNC(iter)
+		  ((XMotionEvent*)&xev->xmotion,
+		   XE_ITER_GET_DATA(iter)))
+		break;
+	    }
+
+	  iter = iter->next;
+	}
+      break;
     }
 
   return False;
@@ -471,6 +487,10 @@ mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
       ctx->event_funcs.button_release =
 	mb_wm_util_list_append (ctx->event_funcs.button_release, func_info);
       break;
+    case MotionNotify:
+      ctx->event_funcs.motion_notify =
+	mb_wm_util_list_append (ctx->event_funcs.motion_notify, func_info);
+      break;
 
     default:
       break;
@@ -520,6 +540,9 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
       break;
     case ButtonRelease:
       l_start = &ctx->event_funcs.button_release;
+      break;
+    case MotionNotify:
+      l_start = &ctx->event_funcs.motion_notify;
       break;
 
     default:
