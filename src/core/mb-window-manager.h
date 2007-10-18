@@ -38,6 +38,15 @@ typedef enum
   MBWindowManagerSignalThemeChange = 1,
 } MBWindowManagerSingal;
 
+typedef enum
+{
+  MBWindowManagerCursorNone = 0,
+  MBWindowManagerCursorLeftPtr,
+
+  _MBWindowManagerCursorLast
+} MBWindowManagerCursor;
+
+
 struct MBWindowManager
 {
   MBWMObject                   parent;
@@ -70,6 +79,9 @@ struct MBWindowManager
   MBWMLayout                  *layout;
   MBWMMainContext             *main_ctx;
   MBWindowManagerFlag          flags;
+
+  MBWindowManagerCursor        cursor;
+  Cursor                       cursors[_MBWindowManagerCursorLast];
 
   /* Temporary stuff, only valid during object initialization */
   const char                  *theme_path;
@@ -159,5 +171,8 @@ mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme);
 
 void
 mb_wm_set_theme_from_path (MBWindowManager *wm, const char *theme_path);
+
+void
+mb_wm_set_cursor (MBWindowManager * wm, MBWindowManagerCursor cursor);
 
 #endif

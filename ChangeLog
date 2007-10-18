@@ -1,4 +1,14 @@
 2007-10-19  Tomas Frydrych  <tf@o-hand.com>
+	
+        * configure.ac:
+	Added checks for Xfixes and XCursor.
+	
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	(mb_wm_set_cursor):
+	New function.
+
+2007-10-19  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
         * src/core/mb-wm-client.c:

@@ -86,12 +86,24 @@ fi
 
 AC_SUBST(MANAGERS)
 
+PKG_CHECK_MODULES(XFIXES, xfixes >= 4.0, have_xfixes=yes, have_xfixes=no)
+
+if test x$have_xfixes = xyes; then
+  AC_DEFINE(HAVE_XFIXES, [1], [Use XFixes ext to really hide cursor])
+fi
+
+PKG_CHECK_MODULES(XCURSOR, xcursor, have_xcursor=yes, have_xcursor=no)
+
+if test x$have_xcursor = xyes; then
+  AC_DEFINE(HAVE_XCURSOR, [1], [Use XCursor to sync pointer themes])
+fi
+
 MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_srcdir)/src/theme-engines'
 MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
 MBWM_THEME_LIBS='$(top_builddir)/src/theme-engines'
-MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS"
-MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS"
+MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS $XFIXES_CFLAGS $XCURSOR_CFLAGS"
+MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS $XFIXES_LIBS $XCURSOR_LIBS"
 
 AC_SUBST([MBWM_CFLAGS])
 AC_SUBST([MBWM_LIBS])
@@ -120,14 +132,21 @@ echo "
            Matchbox Window Manager II
            ==========================
 
-        install prefix:         ${prefix}
+    Directories:
         source code location:   ${srcdir}
+        install prefix      :   ${prefix}
 
-	Cairo theme:            ${use_cairo}
-	PNG theme:              ${png_theme}
-	GTK integration:	${use_gtk}
+    Extension:
+	Xfixes              :   ${have_xfixes}
+	Xcursor             :   ${have_cursor}
 
-	Simple manager:		${simple_manager}
-	Maemo manager:		${maemo_manager}
-	Debugging output:       ${want_debug}
+    Themes:
+	Cairo theme         :   ${use_cairo}
+	PNG theme           :   ${png_theme}
+	GTK integration     :   ${use_gtk}
+
+    Managers:
+	Simple manager      :   ${simple_manager}
+	Maemo manager       :   ${maemo_manager}
+	Debugging output    :   ${want_debug}
 "
