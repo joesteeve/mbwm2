@@ -429,7 +429,9 @@ static void
 stack_get_window_list (MBWindowManager *wm, Window * win_list)
 {
   MBWindowManagerClient *client;
-  int                    i = 0;
+  int                    i = 0, j;
+  int                    unmapped;
+  MBWMList              *l;
 
   if (!wm->stack_n_clients)
     return;
@@ -452,23 +454,44 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list)
     else
       win_list[i++] = MB_WM_CLIENT_XWIN(client);
   }
+
+  l = wm->unmapped_clients;
+
+  if (!l)
+    return;
+
+  unmapped = mb_wm_util_list_length (l);
+
+  for (j = i; j < i + unmapped; j++, l = l->next)
+    {
+      client = l->data;
+
+      if (client->xwin_frame)
+	win_list[j] = client->xwin_frame;
+      else
+	win_list[j] = MB_WM_CLIENT_XWIN(client);
+    }
 }
 
 static void
 stack_sync_to_display (MBWindowManager *wm)
 {
   Window *win_list = NULL;
+  int unmapped;
 
   if (!wm->stack_n_clients)
     return;
 
+  unmapped = mb_wm_util_list_length (wm->unmapped_clients);
+
   mb_wm_stack_ensure (wm);
 
-  win_list = alloca (sizeof(Window)*(wm->stack_n_clients));
+  win_list = alloca (sizeof(Window) * (wm->stack_n_clients + unmapped));
+
   stack_get_window_list(wm, win_list);
 
   mb_wm_util_trap_x_errors();
-  XRestackWindows(wm->xdpy, win_list, wm->stack_n_clients);
+  XRestackWindows(wm->xdpy, win_list, wm->stack_n_clients + unmapped);
   mb_wm_util_untrap_x_errors();
 }
 
@@ -479,6 +502,7 @@ mb_wm_sync (MBWindowManager *wm)
   MBWindowManagerClient *client = NULL;
 
   MBWM_MARK();
+  MBWM_TRACE ();
 
   XGrabServer(wm->xdpy);
 
@@ -493,17 +517,19 @@ mb_wm_sync (MBWindowManager *wm)
     if (!mb_wm_client_is_realized (client))
       mb_wm_client_realize (client);
 
+  /*
+   * Now do updates per individual client - maps, paints etc, main work here
+   */
+  mb_wm_stack_enumerate(wm, client)
+    if (mb_wm_client_needs_sync (client))
+      mb_wm_client_display_sync (client);
+
   /* FIXME: optimise wm sync flags so know if this needs calling */
   /* FIXME: Can we restack an unmapped window ? - problem of new
    *        clients mapping below existing ones.
   */
   if (wm->sync_type & MBWMSyncStacking)
     stack_sync_to_display (wm);
-
-  /* Now do updates per individual client - maps, paints etc, main work here */
-  mb_wm_stack_enumerate(wm, client)
-    if (mb_wm_client_needs_sync (client))
-      mb_wm_client_display_sync (client);
 
   /* FIXME: New clients now managed will likely need some propertys
    *        synced up here.
@@ -630,6 +656,12 @@ mb_wm_manage_client (MBWindowManager       *wm,
 
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
+  /*
+   * Make sure that any transient relationships for this client are
+   * set up -- this needs to be done before we start messing with the stack
+   */
+  mb_wm_client_transitise (client);
+
   /* add to stack and move to position in stack */
 
   mb_wm_stack_append_top (client);
@@ -663,6 +695,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   MBWindowManagerClient *c;
   MBWMClientType c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
   MBWMSyncType sync_flags = MBWMSyncStacking;
+  MBWindowManagerClient * next_focused;
 
   if (c_type & (MBWMClientTypePanel | MBWMClientTypeInput))
     sync_flags |= MBWMSyncGeometry;
@@ -675,22 +708,29 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   if (MB_WM_IS_CLIENT_PANEL(client))
     mb_wm_update_root_win_rectangles (wm);
 
-  if (wm->focused_client == client)
-    mb_wm_unfocus_client (wm, client);
-
   /*
    * Must remove client from any transient list, otherwise when we call
-   * _stack_enumerate() everything will go pear shape
+   * _stack_enumerate() everything will go pearshape
    */
   mb_wm_client_detransitise (client);
 
+  next_focused = client->next_focused_client;
   mb_wm_stack_enumerate (wm, c)
     {
+      /*
+       * Must avoid circular dependcy here
+       */
       if (c->next_focused_client == client)
-	c->next_focused_client = client->next_focused_client;
-
-      /* FIXME -- handle transients ? */
+	{
+	  if (c != next_focused)
+	    c->next_focused_client = next_focused;
+	  else
+	    c->next_focused_client = NULL;
+	}
     }
+
+  if (wm->focused_client == client)
+    mb_wm_unfocus_client (wm, client);
 
   if (client == wm->desktop)
     wm->desktop = NULL;
@@ -1176,7 +1216,7 @@ mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 static void
 mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 {
-  if (!mb_wm_client_want_focus (client))
+  if (wm->focused_client == client || !mb_wm_client_want_focus (client))
     return;
 
   if (!mb_wm_client_is_realized (client))
@@ -1231,13 +1271,17 @@ void
 mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 {
   MBWindowManagerClient *next = NULL;
+  MBWindowManagerClient *c;
 
   if (client != wm->focused_client)
     return;
 
-  if (client->next_focused_client)
-    next = client->next_focused_client;
-  else if (wm->stack_top)
+  /*
+   * Remove this client from any other's next_focused_client
+   */
+  next = client->next_focused_client;
+
+  if (!next && wm->stack_top)
     {
       MBWindowManagerClient *c;
 
@@ -1251,10 +1295,10 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 	}
     }
 
+  wm->focused_client = NULL;
+
   if (next)
     mb_wm_activate_client (wm, next);
-  else
-    wm->focused_client = NULL;
 }
 
 void
