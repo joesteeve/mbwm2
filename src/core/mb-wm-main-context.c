@@ -160,7 +160,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
    ev_client = mb_wm_managed_client_from_xwindow(wm, xev->xany.window);
 
    if (!ev_client)
-     ev_client = mb_wm_unmapped_client_from_xwindow(wm, xev->xany.window);
+     ev_client = mb_wm_iconized_client_from_xwindow(wm, xev->xany.window);
 
    MBWM_DBG("@ XEvent: '%s:%i' for %lx %s%s",
 	    MBWMDEBUGEvents[xev->type],

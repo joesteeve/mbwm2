@@ -795,31 +795,3 @@ mb_wm_client_detransitise (MBWindowManagerClient *client)
   mb_wm_client_remove_transient (client->transient_for, client);
 }
 
-/*
- * Setup any transient relationships for this client
- * (we need to do this when the client window maps, to ensure correct
- * functioning of the stack).
- */
-void
-mb_wm_client_transitise (MBWindowManagerClient *client)
-{
-  MBWMClientWindow           *win = client->window;
-  MBWindowManager            *wm = client->wmref;
-
-  /*
-   * If the trasiency is already setup, or this client is not transient
-   * we do nothing
-   */
-  if (client->transient_for || !win->xwin_transient_for)
-    return;
-
-  if (win->xwin_transient_for != win->xwindow &&
-      win->xwin_transient_for != wm->root_win->xwindow)
-    {
-      MBWindowManagerClient * tf =
-	mb_wm_managed_client_from_xwindow (wm, win->xwin_transient_for);
-
-      mb_wm_client_add_transient (tf, client);
-      client->stacking_layer = 0;  /* We stack with whatever transient too */
-    }
-}

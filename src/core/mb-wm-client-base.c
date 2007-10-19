@@ -82,7 +82,14 @@ mb_wm_client_base_destroy (MBWMObject *this)
 
   mb_wm_util_trap_x_errors();
 
-  XDestroyWindow(wm->xdpy, client->xwin_frame);
+  if (client->xwin_frame)
+    {
+      XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+		      wm->root_win->xwindow, 0, 0);
+
+      XDestroyWindow(wm->xdpy, client->xwin_frame);
+      client->xwin_frame = None;
+    }
 
   XSync(wm->xdpy, False);
   mb_wm_util_untrap_x_errors();
@@ -159,7 +166,9 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 		      MB_WM_CLIENT_XWIN(client),
 		      client->xwin_frame,
 		      0, 0);
-      /* The reparent causes an unmap we'll want to ignore */
+
+      /* The reparent causes an unmap we'll want to ignore
+       */
       client->skip_unmaps++;
     }
 

@@ -1,14 +1,34 @@
 2007-10-19  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-main-context.c:
+	Changed handling of UnmapNotify: we now do not cache all unmapped
+	windows, instead, if the UnmapNotify is for a window that is in
+	iconized state, move the client into iconized clients list,
+	otherwise destroy the client (and recreate it/when if it maps
+	again). This significantly simplifies the handling of window
+	transiency.
 	
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_destroy):
+	Reparent the client window to root before destryoing the window
+	frame.
+
+
+2007-10-18  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
 	Added checks for Xfixes and XCursor.
-	
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
 	(mb_wm_set_cursor):
 	New function.
 
-2007-10-19  Tomas Frydrych  <tf@o-hand.com>
+2007-10-18  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
         * src/core/mb-wm-client.c:

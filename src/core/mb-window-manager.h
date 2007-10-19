@@ -57,7 +57,7 @@ struct MBWindowManager
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
-  MBWMList                    *unmapped_clients;
+  MBWMList                    *iconized_clients;
   MBWindowManagerClient       *desktop;
   MBWindowManagerClient       *focused_client;
 
@@ -120,7 +120,7 @@ MBWindowManagerClient*
 mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win);
 
 MBWindowManagerClient*
-mb_wm_unmapped_client_from_xwindow(MBWindowManager *wm, Window win);
+mb_wm_iconized_client_from_xwindow(MBWindowManager *wm, Window win);
 
 int
 mb_wm_register_client_type (void);
