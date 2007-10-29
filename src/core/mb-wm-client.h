@@ -307,4 +307,13 @@ mb_wm_client_theme_change (MBWindowManagerClient *client);
 void
 mb_wm_client_detransitise (MBWindowManagerClient *client);
 
+Bool
+mb_wm_client_is_iconizing (MBWindowManagerClient *client);
+
+void
+mb_wm_client_reset_iconizing (MBWindowManagerClient *client);
+
+void
+mb_wm_client_iconize (MBWindowManagerClient *client);
+
 #endif

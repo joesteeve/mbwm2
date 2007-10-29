@@ -57,7 +57,6 @@ struct MBWindowManager
 
   MBWindowManagerClient       *stack_top, *stack_bottom;
   MBWMList                    *clients;
-  MBWMList                    *iconized_clients;
   MBWindowManagerClient       *desktop;
   MBWindowManagerClient       *focused_client;
 

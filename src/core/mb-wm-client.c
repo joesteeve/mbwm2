@@ -24,6 +24,7 @@ struct MBWindowManagerClientPriv
 {
   Bool          realized;
   Bool          mapped;
+  Bool          iconizing;
   MBWMSyncType  sync_state;
 };
 
@@ -795,3 +796,29 @@ mb_wm_client_detransitise (MBWindowManagerClient *client)
   mb_wm_client_remove_transient (client->transient_for, client);
 }
 
+Bool
+mb_wm_client_is_iconizing (MBWindowManagerClient *client)
+{
+  return client->priv->iconizing;
+}
+
+void
+mb_wm_client_reset_iconizing (MBWindowManagerClient *client)
+{
+  client->priv->iconizing = False;
+}
+
+void
+mb_wm_client_iconize (MBWindowManagerClient *client)
+{
+  /*
+   * Set the iconizing flag and put the window into hidden state
+   * This triggers an umap event, at which point the client gets unmanaged
+   * by the window manager.
+   */
+  client->priv->iconizing = True;
+
+  mb_wm_client_set_state (client,
+			  MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			  MBWMClientWindowStateChangeAdd);
+}

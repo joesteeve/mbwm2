@@ -159,17 +159,14 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 			CWOverrideRedirect|CWEventMask|CWBackPixel,
 			&attr);
 
-      /* Assume geomerty sync will fix this up correctly togeather with
+      /*
+       * Assume geometry sync will fix this up correctly togeather with
        * any decoration creation. Layout manager will call this
        */
       XReparentWindow(wm->xdpy,
 		      MB_WM_CLIENT_XWIN(client),
 		      client->xwin_frame,
 		      0, 0);
-
-      /* The reparent causes an unmap we'll want to ignore
-       */
-      client->skip_unmaps++;
     }
 
   XSetWindowBorderWidth(wm->xdpy, MB_WM_CLIENT_XWIN(client), 0);

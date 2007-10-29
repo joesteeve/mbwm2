@@ -105,16 +105,6 @@ mb_wm_destroy (MBWMObject *this)
       free (old);
     }
 
-  l = wm->iconized_clients;
-  while (l)
-    {
-      MBWMList * old = l;
-      mb_wm_object_unref (l->data);
-
-      l = l->next;
-      free (old);
-    }
-
   mb_wm_object_unref (MB_WM_OBJECT (wm->root_win));
   mb_wm_object_unref (MB_WM_OBJECT (wm->theme));
   mb_wm_object_unref (MB_WM_OBJECT (wm->layout));
@@ -206,19 +196,15 @@ test_destroy_notify (XDestroyWindowEvent  *xev,
 
   if (client)
     {
-      MBWM_DBG("Found client, unmanaing!");
-      mb_wm_unmanage_client (wm, client, True);
-    }
-  else
-    {
-      client = mb_wm_iconized_client_from_xwindow(wm, xev->window);
-
-      if (client)
+      if (mb_wm_client_window_is_state_set (client->window,
+					    MBWMClientWindowEWMHStateHidden))
 	{
-	  wm->iconized_clients =
-	    mb_wm_util_list_remove (wm->iconized_clients, client);
-
+	  wm->clients = mb_wm_util_list_remove (wm->clients, client);
 	  mb_wm_object_unref (MB_WM_OBJECT (client));
+	}
+      else
+	{
+	  mb_wm_unmanage_client (wm, client, True);
 	}
     }
 
@@ -240,15 +226,35 @@ test_unmap_notify (XUnmapEvent          *xev,
     {
       if (client->skip_unmaps)
 	{
+	  MBWM_DBG ("skipping unmap for %p (skip count %d)\n",
+		    client, client->skip_unmaps);
+
 	  client->skip_unmaps--;
 	}
       else
 	{
-	  Bool not_iconized =
-	    ! mb_wm_client_window_is_state_set (client->window,
-					     MBWMClientWindowEWMHStateHidden);
+	  /*
+	   * If the iconizing flag is set, we unmanage the client, but keep
+	   * the resources around; we reset the iconizing flag to indicate
+	   * that the iconizing has completed (and the client window is now in
+	   * hidden state).
+	   *
+	   * If the client is not iconizing and is not alreadly in a hidden
+	   * state, we unmange it and destroy all the associated resources.
+	   */
+	  if (mb_wm_client_is_iconizing (client))
+	    {
+	      MBWM_DBG ("iconizing client %p\n", client);
 
- 	  mb_wm_unmanage_client (wm, client, not_iconized);
+	      mb_wm_unmanage_client (wm, client, False);
+	      mb_wm_client_reset_iconizing (client);
+	    }
+	  else if (!mb_wm_client_window_is_state_set (client->window,
+					    MBWMClientWindowEWMHStateHidden))
+	    {
+	      MBWM_DBG ("removing client %p\n", client);
+	      mb_wm_unmanage_client (wm, client, True);
+	    }
 	}
     }
 
@@ -389,47 +395,33 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
   MBWindowManagerClient *client = NULL;
   MBWindowManagerClass  *wm_class =
     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+  MBWMClientWindow *win = NULL;
 
   MBWM_MARK();
 
   if ((client = mb_wm_managed_client_from_xwindow(wm, xev->window)))
     {
-      /* This client is already managed, but for some reason not mapped
-       * -- try to activate it.
-       */
       mb_wm_activate_client (wm, client);
       return;
     }
 
-  client = mb_wm_iconized_client_from_xwindow(wm, xev->window);
-
-  if (client)
+  if (!wm_class->client_new)
     {
-      wm->iconized_clients = mb_wm_util_list_remove (wm->iconized_clients,
-						     client);
+      MBWM_DBG("### No new client hook exists ###");
+      return True;
     }
-  else
+
+  win = mb_wm_client_window_new (wm, xev->window);
+
+  if (!win)
+    return True;
+
+  client = wm_class->client_new (wm, win);
+
+  if (!client)
     {
-      MBWMClientWindow *win = NULL;
-
-      if (!wm_class->client_new)
-	{
-	  MBWM_DBG("### No new client hook exists ###");
-	  return True;
-	}
-
-      win = mb_wm_client_window_new (wm, xev->window);
-
-      if (!win)
-	return True;
-
-      client = wm_class->client_new (wm, win);
-
-      if (!client)
-	{
-	  mb_wm_object_unref (MB_WM_OBJECT (win));
-	  return True;
-	}
+      mb_wm_object_unref (MB_WM_OBJECT (win));
+      return True;
     }
 
   mb_wm_manage_client(wm, client, True);
@@ -544,15 +536,13 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
       int                    app_win_cnt = 0;
       int                    cnt = 0;
       int                    list_size;
-      int                    iconized_size;
       MBWindowManagerClient *c;
       MBWMList              *l;
 
       list_size     = mb_wm_util_list_length (wm->clients);
-      iconized_size = mb_wm_util_list_length (wm->iconized_clients);
 
       wins      = alloca (sizeof(Window) * list_size);
-      app_wins  = alloca (sizeof(Window) * (list_size + iconized_size));
+      app_wins  = alloca (sizeof(Window) * list_size);
 
       if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
 	{
@@ -573,10 +563,10 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
 
       /* The MB_APP_WINDOW_LIST_STACKING list is used to construct
        * application switching menus -- we append anything we have
-       * in the unmapped_windows list that is marked hidden (i.e., mimimized
+       * in client list (some of which might be hidden).
        * apps)
        */
-      l = wm->iconized_clients;
+      l = wm->clients;
       while (l)
 	{
 	  c = l->data;
@@ -687,7 +677,8 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   if (c_type & (MBWMClientTypePanel | MBWMClientTypeInput))
     sync_flags |= MBWMSyncGeometry;
 
-  wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
+  if (destroy)
+    wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
 
   mb_wm_stack_remove (client);
   mb_wm_update_root_win_lists (wm);
@@ -724,9 +715,6 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 
   if (destroy)
     mb_wm_object_unref (MB_WM_OBJECT(client));
-  else
-    wm->iconized_clients =
-      mb_wm_util_list_append (wm->iconized_clients, client);
 
   mb_wm_display_sync_queue (client->wmref, sync_flags);
 }
@@ -741,29 +729,6 @@ mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win)
     return NULL;
 
   l = wm->clients;
-  while (l)
-    {
-      client = l->data;
-
-      if (client->window && client->window->xwindow == win)
-	return client;
-
-      l = l->next;
-    }
-
-  return NULL;
-}
-
-MBWindowManagerClient*
-mb_wm_iconized_client_from_xwindow(MBWindowManager *wm, Window win)
-{
-  MBWindowManagerClient *client = NULL;
-  MBWMList *l;
-
-  if (win == wm->root_win->xwindow)
-    return NULL;
-
-  l = wm->iconized_clients;
   while (l)
     {
       client = l->data;
@@ -831,7 +796,15 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	   client = wm_class->client_new (wm, win);
 
 	   if (client)
-	     mb_wm_manage_client(wm, client, False);
+	     {
+	       /*
+		* When we realize the client, we reparent the application
+		* window to the new frame, which generates an unmap event.
+		* We need to skip it.
+		*/
+	       client->skip_unmaps++;
+	       mb_wm_manage_client(wm, client, False);
+	     }
 	   else
 	     mb_wm_object_unref (MB_WM_OBJECT (win));
 	 }

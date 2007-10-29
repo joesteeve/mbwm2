@@ -1,3 +1,34 @@
+2007-10-29  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_realize):
+	Removed incrementing of skip_unmap counter as that must only be
+	done when managing a pre-exisitng window on the WM manager startup.
+
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	(mb_wm_client_iconize):
+	(mb_wm_client_is_iconizing):
+	(mb_wm_client_reset_iconizing):
+	Added 'iconizing' flag to differentiate between external unmap
+	events and unmaps genereated when the WM iconizes a window.
+
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+	Removed unneeded iconized_clients list (iconized clients are
+	readily available from the principal client list).
+
+	(mb_wm_manage_preexistsing_wins):
+	Increase skip_notify counter.
+
+	(test_unmap_notify):
+	Plugged in new client iconization api.
+
+        * src/core/mb-wm-decor.c:
+	(mb_wm_decor_button_stock_button_released):
+	Plugged in new client iconization api.
+
 2007-10-19  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -11,7 +42,7 @@
 	otherwise destroy the client (and recreate it/when if it maps
 	again). This significantly simplifies the handling of window
 	transiency.
-	
+
         * src/core/mb-wm-client-base.c:
 	(mb_wm_client_base_destroy):
 	Reparent the client window to root before destryoing the window

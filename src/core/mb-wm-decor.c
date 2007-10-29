@@ -534,9 +534,7 @@ mb_wm_decor_button_stock_button_released (MBWMDecorButton *button)
       mb_wm_client_deliver_delete (client);
       break;
     case MBWMDecorButtonMinimize:
-      mb_wm_client_set_state (client,
-			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
-			      MBWMClientWindowStateChangeAdd);
+      mb_wm_client_iconize (client);
       break;
     case MBWMDecorButtonFullscreen:
       mb_wm_client_set_state (client,
