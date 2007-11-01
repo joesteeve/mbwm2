@@ -174,7 +174,7 @@ void
 mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client);
 
 void
-mb_wm_cycle_apps (MBWindowManager *wm);
+mb_wm_cycle_apps (MBWindowManager *wm, Bool reverse);
 
 void
 mb_wm_set_theme (MBWindowManager *wm, MBWMTheme * theme);

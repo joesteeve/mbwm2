@@ -376,7 +376,10 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	 case MB_CMD_EXIT:
 	   exit(0);
 	 case MB_CMD_NEXT:
-	   mb_wm_cycle_apps (wm);
+	   mb_wm_cycle_apps (wm, False);
+	   break;
+	 case MB_CMD_PREV:
+	   mb_wm_cycle_apps (wm, True);
 	   break;
 	 case MB_CMD_DESKTOP:
 	   mb_wm_toggle_desktop (wm);
@@ -391,7 +394,6 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 #endif
 	 default:
 	   /*FIXME -- not implemented yet */
-	 case MB_CMD_PREV:
 	 case MB_CMB_KEYS_RELOAD:
 	   ;
 	 }

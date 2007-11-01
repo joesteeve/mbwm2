@@ -71,7 +71,8 @@ mb_wm_stack_move_client_above_type (MBWindowManagerClient *client,
 				    MBWMClientType         type_below);
 
 MBWindowManagerClient *
-mb_wm_stack_cycle_by_type(MBWindowManager *w, MBWMClientType type);
+mb_wm_stack_cycle_by_type(MBWindowManager *w, MBWMClientType type,
+			  Bool reverse);
 
 void
 mb_wm_stack_move_above_client (MBWindowManagerClient *client,

@@ -235,19 +235,46 @@ mb_wm_stack_get_lowest_by_type(MBWindowManager *w, MBWMClientType wanted_type)
 }
 
 MBWindowManagerClient *
-mb_wm_stack_cycle_by_type(MBWindowManager *wm, MBWMClientType type)
+mb_wm_stack_cycle_by_type(MBWindowManager *wm, MBWMClientType type,
+			  Bool reverse)
 {
-  MBWindowManagerClient *lowest, *highest;
-
-  lowest  = mb_wm_stack_get_lowest_by_type (wm, type);
-  highest = mb_wm_stack_get_highest_by_type (wm, type);
-
-  if (lowest && highest && lowest != highest)
+  if (reverse)
     {
-      mb_wm_stack_move_above_client (lowest, highest);
-    }
+      MBWindowManagerClient *prev, *highest;
 
-  return lowest;
+      highest = mb_wm_stack_get_highest_by_type (wm, type);
+
+      if (!highest)
+	return highest;
+
+      prev = highest->stacked_below;
+
+      while (prev && (type != MB_WM_CLIENT_CLIENT_TYPE (prev)))
+	{
+	  prev = prev->stacked_below;
+	}
+
+      if (prev && highest && prev != highest)
+	{
+	  mb_wm_stack_move_above_client (prev, highest);
+	}
+
+      return prev;
+    }
+  else
+    {
+      MBWindowManagerClient *lowest, *highest;
+
+      lowest  = mb_wm_stack_get_lowest_by_type (wm, type);
+      highest = mb_wm_stack_get_highest_by_type (wm, type);
+
+      if (lowest && highest && lowest != highest)
+	{
+	  mb_wm_stack_move_above_client (lowest, highest);
+	}
+
+      return lowest;
+    }
 }
 
 void

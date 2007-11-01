@@ -1357,7 +1357,7 @@ mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 }
 
 void
-mb_wm_cycle_apps (MBWindowManager *wm)
+mb_wm_cycle_apps (MBWindowManager *wm, Bool reverse)
 {
   MBWindowManagerClient *old_top, *new_top;
 
@@ -1369,7 +1369,7 @@ mb_wm_cycle_apps (MBWindowManager *wm)
 
   old_top = mb_wm_stack_get_highest_by_type (wm, MBWMClientTypeApp);
 
-  new_top = mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp);
+  new_top = mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp, reverse);
 
   if (old_top != new_top)
     {

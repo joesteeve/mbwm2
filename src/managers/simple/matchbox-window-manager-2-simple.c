@@ -57,10 +57,10 @@ key_binding_func (MBWindowManager   *wm,
   switch (action)
     {
     case KEY_ACTION_PAGE_NEXT:
-      mb_wm_cycle_apps (wm);
+      mb_wm_cycle_apps (wm, False);
       break;
     case KEY_ACTION_PAGE_PREV:
-      printf(" ### KEY_ACTION_PAGE_PREV ### \n");
+      mb_wm_cycle_apps (wm, True);
       break;
     case KEY_ACTION_TOGGLE_FULLSCREEN:
       printf(" ### KEY_ACTION_TOGGLE_FULLSCREEN ### \n");

@@ -1,6 +1,18 @@
 2007-11-01  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-root-window.c:
+        * src/core/mb-wm-stack.c:
+        * src/core/mb-wm-stack.h:
+        * src/managers/maemo/matchbox-window-manager-2-maemo.c:
+        * src/managers/simple/matchbox-window-manager-2-simple.c:
+	(mb_wm_cycle_apps):
+	Implemented application cycling in reverse direction.
+
+2007-11-01  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
 	(mb_wm_update_root_win_lists):
 	Fixed MB_APP_WINDOW_LIST_STACKING
 
