@@ -1,5 +1,11 @@
 2007-11-01  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_update_root_win_lists):
+	Fixed MB_APP_WINDOW_LIST_STACKING
+
+2007-11-01  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-panel.c:
 	(mb_wm_client_panel_init):
 	Work out panel attachment from initial window position.

@@ -591,9 +591,6 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
 	{
 	  if (!(wm->flags & MBWindowManagerFlagDesktop) || c != wm->desktop)
 	    wins[cnt++] = c->window->xwindow;
-
-	  if (MB_WM_IS_CLIENT_APP (c))
-	    app_wins[app_win_cnt++] = c->window->xwindow;
 	}
 
       /* The MB_APP_WINDOW_LIST_STACKING list is used to construct
