@@ -1097,14 +1097,14 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_init_cursors (wm);
 
-#ifdef ENABLE_COMPOSITE
-  if (wm_class->comp_mgr_new)
-    wm->comp_mgr = wm_class->comp_mgr_new (wm);
-#endif
-
   base_foo ();
 
   mb_wm_manage_preexistsing_wins (wm);
+
+#ifdef ENABLE_COMPOSITE
+  if (wm_class->comp_mgr_new && mb_wm_theme_use_compositing_mgr (wm->theme))
+    mb_wm_compositing_on (wm);
+#endif
 
   return 1;
 }

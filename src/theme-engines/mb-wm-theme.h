@@ -96,6 +96,7 @@ struct MBWMTheme
   char                  *path;
   MBWMList              *xml_clients;
 
+  Bool                   compositing;
   MBWMColor              color_lowlight;
   MBWMColor              color_shadow;
   MBWMCompMgrShadowType  shadow_type;
@@ -165,5 +166,8 @@ mb_wm_theme_get_shadow_color (MBWMTheme             * theme,
 
 MBWMCompMgrShadowType
 mb_wm_theme_get_shadow_type (MBWMTheme * theme);
+
+Bool
+mb_wm_theme_use_compositing_mgr (MBWMTheme * theme);
 
 #endif

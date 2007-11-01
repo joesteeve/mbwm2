@@ -1,5 +1,21 @@
 2007-11-01  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-object-props.h:
+        * src/core/mb-window-manager.c:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	Added 'compositing' attribute to theme description.
+
+        * src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_handle_message):
+	Fixed toggling of compositing.
+
+        * src/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_turn_off_real):
+	Fixed destruction of root_buffer.
+
+2007-11-01  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-window-manager.h:
         * src/core/mb-wm-root-window.c:

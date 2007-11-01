@@ -511,6 +511,8 @@ mb_wm_comp_mgr_init (MBWMObject *obj, va_list vap)
   priv->shadow_padding_width  = 0;
   priv->shadow_padding_height = 0;
 
+  mgr->disabled = True;
+
   if (!mb_wm_comp_mgr_init_extensions (mgr))
     return 0;
 
@@ -1224,11 +1226,6 @@ mb_wm_comp_mgr_init_extensions (MBWMCompMgr *mgr)
   XRenderPictureAttributes	pa;
   Pixmap                        tmp_pxm;
 
-  if (mgr->disabled)
-    return False;
-
-  mgr->disabled = True;
-
   if (!XRenderQueryExtension (wm->xdpy, &render_event, &render_error))
     {
       fprintf (stderr, "matchbox: No render extension\n");
@@ -1252,8 +1249,6 @@ mb_wm_comp_mgr_init_extensions (MBWMCompMgr *mgr)
       fprintf (stderr, "matchbox: No XFixes extension\n");
       return False;
     }
-
-  mgr->disabled = False;
 
   XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
 				CompositeRedirectManual);
@@ -1294,8 +1289,8 @@ mb_wm_comp_mgr_turn_off_real (MBWMCompMgr *mgr)
 
   if (priv->root_buffer)
     {
-      priv->root_buffer  = None;
       XRenderFreePicture (wm->xdpy, priv->root_buffer);
+      priv->root_buffer  = None;
     }
 
   if (priv->all_damage)
@@ -1346,14 +1341,14 @@ mb_wm_comp_mgr_turn_on_real (MBWMCompMgr *mgr)
   wm   = mgr->wm;
   rwin = wm->root_win->xwindow;
 
-  mgr->disabled = False;
-
   if (!mb_wm_comp_mgr_init_extensions (mgr))
     return;
 
   mb_wm_comp_mgr_init_pictures (mgr);
 
   XSync (wm->xdpy, False);
+
+  mgr->disabled = False;
 
   if (!mb_wm_stack_empty (wm))
     {
@@ -1571,6 +1566,9 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
   int                      destroy_region = 0;
   Bool                     done;
   Bool                     top_translucent = False;
+
+  if (mgr->disabled)
+    return;
 
   if (!region)
     {
@@ -1849,10 +1847,10 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 Bool
 mb_wm_comp_mgr_enabled (MBWMCompMgr *mgr)
 {
-  if (!mgr)
+  if (!mgr || mgr->disabled)
     return False;
 
-  return (mgr->disabled != True);
+  return True;
 }
 
 MBWMCompMgr *

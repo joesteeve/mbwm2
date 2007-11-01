@@ -88,6 +88,9 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropThemeShadowType:
 	  theme->shadow_type = va_arg(vap, int);
 	  break;
+	case MBWMObjectPropThemeCompositing:
+	  theme->compositing = va_arg(vap, int);
+	  break;
 
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
@@ -316,6 +319,7 @@ struct expat_data
   MBWMColor     color_lowlight;
   MBWMColor     color_shadow;
   MBWMCompMgrShadowType shadow_type;
+  Bool          compositing;
 };
 
 MBWMTheme *
@@ -332,6 +336,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
   MBWMColor  clr_lowlight;
   MBWMColor  clr_shadow;
   MBWMCompMgrShadowType shadow_type;
+  Bool       compositing;
 
   /* Attempt to parse the xml theme, if any, retrieving the theme type
    *
@@ -451,6 +456,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 	  clr_shadow.set = udata.color_shadow.set;
 
 	  shadow_type = udata.shadow_type;
+	  compositing = udata.compositing;
 
 	  xml_stack_free (udata.stack);
 	}
@@ -467,6 +473,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 			MBWMObjectPropThemeColorLowlight, &clr_lowlight,
 			MBWMObjectPropThemeColorShadow,   &clr_shadow,
 			MBWMObjectPropThemeShadowType,     shadow_type,
+			MBWMObjectPropThemeCompositing,    compositing,
 			NULL));
     }
 
@@ -638,6 +645,15 @@ mb_wm_theme_get_shadow_type (MBWMTheme * theme)
   return theme->shadow_type;
 }
 
+Bool
+mb_wm_theme_use_compositing_mgr (MBWMTheme * theme)
+{
+  if (!theme)
+    return False;
+
+  return theme->compositing;
+}
+
 /*
  * Expat callback stuff
  */
@@ -757,6 +773,11 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		exd->shadow_type = MBWM_COMP_MGR_SHADOW_SIMPLE;
 	      else if (!strcmp (*(p+1), "gaussian"))
 		exd->shadow_type = MBWM_COMP_MGR_SHADOW_GAUSSIAN;
+	    }
+	  else if (!strcmp (*p, "compositing"))
+	    {
+	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
+		exd->compositing = True;
 	    }
 
 	  p += 2;

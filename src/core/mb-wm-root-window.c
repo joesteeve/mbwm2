@@ -389,7 +389,7 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	   if (mb_wm_compositing_enabled (wm))
 	     mb_wm_compositing_off (wm);
 	   else
-	     mb_wm_compositing_on (wm->comp_mgr);
+	     mb_wm_compositing_on (wm);
 	   break;
 #endif
 	 default:
