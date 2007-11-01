@@ -370,6 +370,33 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
       mb_wm_handle_show_desktop (wm, e->data.l[0]);
       return 1;
     }
+  else if (e->message_type == wm->atoms[MBWM_ATOM_MB_COMMAND])
+    {
+       switch (e->data.l[0])
+	 {
+	 case MB_CMD_EXIT:
+	   exit(0);
+	 case MB_CMD_NEXT:
+	   mb_wm_cycle_apps (wm);
+	   break;
+	 case MB_CMD_DESKTOP:
+	   mb_wm_toggle_desktop (wm);
+	   break;
+#ifdef ENABLE_COMPOSITE
+	 case MB_CMD_COMPOSITE:
+	   if (mb_wm_compositing_enabled (wm))
+	     mb_wm_compositing_off (wm);
+	   else
+	     mb_wm_compositing_on (wm->comp_mgr);
+	   break;
+#endif
+	 default:
+	   /*FIXME -- not implemented yet */
+	 case MB_CMD_PREV:
+	 case MB_CMB_KEYS_RELOAD:
+	   ;
+	 }
+    }
 
   return 0;
 }

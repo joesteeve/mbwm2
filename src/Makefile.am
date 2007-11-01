@@ -1,4 +1,8 @@
-SUBDIRS = core client-types  theme-engines managers
 
+if ENABLE_COMPOSITE
+comp=comp-mgr
+endif
 
-MAINTAINERCLEANFILES = config.h.in Makefile.in
+SUBDIRS = core client-types theme-engines $(comp) managers
+
+MAINTAINERCLEANFILES = Makefile.in

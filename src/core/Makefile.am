@@ -39,7 +39,6 @@ core_c  = mb-wm-object.c      	\
           xas.c
 
 libmatchbox_window_manager_2_core_a_SOURCES = $(core_h) $(core_c)
-libmatchbox_window_manager_2_core_a_INCLUDES = @MBWM_INCS@
-libmatchbox_window_manager_2_core_a_CFLAGS =  @MBWM_CFLAGS@
+libmatchbox_window_manager_2_core_a_CFLAGS =  @MBWM_INCS@ @MBWM_CFLAGS@
 
-MAINTAINERCLEANFILES = config.h.in Makefile.in
+MAINTAINERCLEANFILES = Makefile.in

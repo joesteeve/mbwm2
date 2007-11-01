@@ -21,6 +21,10 @@
 #include "mb-wm.h"
 #include <X11/Xmd.h>
 
+#ifdef ENABLE_COMPOSITE
+#include <X11/extensions/Xrender.h>
+#endif
+
 static void
 mb_wm_client_base_realize (MBWindowManagerClient *client);
 
@@ -146,18 +150,53 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 
   if (client->xwin_frame == None)
     {
-      client->xwin_frame
-	= XCreateWindow(wm->xdpy, wm->root_win->xwindow,
-			client->frame_geometry.x,
-			client->frame_geometry.y,
-			client->frame_geometry.width,
-			client->frame_geometry.height,
-			0,
-			CopyFromParent,
-			CopyFromParent,
-			CopyFromParent,
-			CWOverrideRedirect|CWEventMask|CWBackPixel,
-			&attr);
+#ifdef ENABLE_COMPOSITE
+      XRenderPictFormat  *format;
+      Bool                is_argb32 = False;
+      XSetWindowAttributes attr2;
+
+      format = XRenderFindVisualFormat (wm->xdpy, client->window->visual);
+
+      if (format && format->type == PictTypeDirect &&
+	  format->direct.alphaMask)
+	{
+	  is_argb32 = True;
+	}
+
+      if (is_argb32)
+	{
+	  attr.colormap = client->window->colormap;
+
+	  client->xwin_frame
+	    = XCreateWindow(wm->xdpy, wm->root_win->xwindow,
+			    client->frame_geometry.x,
+			    client->frame_geometry.y,
+			    client->frame_geometry.width,
+			    client->frame_geometry.height,
+			    0,
+			    32,
+			    InputOutput,
+			    client->window->visual,
+			    CWOverrideRedirect|CWEventMask|CWBackPixel|
+			    CWBorderPixel|CWColormap,
+			    &attr);
+	}
+      else
+#endif
+	{
+	  client->xwin_frame
+	    = XCreateWindow(wm->xdpy, wm->root_win->xwindow,
+			    client->frame_geometry.x,
+			    client->frame_geometry.y,
+			    client->frame_geometry.width,
+			    client->frame_geometry.height,
+			    0,
+			    CopyFromParent,
+			    CopyFromParent,
+			    CopyFromParent,
+			    CWOverrideRedirect|CWEventMask|CWBackPixel,
+			    &attr);
+	}
 
       /*
        * Assume geometry sync will fix this up correctly togeather with

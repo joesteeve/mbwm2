@@ -373,6 +373,12 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       break;
     }
 
+#ifdef ENABLE_COMPOSITE
+  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    if (mb_wm_comp_mgr_handle_events (wm->comp_mgr, xev))
+      return True;
+#endif
+
   return False;
 }
 

@@ -33,10 +33,11 @@ mb_wm_client_destroy (MBWMObject *obj)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
   MBWindowManagerClient * c;
-  MBWMList * l = client->decor;
+  MBWindowManager       * wm = client->wmref;
+  MBWMList              * l = client->decor;
 
   if (client->sig_theme_change_id)
-    mb_wm_object_signal_disconnect (MB_WM_OBJECT (client->wmref),
+    mb_wm_object_signal_disconnect (MB_WM_OBJECT (wm),
 				    client->sig_theme_change_id);
   client->sig_theme_change_id = 0;
 
@@ -47,8 +48,15 @@ mb_wm_client_destroy (MBWMObject *obj)
   client->sig_prop_change_id = 0;
 
   if (client->ping_cb_id)
-    mb_wm_main_context_timeout_handler_remove (client->wmref->main_ctx,
+    mb_wm_main_context_timeout_handler_remove (wm->main_ctx,
 					       client->ping_cb_id);
+
+#ifdef ENABLE_COMPOSITE
+  if (mb_wm_compositing_enabled (wm))
+    {
+      mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
+    }
+#endif
 
   mb_wm_object_unref (MB_WM_OBJECT (client->window));
 
@@ -70,7 +78,7 @@ mb_wm_client_destroy (MBWMObject *obj)
   while (l)
     {
       MBWindowManagerClient * c = l->data;
-      XUnmapWindow (client->wmref->xdpy, c->window->xwindow);
+      XUnmapWindow (wm->xdpy, c->window->xwindow);
       l = l->next;
     }
 #endif
@@ -264,6 +272,14 @@ mb_wm_client_on_property_change (MBWMClientWindow        *window,
   if (property & MBWM_WINDOW_PROP_GEOMETRY)
     mb_wm_client_geometry_mark_dirty (client);
 
+#ifdef ENABLE_COMPOSITE
+  if ((property & MBWM_WINDOW_PROP_CM_TRANSLUCENCY) &&
+      client->cm_client && mb_wm_comp_mgr_enabled (client->wmref->comp_mgr))
+    {
+      mb_wm_comp_mgr_client_repair (client->cm_client);
+    }
+#endif
+
   return False;
 }
 
@@ -433,6 +449,16 @@ mb_wm_client_display_sync (MBWindowManagerClient *client)
   MBWM_ASSERT (klass->sync != NULL);
 
   klass->sync(client);
+
+#ifdef ENABLE_COMPOSITE
+  if (client->cm_client)
+    {
+      if (client->priv->mapped)
+	mb_wm_comp_mgr_client_show (client->cm_client);
+      else
+	mb_wm_comp_mgr_client_hide (client->cm_client);
+    }
+#endif
 
   client->priv->sync_state = 0;
 }
@@ -822,3 +848,32 @@ mb_wm_client_iconize (MBWindowManagerClient *client)
 			  MBWM_ATOM_NET_WM_STATE_HIDDEN,
 			  MBWMClientWindowStateChangeAdd);
 }
+
+int
+mb_wm_client_title_height (MBWindowManagerClient *client)
+{
+  MBWMClientWindow * win = client->window;
+  MBWindowManager  * wm  = client->wmref;
+  int                north;
+
+  if (!wm->theme ||
+      mb_wm_client_window_is_state_set (win,
+					MBWMClientWindowEWMHStateFullscreen))
+    {
+      return 0;
+    }
+
+
+  mb_wm_theme_get_decor_dimensions (wm->theme, client,
+				    &north, NULL, NULL, NULL);
+
+  return north;
+}
+
+Bool
+mb_wm_client_is_modal (MBWindowManagerClient *client)
+{
+  return mb_wm_client_window_is_state_set (client->window,
+					   MBWMClientWindowEWMHStateModal);
+}
+

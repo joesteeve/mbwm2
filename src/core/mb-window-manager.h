@@ -4,7 +4,7 @@
  *
  *  Authored By Matthew Allum <mallum@o-hand.com>
  *
- *  Copyright (c) 2005 OpenedHand Ltd - http://o-hand.com
+ *  Copyright (c) 2005, 2007 OpenedHand Ltd - http://o-hand.com
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 
 #ifndef _HAVE_MB_WM_WINDOW_MANAGER_H
 #define _HAVE_MB_WM_WINDOW_MANAGER_H
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 typedef struct MBWindowManagerClass   MBWindowManagerClass;
 typedef struct MBWindowManagerPriv    MBWindowManagerPriv;
@@ -78,6 +82,9 @@ struct MBWindowManager
   MBWMLayout                  *layout;
   MBWMMainContext             *main_ctx;
   MBWindowManagerFlag          flags;
+#ifdef ENABLE_COMPOSITE
+  MBWMCompMgr                 *comp_mgr;
+#endif
 
   MBWindowManagerCursor        cursor;
   Cursor                       cursors[_MBWindowManagerCursorLast];
@@ -101,6 +108,10 @@ struct MBWindowManagerClass
   Bool (*client_hang)       (MBWindowManager *wm, MBWindowManagerClient *c);
 
   MBWMTheme * (*theme_new)  (MBWindowManager *wm, const char * path);
+
+#ifdef ENABLE_COMPOSITE
+  MBWMCompMgr * (*comp_mgr_new) (MBWindowManager *wm);
+#endif
 };
 
 MBWindowManager *
@@ -119,7 +130,7 @@ MBWindowManagerClient*
 mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win);
 
 MBWindowManagerClient*
-mb_wm_iconized_client_from_xwindow(MBWindowManager *wm, Window win);
+mb_wm_managed_client_from_frame (MBWindowManager *wm, Window frame);
 
 int
 mb_wm_register_client_type (void);
@@ -173,5 +184,14 @@ mb_wm_set_theme_from_path (MBWindowManager *wm, const char *theme_path);
 
 void
 mb_wm_set_cursor (MBWindowManager * wm, MBWindowManagerCursor cursor);
+
+void
+mb_wm_compositing_on (MBWindowManager * wm);
+
+void
+mb_wm_compositing_off (MBWindowManager * wm);
+
+Bool
+mb_wm_compositing_enabled (MBWindowManager * wm);
 
 #endif

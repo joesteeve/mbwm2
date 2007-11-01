@@ -108,7 +108,7 @@ mb_wm_xml_client_free (MBWMXmlClient * c)
 }
 
 void
-mb_wm_xml_clr_from_string (struct Clr * clr, const char *s)
+mb_wm_xml_clr_from_string (MBWMColor * clr, const char *s)
 {
   int  r, g, b;
 

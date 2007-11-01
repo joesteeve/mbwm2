@@ -32,6 +32,10 @@ AC_ARG_ENABLE(debug,
   [  --enable-debug          Enable verbose debugging output],
   [want_debug=$enableval], [want_debug=no])
 
+AC_ARG_ENABLE(compositing-manager,
+  [  --enable-compositing-manager      Enable compositing manager],
+  [comp_mgr=$enableval], [comp_mgr=no])
+
 if test "x$use_cairo" = "xyes"; then
   needed_pkgs="$needed_pkgs pangocairo "
 else
@@ -40,6 +44,10 @@ fi
 
 if test "x$use_gtk" = "xyes"; then
   needed_pkgs="$needed_pkgs gtk+-2.0 "
+fi
+
+if test "x$comp_mgr" = "xyes"; then
+  needed_pkgs="$needed_pkgs xcomposite xdamage "
 fi
 
 if test "x$want_debug" = "xyes"; then
@@ -66,6 +74,11 @@ AM_CONDITIONAL(THEME_SIMPLE, [test "x$use_cairo" != "xyes"])
 AM_CONDITIONAL(USE_GTK, test "x$use_gtk" = "xyes")
 if test "$use_gtk" = yes; then
   AC_DEFINE(USE_GTK, 1, [GTK Integration])
+fi
+
+AM_CONDITIONAL(ENABLE_COMPOSITE, [test "x$comp_mgr" = "xyes"])
+if test "$comp_mgr" = yes; then
+  AC_DEFINE(ENABLE_COMPOSITE, 1, [Enable composite manager code])
 fi
 
 AC_ARG_ENABLE(simple-manager,
@@ -98,10 +111,11 @@ if test x$have_xcursor = xyes; then
   AC_DEFINE(HAVE_XCURSOR, [1], [Use XCursor to sync pointer themes])
 fi
 
-MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_srcdir)/src/theme-engines'
+MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_srcdir)/src/theme-engines -I$(top_srcdir)/src/comp-mgr'
 MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
 MBWM_THEME_LIBS='$(top_builddir)/src/theme-engines'
+MBWM_COMPMGR_LIBS='$(top_builddir)/src/comp-mgr'
 MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS $XFIXES_CFLAGS $XCURSOR_CFLAGS"
 MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS $XFIXES_LIBS $XCURSOR_LIBS"
 
@@ -111,6 +125,7 @@ AC_SUBST([MBWM_CORE_LIB])
 AC_SUBST([MBWM_INCS])
 AC_SUBST([MBWM_CLIENT_LIBS])
 AC_SUBST([MBWM_THEME_LIBS])
+AC_SUBST([MBWM_COMPMGR_LIBS])
 AC_SUBST([MBWM_DEBUG_CFLAGS])
 AC_SUBST([MBWM_DEBUG_LDFLAGS])
 
@@ -119,6 +134,7 @@ Makefile
 src/Makefile
 src/core/Makefile
 src/client-types/Makefile
+src/comp-mgr/Makefile
 src/managers/Makefile
 src/managers/simple/Makefile
 src/managers/maemo/Makefile
@@ -146,7 +162,10 @@ echo "
 	GTK integration     :   ${use_gtk}
 
     Managers:
-	Simple manager      :   ${simple_manager}
-	Maemo manager       :   ${maemo_manager}
+	Simple manager      :	${simple_manager}
+	Maemo manager       :	${maemo_manager}
+
+	Compositing manager :   ${comp_mgr}
+
 	Debugging output    :   ${want_debug}
 "

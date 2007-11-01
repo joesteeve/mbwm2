@@ -479,10 +479,10 @@ mb_wm_theme_cairo_paint_decor (MBWMTheme *theme,
   cairo_matrix_t         matrix;
   cairo_t               *cr;
   double                 x, y, w, h;
-  struct Clr             clr_bg;
-  struct Clr             clr_fg;
-  struct Clr             clr_frame;
-  struct Clr             clr_bg2;
+  MBWMColor             clr_bg;
+  MBWMColor             clr_fg;
+  MBWMColor             clr_frame;
+  MBWMColor             clr_bg2;
   MBWMClientType         c_type;
   MBWMThemeCairo        *c_theme = MB_WM_THEME_CAIRO (theme);
   MBWMXmlClient * c;
@@ -678,8 +678,8 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   int                    xi, yi, wi, hi;
   double                 x, y, w, h;
   cairo_font_extents_t   font_extents;
-  struct Clr             clr_bg;
-  struct Clr             clr_fg;
+  MBWMColor              clr_bg;
+  MBWMColor              clr_fg;
   MBWMClientType         c_type;
   MBWMThemeCairo        *c_theme = MB_WM_THEME_CAIRO (theme);
   MBWMXmlClient * c;

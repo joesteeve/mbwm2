@@ -95,6 +95,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_MB_APP_WINDOW_LIST_STACKING",
     "_MB_THEME",
     "_MB_THEME_NAME",
+    "_MB_COMMAND",
   };
 
   /* FIXME: Error Traps */

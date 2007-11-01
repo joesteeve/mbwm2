@@ -6,22 +6,13 @@
 /*
  * Helper structs for xml theme
  */
-typedef struct Clr
-{
-  double r;
-  double g;
-  double b;
-
-  Bool set;
-}MBWMXmlClr;
-
 typedef struct Button
 {
   MBWMDecorButtonType type;
   MBWMDecorButtonPack packing;
 
-  struct Clr clr_fg;
-  struct Clr clr_bg;
+  MBWMColor clr_fg;
+  MBWMColor clr_bg;
 
   int x;
   int y;
@@ -33,10 +24,10 @@ typedef struct Decor
 {
   MBWMDecorType type;
 
-  struct Clr clr_fg;
-  struct Clr clr_bg;
-  struct Clr clr_bg2;
-  struct Clr clr_frame;
+  MBWMColor clr_fg;
+  MBWMColor clr_bg;
+  MBWMColor clr_bg2;
+  MBWMColor clr_frame;
 
   int x;
   int y;
@@ -89,6 +80,6 @@ MBWMXmlButton *
 mb_wm_xml_button_find_by_type (MBWMList *l, MBWMDecorButtonType type);
 
 void
-mb_wm_xml_clr_from_string (MBWMXmlClr * clr, const char *s);
+mb_wm_xml_clr_from_string (MBWMColor * clr, const char *s);
 
 #endif

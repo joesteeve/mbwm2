@@ -85,17 +85,20 @@ struct MBWMThemeClass
   MBWMDecor* (*create_decor) (MBWMTheme             *theme,
 			      MBWindowManagerClient *client,
 			      MBWMDecorType          type);
-
 };
 
 struct MBWMTheme
 {
-  MBWMObject        parent;
+  MBWMObject             parent;
 
-  MBWindowManager  *wm;
-  MBWMThemeCaps     caps;
-  char             *path;
-  MBWMList         *xml_clients;
+  MBWindowManager       *wm;
+  MBWMThemeCaps          caps;
+  char                  *path;
+  MBWMList              *xml_clients;
+
+  MBWMColor              color_lowlight;
+  MBWMColor              color_shadow;
+  MBWMCompMgrShadowType  shadow_type;
 };
 
 MBWMTheme *
@@ -144,5 +147,23 @@ Bool
 mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
 				 MBWindowManagerClient * client,
 				 MBGeometry            * geom);
+
+void
+mb_wm_theme_get_lowlight_color (MBWMTheme             * theme,
+				unsigned int          * red,
+				unsigned int          * green,
+				unsigned int          * blue,
+				unsigned int          * alpha);
+
+void
+mb_wm_theme_get_shadow_color (MBWMTheme             * theme,
+			      unsigned int          * red,
+			      unsigned int          * green,
+			      unsigned int          * blue,
+			      unsigned int          * alpha);
+
+
+MBWMCompMgrShadowType
+mb_wm_theme_get_shadow_type (MBWMTheme * theme);
 
 #endif

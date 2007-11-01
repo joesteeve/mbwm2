@@ -21,6 +21,10 @@
 #ifndef _HAVE_MB_CLIENT_H
 #define _HAVE_MB_CLIENT_H
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #define MB_WM_CLIENT(c) ((MBWindowManagerClient*)(c))
 #define MB_WM_CLIENT_CLASS(c) ((MBWindowManagerClientClass*)(c))
 #define MB_WM_TYPE_CLIENT (mb_wm_client_class_type ())
@@ -161,6 +165,10 @@ struct MBWindowManagerClient
   unsigned long                ping_cb_id;
   unsigned long                sig_theme_change_id;
   int                          ping_timeout;
+
+#ifdef ENABLE_COMPOSITE
+  MBWMCompMgrClient           *cm_client;
+#endif
 };
 
 #define mb_wm_client_frame_west_width(c) \
@@ -315,5 +323,11 @@ mb_wm_client_reset_iconizing (MBWindowManagerClient *client);
 
 void
 mb_wm_client_iconize (MBWindowManagerClient *client);
+
+int
+mb_wm_client_title_height (MBWindowManagerClient *client);
+
+Bool
+mb_wm_client_is_modal (MBWindowManagerClient *client);
 
 #endif

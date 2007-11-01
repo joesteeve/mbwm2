@@ -44,6 +44,7 @@
 #define MBWM_WINDOW_PROP_CLIENT_MACHINE  (1<<13)
 #define MBWM_WINDOW_PROP_ALLOWED_ACTIONS (1<<14)
 #define MBWM_WINDOW_PROP_NET_USER_TIME   (1<<15)
+#define MBWM_WINDOW_PROP_CM_TRANSLUCENCY (1<<17)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
@@ -116,6 +117,8 @@ struct MBWMClientWindow
   unsigned int                   depth;
   char                          *name;
   Window                         xwindow;
+  Visual                        *visual;
+  Colormap                       colormap;
   MBWindowManager               *wm;
 
   Atom                           net_type;
@@ -131,6 +134,7 @@ struct MBWMClientWindow
 
   MBWMClientWindowProtos         protos;
   pid_t                          pid;
+  int                            translucency;
   char                          *machine;
 
   MBWMList                      *icons;

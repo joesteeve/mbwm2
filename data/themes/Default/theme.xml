@@ -1,6 +1,7 @@
 <?xml version="1.0"?>
 <theme name="Default" author="Tomas Frydrych, tf@o-hand.com"
-       desc="" version="1.0" engine_version="2" engine_type="default">
+       desc="" version="1.0" engine_version="2" engine_type="default"
+       shadow-type="gaussian" >
 <img src="test.png" />
 <client type="app">
  <decor type="north" clr-bg="#ff0000" clr-bg2="#ffffff" clr-fg="#ffffff"

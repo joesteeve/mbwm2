@@ -62,6 +62,8 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
   MBWMObjectProp    prop;
   MBWMList         *xml_clients = NULL;
   char             *path = NULL;
+  MBWMColor        *clr_lowlight = NULL;
+  MBWMColor        *clr_shadow = NULL;
 
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -77,6 +79,16 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropThemeXmlClients:
 	  xml_clients = va_arg(vap, MBWMList *);
 	  break;
+	case MBWMObjectPropThemeColorLowlight:
+	  clr_lowlight = va_arg(vap, MBWMColor *);
+	  break;
+	case MBWMObjectPropThemeColorShadow:
+	  clr_shadow = va_arg(vap, MBWMColor *);
+	  break;
+	case MBWMObjectPropThemeShadowType:
+	  theme->shadow_type = va_arg(vap, int);
+	  break;
+
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -89,6 +101,36 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
 
   if (path)
     theme->path = strdup (path);
+
+  if (clr_shadow && clr_shadow->set)
+    {
+      theme->color_shadow.r = clr_shadow->r;
+      theme->color_shadow.g = clr_shadow->g;
+      theme->color_shadow.b = clr_shadow->b;
+      theme->color_shadow.a = clr_shadow->a;
+    }
+  else
+    {
+      theme->color_shadow.r = 0.0;
+      theme->color_shadow.g = 0.0;
+      theme->color_shadow.b = 0.0;
+      theme->color_shadow.a = 0.95;
+    }
+
+  if (clr_lowlight && clr_lowlight->set)
+    {
+      theme->color_lowlight.r = clr_lowlight->r;
+      theme->color_lowlight.g = clr_lowlight->g;
+      theme->color_lowlight.b = clr_lowlight->b;
+      theme->color_lowlight.a = clr_lowlight->a;
+    }
+  else
+    {
+      theme->color_lowlight.r = 0.0;
+      theme->color_lowlight.g = 0.0;
+      theme->color_lowlight.b = 0.0;
+      theme->color_lowlight.a = 0.55;
+    }
 
   return 1;
 }
@@ -200,6 +242,17 @@ mb_wm_theme_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 
   if (klass->paint_decor)
     klass->paint_decor (theme, decor);
+
+#ifdef ENABLE_COMPOSITE
+ {
+   MBWindowManagerClient *c  = decor->parent_client;
+
+   if (c->cm_client)
+     {
+       mb_wm_comp_mgr_client_repair (c->cm_client);
+     }
+ }
+#endif
 }
 
 void
@@ -214,6 +267,17 @@ mb_wm_theme_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
   if (klass->paint_button)
     klass->paint_button (theme, button);
+
+#ifdef ENABLE_COMPOSITE
+ {
+   MBWindowManagerClient *c  = button->decor->parent_client;
+
+   if (c->cm_client)
+     {
+       mb_wm_comp_mgr_client_repair (c->cm_client);
+     }
+ }
+#endif
 }
 
 Bool
@@ -249,6 +313,9 @@ struct expat_data
   MBWMList     *xml_clients;
   char         *img;
   MBWMList     *stack;
+  MBWMColor     color_lowlight;
+  MBWMColor     color_shadow;
+  MBWMCompMgrShadowType shadow_type;
 };
 
 MBWMTheme *
@@ -262,6 +329,9 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
   FILE      *file = NULL;
   MBWMList  *xml_clients = NULL;
   char      *img = NULL;
+  MBWMColor  clr_lowlight;
+  MBWMColor  clr_shadow;
+  MBWMCompMgrShadowType shadow_type;
 
   /* Attempt to parse the xml theme, if any, retrieving the theme type
    *
@@ -368,6 +438,20 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 		}
 	    }
 
+	  clr_lowlight.r   = udata.color_lowlight.r;
+	  clr_lowlight.g   = udata.color_lowlight.g;
+	  clr_lowlight.b   = udata.color_lowlight.b;
+	  clr_lowlight.a   = udata.color_lowlight.a;
+	  clr_lowlight.set = udata.color_lowlight.set;
+
+	  clr_shadow.r   = udata.color_shadow.r;
+	  clr_shadow.g   = udata.color_shadow.g;
+	  clr_shadow.b   = udata.color_shadow.b;
+	  clr_shadow.a   = udata.color_shadow.a;
+	  clr_shadow.set = udata.color_shadow.set;
+
+	  shadow_type = udata.shadow_type;
+
 	  xml_stack_free (udata.stack);
 	}
   }
@@ -376,11 +460,14 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
     {
       theme =
 	MB_WM_THEME (mb_wm_object_new (theme_type,
-				   MBWMObjectPropWm,        wm,
-				   MBWMObjectPropThemePath, path,
-				   MBWMObjectPropThemeImg,  img,
-				   MBWMObjectPropThemeXmlClients, xml_clients,
-				   NULL));
+			MBWMObjectPropWm,                  wm,
+			MBWMObjectPropThemePath,           path,
+			MBWMObjectPropThemeImg,            img,
+			MBWMObjectPropThemeXmlClients,     xml_clients,
+			MBWMObjectPropThemeColorLowlight, &clr_lowlight,
+			MBWMObjectPropThemeColorShadow,   &clr_shadow,
+			MBWMObjectPropThemeShadowType,     shadow_type,
+			NULL));
     }
 
  default_theme:
@@ -389,13 +476,16 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
     {
       theme = MB_WM_THEME (mb_wm_object_new (
 #ifdef USE_CAIRO
-				   MB_WM_TYPE_THEME_CAIRO,
+			MB_WM_TYPE_THEME_CAIRO,
 #else
-				   MB_WM_TYPE_THEME_SIMPLE,
+			MB_WM_TYPE_THEME_SIMPLE,
 #endif
-			           MBWMObjectPropWm, wm,
-				   MBWMObjectPropThemeXmlClients, xml_clients,
-			           NULL));
+	                MBWMObjectPropWm,                  wm,
+			MBWMObjectPropThemeXmlClients,     xml_clients,
+			MBWMObjectPropThemeColorLowlight, &clr_lowlight,
+			MBWMObjectPropThemeColorShadow,   &clr_shadow,
+			MBWMObjectPropThemeShadowType,     shadow_type,
+			NULL));
     }
 
   if (par)
@@ -459,6 +549,94 @@ mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
   return True;
 }
 
+/*
+ * Retrieves color to be used for lowlighting (16-bit rgba)
+ */
+void
+mb_wm_theme_get_lowlight_color (MBWMTheme             * theme,
+				unsigned int          * red,
+				unsigned int          * green,
+				unsigned int          * blue,
+				unsigned int          * alpha)
+{
+  if (theme)
+    {
+      if (red)
+	*red = (unsigned int)(theme->color_lowlight.r * (double)0xffff);
+
+      if (green)
+	*green = (unsigned int)(theme->color_lowlight.g * (double)0xffff);
+
+      if (blue)
+	*blue = (unsigned int)(theme->color_lowlight.b * (double)0xffff);
+
+      if (alpha)
+	*alpha = (unsigned int)(theme->color_lowlight.a * (double)0xffff);
+
+      return;
+    }
+
+  if (red)
+    *red = 0;
+
+  if (green)
+    *green = 0;
+
+  if (blue)
+    *blue = 0;
+
+  if (*alpha)
+    *alpha = 0x8d8d;
+}
+
+/*
+ * Retrieves color to be used for lowlighting (16-bit rgba)
+ */
+void
+mb_wm_theme_get_shadow_color (MBWMTheme             * theme,
+			      unsigned int          * red,
+			      unsigned int          * green,
+			      unsigned int          * blue,
+			      unsigned int          * alpha)
+{
+  if (theme)
+    {
+      if (red)
+	*red = (unsigned int)(theme->color_shadow.r * (double)0xffff);
+
+      if (green)
+	*green = (unsigned int)(theme->color_shadow.g * (double)0xffff);
+
+      if (blue)
+	*blue = (unsigned int)(theme->color_shadow.b * (double)0xffff);
+
+      if (alpha)
+	*alpha = (unsigned int)(theme->color_shadow.a * (double)0xffff);
+
+      return;
+    }
+
+  if (red)
+    *red = 0;
+
+  if (green)
+    *green = 0;
+
+  if (blue)
+    *blue = 0;
+
+  if (*alpha)
+    *alpha = 0xff00;
+}
+
+MBWMCompMgrShadowType
+mb_wm_theme_get_shadow_type (MBWMTheme * theme)
+{
+  if (!theme)
+    return MBWM_COMP_MGR_SHADOW_NONE;
+
+  return theme->shadow_type;
+}
 
 /*
  * Expat callback stuff
@@ -533,6 +711,7 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
   if (!strcmp (tag, "theme"))
     {
+      MBWMColor clr;
       const char ** p = expat_attr;
 
       xml_stack_push (&exd->stack, XML_CTX_THEME);
@@ -553,6 +732,31 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	      else if (!strcmp (*(p+1), "png"))
 		exd->theme_type = MB_WM_TYPE_THEME_PNG;
 #endif
+	    }
+	  else if (!strcmp (*p, "clr-shadow"))
+	    {
+	      mb_wm_xml_clr_from_string (&clr, *(p+1));
+	      exd->color_shadow.r = clr.r;
+	      exd->color_shadow.g = clr.g;
+	      exd->color_shadow.b = clr.b;
+	      exd->color_shadow.a = clr.a;
+	      exd->color_shadow.set = True;
+	    }
+	  else if (!strcmp (*p, "clr-lowlight"))
+	    {
+	      mb_wm_xml_clr_from_string (&clr, *(p+1));
+	      exd->color_lowlight.r = clr.r;
+	      exd->color_lowlight.g = clr.g;
+	      exd->color_lowlight.b = clr.b;
+	      exd->color_lowlight.a = clr.a;
+	      exd->color_lowlight.set = True;
+	    }
+	  else if (!strcmp (*p, "shadow-type"))
+	    {
+	      if (!strcmp (*(p+1), "simple"))
+		exd->shadow_type = MBWM_COMP_MGR_SHADOW_SIMPLE;
+	      else if (!strcmp (*(p+1), "gaussian"))
+		exd->shadow_type = MBWM_COMP_MGR_SHADOW_GAUSSIAN;
 	    }
 
 	  p += 2;

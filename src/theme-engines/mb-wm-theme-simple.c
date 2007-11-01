@@ -465,9 +465,9 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   MBWindowManagerClient *client;
   Window                 xwin;
   MBWindowManager       *wm = theme->wm;
-  struct Clr             clr_bg;
-  struct Clr             clr_fg;
-  struct Clr             clr_frame;
+  MBWMColor             clr_bg;
+  MBWMColor             clr_fg;
+  MBWMColor             clr_frame;
   MBWMClientType         c_type;
   MBWMXmlClient         *c = NULL;
   MBWMXmlDecor          *d = NULL;
@@ -616,8 +616,8 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   Window                 xwin;
   MBWindowManager       *wm = theme->wm;
   int                    x, y, w, h;
-  struct Clr             clr_bg;
-  struct Clr             clr_fg;
+  MBWMColor              clr_bg;
+  MBWMColor              clr_fg;
   MBWMClientType         c_type;
   MBWMXmlClient         *c = NULL;
   MBWMXmlDecor          *d = NULL;

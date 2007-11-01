@@ -98,7 +98,11 @@ typedef struct MBWMLayout                  MBWMLayout;
 typedef struct MBWMLayoutClass             MBWMLayoutClass;
 typedef struct MBWMMainContext             MBWMMainContext;
 typedef struct MBWMMainContextClass        MBWMMainContextClass;
-
+typedef struct MBWMCompMgr                 MBWMCompMgr;
+typedef struct MBWMCompMgrPrivate          MBWMCompMgrPrivate;
+typedef struct MBWMCompMgrClass            MBWMCompMgrClass;
+typedef struct MBWMCompMgrClient           MBWMCompMgrClient;
+typedef struct MBWMCompMgrClientClass      MBWMCompMgrClientClass;
 
 typedef enum MBWMClientType
 {
@@ -208,6 +212,7 @@ typedef enum MBWMAtom
   MBWM_ATOM_MB_APP_WINDOW_LIST_STACKING,
   MBWM_ATOM_MB_THEME,
   MBWM_ATOM_MB_THEME_NAME,
+  MBWM_ATOM_MB_COMMAND,
 
   /* FIXME: Custom/Unused to sort out
    *
@@ -217,7 +222,6 @@ typedef enum MBWMAtom
    * _NET_WM_SYNC_REQUEST,
    * _MB_CURRENT_APP_WINDOW,
    *
-   * MB_COMMAND,
    * MB_CLIENT_EXEC_MAP,
    * MB_CLIENT_STARTUP_LIST,
    * MB_DOCK_TITLEBAR_SHOW_ON_DESKTOP,
@@ -349,5 +353,31 @@ typedef enum MBWMSyncType
   MBWMSyncFullscreen        = (1<<6),
 } MBWMSyncType;
 
+typedef struct MBWMColor
+{
+  double r;
+  double g;
+  double b;
+  double a;
+
+  Bool set;
+}MBWMColor;
+
+typedef enum MBWMCompMgrShadowType
+{
+  MBWM_COMP_MGR_SHADOW_NONE = 0,
+  MBWM_COMP_MGR_SHADOW_SIMPLE,
+  MBWM_COMP_MGR_SHADOW_GAUSSIAN,
+} MBWMCompMgrShadowType;
+
+/* mb remote commands */
+#define MB_CMD_SET_THEME   1
+#define MB_CMD_EXIT        2
+#define MB_CMD_DESKTOP     3
+#define MB_CMD_NEXT        4
+#define MB_CMD_PREV        5
+#define MB_CMD_MISC        7 	/* spare, used for debugging */
+#define MB_CMD_COMPOSITE   8
+#define MB_CMB_KEYS_RELOAD 9
 
 #endif

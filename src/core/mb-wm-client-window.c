@@ -38,6 +38,8 @@ enum {
   COOKIE_WIN_ICON,
   COOKIE_WIN_ACTIONS,
   COOKIE_WIN_USER_TIME,
+  COOKIE_WIN_CM_TRANSLUCENCY,
+  COOKIE_WIN_NET_STATE,
 
   N_COOKIES
 };
@@ -215,6 +217,11 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
       = mb_wm_property_atom_req(wm, xwin,
 				wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE]);
 
+  if (props_req & MBWM_WINDOW_PROP_NET_STATE)
+    cookies[COOKIE_WIN_NET_STATE]
+      = mb_wm_property_atom_req(wm, xwin,
+				wm->atoms[MBWM_ATOM_NET_WM_STATE]);
+
   if (props_req & MBWM_WINDOW_PROP_ATTR)
     cookies[COOKIE_WIN_ATTR]
       = mb_wm_xwin_get_attributes (wm, xwin);
@@ -306,6 +313,14 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 				       wm->atoms[MBWM_ATOM_NET_WM_USER_TIME]);
     }
 
+  if (props_req & MBWM_WINDOW_PROP_CM_TRANSLUCENCY)
+    {
+      cookies[COOKIE_WIN_CM_TRANSLUCENCY]
+	= mb_wm_property_cardinal_req (wm,
+				       xwin,
+				       wm->atoms[MBWM_ATOM_CM_TRANSLUCENCY]);
+    }
+
   /* bundle all pending requests to server and wait for replys */
   XSync(wm->xdpy, False);
 
@@ -343,6 +358,105 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
       result_atom = NULL;
     }
 
+  if (props_req & MBWM_WINDOW_PROP_NET_STATE)
+    {
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_NET_STATE],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&result_atom,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_ATOM
+	  || actual_format_return != 32
+	  || nitems_return <= 0
+	  || result_atom == NULL
+	  )
+	{
+	  MBWM_DBG("### Warning net type state failed ###");
+	}
+      else
+	{
+	  int i;
+	  win->ewmh_state = 0;
+
+	  for (i = 0; i < nitems_return; ++i)
+	    {
+	      if (result_atom[i] == wm->atoms[MBWM_ATOM_NET_WM_STATE_MODAL])
+		win->ewmh_state |= MBWMClientWindowEWMHStateModal;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_STICKY])
+		win->ewmh_state |= MBWMClientWindowEWMHStateSticky;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_MAXIMIZED_VERT])
+		win->ewmh_state |= MBWMClientWindowEWMHStateMaximisedVert;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_MAXIMIZED_HORZ])
+		win->ewmh_state |= MBWMClientWindowEWMHStateMaximisedHorz;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_SHADED])
+		win->ewmh_state |= MBWMClientWindowEWMHStateShaded;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_SKIP_TASKBAR])
+		win->ewmh_state |= MBWMClientWindowEWMHStateSkipTaskbar;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_SKIP_PAGER])
+		win->ewmh_state |= MBWMClientWindowEWMHStateSkipPager;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_HIDDEN])
+		win->ewmh_state |= MBWMClientWindowEWMHStateHidden;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_FULLSCREEN])
+		win->ewmh_state |= MBWMClientWindowEWMHStateFullscreen;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_ABOVE])
+		win->ewmh_state |= MBWMClientWindowEWMHStateAbove;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_BELOW])
+		win->ewmh_state |= MBWMClientWindowEWMHStateBelow;
+	      else if (result_atom[i] ==
+		       wm->atoms[MBWM_ATOM_NET_WM_STATE_DEMANDS_ATTENTION])
+		win->ewmh_state |= MBWMClientWindowEWMHStateDemandsAttention;
+	    }
+	}
+
+      changes |= MBWM_WINDOW_PROP_NET_STATE;
+
+      if (result_atom)
+	XFree(result_atom);
+
+      result_atom = NULL;
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_GEOMETRY)
+    {
+      if (!mb_wm_xwin_get_geometry_reply (wm,
+					  cookies[COOKIE_WIN_GEOM],
+					  &win->geometry,
+					  &foo,
+					  &win->depth,
+					  &x_error_code))
+	{
+	  MBWM_DBG("### Warning Get Geometry Failed ( %i ) ###",
+		   x_error_code);
+	  MBWM_DBG("###   Cookie ID was %li                ###",
+		   cookies[COOKIE_WIN_GEOM]);
+	  goto abort;
+	}
+
+      MBWM_DBG("@@@ New Window Obj @@@");
+      MBWM_DBG("Win:  %lx", win->xwindow);
+      MBWM_DBG("Type: %lx",win->net_type);
+      MBWM_DBG("Geom: +%i+%i,%ix%i",
+	       win->geometry.x,
+	       win->geometry.y,
+	       win->geometry.width,
+	       win->geometry.height);
+  }
+
   if (props_req & MBWM_WINDOW_PROP_ATTR)
     {
       xwin_attr = mb_wm_xwin_get_attributes_reply (wm,
@@ -355,23 +469,8 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 	  goto abort;
 	}
 
-      if (!mb_wm_xwin_get_geometry_reply (wm,
-					  cookies[COOKIE_WIN_GEOM],
-					  &win->geometry,
-					  &foo,
-					  &win->depth,
-					  &x_error_code))
-	{
-	  MBWM_DBG("### Warning Get Geometry Failed ( %i ) ###", x_error_code);
-	  MBWM_DBG("###   Cookie ID was %li                ###", cookies[COOKIE_WIN_GEOM]);
-	  goto abort;
-	}
-
-      MBWM_DBG("@@@ New Window Obj @@@");
-      MBWM_DBG("Win:  %lx", win->xwindow);
-      MBWM_DBG("Type: %lx",win->net_type);
-      MBWM_DBG("Geom: +%i+%i,%ix%i", win->geometry.x, win->geometry.y,
-	       win->geometry.width, win->geometry.height);
+      win->visual   = xwin_attr->visual;
+      win->colormap = xwin_attr->colormap;
     }
 
   if (props_req & MBWM_WINDOW_PROP_NAME)
@@ -607,6 +706,40 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 
       if (pid)
 	XFree(pid);
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_CM_TRANSLUCENCY)
+    {
+      int *translucency = NULL;
+
+      mb_wm_property_reply (wm,
+			    cookies[COOKIE_WIN_CM_TRANSLUCENCY],
+			    &actual_type_return,
+			    &actual_format_return,
+			    &nitems_return,
+			    &bytes_after_return,
+			    (unsigned char **)&translucency,
+			    &x_error_code);
+
+      if (x_error_code
+	  || actual_type_return != XA_CARDINAL
+	  || actual_format_return != 32
+	  || translucency == NULL
+	  )
+	{
+	  MBWM_DBG("### no CM_TRANSLUCENCY prop ###");
+	  win->translucency = -1;
+	}
+      else
+	{
+	  win->translucency = *translucency;
+	  MBWM_DBG("@@@ translucency %d @@@", win->translucency);
+	}
+
+      changes |= MBWM_WINDOW_PROP_CM_TRANSLUCENCY;
+
+      if (translucency)
+	XFree (translucency);
     }
 
   if (props_req & MBWM_WINDOW_PROP_NET_ICON)

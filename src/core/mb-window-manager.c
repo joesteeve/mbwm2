@@ -6,6 +6,10 @@
 #include "../client-types/mb-wm-client-input.h"
 #include "../theme-engines/mb-wm-theme.h"
 
+#ifdef ENABLE_COMPOSITE
+#include "mb-wm-comp-mgr.h"
+#endif
+
 #include <stdarg.h>
 
 #include <X11/Xmd.h>
@@ -71,6 +75,14 @@ mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
   return mb_wm_theme_new (wm, path);
 }
 
+#ifdef ENABLE_COMPOSITE
+static MBWMCompMgr *
+mb_wm_real_comp_mgr_new (MBWindowManager *wm)
+{
+  return mb_wm_comp_mgr_new (wm);
+}
+#endif
+
 static void
 mb_wm_class_init (MBWMObjectClass *klass)
 {
@@ -83,6 +95,10 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->process_cmdline = mb_wm_process_cmdline;
   wm_class->client_new      = mb_wm_client_new_func;
   wm_class->theme_new       = mb_wm_real_theme_new;
+
+#ifdef ENABLE_COMPOSITE
+  wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
+#endif
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWindowManager";
@@ -327,6 +343,13 @@ mb_wm_handle_property_notify (XPropertyEvent          *xev,
 }
 
 static  Bool
+mb_wm_handle_config_notify (XConfigureEvent *xev,
+			    void            *userdata)
+{
+  /* FIXME */
+}
+
+static  Bool
 mb_wm_handle_config_request (XConfigureRequestEvent *xev,
 			     void                   *userdata)
 {
@@ -383,6 +406,13 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
 	}
 
     }
+
+#ifdef ENABLE_COMPOSITE
+  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    {
+      mb_wm_comp_mgr_client_configure (client->cm_client);
+    }
+#endif
 
   return True;
 }
@@ -507,6 +537,11 @@ mb_wm_sync (MBWindowManager *wm)
   mb_wm_stack_enumerate(wm, client)
     if (mb_wm_client_needs_sync (client))
       mb_wm_client_display_sync (client);
+
+#ifdef ENABLE_COMPOSITE
+  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    mb_wm_comp_mgr_render (wm->comp_mgr);
+#endif
 
   /* FIXME: optimise wm sync flags so know if this needs calling */
   /* FIXME: Can we restack an unmapped window ? - problem of new
@@ -646,7 +681,10 @@ mb_wm_manage_client (MBWindowManager       *wm,
   else if (MB_WM_IS_CLIENT_DESKTOP(client))
     wm->desktop = client;
 
-  /* set flags to map - should this go elsewhere? */
+#ifdef ENABLE_COMPOSITE
+  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    mb_wm_comp_mgr_register_client (wm->comp_mgr, client);
+#endif
 
   if (activate)
     mb_wm_activate_client (wm, client);
@@ -707,6 +745,11 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 	}
     }
 
+#ifdef ENABLE_COMPOSITE
+  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
+#endif
+
   if (wm->focused_client == client)
     mb_wm_unfocus_client (wm, client);
 
@@ -734,6 +777,29 @@ mb_wm_managed_client_from_xwindow(MBWindowManager *wm, Window win)
       client = l->data;
 
       if (client->window && client->window->xwindow == win)
+	return client;
+
+      l = l->next;
+    }
+
+  return NULL;
+}
+
+MBWindowManagerClient*
+mb_wm_managed_client_from_frame (MBWindowManager *wm, Window frame)
+{
+  MBWindowManagerClient *client = NULL;
+  MBWMList *l;
+
+  if (frame == wm->root_win->xwindow)
+    return NULL;
+
+  l = wm->clients;
+  while (l)
+    {
+      client = l->data;
+
+      if (client->xwin_frame == frame)
 	return client;
 
       l = l->next;
@@ -995,6 +1061,12 @@ mb_wm_init (MBWMObject *this, va_list vap)
 			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     ConfigureNotify,
+			     (MBWMXEventFunc)mb_wm_handle_config_notify,
+			     wm);
+
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
   			     None,
 			     PropertyNotify,
 			     (MBWMXEventFunc)mb_wm_handle_property_notify,
@@ -1027,6 +1099,11 @@ mb_wm_init (MBWMObject *this, va_list vap)
   mb_wm_keys_init(wm);
 
   mb_wm_init_cursors (wm);
+
+#ifdef ENABLE_COMPOSITE
+  if (wm_class->comp_mgr_new)
+    wm->comp_mgr = wm_class->comp_mgr_new (wm);
+#endif
 
   base_foo ();
 
@@ -1401,5 +1478,37 @@ mb_wm_set_cursor (MBWindowManager * wm, MBWindowManagerCursor cursor)
 
   if (!mb_wm_util_untrap_x_errors())
     wm->cursor = cursor;
+}
+
+void
+mb_wm_compositing_on (MBWindowManager * wm)
+{
+#ifdef ENABLE_COMPOSITE
+  if (!wm->comp_mgr)
+    wm->comp_mgr = mb_wm_comp_mgr_new (wm);
+
+  if (!mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    mb_wm_comp_mgr_turn_on (wm->comp_mgr);
+#endif
+}
+
+
+void
+mb_wm_compositing_off (MBWindowManager * wm)
+{
+#ifdef ENABLE_COMPOSITE
+  if (wm->comp_mgr && mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    mb_wm_comp_mgr_turn_off (wm->comp_mgr);
+#endif
+}
+
+Bool
+mb_wm_compositing_enabled (MBWindowManager * wm)
+{
+#ifdef ENABLE_COMPOSITE
+  return mb_wm_comp_mgr_enabled (wm->comp_mgr);
+#else
+  return False;
+#endif
 }
 
