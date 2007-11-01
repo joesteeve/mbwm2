@@ -27,13 +27,25 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 static int
 mb_wm_client_panel_init (MBWMObject *this, va_list vap)
 {
-  MBWindowManagerClient * client = MB_WM_CLIENT (this);
+  MBWindowManagerClient * client  = MB_WM_CLIENT (this);
+  MBWMClientLayoutHints   hints   = LayoutPrefVisible;
+  MBGeometry            * win_geo = &client->window->geometry;
 
   client->stacking_layer = MBWMStackLayerBottomMid;
   client->want_focus = 0;
 
-  mb_wm_client_set_layout_hints (client,
-			      LayoutPrefReserveEdgeSouth|LayoutPrefVisible);
+  if (win_geo->width > win_geo->height)
+    if (win_geo->y < (client->wmref->xdpy_height/2))
+      hints |= LayoutPrefReserveEdgeNorth;
+    else
+      hints |= LayoutPrefReserveEdgeSouth;
+  else
+    if (win_geo->x < (client->wmref->xdpy_width/2))
+      hints |= LayoutPrefReserveEdgeWest;
+    else
+      hints |= LayoutPrefReserveEdgeEast;
+
+  mb_wm_client_set_layout_hints (client, hints);
 
   return 1;
 }

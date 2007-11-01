@@ -193,7 +193,6 @@ mb_wm_root_window_update_supported_props (MBWMRootWindow *win)
     wm->atoms[MBWM_ATOM_NET_CLOSE_WINDOW],
     wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
     wm->atoms[MBWM_ATOM_NET_CLIENT_LIST_STACKING],
-    wm->atoms[MBWM_ATOM_NET_SHOW_DESKTOP],
     wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP],
     wm->atoms[MBWM_ATOM_NET_WM_NAME],
     wm->atoms[MBWM_ATOM_NET_WM_ICON],
@@ -365,7 +364,7 @@ mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
 	}
       return 1;
     }
-  else if (e->message_type == wm->atoms[MBWM_ATOM_NET_SHOW_DESKTOP])
+  else if (e->message_type == wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP])
     {
       mb_wm_handle_show_desktop (wm, e->data.l[0]);
       return 1;

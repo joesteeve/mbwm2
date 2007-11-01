@@ -1,5 +1,16 @@
 2007-11-01  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-panel.c:
+	(mb_wm_client_panel_init):
+	Work out panel attachment from initial window position.
+
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-root-window.c:
+	Removed bogus _NET_SHOW_DESKTOP atom.
+
+2007-11-01  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
         * src/Makefile.am:
         * src/core/Makefile.am:

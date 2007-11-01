@@ -60,7 +60,6 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_WM_ICON",
     "_NET_DESKTOP_GEOMETRY",
     "_NET_WORKAREA",
-    "_NET_SHOW_DESKTOP",
     "_NET_SHOWING_DESKTOP",
     "_NET_DESKTOP_VIEWPORT",
     "_NET_FRAME_EXTENTS",
