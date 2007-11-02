@@ -369,6 +369,14 @@ typedef enum MBWMCompMgrShadowType
   MBWM_COMP_MGR_SHADOW_GAUSSIAN,
 } MBWMCompMgrShadowType;
 
+typedef enum MBWMModality
+{
+  MBWMModalityNormal = 0, /* Handle modality per EWMH */
+  MBWMModalitySystem,     /* Treat all modal dialogs as if system modal */
+  MBWMModalityNone,       /* Ignore modality */
+}MBWMModality;
+
+
 /* mb remote commands */
 #define MB_CMD_SET_THEME   1
 #define MB_CMD_EXIT        2

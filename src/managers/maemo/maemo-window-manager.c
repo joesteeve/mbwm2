@@ -92,6 +92,9 @@ maemo_window_manager_destroy (MBWMObject *this)
 static int
 maemo_window_manager_init (MBWMObject *this, va_list vap)
 {
+  MBWindowManager *wm = MB_WINDOW_MANAGER (this);
+  wm->modality_type = MBWMModalitySystem;
+
   return 1;
 }
 

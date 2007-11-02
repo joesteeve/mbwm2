@@ -1626,7 +1626,20 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 
       if (type == MBWMClientTypeDialog && is_modal)
 	{
-	  lowlight = (/*(wmc_temp->win_modal_blocker) ? 2 : */1);
+	  MBWMModality modality = mb_wm_get_modality_type (wm);
+	  switch (modality)
+	    {
+	    case MBWMModalityNormal:
+	    default:
+	      lowlight = 1;
+	      break;
+	    case MBWMModalitySystem:
+	      lowlight = 2;
+	      break;
+	    case MBWMModalityNone:
+	      lowlight = 0;
+	      break;
+	    }
 	}
 
       if (wmc_temp == wmc_top)

@@ -91,6 +91,8 @@ struct MBWindowManager
 
   /* Temporary stuff, only valid during object initialization */
   const char                  *theme_path;
+
+  MBWMModality                 modality_type;
 };
 
 struct MBWindowManagerClass
@@ -193,5 +195,8 @@ mb_wm_compositing_off (MBWindowManager * wm);
 
 Bool
 mb_wm_compositing_enabled (MBWindowManager * wm);
+
+MBWMModality
+mb_wm_get_modality_type (MBWindowManager * wm);
 
 #endif

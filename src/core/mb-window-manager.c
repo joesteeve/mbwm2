@@ -1509,3 +1509,9 @@ mb_wm_compositing_enabled (MBWindowManager * wm)
 #endif
 }
 
+MBWMModality
+mb_wm_get_modality_type (MBWindowManager * wm)
+{
+  return wm->modality_type;
+}
+
