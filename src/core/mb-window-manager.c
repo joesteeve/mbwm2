@@ -1153,7 +1153,7 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 }
 
 void
-mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
+mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
 {
   MBWindowManagerClass  *wm_klass;
   Bool was_desktop;
@@ -1176,8 +1176,8 @@ mb_wm_activate_client(MBWindowManager * wm, MBWindowManagerClient *c)
     wm->flags &= ~MBWindowManagerFlagDesktop;
 
   mb_wm_client_show (c);
-
   mb_wm_focus_client (wm, c);
+  mb_wm_client_stack (c, 0);
 
   if (is_desktop != was_desktop)
     {

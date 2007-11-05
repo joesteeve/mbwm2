@@ -180,7 +180,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 
    ev_client = mb_wm_managed_client_from_xwindow(wm, xev->xany.window);
 
-   MBWM_DBG("@ XEvent: '%s:%i' for %lx %s%s",
+   MBWM_DBG ("@ XEvent: '%s:%i' for %lx %s%s",
 	    MBWMDEBUGEvents[xev->type],
 	    xev->type,
 	    xev->xany.window,
@@ -197,7 +197,9 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
   switch (xev->type)
     {
     case ClientMessage:
-      if (xev->xany.window == wm->root_win->xwindow)
+      if (xev->xany.window == wm->root_win->xwindow ||
+	  ((XClientMessageEvent *)xev)->message_type ==
+	  wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW])
 	{
 	  mb_wm_root_window_handle_message (wm->root_win,
 					    (XClientMessageEvent *)xev);

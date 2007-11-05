@@ -144,7 +144,8 @@ mb_wm_root_window_init_attributes (MBWMRootWindow * win)
   sattr.event_mask =  SubstructureRedirectMask
                       |SubstructureNotifyMask
                       |StructureNotifyMask
-                      |PropertyChangeMask;
+                      |PropertyChangeMask
+                      |ClientMessage;
 
   mb_wm_util_trap_x_errors();
 
@@ -330,10 +331,11 @@ mb_wm_root_window_handle_message (MBWMRootWindow *win, XClientMessageEvent *e)
 
   if (e->message_type == wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW])
     {
-      Window xwin = e->data.l[2];
+      Window xwin = e->window;
 
-      if ((c = mb_wm_managed_client_from_xwindow(wm, xwin)) != NULL)
-	mb_wm_activate_client(wm, c);
+      if ((c = mb_wm_managed_client_from_xwindow (wm, xwin)) != NULL)
+	mb_wm_activate_client (wm, c);
+
       return 1;
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_CLOSE_WINDOW])

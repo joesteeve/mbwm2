@@ -1,5 +1,24 @@
 2007-11-05  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_activate_client):
+	Added missing mb_wm_client_stack() call.
+
+        * src/core/mb-wm-main-context.c:
+	(mb_wm_main_context_handle_x_event):
+	Fixed handling of client messages to root window so that messages
+	in which XAny.window does not match the root window work.
+
+        * src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_init_attributes):
+	Added missing ClientMessage to event mask for root window.
+
+	(mb_wm_root_window_init_attributes):
+	_NET_ACTIVE_WINDOW ClientMessage: use XAny.window, not data.l[2]
+	to get the window to activate.
+
+2007-11-05  Tomas Frydrych  <tf@o-hand.com>
+
 	* src/core/mb-wm-root-window.c:
 	Fixed build.
 
