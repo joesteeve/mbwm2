@@ -94,8 +94,12 @@ static gboolean
 mb_wm_main_context_gloop_xevent (gpointer userdata)
 {
   MBWMMainContext * ctx = userdata;
+  MBWindowManager * wm  = ctx->wm;
 
   while (mb_wm_main_context_spin_xevent (ctx));
+
+  if (wm->sync_type)
+    mb_wm_sync (wm);
 
   return TRUE;
 }
@@ -125,8 +129,6 @@ mb_wm_main_context_init (MBWMObject *this, va_list vap)
   ctx->wm = wm;
 
 #ifdef USE_GLIB_MAINLOOP
-  ctx->g_loop = g_main_loop_new (NULL, FALSE);
-
   g_idle_add (mb_wm_main_context_gloop_xevent, ctx);
 #endif
 
@@ -437,9 +439,9 @@ mb_wm_main_context_spin_xevent_blocking (MBWMMainContext *ctx)
 void
 mb_wm_main_context_loop (MBWMMainContext *ctx)
 {
+#ifndef USE_GLIB_MAINLOOP
   MBWindowManager * wm = ctx->wm;
 
-#ifndef USE_GLIB_MAINLOOP
   while (True)
     {
       Bool sources;
@@ -463,8 +465,13 @@ mb_wm_main_context_loop (MBWMMainContext *ctx)
       if (wm->sync_type)
 	mb_wm_sync (wm);
     }
+
 #else
-  g_main_loop_run (ctx->g_loop);
+  GMainLoop * loop = g_main_loop_new (NULL, FALSE);
+
+  g_main_loop_run (loop);
+
+  g_main_loop_unref (loop);
 #endif
 }
 

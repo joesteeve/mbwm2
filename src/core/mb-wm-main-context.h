@@ -63,10 +63,6 @@ struct MBWMMainContext
   struct pollfd   *poll_fds;
   int              n_poll_fds;
   Bool             poll_cache_dirty;
-
-#ifdef USE_GLIB_MAINLOOP
-  GMainLoop *      g_loop;
-#endif
 };
 
 struct MBWMMainContextClass
