@@ -61,10 +61,18 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
       printf("### is input ###\n");
       return maemo_input_new (wm, win);
     }
-  else
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU])
     {
+      printf("### is menu ###\n");
+      return mb_wm_client_menu_new(wm, win);
+    }
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NORMAL])
+    {
+      printf("### is application ###\n");
       return mb_wm_client_app_new(wm, win);
     }
+  else
+      printf("### unhandled window type ###\n");
 }
 
 static void

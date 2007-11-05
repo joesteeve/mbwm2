@@ -7,7 +7,8 @@ CLIENT_LIBS =						\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-dialog.a	\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-app.a	\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-input.a	\
-        @MBWM_CLIENT_LIBS@/libmb-wm-client-desktop.a
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-desktop.a	\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-menu.a
 
 
 THEME_LIBS = @MBWM_THEME_LIBS@/libmb-theme.a

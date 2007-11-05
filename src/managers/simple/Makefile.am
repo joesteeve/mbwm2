@@ -7,7 +7,8 @@ CLIENT_LIBS =						\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-dialog.a	\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-app.a	\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-input.a	\
-        @MBWM_CLIENT_LIBS@/libmb-wm-client-desktop.a
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-desktop.a	\
+        @MBWM_CLIENT_LIBS@/libmb-wm-client-menu.a
 
 if ENABLE_COMPOSITE
 COMPMGR_LIBS=@MBWM_COMPMGR_LIBS@/libmatchbox-window-manager-2-compmgr.a

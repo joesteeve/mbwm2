@@ -46,6 +46,11 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
       printf("### is dialog ###\n");
       return mb_wm_client_dialog_new(wm, win);
     }
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU])
+    {
+      printf("### is menu ###\n");
+      return mb_wm_client_menu_new(wm, win);
+    }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP])
     {
       printf("### is desktop ###\n");
@@ -60,10 +65,13 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
       printf("### is input ###\n");
       return mb_wm_client_input_new (wm, win);
     }
-  else
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NORMAL])
     {
+      printf("### is application ###\n");
       return mb_wm_client_app_new(wm, win);
     }
+  else
+      printf("### unhandled window type ###\n");
 }
 
 static MBWMTheme *

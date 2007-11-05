@@ -1,0 +1,145 @@
+#include "mb-wm-client-menu.h"
+
+#include "mb-wm-theme.h"
+
+static Bool
+mb_wm_client_menu_request_geometry (MBWindowManagerClient *client,
+				    MBGeometry            *new_geometry,
+				    MBWMClientReqGeomType  flags);
+
+static void
+mb_wm_client_menu_stack (MBWindowManagerClient *client,
+			 int                    flags);
+
+static void
+mb_wm_client_menu_realize (MBWindowManagerClient *client)
+{
+  /* Just skip creating frame... */
+  return;
+}
+
+static void
+mb_wm_client_menu_class_init (MBWMObjectClass *klass)
+{
+  MBWindowManagerClientClass *client;
+
+  MBWM_MARK();
+
+  client = (MBWindowManagerClientClass *)klass;
+
+  client->client_type  = MBWMClientTypeMenu;
+  client->geometry     = mb_wm_client_menu_request_geometry;
+  client->stack        = mb_wm_client_menu_stack;
+  client->realize      = mb_wm_client_menu_realize;
+
+#ifdef MBWM_WANT_DEBUG
+  klass->klass_name = "MBWMClientMenu";
+#endif
+}
+
+static void
+mb_wm_client_menu_stack (MBWindowManagerClient *client,
+			   int                    flags)
+{
+  MBWM_MARK();
+  mb_wm_stack_move_top(client);
+}
+
+static void
+mb_wm_client_menu_destroy (MBWMObject *this)
+{
+}
+
+static int
+mb_wm_client_menu_init (MBWMObject *this, va_list vap)
+{
+  MBWindowManagerClient *client      = MB_WM_CLIENT (this);
+  MBWMClientMenu        *client_menu = MB_WM_CLIENT_MENU (this);
+  MBWindowManager       *wm          = client->wmref;
+  MBWMClientWindow      *win         = client->window;
+
+  mb_wm_client_set_layout_hints (client,
+				 LayoutPrefPositionFree|LayoutPrefVisible);
+
+  if (win->xwin_transient_for
+      && win->xwin_transient_for != win->xwindow
+      && win->xwin_transient_for != wm->root_win->xwindow)
+    {
+      MBWM_DBG ("Adding to '%lx' transient list",
+		win->xwin_transient_for);
+      mb_wm_client_add_transient
+	(mb_wm_managed_client_from_xwindow (wm,
+					    win->xwin_transient_for),
+	 client);
+      client->stacking_layer = 0;  /* We stack with whatever transient too */
+    }
+  else
+    {
+      MBWM_DBG ("Menu is transient to root");
+      /* Stack with 'always on top' */
+      client->stacking_layer = MBWMStackLayerTopMid;
+    }
+
+  return 1;
+}
+
+int
+mb_wm_client_menu_class_type ()
+{
+  static int type = 0;
+
+  if (UNLIKELY(type == 0))
+    {
+      static MBWMObjectClassInfo info = {
+	sizeof (MBWMClientMenuClass),
+	sizeof (MBWMClientMenu),
+	mb_wm_client_menu_init,
+	mb_wm_client_menu_destroy,
+	mb_wm_client_menu_class_init
+      };
+
+      type = mb_wm_object_register_class (&info, MB_WM_TYPE_CLIENT_BASE, 0);
+    }
+
+  return type;
+}
+
+static Bool
+mb_wm_client_menu_request_geometry (MBWindowManagerClient *client,
+				    MBGeometry            *new_geometry,
+				    MBWMClientReqGeomType  flags)
+{
+  if (client->window->geometry.x != new_geometry->x
+      || client->window->geometry.y != new_geometry->y
+      || client->window->geometry.width  != new_geometry->width
+      || client->window->geometry.height != new_geometry->height)
+    {
+      MBWindowManager *wm = client->wmref;
+
+      client->window->geometry.x      = new_geometry->x;
+      client->window->geometry.y      = new_geometry->y;
+      client->window->geometry.width  = new_geometry->width;
+      client->window->geometry.height = new_geometry->height;
+
+      mb_wm_client_geometry_mark_dirty (client);
+
+      return True; /* Geometry accepted */
+    }
+
+  return True; /* Geometry accepted */
+}
+
+MBWindowManagerClient*
+mb_wm_client_menu_new (MBWindowManager *wm, MBWMClientWindow *win)
+{
+  MBWindowManagerClient *client;
+
+  client
+    = MB_WM_CLIENT(mb_wm_object_new (MB_WM_TYPE_CLIENT_MENU,
+				     MBWMObjectPropWm,           wm,
+				     MBWMObjectPropClientWindow, win,
+				     NULL));
+
+  return client;
+}
+

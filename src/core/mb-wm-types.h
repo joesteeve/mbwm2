@@ -117,6 +117,7 @@ typedef enum MBWMClientType
   MBWMClientTypePanel   = (1 << 2),
   MBWMClientTypeDesktop = (1 << 3),
   MBWMClientTypeInput   = (1 << 4),
+  MBWMClientTypeMenu    = (1 << 5),
 
   MBWMClientTypeLast    = MBWMClientTypeInput,
 } MBWMClientType;

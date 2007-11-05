@@ -1,5 +1,21 @@
 2007-11-05  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/Makefile.am:
+        * src/client-types/mb-wm-client-menu.h:
+        * src/client-types/mb-wm-client-menu.c:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-types.h:
+        * src/managers/maemo/Makefile.am:
+        * src/managers/maemo/maemo-window-manager.c:
+        * src/managers/simple/Makefile.am:
+	Added MBWMClientMenu.
+
+        * src/core/mb-wm-stack.c:
+	(mb_wm_stack_dump):
+	Added client type to debug info.
+
+2007-11-05  Tomas Frydrych  <tf@o-hand.com>
+
         * src/theme-engines/mb-wm-theme-simple.c:
 	Rename left over MBWMXmlClr to MBWMColor.
 
