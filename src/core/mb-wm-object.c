@@ -230,7 +230,7 @@ mb_wm_object_init_recurse (MBWMObject *obj, MBWMObjectClass *parent,
 
   if (parent->init)
     if (!parent->init (obj, vap))
-      return;
+      return 0;
 
   va_end (vap2);
 

@@ -38,4 +38,7 @@ struct MBWMThemeSimple
   MBWMTheme        parent;
 };
 
+int
+mb_wm_theme_simple_class_type ();
+
 #endif

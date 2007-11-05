@@ -38,6 +38,9 @@ typedef struct MBWMClientBaseClass
 }
 MBWMClientBaseClass;
 
+int
+mb_wm_client_base_class_type ();
+
 void base_foo(void);
 
 #endif

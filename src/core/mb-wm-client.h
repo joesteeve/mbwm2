@@ -186,6 +186,9 @@ struct MBWindowManagerClient
          ( ((c)->frame_geometry.y + (c)->frame_geometry.height) \
           - ((c)->window->geometry.y + (c)->window->geometry.height) )
 
+int
+mb_wm_client_class_type ();
+
 MBWMClientWindow*
 mb_wm_client_window_new (MBWindowManager *wm, Window window);
 
@@ -224,6 +227,9 @@ mb_wm_client_request_geometry (MBWindowManagerClient *client,
 
 Bool
 mb_wm_client_needs_geometry_sync (MBWindowManagerClient *client);
+
+Bool
+mb_wm_client_needs_visibility_sync (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_needs_fullscreen_sync (MBWindowManagerClient *client);
@@ -270,6 +276,9 @@ mb_wm_client_geometry_mark_dirty (MBWindowManagerClient *client);
 
 void
 mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client);
+
+void
+mb_wm_client_decor_mark_dirty (MBWindowManagerClient *client);
 
 void
 mb_wm_client_add_transient (MBWindowManagerClient *client,

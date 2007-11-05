@@ -102,6 +102,9 @@ struct MBWMTheme
   MBWMCompMgrShadowType  shadow_type;
 };
 
+int
+mb_wm_theme_class_type ();
+
 MBWMTheme *
 mb_wm_theme_new (MBWindowManager * wm,  const char * theme_path);
 

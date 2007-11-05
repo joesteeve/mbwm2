@@ -38,4 +38,7 @@ struct MBWMThemeCairo
   MBWMTheme        parent;
 };
 
+int
+mb_wm_theme_cairo_class_type ();
+
 #endif

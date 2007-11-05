@@ -1,3 +1,33 @@
+2007-11-05  Tomas Frydrych  <tf@o-hand.com>
+
+        * configure.ac:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-main-context.h:
+        * src/core/mb-wm-types.h:
+        * src/core/mb-wm-client.c:
+	--enable-glib-main-loop: glib main loop support.
+
+        * src/core/mb-wm-util.h:
+	Fixed handling of inline keyword when using glib.
+
+        * src/theme-engines/mb-wm-theme-cairo.h:
+        * src/theme-engines/mb-wm-theme-simple.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client-base.h:
+        * src/core/mb-wm-client.h:
+        * src/core/mb-wm-decor.c:
+	Added missing prototypes and includes.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_handle_config_request):
+	(mb_wm_handle_map_request):
+        * src/core/mb-wm-object.c:
+	(mb_wm_object_init_recurse:
+
+	Fixed missing return value.
+
 2007-11-02  Tomas Frydrych  <tf@o-hand.com>
 
         * src/comp-mgr/mb-wm-comp-mgr.c:

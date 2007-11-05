@@ -19,6 +19,7 @@
  */
 
 #include "mb-wm.h"
+
 #include <X11/Xmd.h>
 
 #ifdef ENABLE_COMPOSITE

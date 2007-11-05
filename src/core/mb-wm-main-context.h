@@ -46,8 +46,10 @@ typedef struct MBWMEventFuncs
   MBWMList *button_release;
   MBWMList *motion_notify;
 
+#ifndef USE_GLIB_MAINLOOP
   MBWMList *timeout;
   MBWMList *fd_watch;
+#endif
 }
 MBWMEventFuncs;
 
@@ -61,6 +63,10 @@ struct MBWMMainContext
   struct pollfd   *poll_fds;
   int              n_poll_fds;
   Bool             poll_cache_dirty;
+
+#ifdef USE_GLIB_MAINLOOP
+  GMainLoop *      g_loop;
+#endif
 };
 
 struct MBWMMainContextClass
@@ -87,19 +93,28 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
 					   unsigned long    id);
 
 unsigned long
-mb_wm_context_timeout_handler_add (MBWMMainContext            *ctx,
-				   int                         ms,
-				   MBWindowManagerTimeOutFunc  func,
-				   void                       *userdata);
+mb_wm_main_context_timeout_handler_add (MBWMMainContext            *ctx,
+					int                         ms,
+					MBWindowManagerTimeOutFunc  func,
+					void                       *userdata);
 
 void
 mb_wm_main_context_timeout_handler_remove (MBWMMainContext *ctx,
 					   unsigned long    id);
 
+MBWMIOChannel *
+mb_wm_main_context_io_channel_new (int fd);
+
+void
+mb_wm_main_context_io_channel_destroy (MBWMIOChannel * channel);
+
+int
+mb_wm_main_context_io_channel_get_fd (MBWMIOChannel * channel);
+
 unsigned long
 mb_wm_main_context_fd_watch_add (MBWMMainContext           *ctx,
-				 int                        fd,
-				 int                        events,
+				 MBWMIOChannel             *channel,
+				 MBWMIOCondition            events,
 				 MBWindowManagerFdWatchFunc func,
 				 void                      *userdata);
 

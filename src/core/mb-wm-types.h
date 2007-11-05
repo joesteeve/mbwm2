@@ -21,6 +21,12 @@
 #ifndef _HAVE_MB_WM_TYPES_H
 #define _HAVE_MB_WM_TYPES_H
 
+#include <config.h>
+
+#ifdef USE_GLIB_MAINLOOP
+#include <glib.h>
+#endif
+
 typedef struct MBWMFuncInfo
 {
   void *func;
@@ -310,9 +316,17 @@ typedef Bool (*MBWindowManagerMotionNotifyFunc)
 typedef Bool (*MBWindowManagerTimeOutFunc)
      (void                    *userdata);
 
+#ifdef USE_GLIB_MAINLOOP
+typedef GIOChannel   MBWMIOChannel;
+typedef GIOCondition MBWMIOCondition;
+#else
+typedef int MBWMIOChannel;
+typedef int MBWMIOCondition;
+#endif
+
 typedef Bool (*MBWindowManagerFdWatchFunc)
-     (int                      fd,
-      int                      events,
+     (MBWMIOChannel           *channel,
+      MBWMIOCondition          events,
       void                    *userdata);
 
 typedef struct MBWMXEventFuncInfo

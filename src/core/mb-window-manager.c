@@ -389,7 +389,7 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
        * per ICCCM.
       */
       mb_wm_client_synthetic_config_event_queue (client);
-      return;
+      return True;
     }
 
   if (mb_wm_client_request_geometry (client,
@@ -432,7 +432,7 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
   if ((client = mb_wm_managed_client_from_xwindow(wm, xev->window)))
     {
       mb_wm_activate_client (wm, client);
-      return;
+      return True;
     }
 
   if (!wm_class->client_new)

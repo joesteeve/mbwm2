@@ -19,6 +19,10 @@
  */
 
 #include "mb-wm.h"
+#include "mb-wm-theme.h"
+
+#include <unistd.h>
+#include <signal.h>
 
 struct MBWindowManagerClientPriv
 {
@@ -626,7 +630,7 @@ mb_wm_client_ping_timeout_cb (void * userdata)
   MBWindowManagerClient * client = userdata;
 
   mb_wm_client_shutdown (client);
-  return True;
+  return False;
 }
 
 static void

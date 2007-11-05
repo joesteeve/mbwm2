@@ -5,7 +5,9 @@
 
 /* See http://rlove.org/log/2005102601 */
 #if __GNUC__ >= 3
+#ifndef USE_GLIB_MAINLOOP
 # define inline __attribute__ ((always_inline))
+#endif
 # define __pure__attribute__ ((pure))
 # define __const__attribute__ ((const))
 # define __noreturn__attribute__ ((noreturn))

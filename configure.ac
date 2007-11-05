@@ -36,6 +36,10 @@ AC_ARG_ENABLE(compositing-manager,
   [  --enable-compositing-manager      Enable compositing manager],
   [comp_mgr=$enableval], [comp_mgr=no])
 
+AC_ARG_ENABLE(glib-main-loop,
+  [  --enable-glib-main-loop      Enable use of glib main loop],
+  [gmloop=$enableval], [gmloop=no])
+
 if test "x$use_cairo" = "xyes"; then
   needed_pkgs="$needed_pkgs pangocairo "
 else
@@ -53,6 +57,11 @@ fi
 if test "x$want_debug" = "xyes"; then
   MBWM_DEBUG_CFLAGS="-O0 $MBWM_DEBUG_CFLAGS -DMBWM_WANT_DEBUG"
   MBWM_DEBUG_LDFLAGS="$MBWM_DEBUG_LDFLAGS -rdynamic"
+fi
+
+if test "x$gmloop" = "xyes"; then
+  needed_pkgs="$needed_pkgs glib-2.0 "
+  AC_DEFINE(USE_GLIB_MAINLOOP, 1, [Use glib main loop])
 fi
 
 PKG_CHECK_MODULES(MBWM, $needed_pkgs)
@@ -167,5 +176,7 @@ echo "
 
 	Compositing manager :   ${comp_mgr}
 
+    Miscel:
+        Glib main loop      :   ${gmloop}
 	Debugging output    :   ${want_debug}
 "

@@ -19,6 +19,7 @@
  */
 
 #include "mb-wm.h"
+#include "mb-wm-theme.h"
 
 static void
 mb_wm_decor_destroy (MBWMObject *obj);
