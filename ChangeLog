@@ -1,5 +1,10 @@
 2007-11-05  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/theme-engines/mb-wm-theme-simple.c:
+	Rename left over MBWMXmlClr to MBWMColor.
+
+2007-11-05  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-main-context.c:
         * src/core/mb-wm-main-context.h:
 	(mb_wm_main_context_gloop_xevent):

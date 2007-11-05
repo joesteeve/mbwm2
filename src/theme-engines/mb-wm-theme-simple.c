@@ -426,7 +426,7 @@ mb_wm_theme_simple_get_decor_dimensions (MBWMTheme             *theme,
 }
 
 static unsigned long
-pixel_from_clr (Display * dpy, int screen, MBWMXmlClr * clr)
+pixel_from_clr (Display * dpy, int screen, MBWMColor * clr)
 {
   XColor xcol;
 
@@ -676,7 +676,7 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   else
     {
       /* FIXME -- think of a better way of doing this */
-      MBWMXmlClr clr;
+      MBWMColor clr;
       clr.r = clr_bg.r + 0.2;
       clr.g = clr_bg.g + 0.2;
       clr.b = clr_bg.b + 0.2;
