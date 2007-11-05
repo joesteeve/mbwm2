@@ -1,5 +1,11 @@
 2007-11-05  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_handle_message):
+	Fixed handling of _NET_ACTIVE_WINDOW client message.
+
+2007-11-05  Tomas Frydrych  <tf@o-hand.com>
+
         * configure.ac:
         * src/core/mb-wm-main-context.c:
         * src/core/mb-wm-main-context.h:

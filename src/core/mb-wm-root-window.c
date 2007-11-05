@@ -323,14 +323,17 @@ mb_wm_root_window_init_properties (MBWMRootWindow * win)
 }
 
 int
-mb_wm_root_window_handle_message(MBWMRootWindow *win, XClientMessageEvent *e)
+mb_wm_root_window_handle_message (MBWMRootWindow *win, XClientMessageEvent *e)
 {
   MBWindowManager       *wm = win->wm;
   MBWindowManagerClient *c = NULL;
 
   if (e->message_type == wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW])
     {
-      mb_wm_activate_client(wm, c);
+      Window xwin = xev.data.l[2];
+
+      if ((c = mb_wm_managed_client_from_xwindow(wm, xwin)) != NULL)
+	mb_wm_activate_client(wm, c);
       return 1;
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_CLOSE_WINDOW])
