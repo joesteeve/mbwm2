@@ -1,3 +1,8 @@
+2007-11-06  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/managers/maemo/maemo-toolbar.c:
+	Fixed handling of geometry for maemo panels.
+
 2007-11-05  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/Makefile.am:

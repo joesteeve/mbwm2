@@ -20,6 +20,11 @@
 
 #include "maemo-toolbar.h"
 
+static Bool
+maemo_toolbar_request_geometry (MBWindowManagerClient *client,
+				MBGeometry            *new_geometry,
+				MBWMClientReqGeomType  flags);
+
 static void
 maemo_toolbar_class_init (MBWMObjectClass *klass)
 {
@@ -28,6 +33,8 @@ maemo_toolbar_class_init (MBWMObjectClass *klass)
   client = (MBWindowManagerClientClass *)klass;
 
   client->client_type = MBWMClientTypePanel;
+
+  client->geometry = maemo_toolbar_request_geometry;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MaemoToolbar";
@@ -40,27 +47,63 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
   MBWindowManagerClient * client = MB_WM_CLIENT (this);
   MBWindowManager       * wm = client->wmref;
   MBGeometry              geom;
+  MBGeometry            * w_geom = &client->window->geometry;
   MBWMClientWindow      * win = client->window;
+  MBWMClientLayoutHints   hints;
+  int                     x, y, w, h;
 
   client->stacking_layer = MBWMStackLayerTop;
   client->want_focus = 0;
 
-  mb_wm_client_set_layout_hints (client,
-				 LayoutPrefReserveEdgeNorth |
-				 LayoutPrefVisible          |
-				 LayoutPrefFixedX           |
-				 LayoutPrefOverlaps);
+  hints = mb_wm_client_get_layout_hints (client);
 
+  /* FIXME -- is there a better way to differentiate between the
+   * toolbar and the TN ?
+   *
+   * (Matchbox panel attachment is normally worked out on the basis of the
+   * original window position, but both the TN and the toolbar seem to
+   * have orgin at 0,0, which in MB means NorthEdge panel.)
+   */
+  if (w_geom->width > 80)
+    hints |= LayoutPrefReserveEdgeNorth;
+  else
+    hints |= LayoutPrefReserveEdgeWest;
+
+  if (hints & LayoutPrefReserveEdgeNorth)
+    {
+      hints |= (LayoutPrefFixedX | LayoutPrefOverlaps);
+    }
+
+  mb_wm_client_set_layout_hints (client, hints);
+
+  if (hints & LayoutPrefReserveEdgeNorth)
+    {
+      x = 500;
+      y = 0;
+      w = 300;
+      h = 40;
+    }
 
   if (!wm->theme)
-    return 1;
+    {
+      if (hints & LayoutPrefReserveEdgeNorth)
+	{
+	  win->geometry.x = x;
+	  win->geometry.y = y;
+	  win->geometry.width  = w;
+	  win->geometry.height = h;
+
+	  XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
+	}
+
+      return 1;
+    }
 
   if (mb_wm_theme_get_client_geometry (wm->theme, client, &geom))
     {
       /* The theme prescribes geometry for the panel, resize the
        * window accordingly
        */
-      int x, y, w, h;
       int g_x, g_y;
       unsigned int g_w, g_h, g_bw, g_d;
 
@@ -99,8 +142,50 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
 
       XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
     }
+  else if (hints & LayoutPrefReserveEdgeNorth)
+    {
+      /* Fallback values for the status bar */
+      win->geometry.x = x;
+      win->geometry.y = y;
+      win->geometry.width  = w;
+      win->geometry.height = h;
+
+      XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
+    }
 
   return 1;
+}
+
+static Bool
+maemo_toolbar_request_geometry (MBWindowManagerClient *client,
+				MBGeometry            *new_geometry,
+				MBWMClientReqGeomType  flags)
+{
+  /*
+   * Refuse to resize the panels
+   */
+#if 0
+  if (client->window->geometry.x != new_geometry->x
+      || client->window->geometry.y != new_geometry->y
+      || client->window->geometry.width  != new_geometry->width
+      || client->window->geometry.height != new_geometry->height)
+    {
+      printf ("======== reguested geometry %d, %d; %d x %d\n",
+	      new_geometry->x,
+	      new_geometry->y,
+	      new_geometry->width,
+	      new_geometry->height);
+
+      client->window->geometry.x = new_geometry->x;
+      client->window->geometry.y = new_geometry->y;
+      client->window->geometry.width  = new_geometry->width;
+      client->window->geometry.height = new_geometry->height;
+
+      mb_wm_client_geometry_mark_dirty (client);
+    }
+#endif
+
+  return True;
 }
 
 static void
