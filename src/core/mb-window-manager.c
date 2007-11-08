@@ -38,22 +38,23 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 {
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     {
-      printf("### is panel ###\n");
+      MBWM_DBG ("### is panel ###\n");
       return mb_wm_client_panel_new(wm, win);
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DIALOG])
     {
-      printf("### is dialog ###\n");
+      MBWM_DBG ("### is dialog ###\n");
       return mb_wm_client_dialog_new(wm, win);
     }
-  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU])
+  else if (win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU] ||
+	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_POPUP_MENU])
     {
-      printf("### is menu ###\n");
+      MBWM_DBG ("### is menu ###\n");
       return mb_wm_client_menu_new(wm, win);
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP])
     {
-      printf("### is desktop ###\n");
+      MBWM_DBG ("### is desktop ###\n");
       /* Only one desktop allowed */
       if (wm->desktop)
 	return NULL;
@@ -62,16 +63,24 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_TOOLBAR])
     {
-      printf("### is input ###\n");
+      MBWM_DBG ("### is input ###\n");
       return mb_wm_client_input_new (wm, win);
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NORMAL])
     {
-      printf("### is application ###\n");
+      MBWM_DBG ("### is application ###\n");
       return mb_wm_client_app_new(wm, win);
     }
   else
-      printf("### unhandled window type ###\n");
+    {
+#ifdef MBWM_WANT_DEBUG
+      char * name = XGetAtomName (wm->xdpy, win->net_type);
+      printf("### unhandled window type %s ###\n", name);
+      XFree (name);
+#endif
+    }
+
+  return NULL;
 }
 
 static MBWMTheme *
@@ -478,19 +487,8 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list)
   if (!wm->stack_n_clients)
     return;
 
-  if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
-    {
-      if (wm->desktop->xwin_frame)
-	win_list[i++] = wm->desktop->xwin_frame;
-      else
-	win_list[i++] = MB_WM_CLIENT_XWIN(wm->desktop);
-    }
-
   mb_wm_stack_enumerate_reverse(wm, client)
   {
-    if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop == client)
-      continue;
-
     if (client->xwin_frame)
       win_list[i++] = client->xwin_frame;
     else
@@ -541,6 +539,9 @@ mb_wm_sync (MBWindowManager *wm)
 
   /*
    * Now do updates per individual client - maps, paints etc, main work here
+   *
+   * If an item in the stack needs visibilty sync, then we have to force it
+   * for all items that are above it on the stack.
    */
   mb_wm_stack_enumerate(wm, client)
     if (mb_wm_client_needs_sync (client))

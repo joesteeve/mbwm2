@@ -57,11 +57,12 @@ mb_wm_stack_dump (MBWindowManager *wm)
 	  strcpy(&prefix[i*2], " +--");
 	}
 
-      fprintf(stderr, "%s XID: %lx NAME: %s, type %d\n",
+      fprintf(stderr, "%s XID: %lx NAME: %s, type %d, layer %d\n",
 	      prefix,
 	      MB_WM_CLIENT_XWIN(client),
 	      client->window->name ? client->window->name : "unknown",
-	      MB_WM_CLIENT_CLIENT_TYPE (client));
+	      MB_WM_CLIENT_CLIENT_TYPE (client),
+	      client->stacking_layer);
     }
 
   fprintf(stderr, "======================\n\n");

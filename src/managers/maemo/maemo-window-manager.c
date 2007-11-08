@@ -61,7 +61,8 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
       printf("### is input ###\n");
       return maemo_input_new (wm, win);
     }
-  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU])
+  else if (win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU] ||
+	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_POPUP_MENU])
     {
       printf("### is menu ###\n");
       return mb_wm_client_menu_new(wm, win);
@@ -72,7 +73,15 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
       return mb_wm_client_app_new(wm, win);
     }
   else
-      printf("### unhandled window type ###\n");
+    {
+#if 1
+      char * name = XGetAtomName (wm->xdpy, win->net_type);
+      printf("### unhandled window type %s ###\n", name);
+      XFree (name);
+#endif
+    }
+
+  return NULL;
 }
 
 static void

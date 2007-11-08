@@ -52,7 +52,7 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
   MBWMClientLayoutHints   hints;
   int                     x, y, w, h;
 
-  client->stacking_layer = MBWMStackLayerTop;
+  client->stacking_layer = MBWMStackLayerTopMid;
   client->want_focus = 0;
 
   hints = mb_wm_client_get_layout_hints (client);
@@ -78,10 +78,10 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
 
   if (hints & LayoutPrefReserveEdgeNorth)
     {
-      x = 500;
+      x = 438;
       y = 0;
-      w = 300;
-      h = 40;
+      w = 280;
+      h = 50;
     }
 
   if (!wm->theme)

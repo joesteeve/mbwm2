@@ -1,3 +1,32 @@
+2007-11-08  Tomas Frydrych  <tf@o-hand.com>
+
+	* src/core/mb-wm-atoms.c:
+	* src/core/mb-wm-types.h:
+	Added _NET_WINDOW_TYPE_POPUP_MENU.
+
+	* src/core/mb-window-manager.c:
+	(mb_wm_client_new_func):
+	Fixed missing default return statement; substituted dbg macros for
+	printf.
+
+	(stack_get_window_list):
+	Removed special casing of desktop client, which broke window
+	restacking.
+
+	* src/core/mb-wm-stack.c:
+	(mb_wm_stack_dump):
+	Added stack_layer to the dbg output.
+
+	* src/managers/maemo/maemo-toolbar.c:
+	(maemo_toolbar_init):
+	Made fallback values for status bar geometry to match roughly the
+	N800 theme.
+
+	* src/managers/maemo/maemo-window-manager.c
+	(maemo_window_manager_client_new_func):
+	Fixed missing default return value; print window type for
+	unhandled types for debugging.
+
 2007-11-06  Tomas Frydrych  <tf@o-hand.com>
 
         * src/managers/maemo/maemo-toolbar.c:
