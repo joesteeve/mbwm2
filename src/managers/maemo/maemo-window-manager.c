@@ -67,7 +67,8 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
       return maemo_input_new (wm, win);
     }
   else if (win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU] ||
-	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_POPUP_MENU])
+	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_POPUP_MENU] ||
+	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DROPDOWN_MENU])
     {
       printf("### is menu ###\n");
       return mb_wm_client_menu_new(wm, win);
