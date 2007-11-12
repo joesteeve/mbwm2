@@ -1,3 +1,5 @@
+SUBDIRS = theme
+
 INCLUDES = 					       \
 	@MBWM_INCS@				       \
 	@MBWM_CFLAGS@

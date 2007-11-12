@@ -147,6 +147,7 @@ src/comp-mgr/Makefile
 src/managers/Makefile
 src/managers/simple/Makefile
 src/managers/maemo/Makefile
+src/managers/maemo/theme/Makefile
 src/theme-engines/Makefile
 data/Makefile
 data/themes/Makefile

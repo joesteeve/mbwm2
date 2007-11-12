@@ -329,15 +329,182 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  mb_wm_decor_set_theme_data (decor, data, decordata_free);
 	}
 
-      for (x = 0; x < decor->geom.width; x += d->width)
-	for (y = 0; y < decor->geom.height; y += d->height)
-	  {
-	    XRenderComposite(xdpy, PictOpSrc,
-			     p_theme->xpic,
-			     None,
-			     XftDrawPicture (data->xftdraw),
-			     d->x, d->y, 0, 0, x, y, d->width, d->height);
-	  }
+      /*
+       * Since we want to support things like rounded corners, but still
+       * have the decor resizable, we need to paint it in stages
+       *
+       * We assume that the decor image is exact in it's major axis,
+       * i.e., North and South decors provide image of the exactly correct
+       * height, and West and East of width.
+       */
+      if (decor->type == MBWMDecorTypeNorth ||
+	  decor->type == MBWMDecorTypeSouth)
+	{
+	  if (decor->geom.width < d->width)
+	    {
+	      /* The decor is smaller than the template, cut bit from the
+	       * midle
+	       */
+	      int width1 = decor->geom.width / 2;
+	      int width2 = decor->geom.width - width1;
+	      int x2     = d->x + width1;
+
+	      printf ("drawing small decor\n");
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x, d->y, 0, 0, 0, 0,
+			       width1, d->height);
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       x2 , d->y, 0, 0,
+			       width1, 0,
+			       width2, d->height);
+	    }
+	  else if (decor->geom.width == d->width)
+	    {
+	      /* Exact match */
+	      printf ("drawing exact decor\n");
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x, d->y, 0, 0,
+			       0, 0, d->width, d->height);
+	    }
+	  else
+	    {
+	      /* The decor is bigger than the template, draw extra bit from
+	       * the middle
+	       */
+	      int width1 = d->width / 2;
+	      int width3 = d->width - width1;
+	      int width2 = decor->geom.width - (width1 + width3);
+	      int x3     = d->x + width1;
+	      int strip  = d->width < 30 ? d->width / 4 : 10;
+	      int width2i= d->width - 2 * strip;
+	      int x2i    = d->x + strip;
+
+	      printf ("drawing big decor, d->x %d, d->y %d\n",
+		      d->x, d->y);
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x, d->y, 0, 0,
+			       0, 0,
+			       width1, d->height);
+
+	      for (x = width1; x < width1 + width2; x += width2i)
+		XRenderComposite(xdpy, PictOpSrc,
+				 p_theme->xpic,
+				 None,
+				 XftDrawPicture (data->xftdraw),
+				 x2i, d->y, 0, 0,
+				 x, 0,
+				 (width1 + width2) - x >= width2i ?
+				 width2i : width1 + width2 - x,
+				 d->height);
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       x3 , d->y, 0, 0,
+			       width1 + width2, 0,
+			       width3, d->height);
+	    }
+	}
+      else
+	{
+	  if (decor->geom.height < d->height)
+	    {
+	      /* The decor is smaller than the template, cut bit from the
+	       * midle
+	       */
+	      int height1 = decor->geom.height / 2;
+	      int height2 = decor->geom.height - height1;
+	      int y2      = d->y + height1;
+
+	      printf ("drawing small vertical decor\n");
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x, d->y, 0, 0,
+			       0, 0,
+			       d->width, height1);
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x , y2, 0, 0,
+			       0, height1,
+			       d->width, height2);
+	    }
+	  else if (decor->geom.height == d->height)
+	    {
+	      /* Exact match */
+	      printf ("drawing exact decor\n");
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x, d->y, 0, 0,
+			       0, 0,
+			       d->width, d->height);
+	    }
+	  else
+	    {
+	      /* The decor is bigger than the template, draw extra bit from
+	       * the middle
+	       */
+	      int height1 = d->height / 2;
+	      int height3 = d->height - height1;
+	      int height2 = decor->geom.height - (height1 + height3);
+	      int y3     = d->y + height1;
+	      int strip  = d->height < 30 ? d->height / 4 : 10;
+	      int height2i= d->height - 2 * strip;
+	      int y2i    = d->y + strip;
+
+	      printf ("drawing big vertical decor h1 %d, h2 %d, h2i %d\n",
+		      height1, height2, height2i);
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x, d->y, 0, 0, 0, 0,
+			       d->width, height1);
+
+	      for (y = height1; y < height1 + height2; y += height2i)
+		XRenderComposite(xdpy, PictOpSrc,
+				 p_theme->xpic,
+				 None,
+				 XftDrawPicture (data->xftdraw),
+				 d->x, y2i, 0, 0, 0, y,
+				 d->width,
+				 (height1 + height2) - y >= height2i ?
+				 height2i : height1 + height2 - y);
+
+	      XRenderComposite(xdpy, PictOpSrc,
+			       p_theme->xpic,
+			       None,
+			       XftDrawPicture (data->xftdraw),
+			       d->x , y3, 0, 0, 0, height1 + height2,
+			       d->width, height3);
+	    }
+	}
 
       title = mb_wm_client_get_name (client);
 
@@ -492,10 +659,10 @@ mb_wm_theme_png_get_button_position (MBWMTheme             *theme,
       if (b)
 	{
 	  if (x)
-	    *x = b->x - d->x - client->frame_geometry.x;
+	    *x = b->x - d->x;
 
 	  if (y)
-	    *y = b->y - d->y - client->frame_geometry.y;
+	    *y = b->y - d->y;
 
 	  return;
 	}

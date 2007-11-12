@@ -1,3 +1,21 @@
+2007-11-12  Tomas Frydrych  <tf@o-hand.com>
+
+        * configure.ac:
+        * src/managers/maemo/Makefile.am:
+        * src/managers/maemo/theme/background.png:
+        * src/managers/maemo/theme/theme.xml:
+	Added a simple mockup of maemo png-based theme to facilitate testing.
+
+        * src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_init):
+	Correctly set up initial dialog geomtry.
+
+        * src/managers/maemo/maemo-toolbar.c:
+	Tweaked fallback geometry values.
+
+        * src/theme-engines/mb-wm-theme-png.c:
+	Fixed drawing decors that require scaling.
+
 2007-11-08  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-atoms.c:

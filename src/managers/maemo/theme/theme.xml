@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<theme name="Mockup Maemo theme" author="Tomas Frydrych, tf@o-hand.com"
+       desc="" version="1.0" engine_version="2" engine_type="png">
+<img src="background.png" />
+<client type="app">
+ <decor type="north" clr-fg="#ffffff" x="0" y="0" width="720"
+height="60" font-family="Sans" font-size="20" clr-frame="#000000">
+  <button type="close"    width="26" height="26"  x="680" y="17"/>
+  <button type="minimize" width="26" height="26"  x="650" y="17"/>
+  <button type="menu"     width="20" height="20"  x="9"   y="17"/>
+ </decor>
+</client>
+
+<client type="dialog">
+ <decor type="north" x="4"  y="66"  width="207" height="43"  />
+ <decor type="south" x="4"  y="119" width="207" height="4"   />
+ <decor type="west"  x="4"  y="109" width="4"   height="13" />
+ <decor type="east"  x="207" y="109" width="4"  height="13" />
+</client>
+
+</theme>

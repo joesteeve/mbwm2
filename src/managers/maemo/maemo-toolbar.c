@@ -78,10 +78,14 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
 
   if (hints & LayoutPrefReserveEdgeNorth)
     {
-      x = 438;
+      x = 425;
       y = 0;
       w = 280;
       h = 50;
+    }
+  else
+    {
+      w = 80;
     }
 
   if (!wm->theme)
@@ -93,6 +97,11 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
 	  win->geometry.width  = w;
 	  win->geometry.height = h;
 
+	  XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
+	}
+      else
+	{
+	  win->geometry.width  = w;
 	  XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
 	}
 
@@ -150,6 +159,11 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
       win->geometry.width  = w;
       win->geometry.height = h;
 
+      XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
+    }
+  else
+    {
+      win->geometry.width  = w;
       XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
     }
 

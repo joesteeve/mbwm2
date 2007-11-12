@@ -89,6 +89,9 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
   MBWMClientDialog      *client_dialog = MB_WM_CLIENT_DIALOG (this);
   MBWindowManager       *wm = client->wmref;
   MBWMClientWindow      *win = client->window;
+  MBWMList              *l;
+  MBGeometry             geom;
+  int                    n, s, w, e;
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);
@@ -117,7 +120,9 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
       client->stacking_layer = MBWMStackLayerTopMid;
     }
 
-  /* center if window sets 0,0 */
+  /* center if window sets 0,0
+   * FIXME needs to work on frame, not window.
+   */
   if (client->window->geometry.x == 0 && client->window->geometry.y == 0)
     {
         MBGeometry  avail_geom;
@@ -129,6 +134,26 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 	client->window->geometry.y
 	  = (avail_geom.height - client->window->geometry.height) / 2;
     }
+
+  mb_wm_client_geometry_mark_dirty (client);
+  mb_wm_client_visibility_mark_dirty (client);
+
+  if (!wm->theme)
+    return 1;
+
+  /*
+   * Since dialogs are free-sized, they do not necessarily get a request for
+   * geometry from the layout manager -- we have to set the initial geometry
+   * here
+   */
+  mb_wm_theme_get_decor_dimensions (wm->theme, client, &n, &s, &w, &e);
+
+  geom.x      = client->window->geometry.x;
+  geom.y      = client->window->geometry.y;
+  geom.width  = client->window->geometry.width + w + e;
+  geom.height = client->window->geometry.height + n + s;
+
+  mb_wm_client_dialog_request_geometry (client, &geom, 0);
 
   return 1;
 }
@@ -159,10 +184,10 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 				      MBGeometry            *new_geometry,
 				      MBWMClientReqGeomType  flags)
 {
-  if (client->window->geometry.x != new_geometry->x
-      || client->window->geometry.y != new_geometry->y
-      || client->window->geometry.width  != new_geometry->width
-      || client->window->geometry.height != new_geometry->height)
+  if (client->frame_geometry.x      != new_geometry->x ||
+      client->frame_geometry.y      != new_geometry->y ||
+      client->frame_geometry.width  != new_geometry->width ||
+      client->frame_geometry.height != new_geometry->height)
     {
       int north, south, west, east;
       MBWindowManager *wm = client->wmref;
