@@ -115,7 +115,8 @@ mb_wm_client_input_request_geometry (MBWindowManagerClient *client,
 				     MBGeometry            *new_geometry,
 				     MBWMClientReqGeomType  flags)
 {
-  if (flags & MBWMClientReqGeomIsViaLayoutManager)
+  if (flags &
+      (MBWMClientReqGeomIsViaLayoutManager|MBWMClientReqGeomIsViaConfigureReq))
     {
       client->frame_geometry.x      = new_geometry->x;
       client->frame_geometry.y      = new_geometry->y;
@@ -160,7 +161,15 @@ mb_wm_client_input_detransitise (MBWindowManagerClient *client)
 {
   MBWMClientInput * input = MB_WM_CLIENT_INPUT (client);
 
-  if (!client->transient_for)
+  /*
+   * If the IM is not transient, or it is transient for something other
+   * than an application or dialog, just return from here.
+   *
+   * If it is transient for an app or dialog, adjust the geometry accordingly.
+   */
+  if (!client->transient_for ||
+      MB_WM_CLIENT_CLIENT_TYPE (client->transient_for) !=
+      (MBWMClientTypeApp | MBWMClientTypeDialog))
     return;
 
   if (input->transient_geom.width && input->transient_geom.height)

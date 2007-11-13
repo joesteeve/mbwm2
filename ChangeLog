@@ -1,5 +1,28 @@
 2007-11-13  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-input.c:
+	(mb_wm_client_input_detransitise):
+	Tweaked to avoid unnecessary geometry requests.
+
+	(mb_wm_client_input_request_geometry):
+	Respect geometry request from ConfigureRequests.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_set_layout):
+	OR rather than set the sync_type.
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_destroy):
+	Make sure that no transient children hold a dangling pointer to
+	the destroyed client.
+	
+        * src/core/mb-wm-layout.c:
+	(mb_wm_layout_input):
+	Fixed available geometry calculations for Input clients reserving
+	South edge.
+
+2007-11-13  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-decor.c:
 	(mb_wm_decor_calc_geometry):
 	Fixed caculation of decor geometry resulting in S and E decors

@@ -377,12 +377,31 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
     if (client->layout_hints ==
 	(LayoutPrefReserveSouth|LayoutPrefVisible))
       {
+	int y;
+
 	mb_wm_client_get_coverage (client, &coverage);
 
-	/* set x,y to avail and max width */
-	need_change = mb_wm_layout_maximise_geometry (&coverage,
-						      avail_geom,
-						      SET_X|SET_WIDTH);
+	/* First of all, tweak the y value so that we start with position
+	 * that as much as possible respects the request for south edge
+	 * for the current geometry. For example, the hildon input method
+	 * initially maps with height 1 and y 399; it then requests resize
+	 * to some sensible height, but does not adjust the y value.
+	 */
+	y = avail_geom->y + avail_geom->height - coverage.height;
+
+	if (y < 0)
+	  y = 0;
+
+	if (y != coverage.y)
+	  need_change = True;
+
+	coverage.y = y;
+
+	/* set x and width */
+	need_change |= mb_wm_layout_maximise_geometry (&coverage,
+						       avail_geom,
+						       SET_X|SET_WIDTH);
+
 	/* Too high */
 	need_change |= mb_wm_layout_clip_geometry (&coverage,
 						   avail_geom, SET_HEIGHT);

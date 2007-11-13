@@ -535,7 +535,7 @@ mb_wm_sync (MBWindowManager *wm)
 
   /* Size stuff first assume newly managed windows unmapped ?
    *
-  */
+   */
   if (wm->layout && (wm->sync_type & MBWMSyncGeometry))
     mb_wm_layout_update (wm->layout);
 
@@ -1281,7 +1281,7 @@ void
 mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 {
   wm->layout = layout;
-  wm->sync_type = MBWMSyncGeometry | MBWMSyncVisibility;
+  wm->sync_type |= (MBWMSyncGeometry | MBWMSyncVisibility);
 }
 
 static void
