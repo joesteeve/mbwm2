@@ -61,7 +61,8 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
 
       return mb_wm_client_desktop_new (wm, win);
     }
-  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_TOOLBAR])
+  else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_TOOLBAR] ||
+	   win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_INPUT])
     {
       printf("### is input ###\n");
       return maemo_input_new (wm, win);

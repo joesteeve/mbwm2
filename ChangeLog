@@ -1,5 +1,21 @@
 2007-11-13  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-types.h:
+        * src/core/mb-window-manager.c:
+        * src/managers/maemo/maemo-window-manager.c:
+	Added _NET_WM_WINDOW_TYPE_INPUT.
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_get_coverage):
+	Fixed so that frame geometry is not modified by this getter.
+
+        * src/theme-engines/mb-wm-theme-png.c:
+	(mb_wm_theme_png_paint_decor):
+	Fixed painting of decors smaller than the theme template.
+
+2007-11-13  Tomas Frydrych  <tf@o-hand.com>
+
         * src/theme-engines/mb-wm-theme-png.c:
         * src/theme-engines/mb-wm-theme-xml.c:
         * src/theme-engines/mb-wm-theme-xml.h:

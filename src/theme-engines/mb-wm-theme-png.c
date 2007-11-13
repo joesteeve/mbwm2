@@ -331,7 +331,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	       */
 	      int width1 = decor->geom.width / 2;
 	      int width2 = decor->geom.width - width1;
-	      int x2     = d->x + width1;
+	      int x2     = d->x + d->width - width2;
 
 	      printf ("drawing small decor\n");
 
@@ -415,7 +415,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	       */
 	      int height1 = decor->geom.height / 2;
 	      int height2 = decor->geom.height - height1;
-	      int y2      = d->y + height1;
+	      int y2      = d->y + d->height - height2;
 
 	      printf ("drawing small vertical decor\n");
 

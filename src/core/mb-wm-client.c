@@ -510,16 +510,12 @@ void  /* needs to be boolean, client may not have any coverage */
 mb_wm_client_get_coverage (MBWindowManagerClient *client,
 			   MBGeometry            *coverage)
 {
-  MBGeometry *geometry = &client->frame_geometry;
+  MBGeometry *geometry;
 
   if (!client->xwin_frame)
-    {
-      MBGeometry *win_geo = &client->window->geometry;
-      geometry->x      = win_geo->x;
-      geometry->y      = win_geo->y;
-      geometry->width  = win_geo->width;
-      geometry->height = win_geo->height;
-    }
+    geometry = &client->window->geometry;
+  else
+    geometry = &client->frame_geometry;
 
   coverage->x      = geometry->x;
   coverage->y      = geometry->y;
