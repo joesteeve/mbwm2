@@ -38,6 +38,7 @@ typedef struct Decor
   int width;
   int height;
   int font_size;
+  int show_title;
 
   char * font_family;
 

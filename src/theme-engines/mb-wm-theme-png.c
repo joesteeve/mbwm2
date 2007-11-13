@@ -490,9 +490,9 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	    }
 	}
 
-      title = mb_wm_client_get_name (client);
-
-      if (title && data->font)
+      if (d->show_title &&
+	  (title = mb_wm_client_get_name (client)) &&
+	  data->font)
 	{
 	  XRectangle rec;
 

@@ -1,5 +1,22 @@
 2007-11-13  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-decor.c:
+	(mb_wm_decor_calc_geometry):
+	Fixed caculation of decor geometry resulting in S and E decors
+	being placed far outside the frame window.
+
+        * src/theme-engines/mb-wm-theme-xml.h:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme.c:
+	Added show-title attribute to decor element to control display of
+	window title.
+
+        * src/managers/maemo/theme/background.png:
+        * src/managers/maemo/theme/theme.xml:
+	Added show-title decor attribute; tweaked image.
+
+2007-11-13  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-atoms.c:
         * src/core/mb-wm-types.h:
         * src/core/mb-window-manager.c:

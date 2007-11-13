@@ -300,6 +300,7 @@ mb_wm_decor_calc_geometry (MBWMDecor *decor)
 {
   MBWindowManager       *wm;
   MBWindowManagerClient *client;
+  int n, s, w, e;
 
   if (decor->parent_client == NULL)
     return;
@@ -307,31 +308,34 @@ mb_wm_decor_calc_geometry (MBWMDecor *decor)
   client = decor->parent_client;
   wm = client->wmref;
 
+  mb_wm_theme_get_decor_dimensions (wm->theme, client,
+				    &n, &s, &w, &e);
+
   switch (decor->type)
     {
     case MBWMDecorTypeNorth:
       decor->geom.x      = 0;
       decor->geom.y      = 0;
-      decor->geom.height = mb_wm_client_frame_north_height(client);
+      decor->geom.height = n;
       decor->geom.width  = client->frame_geometry.width;
       break;
     case MBWMDecorTypeSouth:
       decor->geom.x      = 0;
-      decor->geom.y      = mb_wm_client_frame_south_y(client);
-      decor->geom.height = mb_wm_client_frame_south_height(client);
+      decor->geom.y      = client->window->geometry.height + n;
+      decor->geom.height = s;
       decor->geom.width  = client->frame_geometry.width;
       break;
     case MBWMDecorTypeWest:
       decor->geom.x      = 0;
-      decor->geom.y      = mb_wm_client_frame_north_height(client);
+      decor->geom.y      = n;
       decor->geom.height = client->window->geometry.height;
-      decor->geom.width  = mb_wm_client_frame_west_width(client);
+      decor->geom.width  = w;
       break;
     case MBWMDecorTypeEast:
-      decor->geom.x      = mb_wm_client_frame_east_x(client);
-      decor->geom.y      = mb_wm_client_frame_north_height(client);
+      decor->geom.x      = client->window->geometry.width + w;
+      decor->geom.y      = n;
       decor->geom.height = client->window->geometry.height;
-      decor->geom.width  = mb_wm_client_frame_east_width(client);
+      decor->geom.width  = e;
       break;
     default:
       /* FIXME: some kind of callback for custom types here ? */

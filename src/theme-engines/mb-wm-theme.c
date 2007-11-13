@@ -912,6 +912,11 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    {
 	      d->font_family = strdup (*(p+1));
 	    }
+	  else if (!strcmp (*p, "show-title"))
+	    {
+	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
+		d->show_title = 1;
+	    }
 
 	  p += 2;
 	}
