@@ -5,9 +5,13 @@
 <client type="app">
  <decor type="north" clr-fg="#ffffff" x="0" y="0" width="720"
 height="60" font-family="Sans" font-size="20" clr-frame="#000000">
-  <button type="close"    width="26" height="26"  x="680" y="17"/>
-  <button type="minimize" width="26" height="26"  x="650" y="17"/>
-  <button type="menu"     width="20" height="20"  x="9"   y="17"/>
+  <button type="close"    width="26" height="26"  x="680" y="17"
+          active-x="680"  active-y="64"/>
+  <button type="minimize" width="26" height="26"  x="650" y="17"
+          active-x="650"  active-y="64"/>
+  <button type="menu"     width="20" height="20"  x="9"   y="17"
+          active-x="628"  active-y="64"/>
+
  </decor>
 </client>
 

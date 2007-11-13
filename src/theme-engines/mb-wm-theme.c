@@ -986,6 +986,14 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    {
 	      b->height = atoi (*(p+1));
 	    }
+	  else if (!strcmp (*p, "active-x"))
+	    {
+	      b->active_x = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "active-y"))
+	    {
+	      b->active_y = atoi (*(p+1));
+	    }
 
 	  p += 2;
 	}

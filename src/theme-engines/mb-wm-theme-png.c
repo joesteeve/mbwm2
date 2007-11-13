@@ -208,7 +208,8 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
       if (!bdata)
 	{
-	  XRenderColor rclr;
+	  int a_x = b->active_x > -1 ? b->active_x : b->x;
+	  int a_y = b->active_y > -1 ? b->active_y : b->y;
 
 	  bdata = malloc (sizeof (struct ButtonData));
 
@@ -220,28 +221,11 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 					    DefaultVisual (xdpy, xscreen),
 					    DefaultColormap (xdpy, xscreen));
 
-	  rclr.red   = 0x7fff;
-	  rclr.green = 0x7fff;
-	  rclr.blue  = 0x7fff;
-	  rclr.alpha = 0x9fff;
-
-	  if (b->clr_fg.set)
-	    {
-	      rclr.red   = (int)(d->clr_fg.r * (double)0xffff);
-	      rclr.green = (int)(d->clr_fg.g * (double)0xffff);
-	      rclr.blue  = (int)(d->clr_fg.b * (double)0xffff);
-	    }
-
 	  XRenderComposite (xdpy, PictOpSrc,
 			    p_theme->xpic,
 			    None,
 			    XftDrawPicture (bdata->xftdraw_a),
-			    b->x, b->y, 0, 0, 0, 0, b->width, b->height);
-
-	  XRenderFillRectangle (xdpy, PictOpOver,
-				XftDrawPicture (bdata->xftdraw_a),
-				&rclr,
-				0, 0, b->width, b->height);
+			    a_x, a_y, 0, 0, 0, 0, b->width, b->height);
 
 	  bdata->xpix_i = XCreatePixmap(xdpy, decor->xwin,
 				      button->geom.width, button->geom.height,

@@ -1,3 +1,14 @@
+2007-11-13  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-xml.c:
+        * src/theme-engines/mb-wm-theme-xml.h:
+	Improved drawing of buttons in active state.
+
+        * src/managers/maemo/theme/background.png:
+        * src/managers/maemo/theme/theme.xml:
+	Added active state buttons to the theme.
+
 2007-11-12  Tomas Frydrych  <tf@o-hand.com>
 
         * configure.ac:
