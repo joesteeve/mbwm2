@@ -471,6 +471,7 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 
       win->visual   = xwin_attr->visual;
       win->colormap = xwin_attr->colormap;
+      win->gravity  = xwin_attr->win_gravity;
     }
 
   if (props_req & MBWM_WINDOW_PROP_NAME)

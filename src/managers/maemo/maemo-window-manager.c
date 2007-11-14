@@ -50,7 +50,7 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION])
     {
       printf("### is notifcation ###\n");
-      return mb_wm_client_dialog_new (wm, win);
+      return mb_wm_client_note_new (wm, win);
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP])
     {

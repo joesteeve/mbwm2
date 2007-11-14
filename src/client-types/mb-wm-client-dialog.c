@@ -20,10 +20,27 @@ mb_wm_client_dialog_stack (MBWindowManagerClient *client,
 static void
 mb_wm_client_dialog_show (MBWindowManagerClient *client)
 {
-  MBWindowManagerClientClass  *parent_klass;
+  MBWindowManagerClientClass  *parent_klass = NULL;
 
-  parent_klass =
-    MB_WM_CLIENT_CLASS(MB_WM_OBJECT_GET_PARENT_CLASS(client));
+  /*
+   * We need the parent of the MBWMClientDialogClass to chain up
+   */
+  if (MB_WM_IS_CLIENT_DIALOG (client))
+    parent_klass = MB_WM_CLIENT (MB_WM_OBJECT_GET_PARENT_CLASS (client));
+  else
+    {
+      /*
+       * A derived klass -- need to traverse the klass hierarchy to get to
+       * the dialog klass
+       */
+      MBWMObjectClass * object_klass = MB_WM_OBJECT_GET_PARENT_CLASS (client);
+
+      while (object_klass && object_klass->type != MB_WM_TYPE_CLIENT_DIALOG)
+	object_klass = object_klass->parent;
+
+      if (object_klass && object_klass->parent)
+	parent_klass = MB_WM_CLIENT_CLASS (object_klass->parent);
+    }
 
   if (client->transient_for != NULL)
     {
@@ -45,7 +62,7 @@ mb_wm_client_dialog_show (MBWindowManagerClient *client)
 	mb_wm_client_show (parent);
     }
 
-  if (parent_klass->show)
+  if (parent_klass && parent_klass->show)
     parent_klass->show(client);
 }
 
@@ -121,9 +138,11 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
     }
 
   /* center if window sets 0,0
+   * Only do this for dialogs, not derived classes.
    * FIXME needs to work on frame, not window.
    */
-  if (client->window->geometry.x == 0 && client->window->geometry.y == 0)
+  if (MB_WM_IS_CLIENT_DIALOG (client) &&
+      client->window->geometry.x == 0 && client->window->geometry.y == 0)
     {
         MBGeometry  avail_geom;
 
@@ -153,7 +172,8 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
   geom.width  = client->window->geometry.width + w + e;
   geom.height = client->window->geometry.height + n + s;
 
-  mb_wm_client_dialog_request_geometry (client, &geom, 0);
+  mb_wm_client_dialog_request_geometry (client, &geom,
+					MBWMClientReqGeomForced);
 
   return 1;
 }

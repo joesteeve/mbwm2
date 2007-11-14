@@ -25,4 +25,12 @@
  <decor type="east"  x="205" y="109" width="6"  height="9" />
 </client>
 
+<client type="notification">
+ <decor type="north"
+        x="215"  y="104"  width="207" height="5"  />
+ <decor type="south" x="215" y="119" width="207" height="5"   />
+ <decor type="west"  x="215" y="109" width="6"   height="9" />
+ <decor type="east"  x="416" y="109" width="6"  height="9" />
+</client>
+
 </theme>

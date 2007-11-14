@@ -49,7 +49,7 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION])
     {
       MBWM_DBG ("### is notification ###\n");
-      return mb_wm_client_dialog_new(wm, win);
+      return mb_wm_client_note_new(wm, win);
     }
   else if (win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU] ||
 	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_POPUP_MENU]||

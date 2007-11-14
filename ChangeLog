@@ -1,3 +1,36 @@
+2007-11-14  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+        * src/core/mb-wm-types.h:
+        * src/client-types/Makefile.am:
+	* src/client-types/mb-wm-client-note.h:
+	* src/client-types/mb-wm-client-note.c:
+        * src/managers/maemo/Makefile.am:
+        * src/managers/maemo/maemo-window-manager.c
+        * src/managers/simple/Makefile.am:
+	* src/theme-engines/mb-wm-theme.c:
+	Added MBWMClientNote type.
+
+        * src/core/mb-wm-client-window.h:
+        * src/core/mb-wm-client-window.c:
+	Processing of gravity hint.
+
+        * src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_show):
+	Fixed up chaining to parent class method to avoid circularity for
+	derived classes.
+
+	(mb_wm_client_dialog_init):
+	Fixed flags in call to mb_wm_client_dialog_request_geometry().
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_destroy):
+	Plugged a leaking MBWMList.
+
+        * src/managers/maemo/theme/background.png:
+        * src/managers/maemo/theme/theme.xml:
+	Themed notification clients.
+
 2007-11-13  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-input.c:
@@ -15,7 +48,7 @@
 	(mb_wm_client_destroy):
 	Make sure that no transient children hold a dangling pointer to
 	the destroyed client.
-	
+
         * src/core/mb-wm-layout.c:
 	(mb_wm_layout_input):
 	Fixed available geometry calculations for Input clients reserving

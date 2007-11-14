@@ -142,6 +142,8 @@ struct MBWMClientWindow
   MBWMClientWindowAllowedActions allowed_actions;
 
   unsigned long                  user_time;
+
+  int                            gravity;
 };
 
 struct MBWMClientWindowClass

@@ -819,6 +819,8 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		c->type = MBWMClientTypeInput;
 	      else if (!strcmp (*(p+1), "desktop"))
 		c->type = MBWMClientTypeDesktop;
+	      else if (!strcmp (*(p+1), "notification"))
+		c->type = MBWMClientTypeNote;
 	    }
 	  else if (!strcmp (*p, "width"))
 	    {
