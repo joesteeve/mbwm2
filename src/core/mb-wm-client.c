@@ -534,10 +534,27 @@ void
 mb_wm_client_add_transient (MBWindowManagerClient *client,
 			    MBWindowManagerClient *transient)
 {
+  MBWMList *l;
+
   if (transient == NULL || client == NULL)
     return;
 
   transient->transient_for = client;
+
+  /*
+   * Make sure that each transient is only added once (theoretically it should
+   * be, but it is very easy for a derived class to call this function without
+   * realizing the parent has dones so).
+   */
+  l = client->transients;
+  while (l)
+    {
+      if (l->data == transient)
+	return;
+
+      l = l->next;
+    }
+
   client->transients = mb_wm_util_list_append(client->transients, transient);
 }
 
@@ -545,10 +562,11 @@ void
 mb_wm_client_remove_transient (MBWindowManagerClient *client,
 			       MBWindowManagerClient *transient)
 {
-  if (transient == NULL || client == NULL)
+  if (!transient || !client || !client->transients)
     return;
 
   transient->transient_for = NULL;
+
   client->transients = mb_wm_util_list_remove(client->transients, transient);
 }
 

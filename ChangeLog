@@ -1,5 +1,14 @@
 2007-11-14  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_add_transient):
+	Ensure no duplicate entries in transients list.
+	
+	(mb_wm_client_remove_transient):
+	Return imediately if we have no transient list.
+
+2007-11-14  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/core/mb-wm-types.h:
         * src/client-types/Makefile.am:
