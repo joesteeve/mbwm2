@@ -51,6 +51,10 @@ mb_wm_client_note_init (MBWMObject *this, va_list vap)
   MBWMClientWindow      *win = client->window;
   MBGeometry             geom;
   Bool                   change = False;
+  Atom actions[] = {
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE],
+  };
 
   geom = client->frame_geometry;
 
@@ -101,6 +105,13 @@ mb_wm_client_note_init (MBWMObject *this, va_list vap)
       mb_wm_client_request_geometry (client, &geom, MBWMClientReqGeomForced);
       mb_wm_client_geometry_mark_dirty (client);
     }
+
+
+  XChangeProperty (wm->xdpy, win->xwindow,
+		   wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS],
+		   XA_ATOM, 32, PropModeReplace,
+		   (unsigned char *)actions,
+		   sizeof (actions)/sizeof (actions[0]));
 
   return 1;
 }

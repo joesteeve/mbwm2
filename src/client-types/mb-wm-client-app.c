@@ -77,6 +77,19 @@ mb_wm_client_app_init (MBWMObject *this, va_list vap)
   if (!wm)
     return 0;
 
+  {
+    Atom actions[] = {
+      wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE],
+      wm->atoms[MBWM_ATOM_NET_WM_ACTION_FULLSCREEN]
+    };
+
+    XChangeProperty (wm->xdpy, client->window->xwindow,
+		     wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS],
+		     XA_ATOM, 32, PropModeReplace,
+		     (unsigned char *)actions,
+		     sizeof (actions)/sizeof (actions[0]));
+  }
+
   client->stacking_layer = MBWMStackLayerMid;
 
   mb_wm_client_set_layout_hints (client,

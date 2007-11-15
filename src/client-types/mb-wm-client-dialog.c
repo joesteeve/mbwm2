@@ -109,6 +109,17 @@ mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
   MBWMList              *l;
   MBGeometry             geom;
   int                    n, s, w, e;
+  Atom actions[] = {
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE],
+  };
+
+  XChangeProperty (wm->xdpy, win->xwindow,
+		   wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS],
+		   XA_ATOM, 32, PropModeReplace,
+		   (unsigned char *)actions,
+		   sizeof (actions)/sizeof (actions[0]));
+
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);

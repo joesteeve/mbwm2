@@ -14,8 +14,7 @@ mb_wm_client_menu_stack (MBWindowManagerClient *client,
 static void
 mb_wm_client_menu_realize (MBWindowManagerClient *client)
 {
-  /* Just skip creating frame... */
-  return;
+  /* No frame for menus */
 }
 
 static void
@@ -57,6 +56,16 @@ mb_wm_client_menu_init (MBWMObject *this, va_list vap)
   MBWMClientMenu        *client_menu = MB_WM_CLIENT_MENU (this);
   MBWindowManager       *wm          = client->wmref;
   MBWMClientWindow      *win         = client->window;
+  Atom actions[] = {
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE],
+  };
+
+  XChangeProperty (wm->xdpy, win->xwindow,
+		   wm->atoms[MBWM_ATOM_NET_WM_ALLOWED_ACTIONS],
+		   XA_ATOM, 32, PropModeReplace,
+		   (unsigned char *)actions,
+		   sizeof (actions)/sizeof (actions[0]));
 
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);

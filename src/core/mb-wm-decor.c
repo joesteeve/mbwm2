@@ -582,58 +582,6 @@ mb_wm_decor_button_get_theme_data (MBWMDecorButton * button)
 }
 
 static Bool
-mb_wm_decor_button_motion_handler (XMotionEvent   *xev,
-				   void           *userdata)
-{
-  MBWMDecorButton *button = (MBWMDecorButton *)userdata;
-  MBWMDecor       *decor  = button->decor;
-  MBWindowManager *wm = decor->parent_client->wmref;
-
-  if (xev->window == decor->xwin)
-    {
-      int xmin, ymin, xmax, ymax;
-      MBWMList * l = decor->parent_client->transients;
-
-      /* Ignore events on the main window decor if transients other than
-       * input methods are present
-       */
-      while (l)
-	{
-	  MBWindowManagerClient * c = l->data;
-
-	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput)
-	    return True;
-
-	  l = l->next;
-	}
-
-      xmin = button->geom.x;
-      ymin = button->geom.y;
-      xmax = button->geom.x + button->geom.width;
-      ymax = button->geom.y + button->geom.height;
-
-      if (xev->x < xmin || xev->x > xmax || xev->y < ymin || xev->y > ymax)
-	{
-	  if (button->state == MBWMDecorButtonStatePressed)
-	    {
-	      button->state = MBWMDecorButtonStateInactive;
-	      mb_wm_theme_paint_button (wm->theme, button);
-	    }
-	}
-      else
-	{
-	  if (button->state != MBWMDecorButtonStatePressed)
-	    {
-	      button->state = MBWMDecorButtonStatePressed;
-	      mb_wm_theme_paint_button (wm->theme, button);
-	    }
-	}
-    }
-
-  return True;
-}
-
-static Bool
 mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 				  void            *userdata)
 {
@@ -691,62 +639,99 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	  else
 	    mb_wm_decor_button_stock_button_action (button);
 	}
-
-      return False;
-    }
-
-  return True;
-}
-
-static Bool
-mb_wm_decor_button_release_handler (XButtonEvent    *xev,
-				    void            *userdata)
-{
-  MBWMDecorButton *button = (MBWMDecorButton *)userdata;
-  MBWMDecor       *decor  = button->decor;
-  MBWindowManager *wm = decor->parent_client->wmref;
-
-  if (xev->window == decor->xwin)
-    {
-      int xmin, ymin, xmax, ymax;
-      MBWMList * l = decor->parent_client->transients;
-
-      /* Ignore events on the main window decor if transients other than
-       * input methods are present
-       */
-      while (l)
+      else
 	{
-	  MBWindowManagerClient * c = l->data;
+	  XEvent ev;
 
-	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput)
-	    return True;
+	  if (XGrabPointer(wm->xdpy, xev->subwindow, False,
+			   ButtonPressMask|ButtonReleaseMask|
+			   PointerMotionMask|EnterWindowMask|LeaveWindowMask,
+			   GrabModeAsync,
+			   GrabModeAsync,
+			   None, None, CurrentTime) == GrabSuccess)
+	    {
+	      if (button->state == MBWMDecorButtonStateInactive)
+		{
+		  button->state = MBWMDecorButtonStatePressed;
+		  mb_wm_theme_paint_button (wm->theme, button);
+		}
 
-	  l = l->next;
-	}
+	      for (;;)
+		{
+		  XMaskEvent(wm->xdpy,
+			     ButtonPressMask|ButtonReleaseMask|
+			     PointerMotionMask|EnterWindowMask|
+			     LeaveWindowMask,
+			     &ev);
 
-      xmin = button->geom.x;
-      ymin = button->geom.y;
-      xmax = button->geom.x + button->geom.width;
-      ymax = button->geom.y + button->geom.height;
+		  switch (ev.type)
+		    {
+		    case MotionNotify:
+		      {
+			XMotionEvent *pev = (XMotionEvent*)&ev;
 
-      if (button->state != MBWMDecorButtonStateInactive)
-	{
-	  button->state = MBWMDecorButtonStateInactive;
-	  mb_wm_theme_paint_button (wm->theme, button);
-	}
+			if (pev->x < xmin || pev->x > xmax ||
+			    pev->y < ymin || pev->y > ymax)
+			  {
+			    if (button->state == MBWMDecorButtonStatePressed)
+			      {
+				button->state = MBWMDecorButtonStateInactive;
+				mb_wm_theme_paint_button (wm->theme, button);
+			      }
+			  }
+			else
+			  {
+			    if (button->state != MBWMDecorButtonStatePressed)
+			      {
+				button->state = MBWMDecorButtonStatePressed;
+				mb_wm_theme_paint_button (wm->theme, button);
+			      }
+			  }
+		      }
+		      break;
+		    case EnterNotify:
+		      if (button->state == MBWMDecorButtonStateInactive)
+			{
+			  button->state = MBWMDecorButtonStatePressed;
+			  mb_wm_theme_paint_button (wm->theme, button);
+			}
+		      break;
+		    case LeaveNotify:
+		      if (button->state != MBWMDecorButtonStateInactive)
+			{
+			  button->state = MBWMDecorButtonStateInactive;
+			  mb_wm_theme_paint_button (wm->theme, button);
+			}
+		      break;
+		    case ButtonRelease:
+		      {
+			XButtonEvent *pev = (XButtonEvent*)&ev;
 
-      if (xev->x < xmin ||
-	  xev->x > xmax ||
-	  xev->y < ymin ||
-	  xev->y > ymax)
-	return True;
+			if (button->state != MBWMDecorButtonStateInactive)
+			  {
+			    button->state = MBWMDecorButtonStateInactive;
+			    mb_wm_theme_paint_button (wm->theme, button);
+			  }
 
-      if (!button->press_activated)
-	{
-	  if (button->release)
-	    button->release(wm, button, button->userdata);
-	  else
-	    mb_wm_decor_button_stock_button_action (button);
+			XUngrabPointer (wm->xdpy, CurrentTime);
+			XSync (wm->xdpy, False); /* necessary */
+
+			if (pev->x < xmin || pev->x > xmax ||
+			    pev->y < ymin || pev->y > ymax)
+			  {
+			    return False;
+			  }
+
+			if (button->release)
+			  button->release(wm, button, button->userdata);
+			else
+			  mb_wm_decor_button_stock_button_action (button);
+
+			return False;
+		      }
+		    }
+		}
+	    }
 	}
 
       return False;
@@ -887,12 +872,6 @@ mb_wm_decor_button_destroy (MBWMObject* obj)
 
   mb_wm_main_context_x_event_handler_remove (ctx, ButtonPress,
 					     button->press_cb_id);
-
-  mb_wm_main_context_x_event_handler_remove (ctx, ButtonRelease,
-					     button->release_cb_id);
-
-  mb_wm_main_context_x_event_handler_remove (ctx, MotionNotify,
-					     button->motion_cb_id);
 }
 
 static Bool
@@ -907,20 +886,6 @@ mb_wm_decor_button_realize (MBWMDecorButton *button)
 			    ButtonPress,
 			    (MBWMXEventFunc)mb_wm_decor_button_press_handler,
 			    button);
-
-  button->release_cb_id =
-    mb_wm_main_context_x_event_handler_add (wm->main_ctx,
-			    decor->xwin,
-			    ButtonRelease,
-			   (MBWMXEventFunc)mb_wm_decor_button_release_handler,
-			   button);
-
-  button->motion_cb_id =
-    mb_wm_main_context_x_event_handler_add (wm->main_ctx,
-			    decor->xwin,
-			    MotionNotify,
-			   (MBWMXEventFunc)mb_wm_decor_button_motion_handler,
-			   button);
 
   button->realized = True;
 }

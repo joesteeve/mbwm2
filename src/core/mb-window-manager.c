@@ -1172,6 +1172,7 @@ void
 mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
 {
   MBWindowManagerClass  *wm_klass;
+  MBWMClientType c_type;
   Bool was_desktop;
   Bool is_desktop;
 
@@ -1179,6 +1180,7 @@ mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
     return;
 
   wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
 
   if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
     return; /* Handled by derived class */
@@ -1203,6 +1205,14 @@ mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
 		      wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP],
 		      XA_CARDINAL, 32, PropModeReplace,
 		      (unsigned char *)&card, 1);
+    }
+
+  if (is_desktop || c_type == MBWMClientTypeApp)
+    {
+      XChangeProperty(wm->xdpy, wm->root_win->xwindow,
+		      wm->atoms[MBWM_ATOM_MB_CURRENT_APP_WINDOW],
+		      XA_WINDOW, 32, PropModeReplace,
+		      (unsigned char *)&c->window->xwindow, 1);
     }
 
   mb_wm_display_sync_queue (wm, MBWMSyncStacking | MBWMSyncVisibility);

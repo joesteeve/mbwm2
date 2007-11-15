@@ -2,6 +2,22 @@
 
         * src/core/mb-wm-atoms.c:
         * src/core/mb-wm-types.h:
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-menu.c:
+        * src/client-types/mb-wm-client-note.c:
+        * src/core/mb-window-manager.c
+	Handling of _NET_WM_ALLOWED_ACTIONS and _MB_CURRENT_APP_WINDOW.
+	
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	Reimplemented decor button press/release handling to use a pointer
+	grab.
+
+2007-11-15  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-types.h:
 	Added _MB_GRAB_TRANSFER.
 
         * src/core/mb-wm-client.c:
