@@ -49,7 +49,8 @@ enum MBWMThemeCaps
   MBWMThemeCapsFrameDlgButtonActionAccept  = (1<<1),
   MBWMThemeCapsFrameMainButtonActionHelp   = (1<<2),
   MBWMThemeCapsFrameDlgButtonActionHelp    = (1<<3),
-
+  MBWMThemeCapsFrameMainButtonActionCustom = (1<<4),
+  MBWMThemeCapsFrameDlgButtonActionCustom  = (1<<5),
 };
 
 
@@ -141,6 +142,11 @@ mb_wm_theme_get_button_position (MBWMTheme             *theme,
 				 MBWMDecorButtonType    type,
 				 int                   *x,
 				 int                   *y);
+
+Bool
+mb_wm_theme_is_button_press_activated (MBWMTheme              *theme,
+				       MBWMDecor              *decor,
+				       MBWMDecorButtonType    type);
 
 MBWMDecor *
 mb_wm_theme_create_decor (MBWMTheme             *theme,

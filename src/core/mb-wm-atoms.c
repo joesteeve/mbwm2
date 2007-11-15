@@ -99,6 +99,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_MB_THEME",
     "_MB_THEME_NAME",
     "_MB_COMMAND",
+    "_MB_GRAB_TRANSFER",
   };
 
   /* FIXME: Error Traps */

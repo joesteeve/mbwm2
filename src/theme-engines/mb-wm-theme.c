@@ -165,6 +165,33 @@ mb_wm_theme_class_type ()
   return type;
 }
 
+Bool
+mb_wm_theme_is_button_press_activated (MBWMTheme              *theme,
+				       MBWMDecor              *decor,
+				       MBWMDecorButtonType    type)
+{
+  MBWindowManagerClient * client;
+  MBWMXmlClient         * c;
+  MBWMXmlDecor          * d;
+  MBWMXmlButton         * b;
+  MBWMClientType          c_type;
+
+  if (!theme || !theme->xml_clients || !decor || !decor->parent_client)
+    return False;
+
+  client = decor->parent_client;
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
+      (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type)) &&
+      (b = mb_wm_xml_button_find_by_type (d->buttons, type)))
+    {
+      return b->press_activated;
+    }
+
+  return False;
+}
+
 void
 mb_wm_theme_get_button_size (MBWMTheme             *theme,
 			     MBWMDecor             *decor,
@@ -1000,6 +1027,11 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  else if (!strcmp (*p, "active-y"))
 	    {
 	      b->active_y = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "press-activated"))
+	    {
+	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
+		b->press_activated = 1;
 	    }
 
 	  p += 2;

@@ -144,8 +144,7 @@ mb_wm_root_window_init_attributes (MBWMRootWindow * win)
   sattr.event_mask =  SubstructureRedirectMask
                       |SubstructureNotifyMask
                       |StructureNotifyMask
-                      |PropertyChangeMask
-                      |ClientMessage;
+                      |PropertyChangeMask;
 
   mb_wm_util_trap_x_errors();
 
@@ -210,27 +209,25 @@ mb_wm_root_window_update_supported_props (MBWMRootWindow *win)
     wm->atoms[MBWM_ATOM_CM_TRANSLUCENCY],
     wm->atoms[MBWM_ATOM_NET_WM_FULL_PLACEMENT],
     wm->atoms[MBWM_ATOM_NET_FRAME_EXTENTS],
-    0, 0
+    0, 0, 0
    };
 
-  num_supported = sizeof(supported)/sizeof(Atom) - 2;
+  num_supported = sizeof(supported)/sizeof(Atom) - 3;
 
   /* Check to see if the theme supports help / accept buttons */
   if (wm->theme)
     {
-      if (( mb_wm_theme_supports (wm->theme,
-				  MBWMThemeCapsFrameMainButtonActionAccept)
-	    /*|| w->config->use_title == False */)
-	  && mb_wm_theme_supports (wm->theme,
-				   MBWMThemeCapsFrameMainButtonActionAccept))
+      if (mb_wm_theme_supports (wm->theme,
+				MBWMThemeCapsFrameMainButtonActionAccept))
 	supported[num_supported++]=wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_ACCEPT];
 
-      if (( mb_wm_theme_supports (wm->theme,
-				  MBWMThemeCapsFrameMainButtonActionHelp)
-	    /*|| w->config->use_title == False*/ )
-	  && mb_wm_theme_supports (wm->theme,
-				   MBWMThemeCapsFrameMainButtonActionHelp))
+      if (mb_wm_theme_supports (wm->theme,
+				MBWMThemeCapsFrameMainButtonActionHelp))
 	supported[num_supported++] = wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP];
+
+      if (mb_wm_theme_supports (wm->theme,
+				MBWMThemeCapsFrameMainButtonActionCustom))
+	supported[num_supported++]=wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_CUSTOM];
     }
 
   XChangeProperty(wm->xdpy, rwin, wm->atoms[MBWM_ATOM_NET_SUPPORTED],

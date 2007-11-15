@@ -592,7 +592,7 @@ mb_wm_client_get_name (MBWindowManagerClient *client)
   return client->window->name;
 }
 
-static void
+void
 mb_wm_client_deliver_message (MBWindowManagerClient   *client,
 			      Atom          delivery_atom,
 			      unsigned long data0,

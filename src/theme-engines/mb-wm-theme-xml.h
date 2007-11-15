@@ -22,6 +22,8 @@ typedef struct Button
   /* Needed by png themes */
   int active_x;
   int active_y;
+
+  int press_activated;
 } MBWMXmlButton;
 
 typedef struct Decor

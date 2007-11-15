@@ -1,9 +1,36 @@
+2007-11-15  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-atoms.c:
+        * src/core/mb-wm-types.h:
+	Added _MB_GRAB_TRANSFER.
+
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	(mb_wm_client_deliver_message):
+	Exposed previously static function.
+
+        * src/theme-engines/mb-wm-theme-xml.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+        * src/managers/maemo/theme/theme.xml:
+	Added themable "press_activated" flag to decor button; implemented
+	handling of press-activated buttons (needed for maemo manager).
+
+        * src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_init_attributes):
+	Removed bogus ClientMessage value from event mask.
+
+	(mb_wm_root_window_update_supported_props):
+	Added _NET_WM_CONTEXT_CUSTOM to supported props.
+
 2007-11-14  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client.c:
 	(mb_wm_client_add_transient):
 	Ensure no duplicate entries in transients list.
-	
+
 	(mb_wm_client_remove_transient):
 	Return imediately if we have no transient list.
 

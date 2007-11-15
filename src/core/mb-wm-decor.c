@@ -528,7 +528,7 @@ static void
 mb_wm_decor_button_destroy (MBWMObject* obj);
 
 static void
-mb_wm_decor_button_stock_button_released (MBWMDecorButton *button)
+mb_wm_decor_button_stock_button_action (MBWMDecorButton *button)
 {
   MBWindowManagerClient *client = button->decor->parent_client;
   MBWindowManager       *wm = client->wmref;
@@ -554,10 +554,10 @@ mb_wm_decor_button_stock_button_released (MBWMDecorButton *button)
       mb_wm_client_deliver_wm_protocol (client,
 				wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_HELP]);
       break;
-    default:
     case MBWMDecorButtonMenu:
       mb_wm_client_deliver_wm_protocol (client,
 				wm->atoms[MBWM_ATOM_NET_WM_CONTEXT_CUSTOM]);
+    default:
       break;
     }
 
@@ -676,8 +676,21 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	  mb_wm_theme_paint_button (wm->theme, button);
 	}
 
-      if (button->press)
-	button->press(wm, button, button->userdata);
+      if (button->press_activated)
+	{
+	  XUngrabPointer(wm->xdpy, CurrentTime);
+
+	  mb_wm_client_deliver_message (decor->parent_client,
+					wm->atoms[MBWM_ATOM_MB_GRAB_TRANSFER],
+					xev->time,
+					xev->subwindow,
+					xev->button, 0, 0);
+
+	  if (button->press)
+	    button->press(wm, button, button->userdata);
+	  else
+	    mb_wm_decor_button_stock_button_action (button);
+	}
 
       return False;
     }
@@ -728,10 +741,13 @@ mb_wm_decor_button_release_handler (XButtonEvent    *xev,
 	  xev->y > ymax)
 	return True;
 
-      if (button->release)
-	button->release(wm, button, button->userdata);
-      else
-	mb_wm_decor_button_stock_button_released (button);
+      if (!button->press_activated)
+	{
+	  if (button->release)
+	    button->release(wm, button, button->userdata);
+	  else
+	    mb_wm_decor_button_stock_button_action (button);
+	}
 
       return False;
     }
@@ -811,11 +827,14 @@ mb_wm_decor_button_init (MBWMObject *obj, va_list vap)
 			       &button->geom.width,
 			       &button->geom.height);
 
-  button->press    = press;
-  button->release  = release;
-  button->decor    = decor;
-  button->type = type;
-  button->pack = pack;
+  button->press   = press;
+  button->release = release;
+  button->decor   = decor;
+  button->type    = type;
+  button->pack    = pack;
+  button->press_activated = mb_wm_theme_is_button_press_activated (wm->theme,
+								   decor,
+								   type);
 
   decor->buttons = mb_wm_util_list_append (decor->buttons, button);
 

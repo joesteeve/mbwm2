@@ -154,6 +154,7 @@ struct MBWMDecorButton
   Bool                        visible;
   Bool                        needs_sync;
   Bool                        realized;
+  Bool                        press_activated;
   MBWMDecorButtonState        state;
 
   MBWMDecorButtonPressedFunc  press;

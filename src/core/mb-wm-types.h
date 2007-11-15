@@ -224,6 +224,7 @@ typedef enum MBWMAtom
   MBWM_ATOM_MB_THEME,
   MBWM_ATOM_MB_THEME_NAME,
   MBWM_ATOM_MB_COMMAND,
+  MBWM_ATOM_MB_GRAB_TRANSFER,
 
   /* FIXME: Custom/Unused to sort out
    *
