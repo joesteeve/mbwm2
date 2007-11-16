@@ -1,7 +1,7 @@
 /* Asynchronous Xlib hack utiltys lib
  *
  * Copyright (c) 2005 Matthew Allum
- * 
+ *
  * Contains portions of code from Metacity and Xlib thus;
  *
  * Copyright (C) 2002 Havoc Pennington
@@ -35,8 +35,10 @@
 #define WANT_ASSERT 1
 
 #ifdef WANT_DEBUG
+#include "mb-wm-debug.h"
 #include <stdio.h>
 #define XAS_DBG(x, a...) \
+if (mbwm_debug_flags & MBWM_DEBUG_XAS) \
  fprintf(stderr, __FILE__ ":%d,%s() " x "\n", __LINE__, __func__, ##a)
 #else
 #define XAS_DBG(x, a...) do {} while (0)
@@ -47,7 +49,7 @@
 #include <assert.h>
 #define XAS_ASSERT(x) assert(x)
 #else
-#define XAS_ASSERT(x) do {} while (0) 
+#define XAS_ASSERT(x) do {} while (0)
 #endif
 
 #define XAS_ALIGN_VALUE(this, boundary) \
@@ -76,7 +78,7 @@ typedef enum XasTaskType
 
 } XasTaskType;
 
-struct XasContext 
+struct XasContext
 {
   _XAsyncHandler async;
   Display       *xdpy;
@@ -142,7 +144,7 @@ task_list_append(XasTask *tasks, XasTask *task)
   if (tasks == NULL) return task;
 
   for (t = tasks; t->next != NULL; t = t->next);
-  
+
   t->next = task;
 
   return tasks;
@@ -196,7 +198,7 @@ task_complete(XasContext *ctx, XasTask *task)
   ctx->n_tasks_completed++;
 }
 
-static XasTask* 
+static XasTask*
 xas_find_task_for_request_seq(XasContext    *ctx,
 			      XasTask       *task_list,
 			      unsigned long  request_seq)
@@ -276,7 +278,7 @@ xas_async_get_win_attr_handler (XasContext         *ctx,
   task->task.have_reply = True;
 
   task_complete (ctx, XAS_TASK(task));
-  
+
   if (rep->generic.type == X_Error)
     {
       xError errbuf;
@@ -331,7 +333,7 @@ xas_async_get_property_handler (XasContext         *ctx,
   xGetPropertyReply *reply;
   int                bytes_read;
 
-  /* Code and comments here wripped out of Metacity, Copyright 
+  /* Code and comments here wripped out of Metacity, Copyright
    * Havoc Pennington.
    */
 
@@ -343,16 +345,16 @@ xas_async_get_property_handler (XasContext         *ctx,
 	   dpy->last_request_read, len);
 
   task_complete (ctx, XAS_TASK(task));
-  
+
   /* read bytes so far */
   bytes_read = SIZEOF (xReply);
 
   if (rep->generic.type == X_Error)
     {
       xError errbuf;
-      
+
       task->task.error = rep->error.errorCode;
-      
+
       /* We return True (meaning we consumed the reply)
        * because otherwise it would invoke the X error handler,
        * and an async API is useless if you have to synchronously
@@ -371,7 +373,7 @@ xas_async_get_property_handler (XasContext         *ctx,
                        False); /* really seems like it should be True */
       return True;
     }
-  
+
   XAS_DBG ("already read %d bytes reading %d more for total of %d; generic.length = %ld",
 	   bytes_read, (SIZEOF (xGetPropertyReply) - bytes_read) >> 2,
 	   SIZEOF (xGetPropertyReply), rep->generic.length);
@@ -382,9 +384,9 @@ xas_async_get_property_handler (XasContext         *ctx,
                      False); /* False means expecting more data to follow,
                               * don't eat the rest of the reply
                               */
-  
+
   bytes_read = SIZEOF (xGetPropertyReply);
-  
+
   XAS_DBG ("have reply propertyType = %ld format = %d n_items = %ld",
 	   reply->propertyType, reply->format, reply->nItems);
 
@@ -461,7 +463,7 @@ xas_async_get_property_handler (XasContext         *ctx,
                   unsigned char *netdata;
                   unsigned char *lptr;
                   unsigned char *end_lptr;
-                  
+
                   /* Store the 32-bit values in the end of the array */
                   netdata = task->data + nbytes / 2;
 
@@ -470,7 +472,7 @@ xas_async_get_property_handler (XasContext         *ctx,
                                   netbytes);
 
                   /* Now move the 32-bit values to the front */
-                  
+
                   lptr = task->data;
                   end_lptr = task->data + nbytes;
                   while (lptr != end_lptr)
@@ -548,8 +550,8 @@ xas_async_handler (Display *dpy,
   if (!ctx->tasks_pending)
     return False;
 
-  task = xas_find_task_for_request_seq(ctx, 
-				       ctx->tasks_pending, 
+  task = xas_find_task_for_request_seq(ctx,
+				       ctx->tasks_pending,
 				       dpy->last_request_read);
   if (!task)
     return False;
@@ -557,8 +559,8 @@ xas_async_handler (Display *dpy,
   switch (task->type)
     {
     case XAS_TASK_GET_PROPERTY:
-      return xas_async_get_property_handler (ctx, 
-					     (XasTaskGetProperty*)task, 
+      return xas_async_get_property_handler (ctx,
+					     (XasTaskGetProperty*)task,
 					     rep, buf, len);
     case XAS_TASK_GET_WIN_ATTR:
       return xas_async_get_win_attr_handler (ctx,
@@ -583,7 +585,7 @@ XasContext*
 xas_context_new(Display *xdpy)
 {
   XasContext *ctx = NULL;
-  
+
   ctx = (XasContext *)Xmalloc(sizeof(XasContext));
 
   ctx->xdpy          = xdpy;
@@ -604,7 +606,7 @@ void
 xas_context_destroy(XasContext *ctx)
 {
   DeqAsyncHandler (ctx->xdpy, &ctx->async);
-  
+
   /* FIXME: empty pending and completed lists */
 
   free(ctx);
@@ -633,7 +635,7 @@ xas_get_property(XasContext *ctx,
       UnlockDisplay (dpy);
       return 0;
     }
-  
+
   GetReq (GetProperty, req);
   req->window     = win;
   req->property   = property;
@@ -652,7 +654,7 @@ xas_get_property(XasContext *ctx,
   ctx->tasks_pending = task_list_append(ctx->tasks_pending, &task->task);
 
   ctx->n_tasks_pending ++;
-  
+
   UnlockDisplay (dpy);
 
   SyncHandle ();
@@ -661,7 +663,7 @@ xas_get_property(XasContext *ctx,
 }
 
 Bool
-xas_have_reply(XasContext          *ctx, 
+xas_have_reply(XasContext          *ctx,
 	       XasCookie            cookie)
 {
   return (xas_find_task_for_request_seq(ctx, ctx->tasks_completed, cookie) != NULL);
@@ -669,12 +671,12 @@ xas_have_reply(XasContext          *ctx,
 
 
 Status
-xas_get_property_reply(XasContext          *ctx, 
+xas_get_property_reply(XasContext          *ctx,
 		       XasCookie            cookie,
-		       Atom                *actual_type_return, 
-		       int                 *actual_format_return, 
-		       unsigned long       *nitems_return, 
-		       unsigned long       *bytes_after_return, 
+		       Atom                *actual_type_return,
+		       int                 *actual_format_return,
+		       unsigned long       *nitems_return,
+		       unsigned long       *bytes_after_return,
 		       unsigned char      **prop_return,
 		       int                 *x_error_code)
 {
@@ -686,8 +688,8 @@ xas_get_property_reply(XasContext          *ctx,
 
   if (x_error_code) *x_error_code = 0; /* No error as yet */
 
-  task = (XasTaskGetProperty *) xas_find_task_for_request_seq(ctx, 
-							      ctx->tasks_completed, 
+  task = (XasTaskGetProperty *) xas_find_task_for_request_seq(ctx,
+							      ctx->tasks_completed,
 							      cookie);
   if (task == NULL)
     {
@@ -715,7 +717,7 @@ xas_get_property_reply(XasContext          *ctx,
 
   SyncHandle ();
 
-  ctx->tasks_completed = task_list_remove(ctx->tasks_completed, 
+  ctx->tasks_completed = task_list_remove(ctx->tasks_completed,
 					  XAS_TASK(task));
   ctx->n_tasks_completed--;
 
@@ -743,7 +745,7 @@ xas_get_window_attributes(XasContext        *ctx,
       return 0;
     }
 
-  GetResReq(GetWindowAttributes, win, req);  
+  GetResReq(GetWindowAttributes, win, req);
 
   task_init(ctx, XAS_TASK(task), XAS_TASK_GET_WIN_ATTR);
 
@@ -751,7 +753,7 @@ xas_get_window_attributes(XasContext        *ctx,
 
   ctx->tasks_pending = task_list_append(ctx->tasks_pending, &task->task);
   ctx->n_tasks_pending ++;
-  
+
   UnlockDisplay (dpy);
 
   SyncHandle ();
@@ -760,7 +762,7 @@ xas_get_window_attributes(XasContext        *ctx,
 }
 
 XasWindowAttributes*
-xas_get_window_attributes_reply(XasContext          *ctx, 
+xas_get_window_attributes_reply(XasContext          *ctx,
 				XasCookie            cookie,
 				int                 *x_error_code)
 {
@@ -772,8 +774,8 @@ xas_get_window_attributes_reply(XasContext          *ctx,
 
   if (x_error_code) *x_error_code = 0; /* No error as yet */
 
-  task = (XasTaskGetWinAttr *) xas_find_task_for_request_seq(ctx, 
-							      ctx->tasks_completed, 
+  task = (XasTaskGetWinAttr *) xas_find_task_for_request_seq(ctx,
+							      ctx->tasks_completed,
 							      cookie);
 
   if (task == NULL)
@@ -795,7 +797,7 @@ xas_get_window_attributes_reply(XasContext          *ctx,
 
   SyncHandle ();
 
-  ctx->tasks_completed = task_list_remove(ctx->tasks_completed, 
+  ctx->tasks_completed = task_list_remove(ctx->tasks_completed,
 					  XAS_TASK(task));
   ctx->n_tasks_completed--;
 
@@ -831,7 +833,7 @@ xas_get_geometry(XasContext        *ctx,
 
   ctx->tasks_pending = task_list_append(ctx->tasks_pending, &task->task);
   ctx->n_tasks_pending ++;
-  
+
   UnlockDisplay (dpy);
 
   SyncHandle ();
@@ -839,13 +841,13 @@ xas_get_geometry(XasContext        *ctx,
   return task->task.request_seq;
 }
 
-Status 
-xas_get_geometry_reply (XasContext   *ctx, 
-			XasCookie     cookie,  
-			int          *x_return, 
-			int          *y_return, 
+Status
+xas_get_geometry_reply (XasContext   *ctx,
+			XasCookie     cookie,
+			int          *x_return,
+			int          *y_return,
 			unsigned int *width_return,
-			unsigned int *height_return, 
+			unsigned int *height_return,
 			unsigned int *border_width_return,
 			unsigned int *depth_return,
 			int          *x_error_code)
@@ -858,8 +860,8 @@ xas_get_geometry_reply (XasContext   *ctx,
 
   if (x_error_code) *x_error_code = 0; /* No error as yet */
 
-  task = (XasTaskGetGeom *) xas_find_task_for_request_seq(ctx, 
-							     ctx->tasks_completed, 
+  task = (XasTaskGetGeom *) xas_find_task_for_request_seq(ctx,
+							     ctx->tasks_completed,
 							     cookie);
 
   if (task == NULL)
@@ -894,7 +896,7 @@ xas_get_geometry_reply (XasContext   *ctx,
 
   SyncHandle ();
 
-  ctx->tasks_completed = task_list_remove(ctx->tasks_completed, 
+  ctx->tasks_completed = task_list_remove(ctx->tasks_completed,
 					  XAS_TASK(task));
   ctx->n_tasks_completed--;
 

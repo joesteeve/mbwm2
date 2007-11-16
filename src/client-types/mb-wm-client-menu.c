@@ -59,6 +59,7 @@ mb_wm_client_menu_init (MBWMObject *this, va_list vap)
   Atom actions[] = {
     wm->atoms[MBWM_ATOM_NET_WM_ACTION_CLOSE],
     wm->atoms[MBWM_ATOM_NET_WM_ACTION_MOVE],
+    wm->atoms[MBWM_ATOM_NET_WM_ACTION_RESIZE],
   };
 
   XChangeProperty (wm->xdpy, win->xwindow,

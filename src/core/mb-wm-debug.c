@@ -34,6 +34,7 @@ static const struct { const char *key; MBWMDebugFlag flag; } debug_keys[] = {
   { "trace",     MBWM_DEBUG_TRACE },
   { "obj-ref",   MBWM_DEBUG_OBJ_REF },
   { "obj-unref", MBWM_DEBUG_OBJ_UNREF },
+  { "xas",       MBWM_DEBUG_XAS },
 };
 #endif
 

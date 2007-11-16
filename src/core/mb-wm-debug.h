@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -33,6 +33,7 @@ typedef enum {
   MBWM_DEBUG_OBJ_REF         = 1 << 6,
   MBWM_DEBUG_OBJ_UNREF       = 1 << 7,
   MBWM_DEBUG_OBJ             = MBWM_DEBUG_OBJ_REF | MBWM_DEBUG_OBJ_UNREF,
+  MBWM_DEBUG_XAS             = 1 << 8,
 } MBWMDebugFlag;
 
 extern int mbwm_debug_flags;

@@ -634,6 +634,8 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 					xev->subwindow,
 					xev->button, 0, 0);
 
+	  XSync (wm->xdpy, False); /* Necessary */
+
 	  if (button->press)
 	    button->press(wm, button, button->userdata);
 	  else
