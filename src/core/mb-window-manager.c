@@ -380,24 +380,42 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
   MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client;
   unsigned long          value_mask;
-  int                    req_x, req_y, req_w, req_h;
+  int                    req_x = xev->x;
+  int                    req_y = xev->y;
+  int                    req_w = xev->width;
+  int                    req_h = xev->height;
   MBGeometry             req_geom, *win_geom;
 
   client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
   if (!client)
     {
-      MBWM_DBG("### No client found for configure event ###");
+      XWindowChanges  xwc;
+      MBWM_DBG ("### No client found for configure event ###\n");
+      /*
+       * We have to allow this window to configure; things like gtk menus
+       * and hildon banners all request configuration before mapping, so
+       * if we did not allow this, things break down.
+       */
+      xwc.x          = req_x;
+      xwc.y          = req_y;
+      xwc.width      = req_w;
+      xwc.height     = req_h;
+      xwc.sibling    = xev->above;
+      xwc.stack_mode = xev->detail;
+
+      XConfigureWindow (wm->xdpy, xev->window, xev->value_mask, &xwc);
+
       return True;
     }
 
   value_mask = xev->value_mask;
   win_geom   = &client->window->geometry;
 
-  req_geom.x      = (value_mask & CWX) ? xev->x : win_geom->x;
-  req_geom.y      = (value_mask & CWY) ? xev->y : win_geom->y;
-  req_geom.width  = (value_mask & CWWidth) ? xev->width : win_geom->width;
-  req_geom.height = (value_mask & CWHeight) ? xev->height : win_geom->height;
+  req_geom.x      = (value_mask & CWX)      ? req_x : win_geom->x;
+  req_geom.y      = (value_mask & CWY)      ? req_y : win_geom->y;
+  req_geom.width  = (value_mask & CWWidth)  ? req_w : win_geom->width;
+  req_geom.height = (value_mask & CWHeight) ? req_h : win_geom->height;
 
 
 #if 0  /* stacking to sort */
@@ -411,7 +429,7 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
     {
       /* No change in window geometry, but needs configure request
        * per ICCCM.
-      */
+       */
       mb_wm_client_synthetic_config_event_queue (client);
       return True;
     }

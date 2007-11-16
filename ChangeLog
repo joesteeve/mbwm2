@@ -1,3 +1,16 @@
+2007-11-16  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_handle_config_request):
+	Respect configure requests for unmanaged windows (necessary for
+	things like gtk menus position to work).
+	
+        * src/core/mb-wm-main-context.c:
+	(mb_wm_main_context_handle_x_event):
+	ConfigureRequest, ConfigureNotify: must use the window member of
+	the struct to identify the window to configure, not
+	XAny.window. Added extra debug output.
+
 2007-11-15  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-atoms.c:
