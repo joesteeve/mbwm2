@@ -1,10 +1,15 @@
+if ENABLE_COMPOSITE
+compmgr_libs = libmb-wm-client-override.a
+endif
+
 noinst_LIBRARIES = libmb-wm-client-app.a 	\
 	           libmb-wm-client-panel.a	\
 	           libmb-wm-client-dialog.a	\
 	           libmb-wm-client-note.a	\
 		   libmb-wm-client-input.a	\
 		   libmb-wm-client-desktop.a    \
-		   libmb-wm-client-menu.a
+		   libmb-wm-client-menu.a	\
+		   $(compmgr_libs)
 
 THEME_LIBS = @MBWM_THEME_LIBS@/libmb-theme.a
 
@@ -19,6 +24,8 @@ libmb_wm_client_note_a_SOURCES    = mb-wm-client-note.c mb-wm-client-note.h
 libmb_wm_client_input_a_SOURCES   = mb-wm-client-input.c mb-wm-client-input.h
 libmb_wm_client_desktop_a_SOURCES = mb-wm-client-desktop.c mb-wm-client-desktop.h
 libmb_wm_client_menu_a_SOURCES    = mb-wm-client-menu.c mb-wm-client-menu.h
+libmb_wm_client_override_a_SOURCES= mb-wm-client-override.c \
+				    mb-wm-client-override.h
 
 
 MAINTAINERCLEANFILES = config.h.in Makefile.in

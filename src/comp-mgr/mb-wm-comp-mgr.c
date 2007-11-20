@@ -245,7 +245,9 @@ mb_wm_comp_mgr_client_show_real (MBWMCompMgrClient * client)
 
       client->picture =
 	XRenderCreatePicture (wm->xdpy,
-			      wm_client->xwin_frame,
+			      wm_client->xwin_frame ?
+			      wm_client->xwin_frame :
+			      wm_client->window->xwindow,
 			      client->is_argb32 ?
 			      XRenderFindStandardFormat (wm->xdpy,
 							 PictStandardARGB32)
@@ -259,7 +261,10 @@ mb_wm_comp_mgr_client_show_real (MBWMCompMgrClient * client)
   if (client->damage != None)
     XDamageDestroy (wm->xdpy, client->damage);
 
-  client->damage = XDamageCreate (wm->xdpy, wm_client->xwin_frame,
+  client->damage = XDamageCreate (wm->xdpy,
+				  wm_client->xwin_frame ?
+				  wm_client->xwin_frame :
+				  wm_client->window->xwindow,
 				  XDamageReportNonEmpty);
 
   region = mb_wm_comp_mgr_client_extents (client);
@@ -1025,12 +1030,9 @@ mb_wm_comp_mgr_client_extents (MBWMCompMgrClient *client)
 
   if (priv->shadow_style)
     {
-      if (ctype == MBWMClientTypeDialog
-#if 0
-	  ctype == MBCLIENT_TYPE_TASK_MENU ||
-	  ctype == MBCLIENT_TYPE_OVERRIDE
-#endif
-	  )
+      if (ctype == MBWMClientTypeDialog   ||
+	  ctype == MBWMClientTypeMenu     ||
+	  ctype == MBWMClientTypeOverride)
 	{
 	  if (priv->shadow_style == MBWM_COMP_MGR_SHADOW_SIMPLE)
 	    {
@@ -1059,7 +1061,10 @@ mb_wm_comp_mgr_client_border_size (MBWMCompMgrClient  * client, int x, int y)
   MBWindowManager       * wm        = wm_client->wmref;
   XserverRegion           border;
 
-  border = XFixesCreateRegionFromWindow (wm->xdpy, wm_client->xwin_frame,
+  border = XFixesCreateRegionFromWindow (wm->xdpy,
+					 wm_client->xwin_frame ?
+					 wm_client->xwin_frame :
+					 wm_client->window->xwindow,
 					 WindowRegionBounding);
   /* translate this */
   XFixesTranslateRegion (wm->xdpy, border, x, y);
@@ -1457,10 +1462,13 @@ mb_wm_comp_mgr_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
       c = mb_wm_managed_client_from_frame (wm, de->drawable);
 
       if (c && c->cm_client)
-	mb_wm_comp_mgr_client_repair_real (c->cm_client);
+	{
+	  mb_wm_comp_mgr_client_repair_real (c->cm_client);
+	}
       else
 	{
-	  MBWM_DBG ("failed to find damaged window \n");
+	  MBWM_DBG ("Failed to find client for window %x\n",
+		    de->drawable);
 	}
     }
 
@@ -1713,6 +1721,8 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 
       if (mb_wm_client_is_mapped (wmc_temp) &&
 	  (type == MBWMClientTypeDialog ||
+	   type == MBWMClientTypeMenu   ||
+	   type == MBWMClientTypeOverride ||
 	   (top_translucent && is_translucent)))
 	{
 	  if (priv->shadow_style)

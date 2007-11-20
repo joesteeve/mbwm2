@@ -4,10 +4,13 @@
 #include "../client-types/mb-wm-client-dialog.h"
 #include "../client-types/mb-wm-client-desktop.h"
 #include "../client-types/mb-wm-client-input.h"
+#include "../client-types/mb-wm-client-note.h"
+#include "../client-types/mb-wm-client-menu.h"
 #include "../theme-engines/mb-wm-theme.h"
 
 #ifdef ENABLE_COMPOSITE
 #include "mb-wm-comp-mgr.h"
+#include "../client-types/mb-wm-client-override.h"
 #endif
 
 #include <stdarg.h>
@@ -36,6 +39,14 @@ mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 static MBWindowManagerClient*
 mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 {
+#ifdef ENABLE_COMPOSITE
+  if (win->override_redirect)
+    {
+      MBWM_DBG ("### override-redirect window ###\n");
+      return mb_wm_client_override_new (wm, win);
+    }
+#endif
+
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     {
       MBWM_DBG ("### is panel ###\n");
@@ -49,14 +60,14 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NOTIFICATION])
     {
       MBWM_DBG ("### is notification ###\n");
-      return mb_wm_client_note_new(wm, win);
+      return mb_wm_client_note_new (wm, win);
     }
   else if (win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_MENU] ||
 	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_POPUP_MENU]||
 	   win->net_type ==wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DROPDOWN_MENU])
     {
       MBWM_DBG ("### is menu ###\n");
-      return mb_wm_client_menu_new(wm, win);
+      return mb_wm_client_menu_new (wm, win);
     }
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DESKTOP])
     {
@@ -460,6 +471,64 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
 }
 
 static Bool
+mb_wm_is_my_window (MBWindowManager *wm, Window xwin)
+{
+  MBWindowManagerClient *c;
+
+  mb_wm_stack_enumerate_reverse(wm, c)
+    if (mb_wm_client_owns_xwindow (c, xwin))
+      return True;
+
+  return False;
+}
+
+#ifdef ENABLE_COMPOSITE
+
+/*  For the compositing engine we need to track overide redirect
+ *  windows so the compositor can paint them.
+ */
+static Bool
+mb_wm_handle_map_notify   (XMapEvent  *xev,
+			   void       *userdata)
+{
+  MBWindowManager       *wm = (MBWindowManager*)userdata;
+  MBWindowManagerClient *client = NULL;
+  MBWindowManagerClass  *wm_class =
+    MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+  MBWMClientWindow *win = NULL;
+
+  if (!wm_class->client_new)
+    {
+      MBWM_DBG("### No new client hook exists ###");
+      return True;
+    }
+
+  if (mb_wm_is_my_window (wm, xev->window))
+    return True;
+
+  win = mb_wm_client_window_new (wm, xev->window);
+
+  if (!win || win->window_class == InputOnly)
+    {
+      mb_wm_object_unref (MB_WM_OBJECT (win));
+      return True;
+    }
+
+  client = wm_class->client_new (wm, win);
+
+  if (!client)
+    {
+      mb_wm_object_unref (MB_WM_OBJECT (win));
+      return True;
+    }
+
+  mb_wm_manage_client (wm, client, True);
+
+  return True;
+}
+#endif
+
+static Bool
 mb_wm_handle_map_request (XMapRequestEvent  *xev,
 			  void              *userdata)
 {
@@ -496,7 +565,7 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
       return True;
     }
 
-  mb_wm_manage_client(wm, client, True);
+  mb_wm_manage_client (wm, client, True);
 
   return True;
 }
@@ -702,7 +771,6 @@ mb_wm_manage_client (MBWindowManager       *wm,
   wm->clients = mb_wm_util_list_append(wm->clients, (void*)client);
 
   /* add to stack and move to position in stack */
-
   mb_wm_stack_append_top (client);
   mb_wm_client_stack(client, 0);
   mb_wm_update_root_win_lists (wm);
@@ -747,7 +815,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
     sync_flags |= MBWMSyncGeometry;
 
   if (destroy)
-    wm->clients = mb_wm_util_list_remove(wm->clients, (void*)client);
+    wm->clients = mb_wm_util_list_remove (wm->clients, (void*)client);
 
   mb_wm_stack_remove (client);
   mb_wm_update_root_win_lists (wm);
@@ -830,7 +898,7 @@ mb_wm_managed_client_from_frame (MBWindowManager *wm, Window frame)
     {
       client = l->data;
 
-      if (client->xwin_frame == frame)
+      if (mb_wm_client_owns_xwindow (client, frame))
 	return client;
 
       l = l->next;
@@ -1079,11 +1147,20 @@ mb_wm_init (MBWMObject *this, va_list vap)
   mb_wm_update_root_win_rectangles (wm);
 
   wm->main_ctx = mb_wm_main_context_new (wm);
+
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     MapRequest,
 			     (MBWMXEventFunc)mb_wm_handle_map_request,
 			     wm);
+
+#ifdef ENABLE_COMPOSITE
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     MapNotify,
+			     (MBWMXEventFunc)mb_wm_handle_map_notify,
+			     wm);
+#endif
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,

@@ -348,4 +348,7 @@ mb_wm_client_title_height (MBWindowManagerClient *client);
 Bool
 mb_wm_client_is_modal (MBWindowManagerClient *client);
 
+Bool
+mb_wm_client_owns_xwindow (MBWindowManagerClient *client, Window xwin);
+
 #endif

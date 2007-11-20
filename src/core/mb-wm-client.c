@@ -314,9 +314,8 @@ mb_wm_client_realize (MBWindowManagerClient *client)
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->realize != NULL);
-
-  klass->realize(client);
+  if (klass->realize)
+    klass->realize(client);
 
   client->priv->realized = True;
 }
@@ -339,11 +338,11 @@ mb_wm_client_stack (MBWindowManagerClient *client,
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->stack != NULL);
-
-  klass->stack(client, flags);
-
-  mb_wm_client_stacking_mark_dirty (client);
+  if (klass->stack)
+    {
+      klass->stack(client, flags);
+      mb_wm_client_stacking_mark_dirty (client);
+    }
 }
 
 Bool
@@ -359,9 +358,8 @@ mb_wm_client_show (MBWindowManagerClient *client)
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->show != NULL);
-
-  klass->show(client);
+  if (klass->show)
+    klass->show (client);
 
   client->priv->mapped = True;
 
@@ -373,7 +371,6 @@ mb_wm_client_show (MBWindowManagerClient *client)
   mb_wm_client_visibility_mark_dirty (client);
 }
 
-
 void
 mb_wm_client_hide (MBWindowManagerClient *client)
 {
@@ -381,14 +378,15 @@ mb_wm_client_hide (MBWindowManagerClient *client)
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->hide != NULL);
+  if (klass->hide)
+    {
+      klass->hide (client);
 
-  klass->hide(client);
+      client->priv->mapped = False;
 
-  client->priv->mapped = False;
-
-  mb_wm_unfocus_client (client->wmref, client);
-  mb_wm_client_visibility_mark_dirty (client);
+      mb_wm_unfocus_client (client->wmref, client);
+      mb_wm_client_visibility_mark_dirty (client);
+    }
 }
 
 /*
@@ -407,9 +405,10 @@ mb_wm_client_focus (MBWindowManagerClient *client)
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->focus != NULL);
+  if (klass->focus)
+    return klass->focus(client);
 
-  return klass->focus(client);
+  return False;
 }
 
 Bool
@@ -457,9 +456,8 @@ mb_wm_client_display_sync (MBWindowManagerClient *client)
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->sync != NULL);
-
-  klass->sync(client);
+  if (klass->sync)
+    klass->sync (client);
 
 #ifdef ENABLE_COMPOSITE
   if (client->cm_client)
@@ -484,9 +482,10 @@ mb_wm_client_request_geometry (MBWindowManagerClient *client,
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
-  MBWM_ASSERT (klass->geometry != NULL);
+  if (klass->geometry)
+    return klass->geometry(client, new_geometry, flags);
 
-  return klass->geometry(client, new_geometry, flags);
+  return False;
 }
 
 MBWMClientLayoutHints
@@ -900,5 +899,27 @@ mb_wm_client_is_modal (MBWindowManagerClient *client)
 {
   return mb_wm_client_window_is_state_set (client->window,
 					   MBWMClientWindowEWMHStateModal);
+}
+
+Bool
+mb_wm_client_owns_xwindow (MBWindowManagerClient *client, Window xwin)
+{
+  MBWMList * l;
+
+  if (client->xwin_frame == xwin || client->window->xwindow == xwin)
+    return True;
+
+  l = client->decor;
+  while (l)
+    {
+      MBWMDecor * d = l->data;
+
+      if (d->xwin == xwin)
+	return True;
+
+      l = l->next;
+    }
+
+  return False;
 }
 

@@ -144,6 +144,8 @@ struct MBWMClientWindow
   unsigned long                  user_time;
 
   int                            gravity;
+  Bool                           override_redirect;
+  int                            window_class;
 };
 
 struct MBWMClientWindowClass

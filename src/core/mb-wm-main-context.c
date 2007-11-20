@@ -185,7 +185,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
        ev_client = mb_wm_managed_client_from_xwindow(wm, xev->xany.window);
 
        printf ("  @ XEvent: '%s:%i' for %lx %s%s\n",
-	       MBWMDEBUGEvents[xev->type],
+	       xev->type < sizeof (MBWMDEBUGEvents)/sizeof (MBWMDEBUGEvents[0])
+	       ? MBWMDEBUGEvents[xev->type] : "unknown",
 	       xev->type,
 	       xev->xany.window,
 	       xev->xany.window == wm->root_win->xwindow ? "(root)" : "",

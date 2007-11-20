@@ -37,6 +37,14 @@ static MBWindowManagerClient*
 maemo_window_manager_client_new_func (MBWindowManager *wm,
 				      MBWMClientWindow *win)
 {
+#ifdef ENABLE_COMPOSITE
+  if (win->override_redirect)
+    {
+      printf ("### override-redirect window ###\n");
+      return mb_wm_client_override_new (wm, win);
+    }
+#endif
+
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     {
       printf("### is panel ###\n");

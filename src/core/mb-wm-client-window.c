@@ -469,9 +469,11 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 	  goto abort;
 	}
 
-      win->visual   = xwin_attr->visual;
-      win->colormap = xwin_attr->colormap;
-      win->gravity  = xwin_attr->win_gravity;
+      win->visual            = xwin_attr->visual;
+      win->colormap          = xwin_attr->colormap;
+      win->gravity           = xwin_attr->win_gravity;
+      win->override_redirect = xwin_attr->override_redirect;
+      win->window_class      = xwin_attr->class;
     }
 
   if (props_req & MBWM_WINDOW_PROP_NAME)

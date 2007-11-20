@@ -12,7 +12,8 @@ CLIENT_LIBS =						\
         @MBWM_CLIENT_LIBS@/libmb-wm-client-menu.a
 
 if ENABLE_COMPOSITE
-COMPMGR_LIBS=@MBWM_COMPMGR_LIBS@/libmatchbox-window-manager-2-compmgr.a
+COMPMGR_LIBS=@MBWM_COMPMGR_LIBS@/libmatchbox-window-manager-2-compmgr.a \
+             @MBWM_CLIENT_LIBS@/libmb-wm-client-override.a
 endif
 
 THEME_LIBS = @MBWM_THEME_LIBS@/libmb-theme.a

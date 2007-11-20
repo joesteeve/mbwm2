@@ -112,15 +112,16 @@ typedef struct MBWMCompMgrClientClass      MBWMCompMgrClientClass;
 
 typedef enum MBWMClientType
 {
-  MBWMClientTypeApp     = (1 << 0),
-  MBWMClientTypeDialog  = (1 << 1),
-  MBWMClientTypePanel   = (1 << 2),
-  MBWMClientTypeDesktop = (1 << 3),
-  MBWMClientTypeInput   = (1 << 4),
-  MBWMClientTypeMenu    = (1 << 5),
-  MBWMClientTypeNote    = (1 << 6),
+  MBWMClientTypeApp      = (1 << 0),
+  MBWMClientTypeDialog   = (1 << 1),
+  MBWMClientTypePanel    = (1 << 2),
+  MBWMClientTypeDesktop  = (1 << 3),
+  MBWMClientTypeInput    = (1 << 4),
+  MBWMClientTypeMenu     = (1 << 5),
+  MBWMClientTypeNote     = (1 << 6),
+  MBWMClientTypeOverride = (1 << 7),
 
-  MBWMClientTypeLast    = MBWMClientTypeInput,
+  MBWMClientTypeLast    = MBWMClientTypeOverride,
 } MBWMClientType;
 
 typedef unsigned long MBWMCookie;
