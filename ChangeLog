@@ -2,29 +2,35 @@
 
         * src/client-types/mb-wm-client-menu.c:
 	(mb_wm_client_menu_init):
+	Changed stacking so that menus always stack on the top.
+
+2007-11-16  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-menu.c:
+	(mb_wm_client_menu_init):
 	Added MBWM_ATOM_NET_WM_ACTION_RESIZE to allowed actions.
-	
+
         * src/core/mb-wm-debug.c:
         * src/core/mb-wm-debug.h:
         * src/core/xas.c:
 	Added xas domain to debug flags to reduce debug msg spam.
-	
+
         * src/core/mb-wm-decor.c:
 	(mb_wm_decor_button_press_handler):
 	Added XSync() to processing of press-activated buttons (the lack
 	of which was causing danling pointer grab in certain situations).
-	
+
         * src/core/mb-wm-main-context.c:
 	(mb_wm_main_context_handle_x_event):
 	Tweaked dbg output some more to improve readability.
-	
+
 2007-11-16  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
 	(mb_wm_handle_config_request):
 	Respect configure requests for unmanaged windows (necessary for
 	things like gtk menus position to work).
-	
+
         * src/core/mb-wm-main-context.c:
 	(mb_wm_main_context_handle_x_event):
 	ConfigureRequest, ConfigureNotify: must use the window member of
@@ -41,7 +47,7 @@
         * src/client-types/mb-wm-client-note.c:
         * src/core/mb-window-manager.c
 	Handling of _NET_WM_ALLOWED_ACTIONS and _MB_CURRENT_APP_WINDOW.
-	
+
         * src/core/mb-wm-decor.c:
         * src/core/mb-wm-decor.h:
 	Reimplemented decor button press/release handling to use a pointer

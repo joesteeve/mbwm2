@@ -71,6 +71,14 @@ mb_wm_client_menu_init (MBWMObject *this, va_list vap)
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefPositionFree|LayoutPrefVisible);
 
+  /*
+   * Stack menus on the top of the stacking order, regardless of whether they
+   * declare themselves transient or not.
+   *
+   * (Gtk menus do kbd and pointer grabs and do not take kindly to being
+   * restacked.)
+   */
+#if 0
   if (win->xwin_transient_for
       && win->xwin_transient_for != win->xwindow
       && win->xwin_transient_for != wm->root_win->xwindow)
@@ -89,6 +97,9 @@ mb_wm_client_menu_init (MBWMObject *this, va_list vap)
       /* Stack with 'always on top' */
       client->stacking_layer = MBWMStackLayerTopMid;
     }
+#else
+  client->stacking_layer = MBWMStackLayerTop;
+#endif
 
   return 1;
 }
