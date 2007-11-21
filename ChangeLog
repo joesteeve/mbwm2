@@ -1,6 +1,13 @@
 2007-11-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
+	(mb_wm_activate_client):
+	Adjust stacking layer of destkop client depending on whether in
+	showing desktop mode or not.
+
+2007-11-21  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
 	(mb_wm_compositing_on):
 	Don't segfault if creation of compositing manager fails.
 
