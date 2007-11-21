@@ -34,6 +34,7 @@ typedef enum {
   MBWM_DEBUG_OBJ_UNREF       = 1 << 7,
   MBWM_DEBUG_OBJ             = MBWM_DEBUG_OBJ_REF | MBWM_DEBUG_OBJ_UNREF,
   MBWM_DEBUG_XAS             = 1 << 8,
+  MBWM_DEBUG_COMPOSITOR      = 1 << 9,
 } MBWMDebugFlag;
 
 extern int mbwm_debug_flags;

@@ -1480,12 +1480,24 @@ mb_wm_comp_mgr_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 
       if (c && c->cm_client)
 	{
+	  MBWM_NOTE (COMPOSITOR,
+		     "Reparing window %x, a %d,%d;%dx%d, g %d,%d;%dx%d\n",
+		     de->drawable,
+		     de->area.x,
+		     de->area.y,
+		     de->area.width,
+		     de->area.height,
+		     de->geometry.x,
+		     de->geometry.y,
+		     de->geometry.width,
+		     de->geometry.height);
+
 	  mb_wm_comp_mgr_client_repair_real (c->cm_client);
 	}
       else
 	{
-	  MBWM_DBG ("Failed to find client for window %x\n",
-		    de->drawable);
+	  MBWM_NOTE (COMPOSITOR, "Failed to find client for window %x\n",
+		     de->drawable);
 	}
     }
 
@@ -1581,10 +1593,9 @@ _render_a_client (MBWMCompMgrClient *client,
 			0, 0, 0, 0, geom.x, geom.y + title_offset,
 			geom.width, geom.height - title_offset);
     }
-
-  /* Render lowlight dialog modal for root - e.g lowlight everything */
-  if (lowlight_type == 2 /* && client->win_modal_blocker == None */)
+  else if (lowlight_type == 2 /* && client->win_modal_blocker == None */)
     {
+      /* Render lowlight dialog modal for root - e.g lowlight everything */
       XRenderComposite (wm->xdpy, PictOpOver, priv->lowlight_picture, None,
 			priv->root_buffer,
 			0, 0, 0, 0, geom.x, geom.y,
@@ -1904,12 +1915,12 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 					shadow_pic,
 					priv->root_buffer,
 					win_geom->x, win_geom->y, 0, 0,
-					geom.x + priv->shadow_dx +win_geom->x,
-					geom.y + priv->shadow_dy +win_geom->y,
+					geom.x + priv->shadow_dx,
+					geom.y + priv->shadow_dy,
 					geom.width +
 					priv->shadow_padding_width,
 					geom.height +
-					priv->shadow_padding_height - win_geom->y);
+					priv->shadow_padding_height);
 
 		      XRenderFreePicture (wm->xdpy, shadow_pic);
 		    }

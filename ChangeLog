@@ -1,5 +1,21 @@
 2007-11-21  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_handle_events_real):
+	Debug output with "compositing" flag.
+
+	(mb_wm_comp_mgr_handle_events_real):
+	Restructured some conditionals.
+
+	(mb_wm_comp_mgr_render_region):
+	Fixed error in offset calculation of shadows.
+
+        * src/core/mb-wm-debug.c:
+        * src/core/mb-wm-debug.h:
+	Added "compositing" option for MB_DEBUG.
+
+2007-11-21  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
         * src/managers/maemo/maemo-window-manager.c:
 	(_window_manager_client_new_func):
