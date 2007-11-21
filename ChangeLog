@@ -1,10 +1,16 @@
 2007-11-21  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_compositing_on):
+	Don't segfault if creation of compositing manager fails.
+
+2007-11-21  Tomas Frydrych  <tf@o-hand.com>
+
         * src/comp-mgr/mb-wm-comp-mgr.c:
 	(mb_wm_comp_mgr_render_region):
-	Make sure that primary client rendering is doen up to first 
+	Make sure that primary client rendering is doen up to first
 	non-translucent application or destktop client.
-	
+
 2007-11-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/comp-mgr/mb-wm-comp-mgr.c:

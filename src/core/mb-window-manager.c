@@ -1608,7 +1608,7 @@ mb_wm_compositing_on (MBWindowManager * wm)
   if (!wm->comp_mgr)
     wm->comp_mgr = mb_wm_comp_mgr_new (wm);
 
-  if (!mb_wm_comp_mgr_enabled (wm->comp_mgr))
+  if (wm->comp_mgr && !mb_wm_comp_mgr_enabled (wm->comp_mgr))
     mb_wm_comp_mgr_turn_on (wm->comp_mgr);
 #endif
 }
