@@ -39,13 +39,15 @@ mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 static MBWindowManagerClient*
 mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 {
-#ifdef ENABLE_COMPOSITE
   if (win->override_redirect)
     {
       MBWM_DBG ("### override-redirect window ###\n");
+#ifdef ENABLE_COMPOSITE
       return mb_wm_client_override_new (wm, win);
-    }
+#else
+      return NULL;
 #endif
+    }
 
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     {
@@ -87,15 +89,16 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
   else if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_NORMAL])
     {
       MBWM_DBG ("### is application ###\n");
-      return mb_wm_client_app_new(wm, win);
+      return mb_wm_client_app_new (wm, win);
     }
   else
     {
 #ifdef MBWM_WANT_DEBUG
       char * name = XGetAtomName (wm->xdpy, win->net_type);
-      printf("### unhandled window type %s ###\n", name);
+      printf("### unhandled window type %s (%x) ###\n", name, win->xwindow);
       XFree (name);
 #endif
+      return mb_wm_client_app_new (wm, win);
     }
 
   return NULL;

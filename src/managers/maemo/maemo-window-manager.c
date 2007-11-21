@@ -37,13 +37,15 @@ static MBWindowManagerClient*
 maemo_window_manager_client_new_func (MBWindowManager *wm,
 				      MBWMClientWindow *win)
 {
-#ifdef ENABLE_COMPOSITE
   if (win->override_redirect)
     {
       printf ("### override-redirect window ###\n");
+#ifdef ENABLE_COMPOSITE
       return mb_wm_client_override_new (wm, win);
-    }
+#else
+      return NULL;
 #endif
+    }
 
   if (win->net_type == wm->atoms[MBWM_ATOM_NET_WM_WINDOW_TYPE_DOCK])
     {
@@ -91,9 +93,10 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
     {
 #if 1
       char * name = XGetAtomName (wm->xdpy, win->net_type);
-      printf("### unhandled window type %s ###\n", name);
+      printf("### unhandled window type %s (%x) ###\n", name, win->xwindow);
       XFree (name);
 #endif
+      return mb_wm_client_app_new (wm, win);
     }
 
   return NULL;

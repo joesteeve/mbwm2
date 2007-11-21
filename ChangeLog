@@ -1,3 +1,15 @@
+2007-11-21  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+        * src/managers/maemo/maemo-window-manager.c:
+	(_window_manager_client_new_func):
+	Treat windows of unknown type that do not have override redirect
+	set as applications.
+
+        * src/comp-mgr/mb-wm-comp-mgr.c:
+	(_render_a_client):
+	Paint decors for translucent windows solid, not translucent.
+
 2007-11-20  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/Makefile.am:
@@ -16,11 +28,11 @@
 
 	Added MBWMClientOverride for handling Override Redirect windows
 	when in compositing mode.
-	
+
         * src/core/mb-wm-main-context.c:
 	(mb_wm_main_context_handle_x_event):
 	Fixed a possible out-of-bounds read when printing debug output.
-	
+
 2007-11-20  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-menu.c:

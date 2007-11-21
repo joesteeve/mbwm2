@@ -1071,6 +1071,23 @@ mb_wm_comp_mgr_client_border_size (MBWMCompMgrClient  * client, int x, int y)
   return border;
 }
 
+static XserverRegion
+mb_wm_comp_mgr_client_window_region (MBWMCompMgrClient  *client,
+				     Window xwin, int x, int y)
+{
+  MBWindowManagerClient * wm_client = client->wm_client;
+  MBWindowManager       * wm        = wm_client->wmref;
+  XserverRegion           region;
+
+  region =
+    XFixesCreateRegionFromWindow (wm->xdpy, xwin, WindowRegionBounding);
+
+  /* translate this */
+  XFixesTranslateRegion (wm->xdpy, region, x, y);
+
+  return region;
+}
+
 static Visual*
 mb_wm_comp_mgr_get_argb32_visual (MBWMCompMgr * mgr)
 {
@@ -1477,8 +1494,8 @@ mb_wm_comp_mgr_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 
 static void
 _render_a_client (MBWMCompMgrClient *client,
-		 XserverRegion       region,
-		 int                 lowlight_type) /*0 none, 1 app, 2 full*/
+		  XserverRegion       region,
+		  int                 lowlight_type) /*0 none, 1 app, 2 full*/
 {
   MBWindowManagerClient  * wm_client = client->wm_client;
   MBWindowManager        * wm        = wm_client->wmref;
@@ -1486,14 +1503,11 @@ _render_a_client (MBWMCompMgrClient *client,
   MBWMCompMgrPrivate     * priv      = mgr->priv;
   MBWMClientType           ctype     = MB_WM_CLIENT_CLIENT_TYPE (wm_client);
   MBGeometry               geom;
-  XserverRegion            winborder;
 
   if (!client->picture)
     return;
 
   mb_wm_client_get_coverage (wm_client, &geom);
-
-  winborder = mb_wm_comp_mgr_client_border_size (client, geom.x, geom.y);
 
   /* Translucency only done for dialogs and overides */
   if ( !client->is_argb32 &&
@@ -1503,6 +1517,10 @@ _render_a_client (MBWMCompMgrClient *client,
 	ctype == MBWMClientTypePanel   ||
 	mb_wm_comp_mgr_client_get_translucency (client) == -1))
     {
+      XserverRegion winborder;
+
+      winborder = mb_wm_comp_mgr_client_border_size (client, geom.x, geom.y);
+
       XFixesSetPictureClipRegion (wm->xdpy, priv->root_buffer, 0, 0, region);
 
       XFixesSubtractRegion (wm->xdpy, region, region, winborder);
@@ -1512,7 +1530,42 @@ _render_a_client (MBWMCompMgrClient *client,
 			None, priv->root_buffer,
 			0, 0, 0, 0,
 			geom.x, geom.y, geom.width, geom.height);
+
+      XFixesDestroyRegion (wm->xdpy, winborder);
     }
+  else if (client->is_argb32 ||
+	   mb_wm_comp_mgr_client_get_translucency (client) != -1)
+    {
+      /*
+       * If the client is translucent, paint the decors only (solid).
+       */
+      MBWMList * l = wm_client->decor;
+
+      while (l)
+	{
+	  MBWMDecor     * d = l->data;
+	  MBGeometry    * g = & d->geom;
+	  XserverRegion   r;
+
+	  r = mb_wm_comp_mgr_client_window_region (client, d->xwin,
+						   g->x, g->y);
+
+	  XFixesSetPictureClipRegion (wm->xdpy, priv->root_buffer, 0, 0, r);
+	  XFixesSubtractRegion (wm->xdpy, region, region, r);
+
+	  XRenderComposite (wm->xdpy, PictOpSrc,
+			    client->picture,
+			    None, priv->root_buffer,
+			    0, 0, 0, 0,
+			    geom.x + g->x, geom.y + g->y,
+			    g->width, g->height);
+
+	  XFixesDestroyRegion (wm->xdpy, r);
+
+	  l = l->next;
+	}
+    }
+
 
   /* Render lowlight dialog modal for app */
   if (lowlight_type == 1 &&
@@ -1546,8 +1599,6 @@ _render_a_client (MBWMCompMgrClient *client,
 
   client->border_clip = XFixesCreateRegion (wm->xdpy, 0, 0);
   XFixesCopyRegion (wm->xdpy, client->border_clip, region);
-
-  XFixesDestroyRegion (wm->xdpy, winborder);
 }
 
 static void
@@ -1784,9 +1835,13 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 					priv->shadow_padding_height);
 		    }
 
-		  /* Paint any translucent window contents */
+		  /* Paint any translucent window contents, but no the
+		   * decors.
+		   */
 		  if (is_translucent)
 		    {
+		      MBGeometry * win_geom = & wmc_temp->window->geometry;
+
 		      XFixesDestroyRegion (wm->xdpy, shadow_region);
 
 		      shadow_region =
@@ -1801,22 +1856,26 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 		      if (c->is_argb32)
 			XRenderComposite (wm->xdpy, PictOpOver,
 					  c->picture, None,
-					  priv->root_buffer, 0, 0, 0, 0,
-					  geom.x, geom.y,
-					  geom.width, geom.height);
-
+					  priv->root_buffer,
+					  win_geom->x, win_geom->y, 0, 0,
+					  win_geom->x + geom.x,
+					  win_geom->y + geom.y,
+					  win_geom->width, win_geom->height);
 		      else
 			XRenderComposite (wm->xdpy, PictOpOver,
 					  c->picture, priv->trans_picture,
-					  priv->root_buffer, 0, 0, 0, 0,
-					  geom.x, geom.y,
-					  geom.width, geom.height);
+					  priv->root_buffer,
+					  win_geom->x, win_geom->y, 0, 0,
+					  win_geom->x + geom.x,
+					  win_geom->y + geom.y,
+					  win_geom->width, win_geom->height);
 		    }
 
 		  XFixesDestroyRegion (wm->xdpy, shadow_region);
 		}
 	      else 		/* GAUSSIAN */
 		{
+		  MBGeometry * win_geom = & wmc_temp->window->geometry;
 
 		  XFixesSetPictureClipRegion (wm->xdpy, priv->root_buffer,
 					      0, 0, c->border_clip);
@@ -1826,9 +1885,11 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 		      /* No shadows currently for transparent windows */
 		      XRenderComposite (wm->xdpy, PictOpOver,
 					c->picture, priv->trans_picture,
-					priv->root_buffer, 0, 0, 0, 0,
-					geom.x, geom.y,
-					geom.width, geom.height);
+					priv->root_buffer,
+					win_geom->x, win_geom->y, 0, 0,
+					win_geom->x + geom.x,
+					win_geom->y + geom.y,
+					win_geom->width, win_geom->height);
 		    }
 		  else
 		    {
@@ -1842,13 +1903,13 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 					priv->black_picture,
 					shadow_pic,
 					priv->root_buffer,
-					0, 0, 0, 0,
-					geom.x + priv->shadow_dx,
-					geom.y + priv->shadow_dy,
+					win_geom->x, win_geom->y, 0, 0,
+					geom.x + priv->shadow_dx +win_geom->x,
+					geom.y + priv->shadow_dy +win_geom->y,
 					geom.width +
 					priv->shadow_padding_width,
 					geom.height +
-					priv->shadow_padding_height);
+					priv->shadow_padding_height - win_geom->y);
 
 		      XRenderFreePicture (wm->xdpy, shadow_pic);
 		    }
