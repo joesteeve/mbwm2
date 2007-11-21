@@ -1,6 +1,13 @@
 2007-11-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_render_region):
+	Make sure that primary client rendering is doen up to first 
+	non-translucent application or destktop client.
+	
+2007-11-21  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/comp-mgr/mb-wm-comp-mgr.c:
 	(mb_wm_comp_mgr_handle_events_real):
 	Debug output with "compositing" flag.
 

@@ -1724,7 +1724,8 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 
       /*
        * Render clients until we reach first client on/below the top
-       * which is not translucent.
+       * which is not translucent and is either and application or desktop
+       * (to have adequate coverage).
        */
       if (wmc_temp == wmc_top)
 	{
@@ -1732,6 +1733,8 @@ mb_wm_comp_mgr_render_region (MBWMCompMgr *mgr, XserverRegion region)
 	}
 
       if (done &&
+	  (MB_WM_CLIENT_CLIENT_TYPE (wmc_temp) &
+	   (MBWMClientTypeApp | MBWMClientTypeDesktop)) &&
 	 !wmc_temp->cm_client->is_argb32 &&
 	  mb_wm_comp_mgr_client_get_translucency (wmc_temp->cm_client) == -1)
 	{
