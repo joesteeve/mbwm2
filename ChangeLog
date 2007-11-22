@@ -1,3 +1,8 @@
+2007-11-22  Tomas Frydrych  <tf@o-hand.com>
+
+        * doc/MBWM2-Overview.xml:
+	Brief overview of the MBWM2 framework.
+
 2007-11-21  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

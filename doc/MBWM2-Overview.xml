@@ -1,0 +1,275 @@
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+
+<article id="mbwm2-overview" lang="en">
+  <articleinfo>
+
+    <title>Matchbox Window Manager II</title>
+	<subtitle>Overview</subtitle>
+
+    <author>
+      <firstname>Tomas</firstname> <surname>Frydrych</surname>
+      <affiliation>
+        <orgname>OpenedHand Ltd</orgname>
+      </affiliation>
+      <email>tf@o-hand.com</email>
+    </author>
+
+    <revhistory>
+      <revision>
+         <revnumber>0.1</revnumber>
+         <date>22 November 2007</date>
+         <revremark>Initial draft</revremark>
+      </revision>
+    </revhistory>
+  </articleinfo>
+
+  <?hard-pagebreak?>
+
+  <section id="intro">
+    <title>Introduction</title>
+
+    <para>Matchbox Window Manager II is a component framework for building
+    customized window managers providing PDA-like, restricted-stack, window
+    management compliant with the <ulink
+    url='http://tronche.com/gui/x/icccm/'>ICCCM</ulink> and <ulink
+    url='http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html'>NET
+    WM</ulink> specifications.
+    </para>
+
+    <para>Matchbox Window Manager II (MBWM2) builds on the success of the
+    original Matchbox Window Manager, using the same window-management paradigm,
+    but offering significantly greater flexibility making it easy to create
+    custom managers matching requirements for specific HW and UI design.
+    </para>
+
+    <para>The framework is built on the top of a lightweight object system, and
+    provides a set of ready-made building blocks encapsulating the key parts and
+    functionality of a window manager. The object system makes it easy to
+    subclass the provided objects to achieve the required behaviour.
+    </para>
+
+
+    <para>The key features of the MBWM2 framework are:
+    </para>
+
+    <itemizedlist>
+      <listitem>
+	<para>Ready-made client types for standard window types as defined by
+	the <ulink url='http://tronche.com/gui/x/icccm/'>ICCCM</ulink> and
+	<ulink
+	url='http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html'>NET
+	WM</ulink> specifications.
+        </para>
+      </listitem>
+
+      <listitem>
+	<para>Theme engines allowing powerfull and yet minimal-effort theming.
+        </para>
+      </listitem>
+
+      <listitem>
+	<para>Window-compositing capabilities (optional).
+        </para>
+      </listitem>
+
+      <listitem>
+	<para>Support for GLib main loop (optional).
+        </para>
+      </listitem>
+
+    </itemizedlist>
+
+  </section>
+
+  <?hard-pagebreak?>
+
+  <section id="key-blocks">
+    <title>Key Building Blocks</title>
+
+    <para>This section of the document describes the key blocks that are used to
+    build a MBWM2 manager.
+    </para>
+
+    <section id="MBWindowManagerClient">
+      <title>MBWindowManagerClient</title>
+
+      <para>Each window managed by MBWM2 is encapsulated by a client
+      object. MBWindowManagerClient is the base, abstract, type which provides
+      API for manipulating the client objects, decorating the wrapped window as
+      required.
+      </para>
+
+      <para>The base MBWindowManager type is subclassed to handle specific
+      window types. The framework provides client types for standard window
+      types:
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>MBWMClientApp, encapsulating top-level application windows.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientDialog, encapsulating dialogues.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientPanel, encapsulating panels, such as task-switchers.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientDesktop, encapsulating a desktop application.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientInput, encapsulating input windows, such as virtual
+	  keyboards.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientMenu, encapsulating menus.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientNote, encapsulating non-interactive message windows.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientApp, encapsulating top-level application windows.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMClientOverride, encapsulating windows with override-redirect
+	  attribute set (this type is only used when running in compositing mode).
+          </para>
+	</listitem>
+      </itemizedlist>
+
+      <para>Each individual client-type provides specific behaviour, primarily
+      in regards to resizing and stacking.
+      </para>
+
+    </section>
+
+    <section id="MBWMTheme">
+      <title>MBWMTheme</title>
+
+      <para>The MBWMTheme is an abstract object encapsulating a theme
+      engine. It handles parsing of the XML theme description, API for quering
+      various parameters that are specified by a theme, and API for drawing
+      window decorations for specific client types.
+      </para>
+
+      <para>The framework provides three different theme engines:
+      </para>
+
+      <itemizedlist>
+	<listitem>
+	  <para>MBWMThemeCairo; this is the default engine that uses the <ulink
+	  url='http://cairographics.org/'>Cairo</ulink> graphics library to draw
+	  window decorations. It allows for simple effects, such as gradients on
+	  the decors.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMThemeSimple; this is an alternative default engine that uses
+	  only basic Xlib API for drawing the window decors. It is build when
+	  the Cairo theme engine is disabled with --disable-cairo-theme
+	  configure option.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>MBWMThemePng; a theme engine which 'cuts out' window decorations
+	  from a single PNG template image. This engine makes it possible to
+	  design complex, visually impressive, themes with minimal effort. It
+	  needs to be enabled explicitely with --enable-png-theme.
+          </para>
+	</listitem>
+      </itemizedlist>
+
+    </section>
+
+    <section id="MBWMLayout">
+      <title>MBWMLayout</title>
+
+      <para>MBWMLayout provides the logic for distributing the screen real
+      estate between the managed clients.
+      </para>
+
+    </section>
+
+    <section id="MBWMMainContext">
+      <title>MBWMMainContext</title>
+
+      <para>MBWMMainContext is an object encapsulating main loop
+      functionality. It provides API for adding timeouts, custom x-event
+      handlers and FD watches.
+      </para>
+
+      <para>Optionally, the MBWMMainContext allows for the use of a GLib main
+      loop, making it possible to integrate the MBWM2 with other components that
+      use (and rely on) the GLib main loop. For this functionality,
+      --enable-glib-main-loop should be used at configure time.
+      </para>
+    </section>
+
+    <section id="MBWindowManager">
+      <title>MBWindowManager</title>
+
+      <para>MBWindowManager is the core object representing the window manager
+      itself. It provides the essential functionality of the manager, which in
+      most cases will be extended through a custom subclassed object.
+      </para>
+
+    </section>
+
+  </section>
+
+  <section id="minimal-manager">
+    <title>Creating a Minimal Window Manager</title>
+
+    <para>A basic window manager can be created with a dozen or so lines of code;
+    for an example see src/managers/simple.
+    </para>
+
+  </section>
+
+  <?hard-pagebreak?>
+
+  <section id="contact">
+    <title>OpenedHand Contact Information</title>
+
+    <literallayout>
+OpenedHand Ltd
+Unit R, Homesdale Business Center
+216-218 Homesdale Rd
+Bromley, BR1 2QZ
+England
++44 (0) 208 819 6559
+info@openedhand.com</literallayout>
+
+    <!-- Fop messes this up so we do like above
+    <address>
+        OpenedHand Ltd
+        Unit R, Homesdale Business Center
+        <street>216-218 Homesdale Rd</street>
+        <city>Bromley</city>, <postcode>BR1 2QZ</postcode>
+        <country>England</country>
+        <phone> +44 (0) 208 819 6559</phone>
+        <email>info@openedhand.com</email>
+    </address>
+    -->
+  </section>
+
+</article>
