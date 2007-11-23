@@ -8,10 +8,6 @@ mb_wm_client_menu_request_geometry (MBWindowManagerClient *client,
 				    MBWMClientReqGeomType  flags);
 
 static void
-mb_wm_client_menu_stack (MBWindowManagerClient *client,
-			 int                    flags);
-
-static void
 mb_wm_client_menu_realize (MBWindowManagerClient *client)
 {
   /* No frame for menus */
@@ -28,20 +24,11 @@ mb_wm_client_menu_class_init (MBWMObjectClass *klass)
 
   client->client_type  = MBWMClientTypeMenu;
   client->geometry     = mb_wm_client_menu_request_geometry;
-  client->stack        = mb_wm_client_menu_stack;
   client->realize      = mb_wm_client_menu_realize;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientMenu";
 #endif
-}
-
-static void
-mb_wm_client_menu_stack (MBWindowManagerClient *client,
-			   int                    flags)
-{
-  MBWM_MARK();
-  mb_wm_stack_move_top(client);
 }
 
 static void

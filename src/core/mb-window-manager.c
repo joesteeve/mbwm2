@@ -1289,17 +1289,9 @@ mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
   is_desktop  = (MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeDesktop);
 
   if (is_desktop)
-    {
-      wm->flags |= MBWindowManagerFlagDesktop;
-      c->stacking_layer = MBWMStackLayerTopMid;
-    }
+    wm->flags |= MBWindowManagerFlagDesktop;
   else
-    {
-      wm->flags &= ~MBWindowManagerFlagDesktop;
-
-      if (wm->desktop)
-	wm->desktop->stacking_layer = MBWMStackLayerBottom;
-    }
+    wm->flags &= ~MBWindowManagerFlagDesktop;
 
   mb_wm_client_show (c);
   mb_wm_focus_client (wm, c);

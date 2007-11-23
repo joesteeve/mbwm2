@@ -111,14 +111,57 @@ mb_wm_layout_clip_geometry (MBGeometry *geom,
   if (flags & SET_WIDTH)
     if (geom->x + geom->width > min->x + min->width)
       {
+	int old_width = geom->width;
+
 	geom->width = min->x + min->width - geom->x;
+
+	/*
+	 * if we are about to reduce the width, and are asked also to set the x
+	 * coord, see if we can move the window left so it can be bigger.
+	 */
+	if ((flags & SET_X) && old_width > geom->width && geom->x > min->x)
+	  {
+	    int w_diff = old_width - geom->width;
+	    int x = geom->x - w_diff;
+	    int x_diff;
+
+	    if (x < min->x)
+	      x = min->x;
+
+	    x_diff = geom->x - x;
+
+	    geom->x = x;
+	    geom->width += x_diff;
+	  }
+
 	changed = True;
       }
 
   if (flags & SET_HEIGHT)
     if (geom->y + geom->height > min->y + min->height)
       {
+	int old_height = geom->height;
+
 	geom->height = min->y + min->height - geom->y;
+
+	/*
+	 * if we are about to reduce the height, and are asked also to set the
+	 * y coord, see if we can move the window up so it can be bigger.
+	 */
+	if ((flags & SET_Y) && old_height > geom->height && geom->y > min->y)
+	  {
+	    int h_diff = old_height - geom->height;
+	    int y = geom->y - h_diff;
+	    int y_diff;
+
+	    if (y < min->y)
+	      y = min->y;
+
+	    y_diff = geom->y - y;
+
+	    geom->y = y;
+	    geom->height += y_diff;
+	  }
 	changed = True;
       }
 

@@ -57,6 +57,19 @@ mb_geometry_compare (MBGeometry *g1, MBGeometry *g2)
 	  && g1->height == g2->height);
 }
 
+Bool  /* True if overlaps */
+mb_geometry_intersects (MBGeometry *g1, MBGeometry *g2)
+{
+  if ((g1->x > g2->x + g2->width)  ||
+      (g1->y > g2->y + g2->height) ||
+      (g2->x > g1->x + g1->width)  ||
+      (g2->y > g1->y + g1->height))
+    return False;
+
+  return True;
+}
+
+
 void
 mb_wm_util_fatal_error (char *msg)
 {

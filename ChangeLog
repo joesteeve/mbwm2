@@ -1,5 +1,55 @@
 2007-11-23  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+        * src/client-types/mb-wm-client-desktop.c:
+        * src/client-types/mb-wm-client-panel.c:
+        * src/client-types/mb-wm-client-menu.c:
+        * src/client-types/mb-wm-client-dialog.c:
+        * src/client-types/mb-wm-client-input.c:
+        * src/core/mb-window-manager.c:
+
+	Added virtual stacking_layer() method to MBWindowManagerClient to
+	allow clients to dynamically change their stacking requirement
+	(e.g., desktop client in normal and 'showing desktop' mode).
+
+	Removed class-specific implementations of stack() methods for
+	clients that duplicated the basic behaviour provided by
+	MBWMClientBase.
+
+        * src/managers/maemo/maemo-toolbar.c:
+	(maemo_toolbar_stack):
+	Fixed up to handle correctly case where dialogs might need to be
+	stacked above the floating status bar (e.g., when input method is
+	present).
+
+        * src/core/mb-wm-layout.c:
+	(mb_wm_layout_clip_geometry):
+	Fixed so as to prioritize window size over window position for
+	free-positioned clients (e.g., when resizing dialogs due to the
+	presence of the input method).
+
+        * src/core/mb-wm-stack.c:
+	(mb_wm_stack_ensure):
+	Use mb_wm_client_get_stacking_layer() instead of accessing the
+	MBWindowManagerClient struct (to allow for dynamic layer
+	definition).
+
+	Use  mb_wm_client_stack() to move clients, rather than
+	mb_wm_stack_move_top (); this allows for clients whose stacking
+	requirements change depending on the content of the stack to be
+	handled correctly.
+
+	(mb_wm_stack_get_highest_by_type):
+	Fixed to handle or-ed client types correctly; speeded up by
+	reversing direction of search.
+
+        * src/core/mb-wm-util.c:
+        * src/core/mb-wm-util.h:
+	Added mb_geometry_intersects() convenience function.
+
+2007-11-23  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
 	(mb_wm_manage_client):
 	(mb_wm_unmanage_client):

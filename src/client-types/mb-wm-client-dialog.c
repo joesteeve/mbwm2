@@ -14,10 +14,6 @@ static void
 mb_wm_client_dialog_theme_change (MBWindowManagerClient *client);
 
 static void
-mb_wm_client_dialog_stack (MBWindowManagerClient *client,
-			   int                    flags);
-
-static void
 mb_wm_client_dialog_show (MBWindowManagerClient *client)
 {
   MBWindowManagerClientClass  *parent_klass = NULL;
@@ -77,21 +73,12 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
 
   client->client_type  = MBWMClientTypeDialog;
   client->geometry     = mb_wm_client_dialog_request_geometry;
-  client->stack        = mb_wm_client_dialog_stack;
   client->show         = mb_wm_client_dialog_show;
   client->theme_change = mb_wm_client_dialog_theme_change;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientDialog";
 #endif
-}
-
-static void
-mb_wm_client_dialog_stack (MBWindowManagerClient *client,
-			   int                    flags)
-{
-  MBWM_MARK();
-  mb_wm_stack_move_top(client);
 }
 
 static void

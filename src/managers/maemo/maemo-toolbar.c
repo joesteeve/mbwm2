@@ -26,6 +26,12 @@ maemo_toolbar_request_geometry (MBWindowManagerClient *client,
 				MBWMClientReqGeomType  flags);
 
 static void
+maemo_toolbar_stack (MBWindowManagerClient *client);
+
+static MBWMStackLayerType
+maemo_toolbar_stacking_layer (MBWindowManagerClient *client);
+
+static void
 maemo_toolbar_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -35,6 +41,8 @@ maemo_toolbar_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypePanel;
 
   client->geometry = maemo_toolbar_request_geometry;
+  client->stack = maemo_toolbar_stack;
+  client->stacking_layer = maemo_toolbar_stacking_layer;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MaemoToolbar";
@@ -200,6 +208,58 @@ maemo_toolbar_request_geometry (MBWindowManagerClient *client,
 #endif
 
   return True;
+}
+
+static MBWMStackLayerType
+maemo_toolbar_stacking_layer (MBWindowManagerClient *client)
+{
+  /*
+   * If we are showing desktop, ensure that we stack above it.
+   */
+  if (client->wmref->flags & MBWindowManagerFlagDesktop)
+    return MBWMStackLayerTopMid;
+
+  return client->stacking_layer;
+}
+
+static void
+maemo_toolbar_stack (MBWindowManagerClient *client)
+{
+  MBWindowManagerClient * below;
+  MBGeometry              geom;
+
+  /*
+   * If this is 'normal' panel, i.e., the TN, we stack with the default
+   * value set by maemo_toolbar_init().
+   *
+   * If this is the status bar, where we stack depends on the rest of the
+   * stack:
+   *
+   *   * If the client below us is a dialog, and it's geometry overlaps
+   *     with us (i.e., dialog moved because of the presence of the input
+   *     method, we need to stack below it.
+   *
+   *   * For rest, we stack as normal.
+   */
+
+  if (!(client->layout_hints & LayoutPrefOverlaps) ||
+      !(below = client->stacked_below)             ||
+      (MB_WM_CLIENT_CLIENT_TYPE (below) != MBWMClientTypeDialog))
+    {
+      mb_wm_stack_move_top (client);
+      return;
+    }
+
+  mb_wm_client_get_coverage (below, & geom);
+
+  if (!mb_geometry_intersects (&geom, &client->window->geometry))
+    {
+      mb_wm_stack_move_top (client);
+      return;
+    }
+
+  mb_wm_stack_move_client_above_type (client,
+				     MBWMClientTypeApp|MBWMClientTypeDesktop);
 }
 
 static void

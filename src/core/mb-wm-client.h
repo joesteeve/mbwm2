@@ -114,6 +114,8 @@ typedef  void (*MBWMClientThemeChangeMethod) (MBWindowManagerClient *client);
 
 typedef  void (*MBWMClientDetransitise) (MBWindowManagerClient *client);
 
+typedef  MBWMStackLayerType (*MBWMClientStackingLayer)(MBWindowManagerClient*);
+
 struct MBWindowManagerClientClass
 {
   MBWMObjectClass              parent;
@@ -129,6 +131,7 @@ struct MBWindowManagerClientClass
   MBWMClientFocusMethod        focus;
   MBWMClientThemeChangeMethod  theme_change;
   MBWMClientDetransitise       detransitise;
+  MBWMClientStackingLayer      stacking_layer;
 };
 
 struct MBWindowManagerClient
@@ -350,5 +353,8 @@ mb_wm_client_is_modal (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_owns_xwindow (MBWindowManagerClient *client, Window xwin);
+
+MBWMStackLayerType
+mb_wm_client_get_stacking_layer (MBWindowManagerClient *client);
 
 #endif

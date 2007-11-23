@@ -37,6 +37,7 @@ mb_wm_stack_dump (MBWindowManager *wm)
 {
 #if (MBWM_WANT_DEBUG)
   MBWindowManagerClient *client;
+  MBWMStackLayerType     stacking_layer;
 
   fprintf(stderr, "\n==== window stack =====\n");
 
@@ -57,12 +58,14 @@ mb_wm_stack_dump (MBWindowManager *wm)
 	  strcpy(&prefix[i*2], " +--");
 	}
 
+      stacking_layer = mb_wm_client_get_stacking_layer (client);
+
       fprintf(stderr, "%s XID: %lx NAME: %s, type %d, layer %d\n",
 	      prefix,
 	      MB_WM_CLIENT_XWIN(client),
 	      client->window->name ? client->window->name : "unknown",
 	      MB_WM_CLIENT_CLIENT_TYPE (client),
-	      client->stacking_layer);
+	      stacking_layer);
     }
 
   fprintf(stderr, "======================\n\n");
@@ -74,6 +77,7 @@ mb_wm_stack_ensure (MBWindowManager *wm)
 {
   MBWindowManagerClient *client, *seen, *next;
   int                    i;
+  MBWMStackLayerType     stacking_layer;
 
   if (wm->stack_bottom == NULL)
     return;
@@ -105,7 +109,9 @@ mb_wm_stack_ensure (MBWindowManager *wm)
 	  while (next && mb_wm_client_get_transient_for (next))
 	    next = next->stacked_above;
 
-	  if (client->stacking_layer == i
+	  stacking_layer = mb_wm_client_get_stacking_layer (client);
+
+	  if (stacking_layer == i
 	      && mb_wm_client_get_transient_for (client) == NULL)
 	    {
 	      /* Keep track of the first client modified so we
@@ -114,22 +120,12 @@ mb_wm_stack_ensure (MBWindowManager *wm)
 	      if (seen == NULL)
 		seen = client;
 
-	      mb_wm_stack_move_top (client);
-
-	      /* push transients to the top also */
-	      mb_wm_util_list_foreach
-		(mb_wm_client_get_transients (client),
-		 (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach,
-		 NULL);
+	      mb_wm_client_stack (client, 0);
 	    }
 	  client = next;
 	}
     }
 
-  /* TODO: add a call here into clients stack method so they can overide
-   *       these rules and do specific tweaks - i.e a dialog transient to
-   *       a panel may want to be on a different layer.
-   */
   mb_wm_stack_dump (wm);
 }
 
@@ -212,15 +208,13 @@ MBWindowManagerClient*
 mb_wm_stack_get_highest_by_type (MBWindowManager       *wm,
 				 MBWMClientType         type)
 {
-  MBWindowManagerClient *highest_client = NULL, *c = NULL;
+  MBWindowManagerClient *c = NULL;
 
-  mb_wm_stack_enumerate(wm,c)
-    {
-      if (MB_WM_CLIENT_CLIENT_TYPE(c) == type)
-	highest_client = c;
-    }
+  mb_wm_stack_enumerate_reverse (wm,c)
+    if (MB_WM_CLIENT_CLIENT_TYPE(c) & type)
+      return c;
 
-  return highest_client;
+  return NULL;
 }
 
 MBWindowManagerClient*
@@ -230,7 +224,7 @@ mb_wm_stack_get_lowest_by_type(MBWindowManager *w, MBWMClientType wanted_type)
   MBWindowManagerClient *c = NULL;
 
   mb_wm_stack_enumerate(w,c)
-    if (MB_WM_CLIENT_CLIENT_TYPE(c) == wanted_type)
+    if (MB_WM_CLIENT_CLIENT_TYPE(c) & wanted_type)
       return c;
 
   return NULL;
@@ -251,7 +245,7 @@ mb_wm_stack_cycle_by_type(MBWindowManager *wm, MBWMClientType type,
 
       prev = highest->stacked_below;
 
-      while (prev && (type != MB_WM_CLIENT_CLIENT_TYPE (prev)))
+      while (prev && (!(type & MB_WM_CLIENT_CLIENT_TYPE (prev))))
 	{
 	  prev = prev->stacked_below;
 	}

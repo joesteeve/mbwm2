@@ -8,8 +8,8 @@ mb_wm_client_desktop_request_geometry (MBWindowManagerClient *client,
 				       MBGeometry            *new_geometry,
 				       MBWMClientReqGeomType  flags);
 
-static void
-mb_wm_client_desktop_stack (MBWindowManagerClient *client, int flags);
+static MBWMStackLayerType
+mb_wm_client_desktop_stacking_layer (MBWindowManagerClient *client);
 
 static void
 mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
@@ -24,7 +24,7 @@ mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
 
   client->client_type = MBWMClientTypeDesktop;
   client->geometry = mb_wm_client_desktop_request_geometry;
-  client->stack = mb_wm_client_desktop_stack;
+  client->stacking_layer = mb_wm_client_desktop_stacking_layer;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientDesktop";
@@ -126,12 +126,15 @@ mb_wm_client_desktop_request_geometry (MBWindowManagerClient *client,
     }
 }
 
-static void
-mb_wm_client_desktop_stack (MBWindowManagerClient *client, int flags)
+static MBWMStackLayerType
+mb_wm_client_desktop_stacking_layer (MBWindowManagerClient *client)
 {
-  MBWM_MARK();
-  mb_wm_stack_move_top(client);
+  if (client->wmref->flags & MBWindowManagerFlagDesktop)
+    return MBWMStackLayerMid;
+
+  return MBWMStackLayerBottom;
 }
+
 
 MBWindowManagerClient*
 mb_wm_client_desktop_new (MBWindowManager *wm, MBWMClientWindow *win)

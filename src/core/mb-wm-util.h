@@ -57,6 +57,9 @@ mb_wm_util_warn (const char *format, ...);
 Bool  /* True if matching */
 mb_geometry_compare (MBGeometry *g1, MBGeometry *g2);
 
+Bool  /* True if overlaps */
+mb_geometry_intersects (MBGeometry *g1, MBGeometry *g2);
+
 /* XErrors */
 
 void

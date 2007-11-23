@@ -923,3 +923,16 @@ mb_wm_client_owns_xwindow (MBWindowManagerClient *client, Window xwin)
   return False;
 }
 
+MBWMStackLayerType
+mb_wm_client_get_stacking_layer (MBWindowManagerClient *client)
+{
+  MBWindowManagerClientClass *klass;
+
+  klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
+
+  if (klass->stacking_layer)
+    return klass->stacking_layer (client);
+
+  return client->stacking_layer;
+}
+

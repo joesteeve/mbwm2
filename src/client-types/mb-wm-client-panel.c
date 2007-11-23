@@ -8,6 +8,9 @@ mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
 				     MBGeometry            *new_geometry,
 				     MBWMClientReqGeomType  flags);
 
+static MBWMStackLayerType
+mb_wm_client_panel_stacking_layer (MBWindowManagerClient *client);
+
 static void
 mb_wm_client_panel_class_init (MBWMObjectClass *klass)
 {
@@ -18,6 +21,7 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypePanel;
   client->realize  = mb_wm_client_panel_realize;
   client->geometry = mb_wm_client_panel_request_geometry;
+  client->stacking_layer = mb_wm_client_panel_stacking_layer;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientPanel";
@@ -104,6 +108,17 @@ mb_wm_client_panel_request_geometry (MBWindowManagerClient *client,
   return True;
 }
 
+static MBWMStackLayerType
+mb_wm_client_panel_stacking_layer (MBWindowManagerClient *client)
+{
+  /*
+   * If we are showing desktop, ensure that we stack above it.
+   */
+  if (client->wmref->flags & MBWindowManagerFlagDesktop)
+    return MBWMStackLayerTopMid;
+
+  return client->stacking_layer;
+}
 
 MBWindowManagerClient*
 mb_wm_client_panel_new(MBWindowManager *wm, MBWMClientWindow *win)
