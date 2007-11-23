@@ -78,7 +78,7 @@ mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
   client->stacking_layer = MBWMStackLayerBottom;
 
   mb_wm_client_set_layout_hints (client,
-				 LayoutPrefGrowToFreeSpace|LayoutPrefVisible);
+				 LayoutPrefFullscreen|LayoutPrefVisible);
 
   return 1;
 }

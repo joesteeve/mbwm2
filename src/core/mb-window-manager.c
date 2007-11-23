@@ -778,9 +778,9 @@ mb_wm_manage_client (MBWindowManager       *wm,
   mb_wm_client_stack(client, 0);
   mb_wm_update_root_win_lists (wm);
 
-  if (MB_WM_IS_CLIENT_PANEL(client))
+  if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypePanel)
     mb_wm_update_root_win_rectangles (wm);
-  else if (MB_WM_IS_CLIENT_DESKTOP(client))
+  else if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypeDesktop)
     wm->desktop = client;
 
 #ifdef ENABLE_COMPOSITE
@@ -823,7 +823,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   mb_wm_stack_remove (client);
   mb_wm_update_root_win_lists (wm);
 
-  if (MB_WM_IS_CLIENT_PANEL(client))
+  if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypePanel)
     mb_wm_update_root_win_rectangles (wm);
 
   /*
@@ -998,21 +998,20 @@ mb_wm_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
 
   mb_wm_stack_enumerate(wm, c)
      {
-       if (!mb_wm_client_is_mapped (c) || !MB_WM_IS_CLIENT_PANEL (c))
+       if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypePanel ||
+	   ((hints = mb_wm_client_get_layout_hints (c)) & LayoutPrefOverlaps))
 	 continue;
 
        mb_wm_client_get_coverage (c, & p_geom);
 
-       hints = mb_wm_client_get_layout_hints (c);
-
        if (LayoutPrefReserveEdgeNorth & hints)
-	 geom->x += p_geom.height;
+	 geom->y += p_geom.height;
 
        if (LayoutPrefReserveEdgeSouth & hints)
 	 geom->height -= p_geom.height;
 
        if (LayoutPrefReserveEdgeWest & hints)
-	 geom->y += p_geom.width;
+	 geom->x += p_geom.width;
 
        if (LayoutPrefReserveEdgeEast & hints)
 	 geom->width -= p_geom.width;
@@ -1039,6 +1038,9 @@ mb_wm_update_root_win_rectangles (MBWindowManager *wm)
   XChangeProperty(dpy, root, wm->atoms[MBWM_ATOM_NET_WORKAREA],
 		  XA_CARDINAL, 32, PropModeReplace,
 		  (unsigned char *)val, 4);
+
+  val[2] = wm->xdpy_width;
+  val[3] = wm->xdpy_height;
 
   XChangeProperty(dpy, root, wm->atoms[MBWM_ATOM_NET_DESKTOP_GEOMETRY],
 		  XA_CARDINAL, 32, PropModeReplace,
@@ -1284,7 +1286,7 @@ mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
     return; /* Handled by derived class */
 
   was_desktop = (wm->flags & MBWindowManagerFlagDesktop);
-  is_desktop  = (MB_WM_IS_CLIENT_DESKTOP(c));
+  is_desktop  = (MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeDesktop);
 
   if (is_desktop)
     {

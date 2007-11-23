@@ -523,6 +523,36 @@ mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
 }
 
 static void
+mb_wm_layout_fullscreen (MBWindowManager * wm, MBGeometry * avail_geom)
+{
+  MBWindowManagerClient *client;
+  MBGeometry             coverage;
+  Bool                   need_change;
+  int                    min_x, max_x, min_y, max_y;
+
+  mb_wm_stack_enumerate(wm, client)
+    if (client->layout_hints == (LayoutPrefFullscreen|LayoutPrefVisible))
+      {
+	mb_wm_client_get_coverage (client, &coverage);
+
+	if (coverage.x != avail_geom->x
+	    || coverage.width != avail_geom->width
+	    || coverage.y != avail_geom->y
+	    || coverage.height != avail_geom->height)
+	  {
+	    coverage.width  = avail_geom->width;
+	    coverage.height = avail_geom->height;
+	    coverage.x      = avail_geom->x;
+	    coverage.y      = avail_geom->y;
+
+	    mb_wm_client_request_geometry (client,
+					 &coverage,
+					 MBWMClientReqGeomIsViaLayoutManager);
+	  }
+      }
+}
+
+static void
 mb_wm_layout_real_update (MBWMLayout * layout)
 {
   MBWindowManager       *wm = layout->wm;
@@ -565,6 +595,11 @@ mb_wm_layout_real_update (MBWMLayout * layout)
     MBGeometry            *coverage)
 
  */
+
+  /*
+   * Do fullscreen clients first; they do not impact the available geometry
+   */
+  mb_wm_layout_fullscreen (wm, &avail_geom);
 
   mb_wm_layout_panels (wm, &avail_geom);
   mb_wm_layout_input  (wm, &avail_geom);

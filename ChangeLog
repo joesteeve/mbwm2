@@ -1,3 +1,25 @@
+2007-11-23  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_manage_client):
+	(mb_wm_unmanage_client):
+	(mb_wm_get_desktop_geometry):
+	(mb_wm_activate_client):
+	Fixed client-type check to work for subclasses.
+
+	(mb_wm_get_desktop_geometry):
+	Fixed geomtry calculation.
+
+	(mb_wm_update_root_win_rectangles):
+	Fixed _NET_DESKTOP_GEOMETRY calculation to match the spec.
+
+        * src/client-types/mb-wm-client-desktop.c:
+	(mb_wm_client_desktop_init):
+	Changed layout hints to LayoutPrefFullscreen.
+
+        * src/core/mb-wm-layout.c:
+	Handle clients with layotu hing LayoutPrefFullscreen.
+
 2007-11-22  Tomas Frydrych  <tf@o-hand.com>
 
         * doc/MBWM2-Overview.xml:
