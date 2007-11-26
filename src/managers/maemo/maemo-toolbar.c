@@ -225,34 +225,17 @@ maemo_toolbar_stacking_layer (MBWindowManagerClient *client)
 static void
 maemo_toolbar_stack (MBWindowManagerClient *client)
 {
-  MBWindowManagerClient * below;
   MBGeometry              geom;
 
   /*
    * If this is 'normal' panel, i.e., the TN, we stack with the default
    * value set by maemo_toolbar_init().
    *
-   * If this is the status bar, where we stack depends on the rest of the
-   * stack:
-   *
-   *   * If the client below us is a dialog, and it's geometry overlaps
-   *     with us (i.e., dialog moved because of the presence of the input
-   *     method, we need to stack below it.
-   *
-   *   * For rest, we stack as normal.
+   * If this is the status bar, stack immediately above the top-level
+   * application.
    */
 
-  if (!(client->layout_hints & LayoutPrefOverlaps) ||
-      !(below = client->stacked_below)             ||
-      (MB_WM_CLIENT_CLIENT_TYPE (below) != MBWMClientTypeDialog))
-    {
-      mb_wm_stack_move_top (client);
-      return;
-    }
-
-  mb_wm_client_get_coverage (below, & geom);
-
-  if (!mb_geometry_intersects (&geom, &client->window->geometry))
+  if (!(client->layout_hints & LayoutPrefOverlaps))
     {
       mb_wm_stack_move_top (client);
       return;

@@ -1,3 +1,10 @@
+2007-11-26  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/managers/maemo/maemo-toolbar.c:
+	(maemo_toolbar_stack):
+	Always stack maemo status bar immediately above top level
+	application.
+
 2007-11-23  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client.c:
