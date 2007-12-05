@@ -653,7 +653,7 @@ mb_wm_client_ping_timeout_cb (void * userdata)
   return False;
 }
 
-static void
+void
 mb_wm_client_ping_start (MBWindowManagerClient *client)
 {
   MBWindowManager * wm = client->wmref;

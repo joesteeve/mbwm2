@@ -1,5 +1,21 @@
 2007-11-26  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	(mb_wm_client_ping_start):
+	Made function public.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_activate_client):
+	Split out mb_wm_activate_client_real() so derrived classes can
+	chain up.
+
+        * src/managers/maemo/maemo-window-manager.c:
+	(maemo_window_manager_client_activate):
+	Do 'aggressive' ping when activating an application.
+
+2007-11-26  Tomas Frydrych  <tf@o-hand.com>
+
         * src/managers/maemo/maemo-toolbar.c:
 	(maemo_toolbar_stack):
 	Always stack maemo status bar immediately above top level

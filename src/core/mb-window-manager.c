@@ -33,6 +33,9 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv);
 static void
 mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client);
 
+static Bool
+mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c);
+
 static void
 mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 
@@ -133,6 +136,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->process_cmdline = mb_wm_process_cmdline;
   wm_class->client_new      = mb_wm_client_new_func;
   wm_class->theme_new       = mb_wm_real_theme_new;
+  wm_class->client_activate = mb_wm_activate_client_real;
 
 #ifdef ENABLE_COMPOSITE
   wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
@@ -1272,18 +1276,25 @@ void
 mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
 {
   MBWindowManagerClass  *wm_klass;
+  wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+
+  MBWM_ASSERT (wm_klass->client_activate);
+
+  wm_klass->client_activate (wm, c);
+}
+
+
+static Bool
+mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
+{
   MBWMClientType c_type;
   Bool was_desktop;
   Bool is_desktop;
 
   if (c == NULL)
-    return;
+    False;
 
-  wm_klass = MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
   c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
-
-  if (wm_klass->client_activate && wm_klass->client_activate (wm, c))
-    return; /* Handled by derived class */
 
   was_desktop = (wm->flags & MBWindowManagerFlagDesktop);
   is_desktop  = (MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeDesktop);
@@ -1316,6 +1327,8 @@ mb_wm_activate_client (MBWindowManager * wm, MBWindowManagerClient *c)
     }
 
   mb_wm_display_sync_queue (wm, MBWMSyncStacking | MBWMSyncVisibility);
+
+  return True;
 }
 
 MBWindowManagerClient*

@@ -357,4 +357,7 @@ mb_wm_client_owns_xwindow (MBWindowManagerClient *client, Window xwin);
 MBWMStackLayerType
 mb_wm_client_get_stacking_layer (MBWindowManagerClient *client);
 
+void
+mb_wm_client_ping_start (MBWindowManagerClient *client);
+
 #endif

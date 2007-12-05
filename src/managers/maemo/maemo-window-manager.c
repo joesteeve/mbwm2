@@ -33,6 +33,10 @@
 static void
 maemo_window_manager_process_cmdline (MBWindowManager *, int , char **);
 
+static Bool
+maemo_window_manager_client_activate (MBWindowManager * wm,
+				      MBWindowManagerClient *c);
+
 static MBWindowManagerClient*
 maemo_window_manager_client_new_func (MBWindowManager *wm,
 				      MBWMClientWindow *win)
@@ -113,6 +117,7 @@ maemo_window_manager_class_init (MBWMObjectClass *klass)
 
   wm_class->process_cmdline = maemo_window_manager_process_cmdline;
   wm_class->client_new      = maemo_window_manager_client_new_func;
+  wm_class->client_activate = maemo_window_manager_client_activate;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MaemoWindowManager";
@@ -175,9 +180,35 @@ maemo_window_manager_process_cmdline (MBWindowManager *wm,
 				      int argc, char **argv)
 {
   MBWindowManagerClass * wm_class =
-    MB_WINDOW_MANAGER (MB_WM_OBJECT_GET_PARENT_CLASS (MB_WM_OBJECT (wm)));
+    MB_WINDOW_MANAGER_CLASS(MB_WM_OBJECT_GET_PARENT_CLASS(MB_WM_OBJECT(wm)));
 
   if (wm_class->process_cmdline)
     wm_class->process_cmdline (wm, argc, argv);
 }
 
+static Bool
+maemo_window_manager_client_activate (MBWindowManager * wm,
+				      MBWindowManagerClient *c)
+{
+  MBWindowManagerClass  *parent_klass;
+  MBWMClientType         c_type;
+
+  /* Get parent klass so we can chain up to the parent method */
+  parent_klass =
+    MB_WINDOW_MANAGER_CLASS(MB_WM_OBJECT_GET_PARENT_CLASS(MB_WM_OBJECT(wm)));
+
+  MBWM_ASSERT (parent_klass->client_activate);
+
+  if (!c)
+    return False;
+
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
+
+  if (c_type == MBWMClientTypeApp && c != mb_wm_get_visible_main_client (wm))
+    {
+      /* Agressive ping to weed out any hungup applications */
+      mb_wm_client_ping_start (c);
+    }
+
+  return parent_klass->client_activate (wm, c);
+}
