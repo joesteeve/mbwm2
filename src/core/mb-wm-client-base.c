@@ -560,7 +560,7 @@ mb_wm_client_base_focus (MBWindowManagerClient *client)
   MBWindowManager  *wm = client->wmref;
   Window            xwin = client->window->xwindow;
 
-  if (!client->want_focus)
+  if (!mb_wm_client_want_focus (client))
     return False;
 
   if (xwin == last_focused)

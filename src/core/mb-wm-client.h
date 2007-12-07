@@ -158,9 +158,6 @@ struct MBWindowManagerClient
 
   int                          skip_unmaps;
 
-  /* To add focus, coverage */
-  int                          want_focus;
-
   /* ### Private ### */
 
   MBWindowManagerClientPriv   *priv;

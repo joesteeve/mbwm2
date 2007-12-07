@@ -61,7 +61,6 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
   int                     x, y, w, h;
 
   client->stacking_layer = MBWMStackLayerTopMid;
-  client->want_focus = 0;
 
   hints = mb_wm_client_get_layout_hints (client);
 

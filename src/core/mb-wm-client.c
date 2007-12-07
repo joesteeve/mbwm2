@@ -143,7 +143,6 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   client->window        = win;
   client->wmref         = wm;
   client->ping_timeout  = 1000;
-  client->want_focus    = 1;
 
   /* sync with client window */
   mb_wm_client_on_property_change (win, MBWM_WINDOW_PROP_ALL, client);
@@ -414,7 +413,7 @@ mb_wm_client_focus (MBWindowManagerClient *client)
 Bool
 mb_wm_client_want_focus (MBWindowManagerClient *client)
 {
-  return (client->want_focus != False);
+  return (client->window->want_key_input != False);
 }
 
 Bool

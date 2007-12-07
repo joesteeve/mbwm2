@@ -1,5 +1,14 @@
 2007-12-07  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-panel.c:
+        * src/core/mb-wm-client-base.c:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+        * src/managers/maemo/maemo-toolbar.c:
+	Respect InputHint.
+
+2007-12-07  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
 	(mb_wm_handle_property_notify):
         * src/core/mb-wm-client-window.c:

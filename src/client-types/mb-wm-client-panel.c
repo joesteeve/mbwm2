@@ -36,7 +36,6 @@ mb_wm_client_panel_init (MBWMObject *this, va_list vap)
   MBGeometry            * win_geo = &client->window->geometry;
 
   client->stacking_layer = MBWMStackLayerBottomMid;
-  client->want_focus = 0;
 
   if (win_geo->width > win_geo->height)
     if (win_geo->y < (client->wmref->xdpy_height/2))
