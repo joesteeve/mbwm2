@@ -31,10 +31,7 @@
 
 #include "xas.h"
 
-#define WANT_DEBUG  1
-#define WANT_ASSERT 1
-
-#ifdef WANT_DEBUG
+#ifdef MBWM_WANT_DEBUG
 #include "mb-wm-debug.h"
 #include <stdio.h>
 #define XAS_DBG(x, a...) \
@@ -45,7 +42,7 @@ if (mbwm_debug_flags & MBWM_DEBUG_XAS) \
 #endif
 #define XAS_MARK() XAS_DBG("--mark--");
 
-#ifdef WANT_ASSERT
+#ifdef MBWM_WANT_ASSERT
 #include <assert.h>
 #define XAS_ASSERT(x) assert(x)
 #else

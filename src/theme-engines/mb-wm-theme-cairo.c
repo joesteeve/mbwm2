@@ -682,9 +682,9 @@ mb_wm_theme_cairo_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   MBWMColor              clr_fg;
   MBWMClientType         c_type;
   MBWMThemeCairo        *c_theme = MB_WM_THEME_CAIRO (theme);
-  MBWMXmlClient * c;
-  MBWMXmlDecor  * d;
-  MBWMXmlButton * b;
+  MBWMXmlClient         *c = NULL;
+  MBWMXmlDecor          *d = NULL;
+  MBWMXmlButton         *b = NULL;
   struct DecorData * dd;
   clr_fg.r = 1.0;
   clr_fg.g = 1.0;
