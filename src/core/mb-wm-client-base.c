@@ -360,7 +360,21 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       mb_wm_util_trap_x_errors();
 
-      if (fullscreen || !client->xwin_frame)
+      if (fullscreen)
+	{
+	      x = 0;
+	      y = 0;
+	      w = wm->xdpy_width;
+	      h = wm->xdpy_height;
+
+	      XMoveResizeWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+				x, y, w, h);
+	      wgeom[0] = 0;
+	      wgeom[1] = 0;
+	      wgeom[2] = 0;
+	      wgeom[3] = 0;
+	}
+      else if (!client->xwin_frame)
 	{
 	      x = client->window->geometry.x;
 	      y = client->window->geometry.y;

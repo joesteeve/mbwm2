@@ -361,7 +361,8 @@ mb_wm_handle_property_notify (XPropertyEvent          *xev,
 
   if (xev->atom == wm->atoms[MBWM_ATOM_NET_WM_USER_TIME])
     flag = MBWM_WINDOW_PROP_NET_USER_TIME;
-  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_NAME])
+  else if (xev->atom == wm->atoms[MBWM_ATOM_WM_NAME] ||
+	   xev->atom == wm->atoms[MBWM_ATOM_NET_WM_NAME])
     flag = MBWM_WINDOW_PROP_NAME;
   else if (xev->atom == wm->atoms[MBWM_ATOM_WM_HINTS])
     flag = MBWM_WINDOW_PROP_WM_HINTS;
@@ -1253,6 +1254,11 @@ mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
 	      theme_path = argv[++i];
 	    }
 	}
+
+	  if (!strcmp(argv[i], "-theme-always-reload"))
+	    {
+	      wm->flags |= MBWindowManagerFlagAlwaysReloadTheme;
+	    }
     }
 
   /*
@@ -1554,8 +1560,9 @@ mb_wm_set_theme_from_path (MBWindowManager *wm, const char *theme_path)
 
   if (wm->theme)
     {
-      if (wm->theme->path && theme_path &&
-	  !strcmp (theme_path, wm->theme->path))
+      if (!(wm->flags & MBWindowManagerFlagAlwaysReloadTheme) &&
+	  (wm->theme->path && theme_path &&
+	   !strcmp (theme_path, wm->theme->path)))
 	return;
 
       if (!wm->theme->path && !theme_path)

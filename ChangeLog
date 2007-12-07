@@ -1,12 +1,44 @@
 2007-12-07  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_handle_property_notify):
+        * src/core/mb-wm-client-window.c:
+	(mb_wm_client_window_sync_properties):
+	Handle _NET_WM_NAME alongside WM_NAME.
+
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-atoms.c:
+
+	* src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_display_sync):
+	Fixed geomtry of fullscreen windows.
+
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	(mb_wm_client_set_state):
+	Fixed parameter types to match those assumed by the body of the
+	function.
+
+        * src/core/mb-wm-main-context.c:
+	(mb_wm_main_context_handle_x_event):
+	Handle _NET_WM_STATE ClientMessage correctly.
+        * src/core/mb-wm-root-window.c:
+	(mb_wm_root_window_handle_message):
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_process_cmdline):
+	(mb_wm_set_theme_from_path):
+	Added -theme-always-reload option.
+
+2007-12-07  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/xas.c:
 	Fixed debug macros when --disable-debug is given.
-	
+
         * src/theme-engines/mb-wm-theme-cairo.c:
 	(mb_wm_theme_cairo_paint_button):
 	Fixed uninitialized variables.
-	
+
 2007-11-26  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client.c:

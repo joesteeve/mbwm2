@@ -728,7 +728,7 @@ mb_wm_client_deliver_delete (MBWindowManagerClient *client)
 
 void
 mb_wm_client_set_state (MBWindowManagerClient *client,
-			Atom state,
+			MBWMAtom state,
 			MBWMClientWindowStateChange state_op)
 {
   MBWindowManager   *wm  = client->wmref;

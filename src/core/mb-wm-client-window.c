@@ -484,7 +484,7 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
       /* Prefer UTF8 Naming... */
       win->name
 	= mb_wm_property_get_reply_and_validate (wm,
-						 cookies[COOKIE_WIN_NAME],
+						 cookies[COOKIE_WIN_NAME_UTF8],
 						 wm->atoms[MBWM_ATOM_UTF8_STRING],
 						 8,
 						 0,
@@ -498,7 +498,7 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 	  /* FIXME: Should flag up name could be in some wacko encoding ? */
 	  win->name
 	    = mb_wm_property_get_reply_and_validate (wm,
-						     cookies[COOKIE_WIN_NAME_UTF8],
+						     cookies[COOKIE_WIN_NAME],
 						     XA_STRING,
 						     8,
 						     0,

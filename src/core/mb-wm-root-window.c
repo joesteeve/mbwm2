@@ -351,18 +351,31 @@ mb_wm_root_window_handle_message (MBWMRootWindow *win, XClientMessageEvent *e)
     }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_WM_STATE])
     {
+      MBWMClientWindowStateChange state_op = 0;
+
+      if (e->data.l[0] == 0)
+	state_op = MBWMClientWindowStateChangeRemove;
+      else if (e->data.l[0] == 1)
+	state_op = MBWMClientWindowStateChangeAdd;
+      else if (e->data.l[0] == 2)
+	state_op = MBWMClientWindowStateChangeToggle;
+
       if (e->data.l[1] == wm->atoms[MBWM_ATOM_NET_WM_STATE_FULLSCREEN]
 	  && ((c = mb_wm_managed_client_from_xwindow(wm, e->window)) != NULL)
 	  && MB_WM_IS_CLIENT_APP (c))
 	{
-	  mb_wm_client_set_state (c, e->data.l[1], e->data.l[0]);
+	  mb_wm_client_set_state (c,
+				  MBWM_ATOM_NET_WM_STATE_FULLSCREEN,
+				  state_op);
 	}
       else if (e->data.l[1] == wm->atoms[MBWM_ATOM_NET_WM_STATE_ABOVE]
 	       && ((c = mb_wm_managed_client_from_xwindow(wm, e->window)) !=
 		   NULL)
 	       && MB_WM_IS_CLIENT_DIALOG (c))
 	{
-	  mb_wm_client_set_state (c, e->data.l[1], e->data.l[0]);
+	  mb_wm_client_set_state (c,
+				  MBWM_ATOM_NET_WM_STATE_ABOVE,
+				  state_op);
 	}
       return 1;
     }

@@ -205,11 +205,14 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
     case ClientMessage:
       if (xev->xany.window == wm->root_win->xwindow ||
 	  ((XClientMessageEvent *)xev)->message_type ==
-	  wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW])
+	  wm->atoms[MBWM_ATOM_NET_ACTIVE_WINDOW] ||
+	  ((XClientMessageEvent *)xev)->message_type ==
+	  wm->atoms[MBWM_ATOM_NET_WM_STATE])
 	{
 	  mb_wm_root_window_handle_message (wm->root_win,
 					    (XClientMessageEvent *)xev);
 	}
+
       break;
     case Expose:
       break;

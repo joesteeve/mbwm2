@@ -34,7 +34,8 @@ typedef struct MBWindowManagerPriv    MBWindowManagerPriv;
 
 typedef enum MBWindowManagerFlag
 {
-  MBWindowManagerFlagDesktop = (1<<0),
+  MBWindowManagerFlagDesktop           = (1<<0),
+  MBWindowManagerFlagAlwaysReloadTheme = (1<<1),
 } MBWindowManagerFlag;
 
 typedef enum

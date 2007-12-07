@@ -321,7 +321,7 @@ mb_wm_client_shutdown (MBWindowManagerClient *client);
 
 void
 mb_wm_client_set_state (MBWindowManagerClient *client,
-			Atom state,
+			MBWMAtom state,
 			MBWMClientWindowStateChange state_op);
 
 Bool
