@@ -75,8 +75,6 @@ key_binding_func (MBWindowManager   *wm,
 int
 main(int argc, char **argv)
 {
-  MBWMLayout * layout;
-
 #ifdef MBWM_WANT_DEBUG
   struct sigaction sa;
   sigfillset(&sa.sa_mask);
@@ -90,13 +88,6 @@ main(int argc, char **argv)
 
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");
-
-  layout = mb_wm_layout_new (wm);
-
-  if (layout == NULL)
-    mb_wm_util_fatal_error("OOM?");
-
-  mb_wm_set_layout (wm, layout);
 
   mb_wm_keys_binding_add_with_spec (wm,
 				    "<alt>d",

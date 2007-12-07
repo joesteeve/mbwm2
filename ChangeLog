@@ -1,6 +1,16 @@
 2007-12-07  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/managers/maemo/matchbox-window-manager-2-maemo.c:
+        * src/managers/simple/matchbox-window-manager-2-simple.c:
+	Added virtual layout_new() method to MWWindowManager so we can
+	create a layout while initializing the object (otherwise
+	pre-existing windows do not get correctly laid out).
+
+2007-12-07  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
 	(mb_wm_manage_preexistsing_wins):
 	Schedule stack sync when we manage pre-existing windows to ensure
 	that stack order is correct.

@@ -104,7 +104,8 @@ struct MBWindowManagerClass
 
   MBWindowManagerClient* (*client_new) (MBWindowManager *wm,
 					MBWMClientWindow *w);
-
+  MBWMLayout           * (*layout_new) (MBWindowManager *wm);
+  
   /* These return True if now further action to be taken */
   Bool (*client_activate)   (MBWindowManager *wm, MBWindowManagerClient *c);
   Bool (*client_responding) (MBWindowManager *wm, MBWindowManagerClient *c);

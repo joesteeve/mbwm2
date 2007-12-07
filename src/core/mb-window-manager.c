@@ -124,6 +124,15 @@ mb_wm_real_comp_mgr_new (MBWindowManager *wm)
 }
 #endif
 
+static MBWMLayout *
+mb_wm_layout_new_real (MBWindowManager *wm)
+{
+  MBWMLayout * layout = mb_wm_layout_new (wm);
+
+  if (!layout)
+    mb_wm_util_fatal_error("OOM?");
+}
+
 static void
 mb_wm_class_init (MBWMObjectClass *klass)
 {
@@ -137,6 +146,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->client_new      = mb_wm_client_new_func;
   wm_class->theme_new       = mb_wm_real_theme_new;
   wm_class->client_activate = mb_wm_activate_client_real;
+  wm_class->layout_new      = mb_wm_layout_new_real;
 
 #ifdef ENABLE_COMPOSITE
   wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
@@ -1223,6 +1233,10 @@ mb_wm_init (MBWMObject *this, va_list vap)
   mb_wm_init_cursors (wm);
 
   base_foo ();
+
+  MBWM_ASSERT (wm_class->layout_new);
+
+  mb_wm_set_layout (wm, wm_class->layout_new (wm));
 
   mb_wm_manage_preexistsing_wins (wm);
 
