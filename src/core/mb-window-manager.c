@@ -982,6 +982,10 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	     mb_wm_object_unref (MB_WM_OBJECT (win));
 	 }
      }
+
+   if (nwins > 0)
+     mb_wm_display_sync_queue (wm, MBWMSyncStacking);
+
    XFree(wins);
 }
 

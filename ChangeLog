@@ -1,5 +1,12 @@
 2007-12-07  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-window-manager.c:
+	(mb_wm_manage_preexistsing_wins):
+	Schedule stack sync when we manage pre-existing windows to ensure
+	that stack order is correct.
+
+2007-12-07  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-panel.c:
         * src/core/mb-wm-client-base.c:
         * src/core/mb-wm-client.c:
