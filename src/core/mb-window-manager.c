@@ -616,8 +616,6 @@ stack_sync_to_display (MBWindowManager *wm)
   if (!wm->stack_n_clients)
     return;
 
-  mb_wm_stack_ensure (wm);
-
   win_list = alloca (sizeof(Window) * wm->stack_n_clients);
 
   stack_get_window_list(wm, win_list);
@@ -637,6 +635,10 @@ mb_wm_sync (MBWindowManager *wm)
   MBWM_TRACE ();
 
   XGrabServer(wm->xdpy);
+
+  /* First of all, make sure stack is correct */
+  if (wm->sync_type & MBWMSyncStacking)
+    mb_wm_stack_ensure (wm);
 
   /* Size stuff first assume newly managed windows unmapped ?
    *
@@ -992,9 +994,6 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 	     mb_wm_object_unref (MB_WM_OBJECT (win));
 	 }
      }
-
-   if (nwins > 0)
-     mb_wm_display_sync_queue (wm, MBWMSyncStacking);
 
    XFree(wins);
 }

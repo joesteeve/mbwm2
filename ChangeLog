@@ -1,3 +1,23 @@
+2007-12-10  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-input.c:
+        * src/client-types/mb-wm-client-menu.c:
+        * src/client-types/mb-wm-client-panel.c:
+	(mb_wm_client_*_realize):
+	Make sure that client windows that are frameless are reparented to
+	our root window, otherwise we cannot restack them.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_sync):
+	(stack_sync_to_display):
+	call mb_wm_stack_ensure() from mb_wm_sync() rather than
+	stack_sync_to_display() so that all ops are done on correct stack
+	order.
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_realize):
+	Check client is not realized already.
+
 2007-12-07  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

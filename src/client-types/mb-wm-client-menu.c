@@ -10,7 +10,12 @@ mb_wm_client_menu_request_geometry (MBWindowManagerClient *client,
 static void
 mb_wm_client_menu_realize (MBWindowManagerClient *client)
 {
-  /* No frame for menus */
+  /*
+   * Must reparent the window to our root, otherwise we restacking of
+   * pre-existing windows might fail.
+   */
+  XReparentWindow(client->wmref->xdpy, MB_WM_CLIENT_XWIN(client),
+		  client->wmref->root_win->xwindow, 0, 0);
 }
 
 static void

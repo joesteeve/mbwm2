@@ -311,6 +311,9 @@ mb_wm_client_realize (MBWindowManagerClient *client)
 {
   MBWindowManagerClientClass *klass;
 
+  if (client->priv->realized)
+    return;
+
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
   if (klass->realize)
