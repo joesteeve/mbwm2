@@ -1,5 +1,33 @@
 2007-12-10  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-app.c:
+	(mb_wm_client_app_request_geometry):
+	Handle geometry request correctly in fullscreen mode.
+
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_display_sync):
+	Respect geometry when in fullscreen mode, always set input focus
+	to RevertToPointerRoot when switching from/to fullscreen mode as
+	it gets reset due to the implicit unmap in XReparentWindow().
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_get_layout_hints):
+	Handle fullscreen mode.
+
+        * src/core/mb-wm-layout.c:
+	Use mb_wm_client_get_layout_hints() instead of accessing
+	MBWindowClient layout_hints member directly.
+
+	(mb_wm_layout_input):
+	Make sure that when input method is transient to a client in
+	fullscreen mode the width/height is calculated correctly.
+
+	(mb_wm_layout_fullscreen):
+	Handle the presence of an input method transient to a fullscreened
+	application.
+
+2007-12-10  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client-base.c:
 	(mb_wm_client_base_display_sync):
 	Increase skip_unmaps on (un)fullscreen not to loose the client on

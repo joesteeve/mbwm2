@@ -493,6 +493,14 @@ mb_wm_client_request_geometry (MBWindowManagerClient *client,
 MBWMClientLayoutHints
 mb_wm_client_get_layout_hints (MBWindowManagerClient *client)
 {
+  if ((client->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
+    {
+      if (client->layout_hints & LayoutPrefVisible)
+	return (LayoutPrefFullscreen | LayoutPrefVisible);
+      else
+	return LayoutPrefFullscreen;
+    }
+
   return client->layout_hints;
 }
 

@@ -1,4 +1,5 @@
 #include "mb-wm.h"
+#include "mb-wm-client-input.h"
 
 #define SET_X      (1<<1)
 #define SET_Y      (1<<2)
@@ -211,7 +212,7 @@ mb_wm_layout_get_edge_offset (MBWindowManager *wm,
   int                    offset = 0;
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (edge|LayoutPrefVisible))
+    if (mb_wm_client_get_layout_hints (client) == (edge|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
@@ -247,12 +248,12 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 
   /* FIXME: need to enumerate by *age* in case multiple panels ? */
   mb_wm_stack_enumerate(wm, client)
-    if ((client->layout_hints & LayoutPrefReserveEdgeNorth) &&
-	(client->layout_hints & LayoutPrefVisible))
+    if ((mb_wm_client_get_layout_hints(client) & LayoutPrefReserveEdgeNorth) &&
+	(mb_wm_client_get_layout_hints(client) & LayoutPrefVisible))
       {
 	int flags = SET_Y;
 
-	if (!(client->layout_hints & LayoutPrefFixedX))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefFixedX))
 	  flags |= SET_X | SET_WIDTH;
 
 	mb_wm_client_get_coverage (client, &coverage);
@@ -270,7 +271,7 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 					 MBWMClientReqGeomIsViaLayoutManager);
 	  /* FIXME: what if this returns False ? */
 
-	if (!(client->layout_hints & LayoutPrefOverlaps))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefOverlaps))
 	  {
 	    avail_geom->y      = coverage.y + coverage.height;
 	    avail_geom->height = avail_geom->height - coverage.height;
@@ -278,15 +279,15 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
       }
 
   mb_wm_stack_enumerate(wm, client)
-    if ((client->layout_hints & LayoutPrefReserveEdgeSouth) &&
-	(client->layout_hints & LayoutPrefVisible))
+    if ((mb_wm_client_get_layout_hints(client) & LayoutPrefReserveEdgeSouth) &&
+	(mb_wm_client_get_layout_hints(client) & LayoutPrefVisible))
       {
 	int y;
 
 	mb_wm_client_get_coverage (client, &coverage);
 
 	/* set x,y to avail and max width */
-	if (!(client->layout_hints & LayoutPrefFixedX))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefFixedX))
 	  need_change = mb_wm_layout_maximise_geometry (&coverage,
 							avail_geom,
 							SET_X | SET_WIDTH);
@@ -310,17 +311,17 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 
-	if (!(client->layout_hints & LayoutPrefOverlaps))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefOverlaps))
 	  avail_geom->height = avail_geom->height - coverage.height;
       }
 
   mb_wm_stack_enumerate(wm, client)
-    if ((client->layout_hints & LayoutPrefReserveEdgeWest) &&
-	(client->layout_hints & LayoutPrefVisible))
+    if ((mb_wm_client_get_layout_hints(client) & LayoutPrefReserveEdgeWest) &&
+	(mb_wm_client_get_layout_hints(client) & LayoutPrefVisible))
       {
 	int flags = SET_X;
 
-	if (!(client->layout_hints & LayoutPrefFixedY))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefFixedY))
 	  flags |= SET_Y | SET_HEIGHT;
 
 	mb_wm_client_get_coverage (client, &coverage);
@@ -338,7 +339,7 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 
-	if (!(client->layout_hints & LayoutPrefOverlaps))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefOverlaps))
 	  {
 	    avail_geom->x      = coverage.x + coverage.width;
 	    avail_geom->width  = avail_geom->width - coverage.width;
@@ -347,15 +348,15 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 
 
   mb_wm_stack_enumerate(wm, client)
-    if ((client->layout_hints & LayoutPrefReserveEdgeEast) &&
-	(client->layout_hints & LayoutPrefVisible))
+    if ((mb_wm_client_get_layout_hints(client) & LayoutPrefReserveEdgeEast) &&
+	(mb_wm_client_get_layout_hints(client) & LayoutPrefVisible))
       {
 	int x;
 
 	mb_wm_client_get_coverage (client, &coverage);
 
 	/* set x,y to avail and max width */
-	if (!(client->layout_hints & LayoutPrefFixedY))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefFixedY))
 	  need_change = mb_wm_layout_maximise_geometry (&coverage,
 							avail_geom,
 							SET_Y|SET_HEIGHT);
@@ -379,7 +380,7 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
 
-	if (!(client->layout_hints & LayoutPrefOverlaps))
+	if (!(mb_wm_client_get_layout_hints (client) & LayoutPrefOverlaps))
 	  avail_geom->width  = avail_geom->width - coverage.width;
       }
 }
@@ -393,7 +394,7 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
   int                    min_x, max_x, min_y, max_y;
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints ==
+    if (mb_wm_client_get_layout_hints (client) ==
 	(LayoutPrefReserveNorth|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
@@ -402,6 +403,17 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 	need_change = mb_wm_layout_maximise_geometry (&coverage,
 						      avail_geom,
 						      SET_X|SET_Y|SET_WIDTH);
+
+	if (client->transient_for &&
+	    (client->transient_for->window->ewmh_state &
+	     MBWMClientWindowEWMHStateFullscreen) &&
+	    coverage.width != wm->xdpy_width)
+	  {
+	    coverage.width = wm->xdpy_width;
+	    coverage.x = 0;
+	    need_change = True;
+	  }
+
 	/* Too high */
 	need_change |= mb_wm_layout_clip_geometry (&coverage,
 						   avail_geom, SET_HEIGHT);
@@ -417,7 +429,7 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
       }
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints ==
+    if (mb_wm_client_get_layout_hints (client) ==
 	(LayoutPrefReserveSouth|LayoutPrefVisible))
       {
 	int y;
@@ -445,6 +457,16 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 						       avail_geom,
 						       SET_X|SET_WIDTH);
 
+	if (client->transient_for &&
+	    (client->transient_for->window->ewmh_state &
+	     MBWMClientWindowEWMHStateFullscreen) &&
+	    coverage.width != wm->xdpy_width)
+	  {
+	    coverage.width = wm->xdpy_width;
+	    coverage.x = 0;
+	    need_change = True;
+	  }
+
 	/* Too high */
 	need_change |= mb_wm_layout_clip_geometry (&coverage,
 						   avail_geom, SET_HEIGHT);
@@ -465,7 +487,8 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveWest|LayoutPrefVisible))
+    if (mb_wm_client_get_layout_hints (client) ==
+	(LayoutPrefReserveWest|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
@@ -473,6 +496,17 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 	need_change = mb_wm_layout_maximise_geometry (&coverage,
 						      avail_geom,
 						      SET_X|SET_Y|SET_HEIGHT);
+
+	if (client->transient_for &&
+	    (client->transient_for->window->ewmh_state &
+	     MBWMClientWindowEWMHStateFullscreen) &&
+	    coverage.height != wm->xdpy_height)
+	  {
+	    coverage.height = wm->xdpy_height;
+	    coverage.y = 0;
+	    need_change = True;
+	  }
+
 	/* Too wide */
 	need_change |= mb_wm_layout_clip_geometry (&coverage,
 						   avail_geom, SET_WIDTH);
@@ -488,7 +522,8 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefReserveEast|LayoutPrefVisible))
+    if (mb_wm_client_get_layout_hints (client) ==
+	(LayoutPrefReserveEast|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
@@ -496,6 +531,17 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 	need_change = mb_wm_layout_maximise_geometry (&coverage,
 						      avail_geom,
 						      SET_Y|SET_HEIGHT);
+
+	if (client->transient_for &&
+	    (client->transient_for->window->ewmh_state &
+	     MBWMClientWindowEWMHStateFullscreen) &&
+	    coverage.height != wm->xdpy_height)
+	  {
+	    coverage.height = wm->xdpy_height;
+	    coverage.y = 0;
+	    need_change = True;
+	  }
+
 	/* Too wide */
 	need_change |= mb_wm_layout_clip_geometry (&coverage,
 						   avail_geom, SET_WIDTH);
@@ -524,7 +570,8 @@ mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
   int                    min_x, max_x, min_y, max_y;
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefGrowToFreeSpace|LayoutPrefVisible))
+    if (mb_wm_client_get_layout_hints (client) ==
+	(LayoutPrefGrowToFreeSpace|LayoutPrefVisible))
       {
 	mb_wm_client_get_coverage (client, &coverage);
 
@@ -548,7 +595,8 @@ mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
       }
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefPositionFree|LayoutPrefVisible))
+    if (mb_wm_client_get_layout_hints (client) ==
+	(LayoutPrefPositionFree|LayoutPrefVisible))
       {
 	/* Clip if needed */
 	mb_wm_client_get_coverage (client, &coverage);
@@ -574,9 +622,69 @@ mb_wm_layout_fullscreen (MBWindowManager * wm, MBGeometry * avail_geom)
   int                    min_x, max_x, min_y, max_y;
 
   mb_wm_stack_enumerate(wm, client)
-    if (client->layout_hints == (LayoutPrefFullscreen|LayoutPrefVisible))
+    if (mb_wm_client_get_layout_hints (client) ==
+	(LayoutPrefFullscreen|LayoutPrefVisible))
       {
+	MBWMList *l = client->transients;
+
 	mb_wm_client_get_coverage (client, &coverage);
+
+	/* See if this client comes with an input method and if so,
+	 * adjust the available geometry accordingly
+	 */
+	while (l)
+	  {
+	    MBWindowManagerClient * c = l->data;
+
+	    if (MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeInput)
+	      {
+		MBGeometry geom;
+		mb_wm_client_get_coverage (c, &geom);
+
+		if (mb_wm_client_get_layout_hints (c) ==
+		    (LayoutPrefReserveSouth|LayoutPrefVisible))
+		  {
+		    if (geom.y < avail_geom->y + avail_geom->height)
+		      {
+			avail_geom->height = geom.y - avail_geom->y;
+		      }
+		  }
+		else if (mb_wm_client_get_layout_hints (c) ==
+		    (LayoutPrefReserveNorth|LayoutPrefVisible))
+		  {
+		    if (geom.height && geom.height + geom.y > avail_geom->y)
+		      {
+			int y = avail_geom->y;
+
+			avail_geom->y = geom.y + geom.height;
+			avail_geom->height -= y - avail_geom->y;
+		      }
+		  }
+		else if (mb_wm_client_get_layout_hints (c) ==
+		    (LayoutPrefReserveWest|LayoutPrefVisible))
+		  {
+		    if (geom.x < avail_geom->x + avail_geom->width)
+		      {
+			avail_geom->width = geom.x - avail_geom->x;
+		      }
+		  }
+		else if (mb_wm_client_get_layout_hints (c) ==
+		    (LayoutPrefReserveEast|LayoutPrefVisible))
+		  {
+		    if (geom.width && geom.width + geom.x > avail_geom->x)
+		      {
+			int x = avail_geom->x;
+
+			avail_geom->x = geom.x + geom.width;
+			avail_geom->width -= x - avail_geom->x;
+		      }
+		  }
+
+		break;
+	      }
+
+	    l = l->next;
+	  }
 
 	if (coverage.x != avail_geom->x
 	    || coverage.width != avail_geom->width
@@ -639,14 +747,12 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 
  */
 
-  /*
-   * Do fullscreen clients first; they do not impact the available geometry
-   */
-  mb_wm_layout_fullscreen (wm, &avail_geom);
-
   mb_wm_layout_panels (wm, &avail_geom);
   mb_wm_layout_input  (wm, &avail_geom);
   mb_wm_layout_free   (wm, &avail_geom);
+
+  mb_wm_get_display_geometry (wm, &avail_geom);
+  mb_wm_layout_fullscreen (wm, &avail_geom);
 }
 
 void
