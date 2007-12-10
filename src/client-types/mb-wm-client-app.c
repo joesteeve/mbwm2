@@ -7,6 +7,9 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBGeometry            *new_geometry,
 				   MBWMClientReqGeomType  flags);
 
+static MBWMStackLayerType
+mb_wm_client_app_stacking_layer (MBWindowManagerClient *client);
+
 static void
 mb_wm_client_app_theme_change (MBWindowManagerClient *client);
 
@@ -26,6 +29,7 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
   client->client_type = MBWMClientTypeApp;
   client->geometry = mb_wm_client_app_request_geometry;
   client->theme_change = mb_wm_client_app_theme_change;
+  client->stacking_layer = mb_wm_client_app_stacking_layer;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientApp";
@@ -181,6 +185,15 @@ mb_wm_client_app_theme_change (MBWindowManagerClient *client)
 
   mb_wm_client_geometry_mark_dirty (client);
   mb_wm_client_visibility_mark_dirty (client);
+}
+
+static MBWMStackLayerType
+mb_wm_client_app_stacking_layer (MBWindowManagerClient *client)
+{
+  if (client->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen)
+    return MBWMStackLayerTopMid;
+
+  return client->stacking_layer;
 }
 
 MBWindowManagerClient*

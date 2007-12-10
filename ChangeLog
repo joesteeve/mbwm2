@@ -1,5 +1,21 @@
 2007-12-10  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_display_sync):
+	Increase skip_unmaps on (un)fullscreen not to loose the client on
+	XReparentWindow generated unmap.
+
+        * src/core/mb-window-manager.c:
+	(stack_get_window_list):
+	Use the client window for fullscreen apps, not the (unmapped)
+	frame, when building window list for XRestackWindow().
+
+        * src/client-types/mb-wm-client-app.c:
+	(mb_wm_client_app_stacking_layer):
+	Stack fullscreen applications in MBWMStackLayerTopMid.
+
+2007-12-10  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-input.c:
         * src/client-types/mb-wm-client-menu.c:
         * src/client-types/mb-wm-client-panel.c:

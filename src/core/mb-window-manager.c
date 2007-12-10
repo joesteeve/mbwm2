@@ -601,7 +601,8 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list)
 
   mb_wm_stack_enumerate_reverse(wm, client)
   {
-    if (client->xwin_frame)
+    if (client->xwin_frame &&
+	!(client->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
       win_list[i++] = client->xwin_frame;
     else
       win_list[i++] = MB_WM_CLIENT_XWIN(client);

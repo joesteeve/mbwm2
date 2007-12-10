@@ -328,6 +328,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    {
 	      if (!fullscreen)
 		{
+		  client->skip_unmaps++;
 		  XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
 				  client->xwin_frame, 0, 0);
 		  XMapWindow(wm->xdpy, client->xwin_frame);
@@ -335,6 +336,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 		}
 	      else
 		{
+		  client->skip_unmaps++;
 		  XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
 				  wm->root_win->xwindow, 0, 0);
 		  XUnmapWindow(wm->xdpy, client->xwin_frame);
@@ -343,6 +345,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    }
 	  else
 	    {
+	      client->skip_unmaps++;
 	      XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
 			      wm->root_win->xwindow,
 			      client->window->geometry.x,
