@@ -595,8 +595,11 @@ mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
       }
 
   mb_wm_stack_enumerate(wm, client)
-    if (mb_wm_client_get_layout_hints (client) ==
-	(LayoutPrefPositionFree|LayoutPrefVisible))
+    {
+      MBWMClientLayoutHints hints = mb_wm_client_get_layout_hints (client);
+
+    if ((hints & LayoutPrefPositionFree) && (hints & LayoutPrefVisible) &&
+	!(hints & (LayoutPrefFixedX|LayoutPrefFixedY)))
       {
 	/* Clip if needed */
 	mb_wm_client_get_coverage (client, &coverage);
@@ -610,7 +613,9 @@ mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
 	  mb_wm_client_request_geometry (client,
 					 &coverage,
 					 MBWMClientReqGeomIsViaLayoutManager);
+	}
       }
+
 }
 
 static void

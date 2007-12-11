@@ -1,5 +1,11 @@
 2007-12-11  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-menu.c:
+        * src/core/mb-wm-layout.c:
+	Respect original menu geometry.
+
+2007-12-11  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-client-base.c:
 	(mb_wm_client_base_display_sync):
 	Force client window geometry recalculation when exiting fullscreen

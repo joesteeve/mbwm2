@@ -61,7 +61,8 @@ mb_wm_client_menu_init (MBWMObject *this, va_list vap)
 		   sizeof (actions)/sizeof (actions[0]));
 
   mb_wm_client_set_layout_hints (client,
-				 LayoutPrefPositionFree|LayoutPrefVisible);
+				 LayoutPrefPositionFree|LayoutPrefVisible|
+				 LayoutPrefFixedX|LayoutPrefFixedY);
 
   /*
    * Stack menus on the top of the stacking order, regardless of whether they
