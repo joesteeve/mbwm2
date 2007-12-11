@@ -39,6 +39,9 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c);
 static void
 mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 
+static MBWindowManagerClient *
+mb_wm_is_my_window (MBWindowManager *wm, Window xwin);
+
 static MBWindowManagerClient*
 mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 {
@@ -241,7 +244,7 @@ test_button_press (XButtonEvent *xev, void *userdata)
   if (xev->button != 1)
     return True;
 
-  client = mb_wm_managed_client_from_xwindow(wm, xev->window);
+  client = mb_wm_is_my_window (wm, xev->window);
 
   if (!client)
     return True;
@@ -488,16 +491,16 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
   return True;
 }
 
-static Bool
+static MBWindowManagerClient *
 mb_wm_is_my_window (MBWindowManager *wm, Window xwin)
 {
   MBWindowManagerClient *c;
 
   mb_wm_stack_enumerate_reverse(wm, c)
     if (mb_wm_client_owns_xwindow (c, xwin))
-      return True;
+      return c;
 
-  return False;
+  return NULL;
 }
 
 #ifdef ENABLE_COMPOSITE
@@ -1434,7 +1437,14 @@ mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 static void
 mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 {
-  if (wm->focused_client == client || !mb_wm_client_want_focus (client))
+  /*
+   * If the client is currently focused, it does not want focus, or it is a
+   * parent of a currently focused modal client, do nothing.
+   */
+  if (wm->focused_client == client ||
+      !mb_wm_client_want_focus (client) ||
+      ((wm->focused_client && mb_wm_client_is_modal (wm->focused_client) &&
+	client == mb_wm_client_get_transient_for (wm->focused_client))))
     return;
 
   if (!mb_wm_client_is_realized (client))
