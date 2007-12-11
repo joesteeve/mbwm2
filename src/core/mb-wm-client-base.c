@@ -333,6 +333,16 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 				  client->xwin_frame, 0, 0);
 		  XMapWindow(wm->xdpy, client->xwin_frame);
 		  XMapSubwindows(wm->xdpy, client->xwin_frame);
+
+		  /* The frame is very likely the correct dimensions (since the
+		   * app geometry is pretty static), but the client window is
+		   * not (it was fullscreened) -- we need to force
+		   * recalculation of the window frame dimensions, so that it
+		   * is correct when we apply it below.
+		   */
+		  mb_wm_client_request_geometry (client,
+						 &client->frame_geometry,
+						 MBWMClientReqGeomForced);
 		}
 	      else
 		{

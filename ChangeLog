@@ -1,10 +1,21 @@
 2007-12-11  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_display_sync):
+	Force client window geometry recalculation when exiting fullscreen
+	mode.
+
+        * src/client-types/mb-wm-client-app.c:
+	(mb_wm_client_app_request_geometry):
+	Handle MBWMClientReqGeomForced geometry requests.
+
+2007-12-11  Tomas Frydrych  <tf@o-hand.com>
+
 	* src/managers/maemo/maemo-toolbar.h:
 	* src/managers/maemo/maemo-toolbar.c:
 	Make sure that the TN is getting stacket with BottomMid like a
 	normal panel (so it does not steal focus from applications).
-	
+
 2007-12-10  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-app.c:
