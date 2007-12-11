@@ -1317,6 +1317,7 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
   MBWMClientType c_type;
   Bool was_desktop;
   Bool is_desktop;
+  MBWindowManagerClient * c_focus = c;
 
   if (c == NULL)
     False;
@@ -1332,7 +1333,17 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
     wm->flags &= ~MBWindowManagerFlagDesktop;
 
   mb_wm_client_show (c);
-  mb_wm_focus_client (wm, c);
+
+  /* If the next focused client after this one is transient for it,
+   * activate it instead
+   */
+  if (c->last_focused_transient &&
+      c->last_focused_transient->transient_for == c)
+    {
+      c_focus = c->last_focused_transient;
+    }
+
+  mb_wm_focus_client (wm, c_focus);
   mb_wm_client_stack (c, 0);
 
   if (is_desktop != was_desktop)
@@ -1435,8 +1446,20 @@ mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout)
 }
 
 static void
-mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client)
+mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *c)
 {
+  MBWindowManagerClient * client = c;
+
+  /*
+   * The last focused transient for this client is modal, we try to focus
+   * the transient rather than the client itself
+   */
+  if (c->last_focused_transient &&
+      mb_wm_client_is_modal (c->last_focused_transient))
+    {
+      client = c->last_focused_transient;
+    }
+
   /*
    * If the client is currently focused, it does not want focus, or it is a
    * parent of a currently focused modal client, do nothing.

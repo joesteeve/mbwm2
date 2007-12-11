@@ -1,6 +1,20 @@
 2007-12-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
+	(mb_wm_activate_client_real):
+        (mb_wm_focus_client):
+	* src/core/mb-wm-client.c:
+        * src/core/mb-wm-client.h:
+	(mb_wm_client_focus):
+	(mb_wm_client_remove_transient):
+
+	Keep track of the last focused transient for each client, so that
+	focus goes to the correct place when switching between clients
+	with non-modal transients.
+
+2007-12-11  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
 	(test_button_press):
 	Handle button press on children.
 

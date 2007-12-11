@@ -155,6 +155,7 @@ struct MBWindowManagerClient
   MBWMList                    *decor;
   MBWMList                    *transients;
   MBWindowManagerClient       *transient_for;
+  MBWindowManagerClient       *last_focused_transient;
 
   int                          skip_unmaps;
 

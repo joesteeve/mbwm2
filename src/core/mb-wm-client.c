@@ -404,13 +404,26 @@ Bool
 mb_wm_client_focus (MBWindowManagerClient *client)
 {
   MBWindowManagerClientClass *klass;
+  Bool ret = False;
 
   klass = MB_WM_CLIENT_CLASS(mb_wm_object_get_class (MB_WM_OBJECT(client)));
 
   if (klass->focus)
-    return klass->focus(client);
+    ret = klass->focus(client);
 
-  return False;
+  if (ret)
+    {
+      /*
+       * If this client is transient, store it with the parent; if it is not
+       * transient, reset the last transient field
+       */
+      if (client->transient_for)
+	client->transient_for->last_focused_transient = client;
+      else
+	client->last_focused_transient = NULL;
+    }
+
+  return ret;
 }
 
 Bool
@@ -577,6 +590,9 @@ mb_wm_client_remove_transient (MBWindowManagerClient *client,
   transient->transient_for = NULL;
 
   client->transients = mb_wm_util_list_remove(client->transients, transient);
+
+  if (client->last_focused_transient == transient)
+    client->last_focused_transient = transient->next_focused_client;
 }
 
 const MBWMList*
