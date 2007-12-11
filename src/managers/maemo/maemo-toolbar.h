@@ -36,6 +36,8 @@ typedef struct MaemoToolbarClass MaemoToolbarClass;
 struct MaemoToolbar
 {
   MBWMClientPanel parent;
+
+  Bool            task_navigator;
 };
 
 struct MaemoToolbarClass

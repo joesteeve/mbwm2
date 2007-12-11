@@ -53,14 +53,13 @@ static int
 maemo_toolbar_init (MBWMObject *this, va_list vap)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT (this);
+  MaemoToolbar          * toolbar = MAEMO_TOOLBAR (this);
   MBWindowManager       * wm = client->wmref;
   MBGeometry              geom;
   MBGeometry            * w_geom = &client->window->geometry;
   MBWMClientWindow      * win = client->window;
   MBWMClientLayoutHints   hints;
   int                     x, y, w, h;
-
-  client->stacking_layer = MBWMStackLayerTopMid;
 
   hints = mb_wm_client_get_layout_hints (client);
 
@@ -79,6 +78,12 @@ maemo_toolbar_init (MBWMObject *this, va_list vap)
   if (hints & LayoutPrefReserveEdgeNorth)
     {
       hints |= (LayoutPrefFixedX | LayoutPrefOverlaps);
+      client->stacking_layer = MBWMStackLayerTopMid;
+    }
+  else
+    {
+      toolbar->task_navigator = True;
+      client->stacking_layer = MBWMStackLayerBottomMid;
     }
 
   mb_wm_client_set_layout_hints (client, hints);
