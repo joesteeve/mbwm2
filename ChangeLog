@@ -1,3 +1,11 @@
+2007-12-12  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+	(test_button_press):
+	* src/core/mb-wm-client.c:
+	(mb_wm_client_init):
+	Do a button grab on the client window.
+	
 2007-12-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

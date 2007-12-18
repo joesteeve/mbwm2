@@ -251,6 +251,8 @@ test_button_press (XButtonEvent *xev, void *userdata)
 
   mb_wm_focus_client (wm, client);
 
+  XAllowEvents (wm->xdpy, ReplayPointer, CurrentTime);
+
   return True;
 }
 

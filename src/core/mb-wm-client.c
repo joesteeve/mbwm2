@@ -116,6 +116,7 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   MBWindowManager       *wm = NULL;
   MBWMClientWindow      *win = NULL;
   MBWMObjectProp         prop;
+  int                    status;
 
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -160,6 +161,13 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 		 (MBWMObjectCallbackFunc)mb_wm_client_on_theme_change,
 		 client);
 
+  status = XGrabButton(wm->xdpy, Button1, 0, win->xwindow, True,
+		       ButtonPressMask,
+		       GrabModeSync, GrabModeSync, None, None);
+
+  MBWM_NOTE (CLIENT, "XGrabButton() returned status %d for client window %x",
+	     status,
+	     win->xwindow);
 
   return 1;
 }
