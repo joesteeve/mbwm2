@@ -603,7 +603,8 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	{
 	  MBWindowManagerClient * c = l->data;
 
-	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput)
+	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput &&
+	      mb_wm_client_is_modal (c))
 	    {
 	      retval = True;
 	      goto done;
