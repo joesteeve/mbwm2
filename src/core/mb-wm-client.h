@@ -289,7 +289,7 @@ void
 mb_wm_client_remove_transient (MBWindowManagerClient *client,
 			       MBWindowManagerClient *transient);
 
-const MBWMList*
+MBWMList*
 mb_wm_client_get_transients (MBWindowManagerClient *client);
 
 MBWindowManagerClient*

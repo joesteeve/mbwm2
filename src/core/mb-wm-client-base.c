@@ -223,12 +223,14 @@ mb_wm_client_base_stack (MBWindowManagerClient *client,
 			 int                    flags)
 {
   /* Stack to highest/lowest possible possition in stack */
+  MBWMList * t = mb_wm_client_get_transients (client);
 
   mb_wm_stack_move_top(client);
 
-  mb_wm_util_list_foreach ( mb_wm_client_get_transients (client),
-			    (MBWMListForEachCB)mb_wm_client_stack,
-			    (void*)flags);
+  mb_wm_util_list_foreach (t, (MBWMListForEachCB)mb_wm_client_stack,
+			   (void*)flags);
+
+  mb_wm_util_list_free (t);
 }
 
 static void

@@ -24,12 +24,14 @@
 static void
 mb_wm_stack_ensure_trans_foreach (MBWindowManagerClient *client, void *data)
 {
+  MBWMList * t = mb_wm_client_get_transients (client);
+
   mb_wm_stack_move_top (client);
 
   mb_wm_util_list_foreach
-    (mb_wm_client_get_transients (client),
-     (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach,
-     NULL);
+    (t, (MBWMListForEachCB) mb_wm_stack_ensure_trans_foreach, NULL);
+
+  mb_wm_util_list_free (t);
 }
 
 void

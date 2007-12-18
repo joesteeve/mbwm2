@@ -103,6 +103,9 @@ mb_wm_util_list_prepend(MBWMList *list, void *data);
 void
 mb_wm_util_list_foreach (const MBWMList *list, MBWMListForEachCB func, void *userdata);
 
+void
+mb_wm_util_list_free (MBWMList * list);
+
 MBWMRgbaIcon *
 mb_wm_rgba_icon_new ();
 

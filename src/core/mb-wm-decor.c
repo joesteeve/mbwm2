@@ -588,11 +588,13 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
   MBWMDecorButton *button = (MBWMDecorButton *)userdata;
   MBWMDecor       *decor  = button->decor;
   MBWindowManager *wm = decor->parent_client->wmref;
+  MBWMList        *l = NULL;
+  Bool             retval = True;
 
   if (xev->window == decor->xwin)
     {
       int xmin, ymin, xmax, ymax;
-      MBWMList * l = decor->parent_client->transients;
+      l = mb_wm_client_get_transients (decor->parent_client);
 
       /* Ignore events on the main window decor if transients other than
        * input methods are present
@@ -602,7 +604,10 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	  MBWindowManagerClient * c = l->data;
 
 	  if (MB_WM_CLIENT_CLIENT_TYPE (c) != MBWMClientTypeInput)
-	    return True;
+	    {
+	      retval = True;
+	      goto done;
+	    }
 
 	  l = l->next;
 	}
@@ -616,7 +621,10 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	  xev->x > xmax ||
 	  xev->y < ymin ||
 	  xev->y > ymax)
-	return True;
+	{
+	  retval = True;
+	  goto done;
+	}
 
       if (button->state != MBWMDecorButtonStatePressed)
 	{
@@ -721,7 +729,8 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 			if (pev->x < xmin || pev->x > xmax ||
 			    pev->y < ymin || pev->y > ymax)
 			  {
-			    return False;
+			    retval = False;
+			    goto done;
 			  }
 
 			if (button->release)
@@ -736,10 +745,12 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	    }
 	}
 
-      return False;
+      retval = False;
     }
 
-  return True;
+ done:
+  mb_wm_util_list_free (l);
+  return retval;
 }
 
 static void

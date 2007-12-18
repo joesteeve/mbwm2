@@ -237,6 +237,21 @@ mb_wm_util_list_foreach (const MBWMList   *list,
     }
 }
 
+void
+mb_wm_util_list_free (MBWMList * list)
+{
+  MBWMList * l = list;
+
+  while (l)
+    {
+      MBWMList * f = l;
+      l = l->next;
+
+      free (f);
+    }
+}
+
+
 MBWMRgbaIcon *
 mb_wm_rgba_icon_new ()
 {

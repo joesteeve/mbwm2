@@ -1,3 +1,26 @@
+2007-12-14  Tomas Frydrych  <tf@o-hand.com>
+
+	* src/core/mb-wm-client.c:
+	(mb_wm_client_base_stack):
+	* src/core/mb-wm-decor.c:
+	(mb_wm_decor_button_press_handler):
+	* src/core/mb-wm-stack.c:
+	(mb_wm_stack_ensure_trans_foreach):
+	* src/managers/maemo/maemo-input.c:
+	(maemo_input_init):
+	Use mb_wm_client_get_transients() instead of accessing the
+	transient list directly.
+
+	* src/core/mb-wm-util.h:
+	* src/core/mb-wm-util.c:
+	(mb_wm_util_list_free):
+	Added a convenience function.
+
+	* src/core/mb-wm-client.h:
+	* src/core/mb-wm-client.c:
+	(mb_wm_client_get_transients):
+	Handle window group hint.
+
 2007-12-12  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:
@@ -5,7 +28,7 @@
 	* src/core/mb-wm-client.c:
 	(mb_wm_client_init):
 	Do a button grab on the client window.
-	
+
 2007-12-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

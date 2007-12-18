@@ -45,8 +45,9 @@ maemo_input_init (MBWMObject *this, va_list vap)
       if ((c = mb_wm_stack_get_highest_by_type (wm, MBWMClientTypeApp)))
 	{
 	  Window w;
+	  MBWMList *trans = mb_wm_client_get_transients (c);
 
-	  if (c->transients && (t = c->transients->data))
+	  if (trans && (t = trans->data))
 	    w = t->window->xwindow;
 	  else
 	    w = c->window->xwindow;
@@ -54,6 +55,8 @@ maemo_input_init (MBWMObject *this, va_list vap)
 	  win->xwin_transient_for = w;
 
 	  XSetTransientForHint(wm->xdpy, win->xwindow, w);
+
+	  mb_wm_util_list_free (trans);
 	}
     }
 #endif

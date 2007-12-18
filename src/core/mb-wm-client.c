@@ -603,10 +603,50 @@ mb_wm_client_remove_transient (MBWindowManagerClient *client,
     client->last_focused_transient = transient->next_focused_client;
 }
 
-const MBWMList*
+MBWMList*
 mb_wm_client_get_transients (MBWindowManagerClient *client)
 {
-  return client->transients;
+  MBWMList *trans = NULL;
+  MBWMList *l = client->transients;
+  Window    xgroup = client->window->xwin_group;
+  MBWindowManagerClient *c;
+  MBWMClientType c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  while (l)
+    {
+      trans = mb_wm_util_list_prepend (trans, l->data);
+      l = l->next;
+    }
+
+  /* If this is an application or desktop that are part of an group,
+   * we add any other transients that are part of the group to the list.
+   */
+  if (xgroup &&
+      (c_type == MBWMClientTypeApp || c_type == MBWMClientTypeDesktop))
+    {
+      mb_wm_stack_enumerate (client->wmref, c)
+	if (c != client &&
+	    c->transient_for && c->window->xwin_group == xgroup)
+	{
+	  MBWindowManagerClient * t = c->transient_for;
+
+	  /* Only add it if it is not directly transiet for our client (in
+	   * which case it is already in the list
+	   *
+	   * Find the bottom level transient
+	   */
+	  while (t && t->transient_for)
+	    t = t->transient_for;
+
+	  if (!t || (MB_WM_CLIENT_CLIENT_TYPE (t) == MBWMClientTypeApp ||
+		     MB_WM_CLIENT_CLIENT_TYPE (t) == MBWMClientTypeDesktop))
+	    {
+	      trans = mb_wm_util_list_prepend (trans, c);
+	    }
+	}
+    }
+
+  return trans;
 }
 
 MBWindowManagerClient*
