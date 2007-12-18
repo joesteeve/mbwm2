@@ -30,8 +30,8 @@
     <title>Introduction</title>
 
     <para>Matchbox Window Manager II is a component framework for building
-    customized window managers providing PDA-like, restricted-stack, window
-    management compliant with the <ulink
+    customised window managers providing PDA-like (i.e., restricted-stack),
+    window management compliant with the <ulink
     url='http://tronche.com/gui/x/icccm/'>ICCCM</ulink> and <ulink
     url='http://standards.freedesktop.org/wm-spec/wm-spec-1.4.html'>NET
     WM</ulink> specifications.
@@ -46,7 +46,7 @@
     <para>The framework is built on the top of a lightweight object system, and
     provides a set of ready-made building blocks encapsulating the key parts and
     functionality of a window manager. The object system makes it easy to
-    subclass the provided objects to achieve the required behaviour.
+    subclass the provided objects in order to achieve the required behaviour.
     </para>
 
 
@@ -64,7 +64,7 @@
       </listitem>
 
       <listitem>
-	<para>Theme engines allowing powerfull and yet minimal-effort theming.
+	<para>Theme engines allowing powerful and yet minimal-effort theming.
         </para>
       </listitem>
 
@@ -100,63 +100,171 @@
       required.
       </para>
 
-      <para>The base MBWindowManager type is subclassed to handle specific
-      window types. The framework provides client types for standard window
-      types:
+      <para>The base MBWindowManagerClient type is then sub-classed to handle specific
+      window types according to requirments. To this end, the
+      MBWindowManagerClass exposes a number of virtual methods that the
+      sub-classes can override.
       </para>
 
-      <itemizedlist>
-	<listitem>
-	  <para>MBWMClientApp, encapsulating top-level application windows.
-          </para>
-	</listitem>
+      <section id="client-virtual-methods">
+	<title>MBWindowManagerClient virtual methods</title>
 
-	<listitem>
-	  <para>MBWMClientDialog, encapsulating dialogues.
-          </para>
-	</listitem>
+	<itemizedlist>
 
-	<listitem>
-	  <para>MBWMClientPanel, encapsulating panels, such as task-switchers.
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>realize: responsible for creation of client resources, such as
+	    frame windows, and reparenting client windows. This method is
+	    usually overwritten by clients that do not require a frame.
+            </para>
+	  </listitem>
 
-	<listitem>
-	  <para>MBWMClientDesktop, encapsulating a desktop application.
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>geometry: distributes the overall geometry available to the
+	    client between its constituent parts (the client, frame, etc).
+            </para>
+	  </listitem>
 
-	<listitem>
-	  <para>MBWMClientInput, encapsulating input windows, such as virtual
-	  keyboards.
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>stack: carries out any action necessary to stack the client
+	    correctly, e.g., for clients with transient children, it ensures
+	    that both the client and the children are stacked correctly.
+            </para>
+	  </listitem>
 
-	<listitem>
-	  <para>MBWMClientMenu, encapsulating menus.
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>show: carries out any required custom actions when the client is
+	    changing from a hidden to visible state; most clients need not to
+	    implement this method.
+            </para>
+	  </listitem>
 
-	<listitem>
-	  <para>MBWMClientNote, encapsulating non-interactive message windows.
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>hide: carries out any required custom actions when the client
+	    is changing from a visible to hidden state; most clients need not to
+	    implement this method.
+            </para>
+	  </listitem>
 
-	<listitem>
-	  <para>MBWMClientApp, encapsulating top-level application windows.
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>sync: flushes any internally scheduled changes to the display.
+            </para>
+	  </listitem>
 
-	<listitem>
-	  <para>MBWMClientOverride, encapsulating windows with override-redirect
-	  attribute set (this type is only used when running in compositing mode).
-          </para>
-	</listitem>
-      </itemizedlist>
+	  <listitem>
+	    <para>focus: carries out any custom action required when the client
+	    is given focus; most clients need not to implement this method.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>theme_change: carries out any actions required when the theme
+	    has changed (for example, recreating decor windows, etc.).
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>detransitize: this method is responsible for terminating
+	    any relationship between the (transient) client and its parent; it
+	    is typically called early in the process of the WM releasing a given
+	    client. Most clients do not need to implement this method.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>stacking_layer: calculates the stacking layer for the client. This
+	    method only needs to be implemented by clients whose stacking
+	    requirement change dynamically; for most clients the stacking layer
+	    is static, in which case it is enough to initialise it from the
+	    object _init method.
+            </para>
+	  </listitem>
+
+	</itemizedlist>
+
+      </section>
+
+    </section>
+
+    <section id="client-subclasses">
+      <title>Specialized Client Types</title>
+
+      <section id="fundamental-client-types">
+	<title>Fundamental Client Types</title>
+
+	<para>The MBWM2 framework recognises eight fundamental client types, for
+	each of which it provides a sub-class of MBWMWindowManagerClient, listed
+	in the following section; these sub-classes can be further sub-classed
+	or replaced, should the customisation of the WM require that.
+        </para>
+
+	<para>The type of a given client can be queried using the
+	MB_WM_CLIENT_CLIENT_TYPE() macro; the client type values are
+	or-able. (NB: the client type should not be confused with the type of
+	the object handling the client; the object type id is unique for each
+	object class, and it is not or-able.)
+        </para>
+      </section>
+
+      <section id="standard-client-subclasses">
+	<title>Standard Client Subclasses</title>
+
+	<para>The standard sub-classes of MBWindowManagerClient are in fact not
+        derrived directly from MBWindowManagerClient, but from an intermediary
+        helper class MBWMClientBase; they are as follows:
+        </para>
+
+	<itemizedlist>
+	  <listitem>
+	    <para>MBWMClientApp, encapsulating top-level application windows.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientDialog, encapsulating dialogues.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientPanel, encapsulating panels, such as task-switchers.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientDesktop, encapsulating a desktop application.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientInput, encapsulating input windows, such as virtual
+	    keyboards.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientMenu, encapsulating menus.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientNote, encapsulating non-interactive message windows.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>MBWMClientOverride, encapsulating windows with override-redirect
+	    attribute set (this type is only used when running in compositing mode).
+            </para>
+	  </listitem>
+
+	</itemizedlist>
 
       <para>Each individual client-type provides specific behaviour, primarily
-      in regards to resizing and stacking.
+      in regards to resizing and stacking. For an example of how to replace a
+      default clients implementaion with a custom one, see the maemo WM in
+      src/managers/maemo.
       </para>
+
+      </section>
 
     </section>
 
@@ -164,7 +272,7 @@
       <title>MBWMTheme</title>
 
       <para>The MBWMTheme is an abstract object encapsulating a theme
-      engine. It handles parsing of the XML theme description, API for quering
+      engine. It handles parsing of the XML theme description, API for querying
       various parameters that are specified by a theme, and API for drawing
       window decorations for specific client types.
       </para>
@@ -193,7 +301,7 @@
 	  <para>MBWMThemePng; a theme engine which 'cuts out' window decorations
 	  from a single PNG template image. This engine makes it possible to
 	  design complex, visually impressive, themes with minimal effort. It
-	  needs to be enabled explicitely with --enable-png-theme.
+	  needs to be enabled explicitly with --enable-png-theme.
           </para>
 	</listitem>
       </itemizedlist>
@@ -229,19 +337,294 @@
 
       <para>MBWindowManager is the core object representing the window manager
       itself. It provides the essential functionality of the manager, which in
-      most cases will be extended through a custom subclassed object.
+      most cases will be extended through a custom sub-classed object.
       </para>
 
     </section>
 
   </section>
 
-  <section id="minimal-manager">
-    <title>Creating a Minimal Window Manager</title>
+  <section id="creating-manager">
+    <title>Creating a Window Manager</title>
 
-    <para>A basic window manager can be created with a dozen or so lines of code;
-    for an example see src/managers/simple.
+    <para>The component framework provides all the functionality necessary for a
+    basic window manager, so that only a dozen or so lines of code are required
+    to create one; such a basic manager implementation is provided in
+    src/managers/simple.
     </para>
+
+    <para>For a more specialised window manager it will be necessary to subclass
+    some of the framework objects. Typically, you will need to provide a
+    sub-classed MBWindowManager object (implementing the custom client_new()
+    virtual function), and subclasses of MBWindowManagerClient for any client
+    types for which customised behaviour is required. An example of a more
+    specialised window manager can be found in src/managers/maemo, containing a
+    window manager customised to the needs of the Nokia Maemo platform.
+    </para>
+
+  </section>
+
+  <section id="designing-themes">
+    <title>Theming Matchbox Window Manager II</title>
+
+    <para>The MBWM II theme consists of an XML description and, in case of a
+    PNG-based theme, the theme image (NB: coordinates in PNG-based themes are
+    absolute, relative to the top-left corner of the image). The XML description
+    uses the following elements:
+    </para>
+
+    <section id="element-theme">
+      <title>theme</title>
+
+      <para>The top level element of the theme, with the following attributes:
+      </para>
+
+      <itemizedlist>
+
+	<listitem>
+	  <para>name: name of the theme.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>author: name of the author.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>desc: longer description of the theme.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>version: version of the theme.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>engine-version: must be "2" for MBWM2.
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>engine-type: type of theme engine preferred by this theme;
+	  legitimate values are "png" and "default" (if unspecified, falls back
+	  to "default").
+          </para>
+	</listitem>
+
+      </itemizedlist>
+
+      <section id="element-img">
+	<title>img</title>
+
+	<para>The img element specifies the source image for a png theme; it
+	will be ignored if the png engine is not used. It has the following
+	attributes:
+        </para>
+
+      <itemizedlist>
+
+	<listitem>
+	  <para>src: the name of the image, which will be looked for in the same
+	  directory from which theme description has been loaded.
+          </para>
+	</listitem>
+
+	</itemizedlist>
+
+      </section>
+
+      <section id="element-client">
+	<title>client</title>
+
+	<para>The client element specifies theming requirements for a client
+	type; any client types that are not specified will be handled with the
+	defaults of the theme engine for that particular client type.
+        </para>
+
+	<para>The client element has the following attributes:
+        </para>
+
+      <itemizedlist>
+
+	<listitem>
+	  <para>type: the type of client to which this description applies;
+	  legal values are "app", "dialog", "panel", "input", "desktop",
+	  "notification" (client of type MBWMClientTypeMenu and
+	  MBWMClientTypeOverride cannot be themed).
+          </para>
+	</listitem>
+
+	</itemizedlist>
+
+	<section id="element-decor">
+	  <title>decor</title>
+
+	  <para>The decor element specifies how its parent client should be
+	  decorated. It has the following attributes:
+          </para>
+
+	  <itemizedlist>
+
+	    <listitem>
+	      <para>type: the decor type; legal values are "north", "south",
+	      "east", "west".
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>show-title: whether the client title (such as window name)
+	      should be displayed on the decor; legal values are "yes", "no",
+	      default is "no".
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>x: for PNG-based themes this is the the x coordinates of the
+	      decor in the image; ignored for other theme engines.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>y: for PNG-based themes this is the the y coordinates of the
+	      decor in the image; ignored for other theme engines.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>width: width of the decor. For PNG themes this value has to
+	      be given explicitly, and is the width of the decor in the image
+	      (if actual decor is wider than this value, the image will be
+	      expanded by tiling the middle section); for other themes, it has
+	      to be given for east and west decors (for north and south decors
+	      width is implied and the attribute will be ignored.)
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>height: height of the decor. For PNG themes this value has
+	      to be given explicitly, and is the height of the decor in the
+	      image (if actual decor is taller than this value, the image will
+	      be expanded by tiling the middle section); for other themes, it
+	      has to be given for north and south decors (for east and west
+	      decors height is implied and the attribute will be ignored.)
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>font-family: the font to be used for any text display on the decor.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>font-size: the size of font to be used for any text display on the decor.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>clr-fg: the foreground colour to use.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>clr-bg: the basic background colour.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>clr-bg2: secondary background colour. This is used by the
+	      cairo-based theme engine to create gradiented background; ignored
+	      by other theme engines.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>clr-frame: colour to use for drawing a frame around the
+	      client window (non-PNG engines only).
+              </para>
+	    </listitem>
+
+	  </itemizedlist>
+
+	  <section id="element-button">
+	    <title>button</title>
+
+	    <para>button element describes a button that belongs to its parent
+	    decor; it has the following attributes:
+            </para>
+
+	    <itemizedlist>
+
+	      <listitem>
+		<para>type: type of the button; legal values are "minimize",
+		"accept", "close", "menu", "fullscreen", "help".
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>packing: "start" or "end". Whether the button should be
+		packaged from start or end of the decor, default "end"; this
+		parameter is ignored for PNG themes (in which buttons are placed
+		explicitely, see below).
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>x: for PNG-based themes this is the the x coordinates of
+	        the button in the image; the button must be located directly on
+	        the parent decor. Ignored for other theme engines.
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>y: for PNG-based themes this is the the y coordinates of
+	        the button in the image; the button must be located directly on
+	        the parent decor. Ignored for other theme engines.
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>width: width of the button.
+                </para>
+	      </listitem>
+
+	      <listitem>
+	        <para>height: height of the button.
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>active-x: for PNG-based themes this is the the x coordinates of
+	        the button in active state in the image; ignored for other theme
+	        engines. (Note that the width of the active image must match
+	        that of the base image, hence there is no active-width attribute.)
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>active-y: for PNG-based themes this is the the y coordinates of
+	        the button in active state in the image; ignored for other theme
+	        engines. (Note that the height of the active image must match
+	        that of the base image, hence there is no active-height attribute.)
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>press-activates: "yes" or "no"; whether the button
+		responds to a press of the pointer, or its release.
+                </para>
+	      </listitem>
+
+	    </itemizedlist>
+
+	  </section>
+
+	</section>
+
+      </section>
+
+    </section>
 
   </section>
 

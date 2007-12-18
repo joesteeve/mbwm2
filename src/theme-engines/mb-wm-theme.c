@@ -767,9 +767,9 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
       while (*p)
 	{
-	  if (!strcmp (*p, "engine_version"))
+	  if (!strcmp (*p, "engine-version"))
 	    exd->version = atoi (*(p+1));
-	  else if (!strcmp (*p, "engine_type"))
+	  else if (!strcmp (*p, "engine-type"))
 	    {
 	      if (!strcmp (*(p+1), "default"))
 #ifdef USE_CAIRO

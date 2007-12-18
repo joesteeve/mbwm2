@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <theme name="Mockup Maemo theme" author="Tomas Frydrych, tf@o-hand.com"
-       desc="" version="1.0" engine_version="2" engine_type="png">
+       desc="" version="1.0" engine-version="2" engine-type="png">
 <img src="background.png" />
 <client type="app">
  <decor type="north" show-title="yes"

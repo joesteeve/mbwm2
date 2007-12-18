@@ -1,3 +1,16 @@
+2007-12-18  Tomas Frydrych  <tf@o-hand.com>
+
+	* data/themes/Default/theme.xml:
+	* data/themes/PngSample/theme.xml:
+	* src/managers/maemo/theme/theme.xml:
+	* src/theme-engines/mb-wm-theme.c:
+	Changed attributes engine_version and engine_type to
+	engine-version and engine-type respectively, so as to make
+	attribute makeup consistent.
+	
+	* doc/MBWM2-Overview.xml:
+	Updated documetation.
+	
 2007-12-14  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-decor.c:
