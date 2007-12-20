@@ -26,6 +26,10 @@
 #include <X11/extensions/Xrender.h>
 #endif
 
+#ifdef HAVE_XEXT
+#include <X11/extensions/shape.h>
+#endif
+
 static void
 mb_wm_client_base_realize (MBWindowManagerClient *client);
 
@@ -152,19 +156,7 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   if (client->xwin_frame == None)
     {
 #ifdef ENABLE_COMPOSITE
-      XRenderPictFormat  *format;
-      Bool                is_argb32 = False;
-      XSetWindowAttributes attr2;
-
-      format = XRenderFindVisualFormat (wm->xdpy, client->window->visual);
-
-      if (format && format->type == PictTypeDirect &&
-	  format->direct.alphaMask)
-	{
-	  is_argb32 = True;
-	}
-
-      if (is_argb32)
+      if (mb_wm_client_is_argb32 (client))
 	{
 	  attr.colormap = client->window->colormap;
 
@@ -494,6 +486,26 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
   if (mb_wm_client_needs_decor_sync (client))
     {
+      /*
+       * First, we set the base shape mask, if needed, so that individual
+       * decors can add themselves to it.
+       */
+#ifdef HAVE_XEXT
+      if (mb_wm_theme_is_client_shaped (wm->theme, client))
+	{
+	  XRectangle rects[1];
+
+	  rects[0].x = client->window->geometry.x - client->frame_geometry.x;
+	  rects[0].y = client->window->geometry.y - client->frame_geometry.y;
+	  rects[0].width  = client->window->geometry.width;
+	  rects[0].height = client->window->geometry.height;
+
+	  XShapeCombineRectangles (wm->xdpy, client->xwin_frame,
+				   ShapeBounding,
+				   0, 0, rects, 1, ShapeSet, 0 );
+	}
+#endif
+
       if (fullscreen)
 	{
 	  if (client->xwin_frame)

@@ -6,6 +6,10 @@
 
 #include <X11/Xft/Xft.h>
 
+#ifdef HAVE_XEXT
+#include <X11/extensions/shape.h>
+#endif
+
 static int
 mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img);
 
@@ -40,12 +44,12 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
 {
   MBWMThemeClass *t_class = MB_WM_THEME_CLASS (klass);
 
-  t_class->paint_decor      = mb_wm_theme_png_paint_decor;
-  t_class->paint_button     = mb_wm_theme_png_paint_button;
-  t_class->decor_dimensions = mb_wm_theme_png_get_decor_dimensions;
-  t_class->button_size      = mb_wm_theme_png_get_button_size;
-  t_class->button_position  = mb_wm_theme_png_get_button_position;
-  t_class->create_decor     = mb_wm_theme_png_create_decor;
+  t_class->paint_decor           = mb_wm_theme_png_paint_decor;
+  t_class->paint_button          = mb_wm_theme_png_paint_button;
+  t_class->decor_dimensions      = mb_wm_theme_png_get_decor_dimensions;
+  t_class->button_size           = mb_wm_theme_png_get_button_size;
+  t_class->button_position       = mb_wm_theme_png_get_button_position;
+  t_class->create_decor          = mb_wm_theme_png_create_decor;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMThemePng";
@@ -60,6 +64,9 @@ mb_wm_theme_png_destroy (MBWMObject *obj)
 
   XRenderFreePicture (dpy, theme->xpic);
   XFreePixmap (dpy, theme->xdraw);
+
+  if (theme->shape_mask)
+    XFreePixmap (dpy, theme->shape_mask);
 }
 
 static int
@@ -114,6 +121,8 @@ mb_wm_theme_png_class_type ()
 struct DecorData
 {
   Pixmap    xpix;
+  Pixmap    shape_mask;
+  GC        gc_mask;
   XftDraw  *xftdraw;
   XftColor  clr;
   XftFont  *font;
@@ -126,6 +135,13 @@ decordata_free (MBWMDecor * decor, void *data)
   Display * xdpy = decor->parent_client->wmref->xdpy;
 
   XFreePixmap (xdpy, dd->xpix);
+
+  if (dd->shape_mask)
+    XFreePixmap (xdpy, dd->shape_mask);
+
+  if (dd->gc_mask)
+    XFreeGC (xdpy, dd->gc_mask);
+
   XftDrawDestroy (dd->xftdraw);
 
   if (dd->font)
@@ -276,16 +292,32 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
       struct DecorData * data = mb_wm_decor_get_theme_data (decor);
       const char * title;
       int x, y;
+      Bool shaped;
+
+#ifdef HAVE_XEXT
+      shaped = theme->shaped && c->shaped && !mb_wm_client_is_argb32 (client);
+#endif
 
       if (!data)
 	{
 	  XRenderColor rclr;
 
-	  data = malloc (sizeof (struct DecorData));
+	  data = mb_wm_util_malloc0 (sizeof (struct DecorData));
 	  data->xpix = XCreatePixmap(xdpy, decor->xwin,
 				     decor->geom.width, decor->geom.height,
 				     DefaultDepth(xdpy, xscreen));
 
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      data->shape_mask =
+		XCreatePixmap(xdpy, decor->xwin,
+			      decor->geom.width, decor->geom.height, 1);
+
+	      data->gc_mask = XCreateGC (xdpy, data->shape_mask, 0, NULL);
+	    }
+#endif
 	  data->xftdraw = XftDrawCreate (xdpy, data->xpix,
 					 DefaultVisual (xdpy, xscreen),
 					 DefaultColormap (xdpy, xscreen));
@@ -333,8 +365,6 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int width2 = decor->geom.width - width1;
 	      int x2     = d->x + d->width - width2;
 
-	      printf ("drawing small decor\n");
-
 	      XRenderComposite(xdpy, PictOpSrc,
 			       p_theme->xpic,
 			       None,
@@ -349,18 +379,37 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       x2 , d->y, 0, 0,
 			       width1, 0,
 			       width2, d->height);
+
+#ifdef HAVE_XEXT
+	      if (shaped)
+		{
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, d->y, width1, d->height, 0, 0);
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     x2, d->y, width2, d->height, width1, 0);
+		}
+#endif
 	    }
 	  else if (decor->geom.width == d->width)
 	    {
 	      /* Exact match */
-	      printf ("drawing exact decor\n");
-
 	      XRenderComposite(xdpy, PictOpSrc,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
 			       d->x, d->y, 0, 0,
 			       0, 0, d->width, d->height);
+
+#ifdef HAVE_XEXT
+	      if (shaped)
+		{
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, d->y, d->width, d->height, 0, 0);
+		}
+#endif
 	    }
 	  else
 	    {
@@ -374,9 +423,6 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int strip  = d->width < 30 ? d->width / 4 : 10;
 	      int width2i= d->width - 2 * strip;
 	      int x2i    = d->x + strip;
-
-	      printf ("drawing big decor, d->x %d, d->y %d\n",
-		      d->x, d->y);
 
 	      XRenderComposite(xdpy, PictOpSrc,
 			       p_theme->xpic,
@@ -404,6 +450,27 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       x3 , d->y, 0, 0,
 			       width1 + width2, 0,
 			       width3, d->height);
+
+#ifdef HAVE_XEXT
+	      if (shaped)
+		{
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, d->y, width1, d->height, 0, 0);
+
+		  for (x = width1; x < width1 + width2; x += width2i)
+		    XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			       data->gc_mask,
+			       x2i, d->y,
+			       (width1 + width2) - x >= width2i ?
+				 width2i : width1 + width2 - x,
+			       d->height, x, 0);
+
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     x3, d->y, width3, d->height, width1 + width2, 0);
+		}
+#endif
 	    }
 	}
       else
@@ -416,8 +483,6 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int height1 = decor->geom.height / 2;
 	      int height2 = decor->geom.height - height1;
 	      int y2      = d->y + d->height - height2;
-
-	      printf ("drawing small vertical decor\n");
 
 	      XRenderComposite(xdpy, PictOpSrc,
 			       p_theme->xpic,
@@ -434,12 +499,22 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       d->x , y2, 0, 0,
 			       0, height1,
 			       d->width, height2);
+
+#ifdef HAVE_XEXT
+	      if (shaped)
+		{
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, d->y, d->width, height1, 0, 0);
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, y2, d->width, height2, 0, height1);
+		}
+#endif
 	    }
 	  else if (decor->geom.height == d->height)
 	    {
 	      /* Exact match */
-	      printf ("drawing exact decor\n");
-
 	      XRenderComposite(xdpy, PictOpSrc,
 			       p_theme->xpic,
 			       None,
@@ -447,6 +522,15 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       d->x, d->y, 0, 0,
 			       0, 0,
 			       d->width, d->height);
+
+#ifdef HAVE_XEXT
+	      if (shaped)
+		{
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, d->y, d->width, d->height, 0, 0);
+		}
+#endif
 	    }
 	  else
 	    {
@@ -460,9 +544,6 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int strip  = d->height < 30 ? d->height / 4 : 10;
 	      int height2i= d->height - 2 * strip;
 	      int y2i    = d->y + strip;
-
-	      printf ("drawing big vertical decor h1 %d, h2 %d, h2i %d\n",
-		      height1, height2, height2i);
 
 	      XRenderComposite(xdpy, PictOpSrc,
 			       p_theme->xpic,
@@ -487,6 +568,26 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       XftDrawPicture (data->xftdraw),
 			       d->x , y3, 0, 0, 0, height1 + height2,
 			       d->width, height3);
+
+#ifdef HAVE_XEXT
+	      if (shaped)
+		{
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, d->y, d->width, height1, 0, 0);
+
+		  for (y = height1; y < height1 + height2; y += height2i)
+		    XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			       data->gc_mask,
+			       d->x, y2i, d->width,
+			       (height1 + height2) - y >= height2i ?
+				 height2i : height1 + height2 - y, 0, y);
+
+		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			     data->gc_mask,
+			     d->x, y3, d->width, height3,0, height1 + height2);
+		}
+#endif
 	    }
 	}
 
@@ -523,6 +624,20 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
 	}
 
+#ifdef HAVE_XEXT
+      if (shaped)
+	{
+	  XShapeCombineMask (xdpy, decor->xwin,
+			     ShapeBounding, 0, 0,
+			     data->shape_mask, ShapeSet);
+
+	  XShapeCombineShape (xdpy,
+			      client->xwin_frame,
+			      ShapeBounding, decor->geom.x, decor->geom.y,
+			      decor->xwin,
+			      ShapeBounding, ShapeUnion);
+	}
+#endif
       XClearWindow (xdpy, decor->xwin);
     }
 }
@@ -849,8 +964,8 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
   Display * dpy = wm->xdpy;
   int       screen = wm->xscreen;
 
-  XImage * ximg;
-  GC       gc;
+  XImage * ximg, * shape_img;
+  GC       gc, gcm;
   int x;
   int y;
   int width;
@@ -859,6 +974,7 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
   XRenderPictureAttributes ren_attr;
   unsigned char * p;
   unsigned char * png_data = mb_wm_theme_png_load_file (img, &width, &height);
+  Bool shaped = MB_WM_THEME (theme)->shaped;
 
   if (!png_data || !width || !height)
     return 0;
@@ -868,19 +984,35 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
   theme->xdraw =
     XCreatePixmap (dpy, RootWindow(dpy,screen), width, height, ren_fmt->depth);
 
+  if (shaped)
+    theme->shape_mask =
+      XCreatePixmap (dpy, RootWindow(dpy,screen), width, height, 1);
+
   XSync (dpy, False);
 
   ren_attr.dither          = True;
   ren_attr.component_alpha = True;
   ren_attr.repeat          = False;
 
-  gc = XCreateGC (dpy, theme->xdraw, 0, NULL);
+  gc  = XCreateGC (dpy, theme->xdraw, 0, NULL);
 
-  ximg = XCreateImage(dpy, DefaultVisual (dpy, screen),
-		      ren_fmt->depth, ZPixmap,
-		      0, NULL, width, height, 32, 0);
+  if (shaped)
+    gcm = XCreateGC (dpy, theme->shape_mask, 0, NULL);
+
+  ximg = XCreateImage (dpy, DefaultVisual (dpy, screen),
+		       ren_fmt->depth, ZPixmap,
+		       0, NULL, width, height, 32, 0);
 
   ximg->data = malloc (ximg->bytes_per_line * ximg->height);
+
+  if (shaped)
+    {
+      shape_img = XCreateImage (dpy, DefaultVisual (dpy, screen),
+				1, ZPixmap,
+				0, NULL, width, height, 8, 0);
+
+      shape_img->data = malloc (shape_img->bytes_per_line * shape_img->height);
+    }
 
   p = png_data;
 
@@ -892,10 +1024,20 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
 	r = (r * (a + 1)) / 256;
 	g = (g * (a + 1)) / 256;
 	b = (b * (a + 1)) / 256;
-	XPutPixel(ximg, x, y, (a << 24) | (r << 16) | (g << 8) | b);
+
+	XPutPixel (ximg, x, y, (a << 24) | (r << 16) | (g << 8) | b);
+
+	if (shaped)
+	  {
+	    XPutPixel (shape_img, x, y, a ? 1 : 0);
+	  }
       }
 
   XPutImage (dpy, theme->xdraw, gc, ximg, 0, 0, 0, 0, width, height);
+
+  if (shaped)
+    XPutImage (dpy, theme->shape_mask, gcm, shape_img,
+	       0, 0, 0, 0, width, height);
 
   theme->xpic = XRenderCreatePicture (dpy, theme->xdraw, ren_fmt,
 				      CPRepeat|CPDither|CPComponentAlpha,
@@ -904,8 +1046,15 @@ mb_wm_theme_png_ximg (MBWMThemePng * theme, const char * img)
   free (ximg->data);
   ximg->data = NULL;
   XDestroyImage (ximg);
-
   XFreeGC (dpy, gc);
+
+  if (shaped)
+    {
+      free (shape_img->data);
+      shape_img->data = NULL;
+      XDestroyImage (shape_img);
+      XFreeGC (dpy, gcm);
+    }
 
   free (png_data);
 

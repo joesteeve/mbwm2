@@ -56,6 +56,8 @@ typedef struct Client
   int width;
   int height;
 
+  Bool shaped;
+
   MBWMList       *decors;
 }MBWMXmlClient;
 

@@ -24,6 +24,10 @@
 #include <unistd.h>
 #include <signal.h>
 
+#ifdef ENABLE_COMPOSITE
+#include <X11/extensions/Xrender.h>
+#endif
+
 struct MBWindowManagerClientPriv
 {
   Bool          realized;
@@ -168,6 +172,20 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   MBWM_NOTE (CLIENT, "XGrabButton() returned status %d for client window %x",
 	     status,
 	     win->xwindow);
+
+#ifdef ENABLE_COMPOSITE
+  {
+    XRenderPictFormat *format;
+
+    format = XRenderFindVisualFormat (wm->xdpy, win->visual);
+
+    if (format && format->type == PictTypeDirect &&
+	format->direct.alphaMask)
+      {
+	client->is_argb32 = True;
+      }
+  }
+#endif
 
   return 1;
 }
@@ -1008,5 +1026,11 @@ mb_wm_client_get_stacking_layer (MBWindowManagerClient *client)
     return klass->stacking_layer (client);
 
   return client->stacking_layer;
+}
+
+Bool
+mb_wm_client_is_argb32 (MBWindowManagerClient *client)
+{
+  return client->is_argb32;
 }
 

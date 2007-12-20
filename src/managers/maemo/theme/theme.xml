@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <theme name="Mockup Maemo theme" author="Tomas Frydrych, tf@o-hand.com"
-       desc="" version="1.0" engine-version="2" engine-type="png">
+       desc="" version="1.0" engine-version="2" engine-type="png" shaped="yes">
 <img src="background.png" />
 <client type="app">
  <decor type="north" show-title="yes"
@@ -18,7 +18,7 @@
  </decor>
 </client>
 
-<client type="dialog">
+<client type="dialog" shaped="yes">
  <decor type="north" show-title="yes"
         x="4"  y="66"  width="207" height="43"  />
  <decor type="south" x="4"  y="119" width="207" height="5"   />
@@ -26,7 +26,7 @@
  <decor type="east"  x="205" y="109" width="6"  height="9" />
 </client>
 
-<client type="notification">
+<client type="notification" shaped="yes">
  <decor type="north"
         x="215"  y="104"  width="207" height="5"  />
  <decor type="south" x="215" y="119" width="207" height="5"   />

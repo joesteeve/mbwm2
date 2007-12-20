@@ -85,6 +85,7 @@ typedef enum MBWMObjectProp
     MBWMObjectPropThemeColorShadow        = _MKOPROP(22, void*),
     MBWMObjectPropThemeShadowType         = _MKOPROP(23, int),
     MBWMObjectPropThemeCompositing        = _MKOPROP(24, int),
+    MBWMObjectPropThemeShaped             = _MKOPROP(25, int),
 
     _MBWMObjectPropLastGlobal = 0x00fffff0,
   }

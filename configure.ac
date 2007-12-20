@@ -114,6 +114,12 @@ if test x$have_xfixes = xyes; then
   AC_DEFINE(HAVE_XFIXES, [1], [Use XFixes ext to really hide cursor])
 fi
 
+PKG_CHECK_MODULES(XEXT, xext, have_xext=yes, have_xext=no)
+
+if test x$have_xext = xyes; then
+  AC_DEFINE(HAVE_XEXT, [1], [Use Xext ext])
+fi
+
 PKG_CHECK_MODULES(XCURSOR, xcursor, have_xcursor=yes, have_xcursor=no)
 
 if test x$have_xcursor = xyes; then
@@ -125,8 +131,8 @@ MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
 MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
 MBWM_THEME_LIBS='$(top_builddir)/src/theme-engines'
 MBWM_COMPMGR_LIBS='$(top_builddir)/src/comp-mgr'
-MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS $XFIXES_CFLAGS $XCURSOR_CFLAGS"
-MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS $XFIXES_LIBS $XCURSOR_LIBS"
+MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS $XFIXES_CFLAGS $XEXT_CFLAGS $XCURSOR_CFLAGS"
+MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS $XFIXES_LIBS $XEXT_LIBS $XCURSOR_LIBS"
 
 AC_SUBST([MBWM_CFLAGS])
 AC_SUBST([MBWM_LIBS])
@@ -164,7 +170,8 @@ echo "
 
     Extension:
 	Xfixes              :   ${have_xfixes}
-	Xcursor             :   ${have_cursor}
+	Xext                :   ${have_xext}
+	Xcursor             :   ${have_xcursor}
 
     Themes:
 	Cairo theme         :   ${use_cairo}

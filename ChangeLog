@@ -1,3 +1,34 @@
+2007-12-19  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	Check for Xext.
+
+	* doc/MBWM2-Overview.xml:
+	Updated documentation.
+
+	* src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_display_sync):
+
+	* src/core/mb-wm-client.c:
+	* src/core/mb-wm-client.h:
+	(mb_wm_client_init):
+	(mb_wm_client_is_argb32):
+	Added new mb_wm_client_is_argb32() function to simplify checking
+	for visual type.
+
+	* src/core/mb-wm-object-props.h:
+	* src/theme-engines/mb-wm-theme-xml.h:
+	* src/theme-engines/mb-wm-theme.c:
+	* src/theme-engines/mb-wm-theme.h:
+	* src/theme-engines/mb-wm-theme-cairo.c:
+	* src/theme-engines/mb-wm-theme-simple.c:
+	Implemented shaped windows in PNG themes.
+
+	* src/managers/maemo/theme/background.png:
+	* src/managers/maemo/theme/theme.xml:
+	Tweaked sample maemo theme to use shaped windows for dialogs and
+	notifications.
+
 2007-12-18  Tomas Frydrych  <tf@o-hand.com>
 
 	* data/themes/Default/theme.xml:
@@ -7,10 +38,10 @@
 	Changed attributes engine_version and engine_type to
 	engine-version and engine-type respectively, so as to make
 	attribute makeup consistent.
-	
+
 	* doc/MBWM2-Overview.xml:
 	Updated documetation.
-	
+
 2007-12-14  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/core/mb-wm-decor.c:

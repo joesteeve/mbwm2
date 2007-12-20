@@ -97,6 +97,9 @@ mb_wm_theme_init (MBWMObject *obj, va_list vap)
 	case MBWMObjectPropThemeCompositing:
 	  theme->compositing = va_arg(vap, int);
 	  break;
+	case MBWMObjectPropThemeShaped:
+	  theme->shaped = va_arg(vap, int);
+	  break;
 
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
@@ -353,6 +356,7 @@ struct expat_data
   MBWMColor     color_shadow;
   MBWMCompMgrShadowType shadow_type;
   Bool          compositing;
+  Bool          shaped;
 };
 
 MBWMTheme *
@@ -370,6 +374,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
   MBWMColor  clr_shadow;
   MBWMCompMgrShadowType shadow_type;
   Bool       compositing;
+  Bool       shaped;
 
   /* Attempt to parse the xml theme, if any, retrieving the theme type
    *
@@ -435,8 +440,6 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 
 	  XML_SetUserData(par, (void *)&udata);
 
-	  printf ("========= parsing [%s]\n", path);
-
 	  while (fgets (buf, sizeof (buf), file) &&
 		 XML_Parse(par, buf, strlen(buf), 0));
 
@@ -490,6 +493,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 
 	  shadow_type = udata.shadow_type;
 	  compositing = udata.compositing;
+	  shaped      = udata.shaped;
 
 	  xml_stack_free (udata.stack);
 	}
@@ -507,6 +511,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 			MBWMObjectPropThemeColorShadow,   &clr_shadow,
 			MBWMObjectPropThemeShadowType,     shadow_type,
 			MBWMObjectPropThemeCompositing,    compositing,
+			MBWMObjectPropThemeShaped,         shaped,
 			NULL));
     }
 
@@ -587,6 +592,31 @@ mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
   geom->height = c->height;
 
   return True;
+}
+
+Bool
+mb_wm_theme_is_client_shaped (MBWMTheme             * theme,
+			      MBWindowManagerClient * client)
+{
+#ifdef HAVE_XEXT
+  MBWMXmlClient * c;
+  MBWMClientType  c_type;
+
+  if (!client || !theme || !theme->shaped || client->is_argb32)
+    return False;
+
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if (theme->xml_clients &&
+      (c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)))
+    {
+      return c->shaped;
+    }
+
+  return False;
+#else
+  return False
+#endif
 }
 
 /*
@@ -782,6 +812,11 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		exd->theme_type = MB_WM_TYPE_THEME_PNG;
 #endif
 	    }
+	  else if (!strcmp (*p, "shaped"))
+	    {
+	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
+		exd->shaped = 1;
+	    }
 	  else if (!strcmp (*p, "clr-shadow"))
 	    {
 	      mb_wm_xml_clr_from_string (&clr, *(p+1));
@@ -848,6 +883,11 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		c->type = MBWMClientTypeDesktop;
 	      else if (!strcmp (*(p+1), "notification"))
 		c->type = MBWMClientTypeNote;
+	    }
+	  else if (!strcmp (*p, "shaped"))
+	    {
+	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
+		c->shaped = 1;
 	    }
 	  else if (!strcmp (*p, "width"))
 	    {

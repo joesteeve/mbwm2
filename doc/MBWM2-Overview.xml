@@ -252,7 +252,8 @@
 
 	  <listitem>
 	    <para>MBWMClientOverride, encapsulating windows with override-redirect
-	    attribute set (this type is only used when running in compositing mode).
+	    attribute set (this type is only used when running in compositing
+	    mode, since override windows are, by definition, unmanaged).
             </para>
 	  </listitem>
 
@@ -312,7 +313,9 @@
       <title>MBWMLayout</title>
 
       <para>MBWMLayout provides the logic for distributing the screen real
-      estate between the managed clients.
+      estate between the managed clients. This is intrinsic to the MBWM2
+      management paradigm, and should rarely need to be subclassed when
+      designing a custom manager.
       </para>
 
     </section>
@@ -337,8 +340,62 @@
 
       <para>MBWindowManager is the core object representing the window manager
       itself. It provides the essential functionality of the manager, which in
-      most cases will be extended through a custom sub-classed object.
+      most cases will be extended through a custom sub-classed object. To this
+      end, MBWindowManager exposes a number of virtual methods.
       </para>
+
+      <section id="MBWindowManager-virtuals">
+	<title>MBWindowManager Virtual Methods</title>
+
+	<itemizedlist>
+
+	  <listitem>
+	    <para>process_cmdline: handles command-line options; if the custom
+	    object implements this method, it should chain up to the method
+	    provided by it's parent class, so that standard MBWM2 options get
+	    handled correctly.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>client_new: method used to allocate instances of
+	    MBWindowManagerClient and its sub-classes; any manager that uses
+	    custom MBWindowManagerClient sub-classes must implement this method.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>layout_new: method used to allocate an instance of the
+	    MBWMLayout object; this method needs to be implemented only if the
+	    custom WM sub-classes MBWMLayout.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>client_activate: method used to activate a client; this method
+	    only needs to be implemented if the custom WM requires some special
+	    action to be taken while activating a client (in which case the
+	    custom method should chain up to that of the parent class).
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>client_hang: this method allows the custom WM to handle a hang
+	    client in a specific way (the default action is to shut it down);
+	    used as part of the ping protocol.
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>client_responding: this method allows the custom WM to handle
+	    client's response to a ping in a specific way (the default action is
+	    to NOP); used as part of the ping protocol.
+            </para>
+	  </listitem>
+
+	</itemizedlist>
+
+      </section>
 
     </section>
 
@@ -368,9 +425,30 @@
     <title>Theming Matchbox Window Manager II</title>
 
     <para>The MBWM II theme consists of an XML description and, in case of a
-    PNG-based theme, the theme image (NB: coordinates in PNG-based themes are
-    absolute, relative to the top-left corner of the image). The XML description
-    uses the following elements:
+    PNG-based theme, the theme image. There are three distinct theme engines
+    provided: a simple engine, using back Xlib drawing primites, an engine
+    using cairo library, and PNG-based engine.
+    </para>
+
+    <para>The simple and cairo engines are suitable for simple themes with
+    minimal frills. The PNG engine, on the other hand, facilitates the creation
+    of visually impressive and complex themes; it is based on single template
+    image, which contains all the elements the theme consists of, with the
+    location of each element is described in the xml description file.
+    Essentially, the PNG image can be thought of as a screen shot, or a mockup
+    of the screen; however, it does not have to match the size of the screen
+    (indeed, in order to save HW resources, the image should contain minimum of
+    'dead' space).
+    </para>
+
+    <para>
+    PNG themes can also use shaped windows; any transparent pixels in any of the
+    decorations will be excluded from the window shape (as long as the both the
+    theme and the relevant client is marked as using shaped windows in the XML
+    description).
+    </para>
+
+    <para>The XML theme description uses the following elements:
     </para>
 
     <section id="element-theme">
@@ -392,7 +470,8 @@
 	</listitem>
 
 	<listitem>
-	  <para>desc: longer description of the theme.
+	  <para>desc: longer description of the theme, e.g., for display in a
+	  GUI theme switcher.
           </para>
 	</listitem>
 
@@ -408,8 +487,20 @@
 
 	<listitem>
 	  <para>engine-type: type of theme engine preferred by this theme;
-	  legitimate values are "png" and "default" (if unspecified, falls back
-	  to "default").
+	  legitimate values are "png" and "default" (default is "default").
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>compositing: whether composting should be enabled for this
+	  theme; "yes" or "no", default "no".
+          </para>
+	</listitem>
+
+	<listitem>
+	  <para>shaped: whether this theme uses shaped windows; "yes" or
+	  "no", default "no" (only available for PNG themes; see the "client"
+	  element for more information).
           </para>
 	</listitem>
 
@@ -446,15 +537,32 @@
 	<para>The client element has the following attributes:
         </para>
 
-      <itemizedlist>
+	<itemizedlist>
 
-	<listitem>
-	  <para>type: the type of client to which this description applies;
-	  legal values are "app", "dialog", "panel", "input", "desktop",
-	  "notification" (client of type MBWMClientTypeMenu and
-	  MBWMClientTypeOverride cannot be themed).
-          </para>
-	</listitem>
+	  <listitem>
+	    <para>type: the type of client to which this description applies;
+	    legal values are "app", "dialog", "panel", "input", "desktop",
+	    "notification" (client of type MBWMClientTypeMenu and
+	    MBWMClientTypeOverride cannot be themed).
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>shaped: whether this client uses shaped windows; "yes" or
+	    "no", default "no". (Shapped windows are only supported with PNG
+	    themes, where the invisible parts of the decorations are
+            transparent in the theme image.)
+            </para>
+	  </listitem>
+
+	  <listitem>
+	    <para>x, y, width, height: geometry for the client. (Note that for
+	    most client types it makes little sense to specify geometry in the
+            theme, and the values will be ignored. The notable exception to this
+	    are panel clients, the position and size of which might be
+	    theme-dependent, as for example, with the maemo status bar.)
+            </para>
+	  </listitem>
 
 	</itemizedlist>
 

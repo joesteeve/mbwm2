@@ -51,6 +51,13 @@ mb_wm_theme_simple_destroy (MBWMObject *obj)
 static int
 mb_wm_theme_simple_init (MBWMObject *obj, va_list vap)
 {
+  MBWMTheme         *theme = MB_WM_THEME (obj);
+
+  /*
+   * We do not support shaped windows, so reset the flag to avoid unnecessary
+   * ops if the xml theme set this
+   */
+  theme->shaped = False;
 
   return 1;
 }

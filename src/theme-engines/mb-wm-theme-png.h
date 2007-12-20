@@ -41,6 +41,7 @@ struct MBWMThemePng
 
   Pixmap           xdraw;
   Picture          xpic;
+  Pixmap           shape_mask;
 };
 
 #endif

@@ -167,6 +167,8 @@ struct MBWindowManagerClient
   unsigned long                sig_theme_change_id;
   int                          ping_timeout;
 
+  Bool                         is_argb32;
+
 #ifdef ENABLE_COMPOSITE
   MBWMCompMgrClient           *cm_client;
 #endif
@@ -357,5 +359,8 @@ mb_wm_client_get_stacking_layer (MBWindowManagerClient *client);
 
 void
 mb_wm_client_ping_start (MBWindowManagerClient *client);
+
+Bool
+mb_wm_client_is_argb32 (MBWindowManagerClient *client);
 
 #endif

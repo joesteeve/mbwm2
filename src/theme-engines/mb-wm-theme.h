@@ -56,36 +56,36 @@ enum MBWMThemeCaps
 
 struct MBWMThemeClass
 {
-  MBWMObjectClass           parent;
+  MBWMObjectClass               parent;
 
-  void (*paint_decor)      (MBWMTheme              *theme,
-			    MBWMDecor              *decor);
+  void (*paint_decor)           (MBWMTheme              *theme,
+				 MBWMDecor              *decor);
 
-  void (*paint_button)     (MBWMTheme              *theme,
-			    MBWMDecorButton        *button);
+  void (*paint_button)          (MBWMTheme              *theme,
+				 MBWMDecorButton        *button);
 
-  void (*decor_dimensions) (MBWMTheme              *theme,
-			    MBWindowManagerClient  *client,
-			    int                    *north,
-			    int                    *south,
-			    int                    *west,
-			    int                    *east);
+  void (*decor_dimensions)      (MBWMTheme              *theme,
+				 MBWindowManagerClient  *client,
+				 int                    *north,
+				 int                    *south,
+				 int                    *west,
+				 int                    *east);
 
-  void (*button_size)      (MBWMTheme              *theme,
-			    MBWMDecor              *decor,
-			    MBWMDecorButtonType     type,
-			    int                    *width,
-			    int                    *height);
+  void (*button_size)           (MBWMTheme              *theme,
+				 MBWMDecor              *decor,
+				 MBWMDecorButtonType     type,
+				 int                    *width,
+				 int                    *height);
 
-  void (*button_position)  (MBWMTheme              *theme,
-			    MBWMDecor              *decor,
-			    MBWMDecorButtonType     type,
-			    int                    *x,
-			    int                    *y);
+  void (*button_position)       (MBWMTheme              *theme,
+				 MBWMDecor              *decor,
+				 MBWMDecorButtonType     type,
+				 int                    *x,
+				 int                    *y);
 
-  MBWMDecor* (*create_decor) (MBWMTheme             *theme,
-			      MBWindowManagerClient *client,
-			      MBWMDecorType          type);
+  MBWMDecor* (*create_decor)    (MBWMTheme             *theme,
+			         MBWindowManagerClient *client,
+			         MBWMDecorType          type);
 };
 
 struct MBWMTheme
@@ -98,6 +98,7 @@ struct MBWMTheme
   MBWMList              *xml_clients;
 
   Bool                   compositing;
+  Bool                   shaped;
   MBWMColor              color_lowlight;
   MBWMColor              color_shadow;
   MBWMCompMgrShadowType  shadow_type;
@@ -157,6 +158,10 @@ Bool
 mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
 				 MBWindowManagerClient * client,
 				 MBGeometry            * geom);
+
+Bool
+mb_wm_theme_is_client_shaped (MBWMTheme             * theme,
+			      MBWindowManagerClient * client);
 
 void
 mb_wm_theme_get_lowlight_color (MBWMTheme             * theme,
