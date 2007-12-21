@@ -615,7 +615,7 @@ mb_wm_theme_is_client_shaped (MBWMTheme             * theme,
 
   return False;
 #else
-  return False
+  return False;
 #endif
 }
 
@@ -1067,6 +1067,14 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  else if (!strcmp (*p, "active-y"))
 	    {
 	      b->active_y = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "inactive-x"))
+	    {
+	      b->inactive_x = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "inactive-y"))
+	    {
+	      b->inactive_y = atoi (*(p+1));
 	    }
 	  else if (!strcmp (*p, "press-activated"))
 	    {

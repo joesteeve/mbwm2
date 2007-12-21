@@ -636,7 +636,12 @@
 	    </listitem>
 
 	    <listitem>
-	      <para>clr-bg: the basic background colour.
+	      <para>clr-bg: the basic background colour. If a background color
+	      is specfied for a PNG based theme, the decor will be first filled
+	      with this color, and then the PNG image will be composited over
+	      it; in this case, the images for any buttons must be located of
+	      the decor, and the "inactive-x", "inactive-y" of the "button"
+	      element used.
               </para>
 	    </listitem>
 
@@ -703,18 +708,34 @@
 	      </listitem>
 
 	      <listitem>
-		<para>active-x: for PNG-based themes this is the the x coordinates of
-	        the button in active state in the image; ignored for other theme
-	        engines. (Note that the width of the active image must match
-	        that of the base image, hence there is no active-width attribute.)
+		<para>inactive-x: for PNG-based themes this is the the x
+	        coordinates of the button in inactive state in the image;
+	        ignored for other theme engines. (The inactive image can be
+	        located directly on the decor image, in which case, this
+	        parameter is unnecessary.)
                 </para>
 	      </listitem>
 
 	      <listitem>
-		<para>active-y: for PNG-based themes this is the the y coordinates of
-	        the button in active state in the image; ignored for other theme
-	        engines. (Note that the height of the active image must match
-	        that of the base image, hence there is no active-height attribute.)
+		<para>inactive-y: for PNG-based themes this is the the y
+	        coordinates of the button in inactive state in the image;
+	        ignored for other theme engines. (The inactive image can be
+	        located directly on the decor image, in which case, this
+	        parameter is unnecessary.)
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>active-x: for PNG-based themes this is the the x
+	        coordinates of the button in active state in the image; ignored
+	        for other theme engines.
+                </para>
+	      </listitem>
+
+	      <listitem>
+		<para>active-y: for PNG-based themes this is the the y
+	        coordinates of the button in active state in the image; ignored
+	        for other theme engines.
                 </para>
 	      </listitem>
 

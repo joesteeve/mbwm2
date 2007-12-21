@@ -23,6 +23,9 @@ typedef struct Button
   int active_x;
   int active_y;
 
+  int inactive_x;
+  int inactive_y;
+
   int press_activated;
 } MBWMXmlButton;
 

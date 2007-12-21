@@ -211,11 +211,11 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
       (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type))      &&
       (b = mb_wm_xml_button_find_by_type (d->buttons, button->type)))
     {
-      Display * xdpy    = theme->wm->xdpy;
-      int       xscreen = theme->wm->xscreen;
+      Display           * xdpy    = theme->wm->xdpy;
+      int                 xscreen = theme->wm->xscreen;
       struct DecorData  * ddata = mb_wm_decor_get_theme_data (decor);
       struct ButtonData * bdata;
-      int x, y;
+      int                 x, y;
 
       if (!ddata)
 	return;
@@ -227,6 +227,9 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 	  int a_x = b->active_x > -1 ? b->active_x : b->x;
 	  int a_y = b->active_y > -1 ? b->active_y : b->y;
 
+	  int i_x = b->inactive_x > -1 ? b->inactive_x : b->x;
+	  int i_y = b->inactive_y > -1 ? b->inactive_y : b->y;
+
 	  bdata = malloc (sizeof (struct ButtonData));
 
 	  bdata->xpix_a = XCreatePixmap(xdpy, decor->xwin,
@@ -237,12 +240,6 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 					    DefaultVisual (xdpy, xscreen),
 					    DefaultColormap (xdpy, xscreen));
 
-	  XRenderComposite (xdpy, PictOpSrc,
-			    p_theme->xpic,
-			    None,
-			    XftDrawPicture (bdata->xftdraw_a),
-			    a_x, a_y, 0, 0, 0, 0, b->width, b->height);
-
 	  bdata->xpix_i = XCreatePixmap(xdpy, decor->xwin,
 				      button->geom.width, button->geom.height,
 				      DefaultDepth(xdpy, xscreen));
@@ -251,11 +248,67 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 					    DefaultVisual (xdpy, xscreen),
 					    DefaultColormap (xdpy, xscreen));
 
-	  XRenderComposite (xdpy, PictOpSrc,
-			    p_theme->xpic,
-			    None,
-			    XftDrawPicture (bdata->xftdraw_i),
-			    b->x, b->y, 0, 0, 0, 0, b->width, b->height);
+	  /*
+	   * If the background color is set for the parent decor, we do a fill
+	   * with the parent color first, then composite the decor image over,
+	   * and finally composite the button image. (This way we can paint the
+	   * button with a simple PictOpSrc, rather than having to do
+	   * composting on each draw).
+	   */
+	  if (d->clr_bg.set)
+	    {
+	      XRenderColor rclr2;
+
+	      rclr2.red   = (int)(d->clr_bg.r * (double)0xffff);
+	      rclr2.green = (int)(d->clr_bg.g * (double)0xffff);
+	      rclr2.blue  = (int)(d->clr_bg.b * (double)0xffff);
+
+	      /* Fill the inactive image */
+	      XRenderFillRectangle (xdpy, PictOpSrc,
+				    XftDrawPicture (bdata->xftdraw_i), &rclr2,
+				    0, 0, b->width, b->height);
+
+	      /* Composite the decor over */
+	      XRenderComposite (xdpy, PictOpOver,
+				p_theme->xpic,
+				None,
+				XftDrawPicture (bdata->xftdraw_i),
+				b->x, b->y, 0, 0, 0, 0, b->width, b->height);
+
+	      /* Copy inactive button to the active one */
+	      XRenderComposite (xdpy, PictOpSrc,
+				XftDrawPicture (bdata->xftdraw_i),
+				None,
+				XftDrawPicture (bdata->xftdraw_a),
+				0, 0, 0, 0, 0, 0, b->width, b->height);
+
+	      /* Composite inactive and active image on top */
+	      XRenderComposite (xdpy, PictOpOver,
+				p_theme->xpic,
+				None,
+				XftDrawPicture (bdata->xftdraw_i),
+				i_x, i_y, 0, 0, 0, 0, b->width, b->height);
+
+	      XRenderComposite (xdpy, PictOpOver,
+				p_theme->xpic,
+				None,
+				XftDrawPicture (bdata->xftdraw_a),
+				a_x, a_y, 0, 0, 0, 0, b->width, b->height);
+	    }
+	  else
+	    {
+	      XRenderComposite (xdpy, PictOpSrc,
+				p_theme->xpic,
+				None,
+				XftDrawPicture (bdata->xftdraw_i),
+				i_x, i_y, 0, 0, 0, 0, b->width, b->height);
+
+	      XRenderComposite (xdpy, PictOpSrc,
+				p_theme->xpic,
+				None,
+				XftDrawPicture (bdata->xftdraw_a),
+				a_x, a_y, 0, 0, 0, 0, b->width, b->height);
+	    }
 
 	  mb_wm_decor_button_set_theme_data (button, bdata, buttondata_free);
 	}
@@ -287,12 +340,13 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
       (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type)))
     {
-      Display * xdpy    = theme->wm->xdpy;
-      int       xscreen = theme->wm->xscreen;
+      Display          * xdpy    = theme->wm->xdpy;
+      int                xscreen = theme->wm->xscreen;
       struct DecorData * data = mb_wm_decor_get_theme_data (decor);
-      const char * title;
-      int x, y;
-      Bool shaped;
+      const char       * title;
+      int                x, y;
+      int                operator = PictOpSrc;
+      Bool               shaped;
 
 #ifdef HAVE_XEXT
       shaped = theme->shaped && c->shaped && !mb_wm_client_is_argb32 (client);
@@ -321,6 +375,27 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  data->xftdraw = XftDrawCreate (xdpy, data->xpix,
 					 DefaultVisual (xdpy, xscreen),
 					 DefaultColormap (xdpy, xscreen));
+
+	  /*
+	   * If the background color is set, we fill the pixmaps with it,
+	   * and then overlay the the PNG image over (this allows a theme
+	   * to provide a monochromatic PNG that can be toned, e.g., Sato)
+	   */
+	  if (d->clr_bg.set)
+	    {
+	      XRenderColor rclr2;
+
+	      operator = PictOpOver;
+
+	      rclr2.red   = (int)(d->clr_bg.r * (double)0xffff);
+	      rclr2.green = (int)(d->clr_bg.g * (double)0xffff);
+	      rclr2.blue  = (int)(d->clr_bg.b * (double)0xffff);
+
+	      XRenderFillRectangle (xdpy, PictOpSrc,
+				    XftDrawPicture (data->xftdraw), &rclr2,
+				    0, 0,
+				    decor->geom.width, decor->geom.height);
+	    }
 
 	  rclr.red = 0;
 	  rclr.green = 0;
@@ -365,14 +440,14 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int width2 = decor->geom.width - width1;
 	      int x2     = d->x + d->width - width2;
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
 			       d->x, d->y, 0, 0, 0, 0,
 			       width1, d->height);
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -395,7 +470,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  else if (decor->geom.width == d->width)
 	    {
 	      /* Exact match */
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -424,7 +499,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int width2i= d->width - 2 * strip;
 	      int x2i    = d->x + strip;
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -433,7 +508,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       width1, d->height);
 
 	      for (x = width1; x < width1 + width2; x += width2i)
-		XRenderComposite(xdpy, PictOpSrc,
+		XRenderComposite(xdpy, operator,
 				 p_theme->xpic,
 				 None,
 				 XftDrawPicture (data->xftdraw),
@@ -443,7 +518,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 				 width2i : width1 + width2 - x,
 				 d->height);
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -484,7 +559,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int height2 = decor->geom.height - height1;
 	      int y2      = d->y + d->height - height2;
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -492,7 +567,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       0, 0,
 			       d->width, height1);
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -515,7 +590,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  else if (decor->geom.height == d->height)
 	    {
 	      /* Exact match */
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -545,7 +620,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      int height2i= d->height - 2 * strip;
 	      int y2i    = d->y + strip;
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
@@ -553,7 +628,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       d->width, height1);
 
 	      for (y = height1; y < height1 + height2; y += height2i)
-		XRenderComposite(xdpy, PictOpSrc,
+		XRenderComposite(xdpy, operator,
 				 p_theme->xpic,
 				 None,
 				 XftDrawPicture (data->xftdraw),
@@ -562,7 +637,7 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 				 (height1 + height2) - y >= height2i ?
 				 height2i : height1 + height2 - y);
 
-	      XRenderComposite(xdpy, PictOpSrc,
+	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),

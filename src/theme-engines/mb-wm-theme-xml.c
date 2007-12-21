@@ -32,6 +32,8 @@ mb_wm_xml_button_new ()
   b->y = -1;
   b->active_x = -1;
   b->active_y = -1;
+  b->inactive_x = -1;
+  b->inactive_y = -1;
 
   return b;
 }

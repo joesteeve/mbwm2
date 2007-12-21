@@ -1,3 +1,13 @@
+2007-12-21  Tomas Frydrych  <tf@o-hand.com>
+
+        * doc/MBWM2-Overview.xml:
+        * src/theme-engines/mb-wm-theme-png.c:
+        * src/theme-engines/mb-wm-theme-xml.c:
+        * src/theme-engines/mb-wm-theme-xml.h:
+        * src/theme-engines/mb-wm-theme.c:
+	Added inactive-x, inactive-y parameters to theme buttons to make
+	it possible to design monochromatic tonable PNG themes.
+
 2007-12-19  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:
