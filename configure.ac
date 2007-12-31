@@ -158,6 +158,7 @@ src/theme-engines/Makefile
 data/Makefile
 data/themes/Makefile
 data/themes/Default/Makefile
+doc/Makefile
 ])
 
 echo "
