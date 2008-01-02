@@ -202,10 +202,24 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 				      MBGeometry            *new_geometry,
 				      MBWMClientReqGeomType  flags)
 {
-  if (client->frame_geometry.x      != new_geometry->x ||
-      client->frame_geometry.y      != new_geometry->y ||
-      client->frame_geometry.width  != new_geometry->width ||
-      client->frame_geometry.height != new_geometry->height)
+  const MBGeometry * geom;
+  Bool               change;
+
+  /*
+   * When we get an internal geometry request, like from the layout manager,
+   * the new geometry applies to the frame; however, if the request is external
+   * from ConfigureRequest, it is new geometry of the client window, so we need
+   * to take care to handle this right.
+   */
+  geom = (flags & MBWMClientReqGeomIsViaConfigureReq) ?
+    &client->window->geometry : &client->frame_geometry;
+
+  change = (geom->x      != new_geometry->x     ||
+	    geom->y      != new_geometry->y     ||
+	    geom->width  != new_geometry->width ||
+	    geom->height != new_geometry->height);
+
+  if (change)
     {
       int north, south, west, east;
       MBWindowManager *wm = client->wmref;
@@ -213,19 +227,55 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
       mb_wm_theme_get_decor_dimensions (wm->theme, client,
 					&north, &south, &west, &east);
 
-      client->frame_geometry.x      = new_geometry->x;
-      client->frame_geometry.y      = new_geometry->y;
-      client->frame_geometry.width  = new_geometry->width;
-      client->frame_geometry.height = new_geometry->height;
+      if (flags & MBWMClientReqGeomIsViaConfigureReq)
+	{
+	  /*
+	   * Calculate the frame size from the window size
+	   */
+	  MBWM_DBG ("ConfigureRequest [%d,%d;%dx%d] -> [%d,%d;%dx%d]\n",
+		  client->window->geometry.x,
+		  client->window->geometry.y,
+		  client->window->geometry.width,
+		  client->window->geometry.height,
+		  new_geometry->x,
+		  new_geometry->y,
+		  new_geometry->width,
+		  new_geometry->height);
 
-      client->window->geometry.x
-	= client->frame_geometry.x + west;
-      client->window->geometry.y
-	= client->frame_geometry.y + north;
-      client->window->geometry.width
-	= client->frame_geometry.width - (west + east);
-      client->window->geometry.height
-	= client->frame_geometry.height - (south + north);
+	  client->window->geometry.x      = new_geometry->x;
+	  client->window->geometry.y      = new_geometry->y;
+	  client->window->geometry.width  = new_geometry->width;
+	  client->window->geometry.height = new_geometry->height;
+
+	  client->frame_geometry.x
+	    = client->window->geometry.x - west;
+	  client->frame_geometry.y
+	    = client->window->geometry.y - north;
+	  client->frame_geometry.width
+	    = client->window->geometry.width + (west + east);
+	  client->frame_geometry.height
+	    = client->window->geometry.height + (south + north);
+	}
+      else
+	{
+	  /*
+	   * Internal request, e.g., from layout manager; work out client
+	   * window size from the provided frame size.
+	   */
+	  client->frame_geometry.x      = new_geometry->x;
+	  client->frame_geometry.y      = new_geometry->y;
+	  client->frame_geometry.width  = new_geometry->width;
+	  client->frame_geometry.height = new_geometry->height;
+
+	  client->window->geometry.x
+	    = client->frame_geometry.x + west;
+	  client->window->geometry.y
+	    = client->frame_geometry.y + north;
+	  client->window->geometry.width
+	    = client->frame_geometry.width - (west + east);
+	  client->window->geometry.height
+	    = client->frame_geometry.height - (south + north);
+	}
 
       mb_wm_client_geometry_mark_dirty (client);
 

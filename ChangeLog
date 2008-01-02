@@ -1,3 +1,14 @@
+2008-01-02  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_request_geometry):
+	Fixed geometry calculations for requests via ConfigureRequest.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_handle_config_request):
+	Check for window size change before the geometry is modified by
+	mb_wm_client_request_geometry().
+
 2007-12-31  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

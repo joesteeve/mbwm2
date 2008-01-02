@@ -419,6 +419,7 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
   int                    req_w = xev->width;
   int                    req_h = xev->height;
   MBGeometry             req_geom, *win_geom;
+  Bool                   no_size_change;
 
   client = mb_wm_managed_client_from_xwindow(wm, xev->window);
 
@@ -468,12 +469,19 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
       return True;
     }
 
+  /*
+   * Check for position-only change (needs to be done before we
+   * request new geometry as that call changes the win_geom values if
+   * successful.
+   */
+  no_size_change = (req_geom.width  == win_geom->width &&
+		    req_geom.height == win_geom->height);
+
   if (mb_wm_client_request_geometry (client,
 				     &req_geom,
 				     MBWMClientReqGeomIsViaConfigureReq))
     {
-      if (req_geom.width == win_geom->width
-	  && req_geom.height == win_geom->height)
+      if (no_size_change)
 	{
 	  /* ICCCM says if window only moved - not size change,
 	   * then we send a fake one too.
