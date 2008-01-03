@@ -120,6 +120,11 @@ mb_wm_decor_resize (MBWMDecor *decor)
 
   l = decor->buttons;
 
+  /*
+   * Notify theme of resize
+   */
+  mb_wm_theme_resize_decor (theme, decor);
+
   if (abs_packing)
     {
       int width = btn_x_end;

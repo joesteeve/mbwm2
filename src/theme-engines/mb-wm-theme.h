@@ -86,6 +86,10 @@ struct MBWMThemeClass
   MBWMDecor* (*create_decor)    (MBWMTheme             *theme,
 			         MBWindowManagerClient *client,
 			         MBWMDecorType          type);
+
+  void  (*resize_decor)         (MBWMTheme             *theme,
+			         MBWMDecor             *decor);
+
 };
 
 struct MBWMTheme
@@ -153,6 +157,10 @@ MBWMDecor *
 mb_wm_theme_create_decor (MBWMTheme             *theme,
 			  MBWindowManagerClient *client,
 			  MBWMDecorType          type);
+
+void
+mb_wm_theme_resize_decor (MBWMTheme             *theme,
+			  MBWMDecor             *decor);
 
 Bool
 mb_wm_theme_get_client_geometry (MBWMTheme             * theme,

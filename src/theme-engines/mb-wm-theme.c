@@ -563,6 +563,22 @@ mb_wm_theme_create_decor (MBWMTheme             *theme,
     return klass->create_decor (theme, client, type);
 }
 
+void
+mb_wm_theme_resize_decor (MBWMTheme *theme, MBWMDecor *decor)
+{
+  MBWMThemeClass *klass;
+
+  MBWM_ASSERT (decor);
+
+  if (!theme || !decor)
+    return;
+
+  klass = MB_WM_THEME_CLASS(MB_WM_OBJECT_GET_CLASS (theme));
+
+  if (klass->resize_decor)
+    klass->resize_decor (theme, decor);
+}
+
 /*
  * Returns True if the theme prescribes at least one value for the geometry
  */

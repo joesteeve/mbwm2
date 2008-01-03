@@ -31,8 +31,11 @@ mb_wm_theme_png_create_decor (MBWMTheme*, MBWindowManagerClient *,
 			      MBWMDecorType);
 
 static void
-mb_wm_theme_png_get_button_size (MBWMTheme *, MBWMDecor *, MBWMDecorButtonType,
-				 int *, int *);
+mb_wm_theme_png_resize_decor (MBWMTheme *theme, MBWMDecor *decor);
+
+static void
+mb_wm_theme_png_get_button_size (MBWMTheme *, MBWMDecor *,
+				 MBWMDecorButtonType, int *, int *);
 
 static void
 mb_wm_theme_png_get_button_position (MBWMTheme *, MBWMDecor *,
@@ -50,6 +53,7 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
   t_class->button_size           = mb_wm_theme_png_get_button_size;
   t_class->button_position       = mb_wm_theme_png_get_button_position;
   t_class->create_decor          = mb_wm_theme_png_create_decor;
+  t_class->resize_decor          = mb_wm_theme_png_resize_decor;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMThemePng";
@@ -326,6 +330,16 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
       XClearWindow (xdpy, decor->xwin);
     }
+}
+
+static void
+mb_wm_theme_png_resize_decor (MBWMTheme *theme, MBWMDecor *decor)
+{
+  /*
+   * Clear any data we have stored with the theme; this will force
+   * resize on the next paint
+   */
+  mb_wm_decor_set_theme_data (decor, NULL, NULL);
 }
 
 static void

@@ -1,3 +1,22 @@
+2008-01-03  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	Added mb_wm_theme_resize_decor() to allow theme engines to take
+	specific action in response to decor resizing.
+
+        * src/theme-engines/mb-wm-theme-png.c:
+	Implemented mb_wm_theme_png_resize_decor().
+
+        * src/core/mb-wm-decor.c:
+	(mb_wm_decor_resize):
+	Added call the mb_wm_theme_resize_decor().
+	
+        * src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_request_geometry):
+	Split off the special case where only position changes, avoid
+	unnecessary query to the theme engine about decor size.
+	
 2008-01-02  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-dialog.c:

@@ -203,23 +203,24 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 				      MBWMClientReqGeomType  flags)
 {
   const MBGeometry * geom;
-  Bool               change;
+  Bool               change_pos;
+  Bool               change_size;
 
   /*
    * When we get an internal geometry request, like from the layout manager,
-   * the new geometry applies to the frame; however, if the request is external
-   * from ConfigureRequest, it is new geometry of the client window, so we need
-   * to take care to handle this right.
+   * the new geometry applies to the frame; however, if the request is
+   * external from ConfigureRequest, it is new geometry of the client window,
+   * so we need to take care to handle this right.
    */
   geom = (flags & MBWMClientReqGeomIsViaConfigureReq) ?
     &client->window->geometry : &client->frame_geometry;
 
-  change = (geom->x      != new_geometry->x     ||
-	    geom->y      != new_geometry->y     ||
-	    geom->width  != new_geometry->width ||
-	    geom->height != new_geometry->height);
+  change_pos = (geom->x != new_geometry->x || geom->y != new_geometry->y);
 
-  if (change)
+  change_size = (geom->width  != new_geometry->width ||
+		 geom->height != new_geometry->height);
+
+  if (change_size)
     {
       int north, south, west, east;
       MBWindowManager *wm = client->wmref;
@@ -280,6 +281,24 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
       mb_wm_client_geometry_mark_dirty (client);
 
       return True; /* Geometry accepted */
+    }
+  else if (change_pos)
+    {
+      /*
+       * Change of position only, just move both windows, no need to
+       * mess about with the decor.
+       */
+      int x_diff = geom->x - new_geometry->x;
+      int y_diff = geom->y - new_geometry->y;
+
+      client->frame_geometry.x - x_diff;
+      client->frame_geometry.y - y_diff;
+      client->window->geometry.x - x_diff;
+      client->window->geometry.y - y_diff;
+
+      mb_wm_client_geometry_mark_dirty (client);
+
+      return True;
     }
 
   return True; /* Geometry accepted */
