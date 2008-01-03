@@ -603,7 +603,7 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
 
 
 static void
-stack_get_window_list (MBWindowManager *wm, Window * win_list)
+stack_get_window_list (MBWindowManager *wm, Window * win_list, int * count)
 {
   MBWindowManagerClient *client;
   int                    i = 0;
@@ -619,23 +619,35 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list)
       win_list[i++] = client->xwin_frame;
     else
       win_list[i++] = MB_WM_CLIENT_XWIN(client);
+
+    if (client->xwin_modal_blocker)
+      win_list[i++] = client->xwin_modal_blocker;
   }
+
+  *count = i;
 }
 
 static void
 stack_sync_to_display (MBWindowManager *wm)
 {
   Window *win_list = NULL;
+  int count;
 
   if (!wm->stack_n_clients)
     return;
 
-  win_list = alloca (sizeof(Window) * wm->stack_n_clients);
+  /*
+   * Allocate two slots for each client; this guarantees us enough space for
+   * both client windows and any modal blockers without having to keep track
+   * of how many of the blocker windows we have (the memory overhead for this
+   * is negligeable and very short lived)
+   */
+  win_list = alloca (sizeof(Window) * (wm->stack_n_clients * 2));
 
-  stack_get_window_list(wm, win_list);
+  stack_get_window_list(wm, win_list, &count);
 
   mb_wm_util_trap_x_errors();
-  XRestackWindows(wm->xdpy, win_list, wm->stack_n_clients);
+  XRestackWindows(wm->xdpy, win_list, count);
   mb_wm_util_untrap_x_errors();
 }
 

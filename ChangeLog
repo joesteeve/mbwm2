@@ -1,5 +1,18 @@
 2008-01-03  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client.h:
+	Added xwin_modal_blocker, an input-only window for blocking input
+	events around system-modal dialogues.
+
+        * src/core/mb-window-manager.c:
+	(stack_get_window_list):
+	(stack_sync_to_display):
+
+        * src/core/mb-wm-client-base.c:
+	Handle modal-blocker windows.
+
+2008-01-03  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c:
 	(mb_wm_focus_client):
 	Do not move focus for system-modal dialogs.

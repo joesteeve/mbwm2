@@ -143,6 +143,7 @@ struct MBWindowManagerClient
   char                        *name;
   MBWMClientWindow            *window;
   Window                       xwin_frame;
+  Window                       xwin_modal_blocker;
   MBWMStackLayerType           stacking_layer;
   unsigned long                stacking_hints;
 

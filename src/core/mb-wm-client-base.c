@@ -93,11 +93,18 @@ mb_wm_client_base_destroy (MBWMObject *this)
 
   if (client->xwin_frame)
     {
-      XReparentWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
-		      wm->root_win->xwindow, 0, 0);
+      XReparentWindow (wm->xdpy, MB_WM_CLIENT_XWIN(client),
+		       wm->root_win->xwindow, 0, 0);
 
-      XDestroyWindow(wm->xdpy, client->xwin_frame);
+      XDestroyWindow (wm->xdpy, client->xwin_frame);
       client->xwin_frame = None;
+
+
+      if (client->xwin_modal_blocker)
+	{
+	  XDestroyWindow (wm->xdpy, client->xwin_modal_blocker);
+	  client->xwin_modal_blocker = None;
+	}
     }
 
   XSync(wm->xdpy, False);
@@ -199,6 +206,34 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
 		      MB_WM_CLIENT_XWIN(client),
 		      client->xwin_frame,
 		      0, 0);
+
+      /*
+       * If this is a system-modal client and the global setting is to support
+       * system modal windows, we create a fullscreen, input-only window that
+       * gets stacked immediately bellow it, catching any input events that
+       * fall outside of the system-modal client.
+       */
+      if (mb_wm_client_is_modal (client) &&
+	  !mb_wm_client_get_transient_for (client) &&
+	  mb_wm_get_modality_type (wm) == MBWMModalitySystem)
+	{
+	  XSetWindowAttributes attr;
+	  attr.override_redirect = True;
+	  attr.event_mask        = MBWMChildMask|ButtonPressMask|ExposureMask;
+
+	  client->xwin_modal_blocker =
+	    XCreateWindow (wm->xdpy,
+			   wm->root_win->xwindow,
+			   0, 0,
+			   wm->xdpy_width,
+			   wm->xdpy_height,
+			   0,
+			   CopyFromParent,
+			   InputOnly,
+			   CopyFromParent,
+			   CWOverrideRedirect|CWEventMask,
+			   &attr);
+	}
     }
 
   XSetWindowBorderWidth(wm->xdpy, MB_WM_CLIENT_XWIN(client), 0);
@@ -451,29 +486,37 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	    {
 	      if (!fullscreen)
 		{
-		  XMapWindow(wm->xdpy, client->xwin_frame);
-		  XMapSubwindows(wm->xdpy, client->xwin_frame);
+		  XMapWindow (wm->xdpy, client->xwin_frame);
+		  XMapSubwindows (wm->xdpy, client->xwin_frame);
 		}
 	      else
 		{
-		  XUnmapWindow(wm->xdpy, client->xwin_frame);
-		  XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+		  XUnmapWindow (wm->xdpy, client->xwin_frame);
+		  XMapWindow (wm->xdpy, MB_WM_CLIENT_XWIN(client));
 		}
 	    }
 	  else
 	    {
-	      XMapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+	      XMapWindow (wm->xdpy, MB_WM_CLIENT_XWIN(client));
 	    }
+
+	  if (client->xwin_modal_blocker)
+	    XMapWindow (wm->xdpy, client->xwin_modal_blocker);
 	}
       else
 	{
 	  if (client->xwin_frame)
 	    {
-	      XUnmapWindow(wm->xdpy, client->xwin_frame);
-	      XUnmapSubwindows(wm->xdpy, client->xwin_frame);
+	      XUnmapWindow (wm->xdpy, client->xwin_frame);
+	      XUnmapSubwindows (wm->xdpy, client->xwin_frame);
 	    }
 	  else
-	    XUnmapWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client));
+	    XUnmapWindow (wm->xdpy, MB_WM_CLIENT_XWIN(client));
+
+
+	  if (client->xwin_modal_blocker)
+	    XUnmapWindow (wm->xdpy, client->xwin_modal_blocker);
+
 	}
 
       mb_wm_client_base_set_state_props (client);
