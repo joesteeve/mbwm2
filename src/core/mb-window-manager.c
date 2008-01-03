@@ -1471,13 +1471,16 @@ mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *c)
     }
 
   /*
-   * If the client is currently focused, it does not want focus, or it is a
-   * parent of a currently focused modal client, do nothing.
+   * If the client is currently focused, it does not want focus,  it is a
+   * parent of a currently focused modal client, or is system-modal,
+   * do nothing.
    */
   if (wm->focused_client == client ||
       !mb_wm_client_want_focus (client) ||
       ((wm->focused_client && mb_wm_client_is_modal (wm->focused_client) &&
-	client == mb_wm_client_get_transient_for (wm->focused_client))))
+	(client == mb_wm_client_get_transient_for (wm->focused_client) ||
+	 (wm->modality_type == MBWMModalitySystem &&
+	  !mb_wm_client_get_transient_for (wm->focused_client))))))
     return;
 
   if (!mb_wm_client_is_realized (client))
