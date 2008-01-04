@@ -234,14 +234,14 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 	   * Calculate the frame size from the window size
 	   */
 	  MBWM_DBG ("ConfigureRequest [%d,%d;%dx%d] -> [%d,%d;%dx%d]\n",
-		  client->window->geometry.x,
-		  client->window->geometry.y,
-		  client->window->geometry.width,
-		  client->window->geometry.height,
-		  new_geometry->x,
-		  new_geometry->y,
-		  new_geometry->width,
-		  new_geometry->height);
+		    client->window->geometry.x,
+		    client->window->geometry.y,
+		    client->window->geometry.width,
+		    client->window->geometry.height,
+		    new_geometry->x,
+		    new_geometry->y,
+		    new_geometry->width,
+		    new_geometry->height);
 
 	  client->window->geometry.x      = new_geometry->x;
 	  client->window->geometry.y      = new_geometry->y;
@@ -291,10 +291,10 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
       int x_diff = geom->x - new_geometry->x;
       int y_diff = geom->y - new_geometry->y;
 
-      client->frame_geometry.x - x_diff;
-      client->frame_geometry.y - y_diff;
-      client->window->geometry.x - x_diff;
-      client->window->geometry.y - y_diff;
+      client->frame_geometry.x -= x_diff;
+      client->frame_geometry.y -= y_diff;
+      client->window->geometry.x -= x_diff;
+      client->window->geometry.y -= y_diff;
 
       mb_wm_client_geometry_mark_dirty (client);
 
