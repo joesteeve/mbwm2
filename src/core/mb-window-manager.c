@@ -134,6 +134,8 @@ mb_wm_layout_new_real (MBWindowManager *wm)
 
   if (!layout)
     mb_wm_util_fatal_error("OOM?");
+
+  return layout;
 }
 
 static void

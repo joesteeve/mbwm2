@@ -1,9 +1,15 @@
+2008-01-07  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_layout_new_real):
+	Added missing return statement.
+
 2008-01-04  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-dialog.c:
 	(mb_wm_client_dialog_request_geometry):
 	Fixed bunch of NOP statements.
-	
+
 2008-01-03  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-client.h:
