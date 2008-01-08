@@ -1,5 +1,16 @@
 2008-01-08  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-desktop.c:
+	Allow desktop clients to be decorated.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_activate_client_real):
+	Ensure that desktop flag is not clear if we are activating a
+	client that is either transient for desktop, or a dialog/menu
+	transient for root.
+
+2008-01-08  Tomas Frydrych  <tf@o-hand.com>
+
         * src/theme-engines/mb-wm-theme-xml.h:
         * src/theme-engines/mb-wm-theme.c:
         * src/theme-engines/mb-wm-theme.h:

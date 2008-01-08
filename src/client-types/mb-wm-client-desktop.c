@@ -80,6 +80,11 @@ mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefFullscreen|LayoutPrefVisible);
 
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeNorth);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
+  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
+
   return 1;
 }
 
@@ -110,15 +115,25 @@ mb_wm_client_desktop_request_geometry (MBWindowManagerClient *client,
 {
   if (flags & MBWMClientReqGeomIsViaLayoutManager)
     {
+      int north, south, west, east;
+      MBWindowManager *wm = client->wmref;
+
+      mb_wm_theme_get_decor_dimensions (wm->theme, client,
+					&north, &south, &west, &east);
+
       client->frame_geometry.x      = new_geometry->x;
       client->frame_geometry.y      = new_geometry->y;
       client->frame_geometry.width  = new_geometry->width;
       client->frame_geometry.height = new_geometry->height;
 
-      client->window->geometry.x      = client->frame_geometry.x;
-      client->window->geometry.y      = client->frame_geometry.y;
-      client->window->geometry.width  = client->frame_geometry.width;
-      client->window->geometry.height = client->frame_geometry.height;
+      client->window->geometry.x
+	= client->frame_geometry.x + west;
+      client->window->geometry.y
+	= client->frame_geometry.y + north;
+      client->window->geometry.width
+	= client->frame_geometry.width - (west + east);
+      client->window->geometry.height
+	= client->frame_geometry.height - (south + north);
 
       mb_wm_client_geometry_mark_dirty (client);
 

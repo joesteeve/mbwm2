@@ -1342,6 +1342,7 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
   Bool was_desktop;
   Bool is_desktop;
   MBWindowManagerClient * c_focus = c;
+  MBWindowManagerClient * trans;
 
   if (c == NULL)
     False;
@@ -1349,7 +1350,20 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
   c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
 
   was_desktop = (wm->flags & MBWindowManagerFlagDesktop);
-  is_desktop  = (MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeDesktop);
+
+  /*
+   * We are showing desktop if either the client is desktop, it is transient
+   * for the desktop, or the last client was desktop, and the current is a
+   * dialog or menu transiet for root.
+   */
+  is_desktop  = ((MB_WM_CLIENT_CLIENT_TYPE (c) == MBWMClientTypeDesktop) ||
+		 ((trans = mb_wm_client_get_transient_for (c)) == c) ||
+		 (was_desktop &&
+		  !trans &&
+		  (c_type & (MBWMClientTypeDialog|
+			     MBWMClientTypeMenu|
+			     MBWMClientTypeNote|
+			     MBWMClientTypeOverride))));
 
   if (is_desktop)
     wm->flags |= MBWindowManagerFlagDesktop;
