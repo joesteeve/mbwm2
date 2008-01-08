@@ -167,6 +167,10 @@ mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
 				 MBWindowManagerClient * client,
 				 MBGeometry            * geom);
 
+MBWMClientLayoutHints
+mb_wm_theme_get_client_layout_hints (MBWMTheme             * theme,
+				     MBWindowManagerClient * client);
+
 Bool
 mb_wm_theme_is_client_shaped (MBWMTheme             * theme,
 			      MBWindowManagerClient * client);

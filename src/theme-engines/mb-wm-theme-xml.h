@@ -62,6 +62,8 @@ typedef struct Client
   Bool shaped;
 
   MBWMList       *decors;
+
+  MBWMClientLayoutHints layout_hints;
 }MBWMXmlClient;
 
 MBWMXmlButton *

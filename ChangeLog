@@ -1,3 +1,18 @@
+2008-01-08  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/theme-engines/mb-wm-theme-xml.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	Added layout-hints to attributes of XML client element to give
+	themes greater control over client layout.
+
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_init):
+	Obtain layout hints from theme, if available.
+
+        * src/client-types/mb-wm-client-panel.c:
+	Handle floating (over the title-bar) type of panel.
+
 2008-01-07  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c:

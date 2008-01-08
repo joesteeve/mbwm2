@@ -149,6 +149,12 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
   client->wmref         = wm;
   client->ping_timeout  = 1000;
 
+  if (wm->theme)
+    {
+      client->layout_hints =
+	mb_wm_theme_get_client_layout_hints (wm->theme, client);
+    }
+
   /* sync with client window */
   mb_wm_client_on_property_change (win, MBWM_WINDOW_PROP_ALL, client);
 

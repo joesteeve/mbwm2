@@ -579,6 +579,28 @@ mb_wm_theme_resize_decor (MBWMTheme *theme, MBWMDecor *decor)
     klass->resize_decor (theme, decor);
 }
 
+MBWMClientLayoutHints
+mb_wm_theme_get_client_layout_hints (MBWMTheme             * theme,
+				     MBWindowManagerClient * client)
+{
+  MBWMXmlClient * c;
+  MBWMClientType  c_type;
+
+  if (!client || !theme)
+    return 0;
+
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if (!theme->xml_clients ||
+      !(c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)))
+    {
+      return 0;
+    }
+
+  return c->layout_hints;
+}
+
+
 /*
  * Returns True if the theme prescribes at least one value for the geometry
  */
@@ -920,6 +942,85 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  else if (!strcmp (*p, "y"))
 	    {
 	      c->y = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "layout-hints") && *(p+1))
+	    {
+	      /* comma-separate list of hints */
+	      char * duph = strdup (*(p+1));
+	      char * comma;
+	      char * h = duph;
+
+	      while (h)
+		{
+		  comma = strchr (h, ',');
+
+		  if (comma)
+		    *comma = 0;
+
+		  if (!strcmp (h, "reserve-edge-north"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveEdgeNorth;
+		    }
+		  else if (!strcmp (h, "reserve-edge-south"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveEdgeSouth;
+		    }
+		  else if (!strcmp (h, "reserve-edge-west"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveEdgeWest;
+		    }
+		  else if (!strcmp (h, "reserve-edge-east"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveEdgeEast;
+		    }
+		  if (!strcmp (h, "reserve-north"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveNorth;
+		    }
+		  else if (!strcmp (h, "reserve-south"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveSouth;
+		    }
+		  else if (!strcmp (h, "reserve-west"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveWest;
+		    }
+		  else if (!strcmp (h, "reserve-east"))
+		    {
+		      c->layout_hints |= LayoutPrefReserveEast;
+		    }
+		  else if (!strcmp (h, "grow"))
+		    {
+		      c->layout_hints |= LayoutPrefGrowToFreeSpace;
+		    }
+		  else if (!strcmp (h, "free"))
+		    {
+		      c->layout_hints |= LayoutPrefPositionFree;
+		    }
+		  else if (!strcmp (h, "full-screen"))
+		    {
+		      c->layout_hints |= LayoutPrefFullscreen;
+		    }
+		  else if (!strcmp (h, "fixed-x"))
+		    {
+		      c->layout_hints |= LayoutPrefFixedX;
+		    }
+		  else if (!strcmp (h, "fixed-y"))
+		    {
+		      c->layout_hints |= LayoutPrefFixedY;
+		    }
+		  else if (!strcmp (h, "overlaps"))
+		    {
+		      c->layout_hints |= LayoutPrefOverlaps;
+		    }
+
+		  if (comma)
+		    h = comma + 1;
+		  else
+		    break;
+		}
+
+	      free (duph);
 	    }
 
 	  p += 2;
