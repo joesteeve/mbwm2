@@ -303,7 +303,7 @@ mb_wm_client_on_property_change (MBWMClientWindow        *window,
 
 	  if (mb_wm_decor_get_type (decor) == MBWMDecorTypeNorth)
 	    {
-	      mb_wm_decor_mark_dirty (decor);
+	      mb_wm_decor_mark_title_dirty (decor);
 	      break;
 	    }
 

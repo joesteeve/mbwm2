@@ -1,3 +1,27 @@
+2008-01-09  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-decor.c:
+        * src/core/mb-wm-decor.h:
+	Fine-graned decor dirtiness to differentiate between simple paint
+	and window title change.
+
+        * src/theme-engines/mb-wm-theme-png.c:
+	(mb_wm_theme_png_paint_decor):
+	Handle change of window title properly.
+
+        * src/client-types/mb-wm-client-desktop.c:
+	(mb_wm_client_desktop_class_init):
+	(mb_wm_client_desktop_theme_change):
+	Added theme-change function for desktop client so that decorated
+	desktops can handle theme change.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_update_root_win_lists):
+	For decorated desktop, add the client window, not the frame to the
+	application window lists.
+
+        * src/core/mb-wm-client.c
+
 2008-01-08  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-desktop.c:

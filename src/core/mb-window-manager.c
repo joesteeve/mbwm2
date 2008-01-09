@@ -732,10 +732,7 @@ mb_wm_update_root_win_lists (MBWindowManager *wm)
 
       if ((wm->flags & MBWindowManagerFlagDesktop) && wm->desktop)
 	{
-	  if (wm->desktop->xwin_frame)
-	    wins[cnt++] = wm->desktop->xwin_frame;
-	  else
-	    wins[cnt++] = MB_WM_CLIENT_XWIN(wm->desktop);
+	  wins[cnt++] = MB_WM_CLIENT_XWIN(wm->desktop);
 	}
 
       mb_wm_stack_enumerate (wm,c)

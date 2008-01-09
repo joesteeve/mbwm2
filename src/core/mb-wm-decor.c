@@ -69,7 +69,7 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
     return 0;
 
   decor->type     = type;
-  decor->dirty    = True; 	/* Needs painting */
+  decor->dirty    = MBWMDecorDirtyFull; /* Needs painting */
   decor->absolute_packing = abs_packing;
 
   return 1;
@@ -385,7 +385,7 @@ mb_wm_decor_handle_repaint (MBWMDecor *decor)
 	  l = l->next;
 	}
 
-      decor->dirty = False;
+      decor->dirty = MBWMDecorDirtyNot;
     }
 }
 
@@ -463,10 +463,25 @@ mb_wm_decor_get_pack_end_x (MBWMDecor *decor)
 void
 mb_wm_decor_mark_dirty (MBWMDecor *decor)
 {
-  decor->dirty = True;
+  decor->dirty |= MBWMDecorDirtyPaint;
 
   if (decor->parent_client)
     mb_wm_client_decor_mark_dirty (decor->parent_client);
+}
+
+void
+mb_wm_decor_mark_title_dirty (MBWMDecor *decor)
+{
+  decor->dirty |= MBWMDecorDirtyTitle;
+
+  if (decor->parent_client)
+    mb_wm_client_decor_mark_dirty (decor->parent_client);
+}
+
+MBWMDecorDirtyState
+mb_wm_decor_get_dirty_state (MBWMDecor *decor)
+{
+  return decor->dirty;
 }
 
 void

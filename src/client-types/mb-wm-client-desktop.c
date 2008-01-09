@@ -12,6 +12,9 @@ static MBWMStackLayerType
 mb_wm_client_desktop_stacking_layer (MBWindowManagerClient *client);
 
 static void
+mb_wm_client_desktop_theme_change (MBWindowManagerClient *client);
+
+static void
 mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
 {
   MBWindowManagerClientClass *client;
@@ -22,9 +25,10 @@ mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
   client     = (MBWindowManagerClientClass *)klass;
   client_desktop = (MBWMClientDesktopClass *)klass;
 
-  client->client_type = MBWMClientTypeDesktop;
-  client->geometry = mb_wm_client_desktop_request_geometry;
+  client->client_type    = MBWMClientTypeDesktop;
+  client->geometry       = mb_wm_client_desktop_request_geometry;
   client->stacking_layer = mb_wm_client_desktop_stacking_layer;
+  client->theme_change   = mb_wm_client_desktop_theme_change;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientDesktop";
@@ -150,6 +154,32 @@ mb_wm_client_desktop_stacking_layer (MBWindowManagerClient *client)
   return MBWMStackLayerBottom;
 }
 
+static void
+mb_wm_client_desktop_theme_change (MBWindowManagerClient *client)
+{
+  MBWMList * l = client->decor;
+
+  while (l)
+    {
+      MBWMDecor * d = l->data;
+      MBWMList * n = l->next;
+
+      mb_wm_object_unref (MB_WM_OBJECT (d));
+      free (l);
+
+      l = n;
+    }
+
+  client->decor = NULL;
+
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeNorth);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeSouth);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeWest);
+  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeEast);
+
+  mb_wm_client_geometry_mark_dirty (client);
+  mb_wm_client_visibility_mark_dirty (client);
+}
 
 MBWindowManagerClient*
 mb_wm_client_desktop_new (MBWindowManager *wm, MBWMClientWindow *win)

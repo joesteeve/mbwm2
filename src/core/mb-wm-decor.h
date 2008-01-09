@@ -42,6 +42,15 @@ typedef void (*MBWMDecorButtonReleasedFunc) (MBWindowManager   *wm,
 typedef void (*MBWMDecorDestroyUserData)       (MBWMDecor *, void *);
 typedef void (*MBWMDecorButtonDestroyUserData) (MBWMDecorButton *, void *);
 
+typedef enum MBWMDecorDirtyState
+{
+  MBWMDecorDirtyNot   = 0,
+  MBWMDecorDirtyTitle = (1<<0),
+  MBWMDecorDirtyPaint = (1<<1),
+
+  MBWMDecorDirtyFull  = 0xffffffff,
+} MBWMDecorDirtyState;
+
 struct MBWMDecor
 {
   MBWMObject                parent;
@@ -49,7 +58,7 @@ struct MBWMDecor
   Window                    xwin;
   MBWindowManagerClient    *parent_client;
   MBGeometry                geom;
-  Bool                      dirty;
+  MBWMDecorDirtyState       dirty;
   Bool                      absolute_packing;
   MBWMList                 *buttons;
   int                       pack_start_x;
@@ -101,6 +110,12 @@ mb_wm_decor_get_parent (MBWMDecor *decor);
 
 void
 mb_wm_decor_mark_dirty (MBWMDecor *decor);
+
+void
+mb_wm_decor_mark_title_dirty (MBWMDecor *decor);
+
+MBWMDecorDirtyState
+mb_wm_decor_get_dirty_state (MBWMDecor *decor);
 
 void
 mb_wm_decor_attach (MBWMDecor             *decor,

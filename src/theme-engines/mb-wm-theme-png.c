@@ -366,6 +366,17 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
       shaped = theme->shaped && c->shaped && !mb_wm_client_is_argb32 (client);
 #endif
 
+      if (data && (mb_wm_decor_get_dirty_state (decor) & MBWMDecorDirtyTitle))
+	{
+	  /*
+	   * If the decor title is dirty, and we already have the data,
+	   * free it and recreate (since the old title is already composited
+	   * in the cached image).
+	   */
+	  mb_wm_decor_set_theme_data (decor, NULL, NULL);
+	  data = NULL;
+	}
+
       if (!data)
 	{
 	  XRenderColor rclr;
