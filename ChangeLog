@@ -1,5 +1,19 @@
 2008-01-09  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-desktop.c:
+	(mb_wm_client_desktop_request_geometry):
+	Handle request of type MBWMClientReqGeomForced.
+
+        * src/client-types/mb-wm-client-override.c:
+	(mb_wm_client_override_stack):
+	Handle correctly transients for override-type clients.
+
+        * src/core/mb-window-manager.c
+	(mb_wm_activate_client_real):
+	Do not attempt to activate override-type clients.
+
+2008-01-09  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-wm-decor.c:
         * src/core/mb-wm-decor.h:
 	Fine-graned decor dirtiness to differentiate between simple paint
@@ -19,8 +33,6 @@
 	(mb_wm_update_root_win_lists):
 	For decorated desktop, add the client window, not the frame to the
 	application window lists.
-
-        * src/core/mb-wm-client.c
 
 2008-01-08  Tomas Frydrych  <tf@o-hand.com>
 

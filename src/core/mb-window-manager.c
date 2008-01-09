@@ -1346,6 +1346,12 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
 
   c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
 
+  /*
+   * No circumtances attempt to activate override windows.
+   */
+  if (c_type == MBWMClientTypeOverride)
+    return True;
+
   was_desktop = (wm->flags & MBWindowManagerFlagDesktop);
 
   /*

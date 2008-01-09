@@ -26,8 +26,14 @@ static void
 mb_wm_client_override_stack (MBWindowManagerClient *client,
 			     int                    flags)
 {
-  MBWM_MARK();
+  MBWMList * t = mb_wm_client_get_transients (client);
+
   mb_wm_stack_move_top(client);
+
+  mb_wm_util_list_foreach (t, (MBWMListForEachCB)mb_wm_client_stack,
+			   (void*)flags);
+
+  mb_wm_util_list_free (t);
 }
 
 static void
