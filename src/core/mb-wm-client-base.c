@@ -159,53 +159,69 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
   attr.event_mask = MBWMChildMask|MBWMButtonMask|ExposureMask;
 
   /* This should probably be called via rather than on new clien sync() ...? */
-
-  if (client->xwin_frame == None)
+  /*
+   * We only create a frame window if the client is decorated (decors are
+   * constructed in the _init functions, so we can easily test if the frame
+   * is needed or not).
+   */
+  if (client->decor)
     {
-#ifdef ENABLE_COMPOSITE
-      if (mb_wm_client_is_argb32 (client))
+      if (client->xwin_frame == None)
 	{
-	  attr.colormap = client->window->colormap;
+#ifdef ENABLE_COMPOSITE
+	  if (mb_wm_client_is_argb32 (client))
+	    {
+	      attr.colormap = client->window->colormap;
 
-	  client->xwin_frame
-	    = XCreateWindow(wm->xdpy, wm->root_win->xwindow,
-			    client->frame_geometry.x,
-			    client->frame_geometry.y,
-			    client->frame_geometry.width,
-			    client->frame_geometry.height,
-			    0,
-			    32,
-			    InputOutput,
-			    client->window->visual,
-			    CWOverrideRedirect|CWEventMask|CWBackPixel|
-			    CWBorderPixel|CWColormap,
-			    &attr);
+	      client->xwin_frame
+		= XCreateWindow(wm->xdpy, wm->root_win->xwindow,
+				client->frame_geometry.x,
+				client->frame_geometry.y,
+				client->frame_geometry.width,
+				client->frame_geometry.height,
+				0,
+				32,
+				InputOutput,
+				client->window->visual,
+				CWOverrideRedirect|CWEventMask|CWBackPixel|
+				CWBorderPixel|CWColormap,
+				&attr);
+	    }
+	  else
+#endif
+	    {
+	      client->xwin_frame
+		= XCreateWindow(wm->xdpy, wm->root_win->xwindow,
+				client->frame_geometry.x,
+				client->frame_geometry.y,
+				client->frame_geometry.width,
+				client->frame_geometry.height,
+				0,
+				CopyFromParent,
+				CopyFromParent,
+				CopyFromParent,
+				CWOverrideRedirect|CWEventMask|CWBackPixel,
+				&attr);
+	    }
+
+	  /*
+	   * Assume geometry sync will fix this up correctly togeather with
+	   * any decoration creation. Layout manager will call this
+	   */
+	  XReparentWindow(wm->xdpy,
+			  MB_WM_CLIENT_XWIN(client),
+			  client->xwin_frame,
+			  0, 0);
 	}
       else
-#endif
 	{
-	  client->xwin_frame
-	    = XCreateWindow(wm->xdpy, wm->root_win->xwindow,
-			    client->frame_geometry.x,
-			    client->frame_geometry.y,
-			    client->frame_geometry.width,
-			    client->frame_geometry.height,
-			    0,
-			    CopyFromParent,
-			    CopyFromParent,
-			    CopyFromParent,
-			    CWOverrideRedirect|CWEventMask|CWBackPixel,
-			    &attr);
+	  /*
+	   * This is an undecorated client; we Must reparent the window to our
+	   * root, otherwise we restacking of pre-existing windows might fail.
+	   */
+	  XReparentWindow(client->wmref->xdpy, MB_WM_CLIENT_XWIN(client),
+			  client->wmref->root_win->xwindow, 0, 0);
 	}
-
-      /*
-       * Assume geometry sync will fix this up correctly togeather with
-       * any decoration creation. Layout manager will call this
-       */
-      XReparentWindow(wm->xdpy,
-		      MB_WM_CLIENT_XWIN(client),
-		      client->xwin_frame,
-		      0, 0);
 
       /*
        * If this is a system-modal client and the global setting is to support

@@ -222,11 +222,12 @@ mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 
   if (change_size)
     {
-      int north, south, west, east;
+      int north = 0, south = 0, west = 0, east = 0;
       MBWindowManager *wm = client->wmref;
 
-      mb_wm_theme_get_decor_dimensions (wm->theme, client,
-					&north, &south, &west, &east);
+      if (client->decor)
+	mb_wm_theme_get_decor_dimensions (wm->theme, client,
+					  &north, &south, &west, &east);
 
       if (flags & MBWMClientReqGeomIsViaConfigureReq)
 	{

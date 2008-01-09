@@ -1,5 +1,19 @@
 2008-01-09  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/core/mb-wm-client-base.c:
+	(mb_wm_client_base_realize):
+	Do not create a frame window if the client is not decorated.
+
+        * src/client-types/mb-wm-client-app.c:
+	(mb_wm_client_app_request_geometry):
+	Do not query theme for decor size if the client is undecorated.
+
+        * src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_request_geometry):
+	Do not query theme for decor size if the client is undecorated.
+
+2008-01-09  Tomas Frydrych  <tf@o-hand.com>
+
         * src/client-types/mb-wm-client-desktop.c:
 	(mb_wm_client_desktop_request_geometry):
 	Handle request of type MBWMClientReqGeomForced.

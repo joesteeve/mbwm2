@@ -137,12 +137,19 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
       int north, south, west, east;
       MBWindowManager *wm = client->wmref;
 
-      if ((client->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen))
+      if ((client->window->ewmh_state & MBWMClientWindowEWMHStateFullscreen)||
+	  !client->decor)
 	{
+	  /* Undecorated window */
 	  client->window->geometry.x      = new_geometry->x;
 	  client->window->geometry.y      = new_geometry->y;
 	  client->window->geometry.width  = new_geometry->width;
 	  client->window->geometry.height = new_geometry->height;
+
+	  client->frame_geometry.x        = new_geometry->x;
+	  client->frame_geometry.y        = new_geometry->y;
+	  client->frame_geometry.width    = new_geometry->width;
+	  client->frame_geometry.height   = new_geometry->height;
 	}
       else
 	{
