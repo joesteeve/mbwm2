@@ -14,7 +14,7 @@ struct MBWMKeys /* FIXME: Probably do want to hide these here */
   int ScrollLockMask;
   int lock_mask;
 
-}; 
+};
 
 static Bool
 keysym_needs_shift (MBWindowManager *wm, KeySym keysym)
@@ -24,18 +24,18 @@ keysym_needs_shift (MBWindowManager *wm, KeySym keysym)
 
   XDisplayKeycodes(wm->xdpy, &min_kc, &max_kc);
 
-  for (keycode = min_kc; keycode <= max_kc; keycode++) 
-    for (col = 0; 
-	 (k = XKeycodeToKeysym (wm->xdpy, keycode, col)) != NoSymbol; 
+  for (keycode = min_kc; keycode <= max_kc; keycode++)
+    for (col = 0;
+	 (k = XKeycodeToKeysym (wm->xdpy, keycode, col)) != NoSymbol;
 	 col++)
-      if (k == keysym && col == 1) 
+      if (k == keysym && col == 1)
 	return True;
 
   return False;
 }
 
 static Bool
-key_binding_set_grab (MBWindowManager *wm, 
+key_binding_set_grab (MBWindowManager *wm,
 		      MBWMKeyBinding  *key,
 		      Bool             ungrab)
 {
@@ -45,50 +45,50 @@ key_binding_set_grab (MBWindowManager *wm,
 
   /* Needed to grab all Locked combo's too */
   while (ignored_mask < (int) wm->keys->lock_mask)
-    {                                       
+    {
       if (ignored_mask & ~(wm->keys->lock_mask))
 	{
 	  ++ignored_mask;
 	  continue;
 	}
-      
+
       if (ungrab)
 	{
-	  MBWM_DBG("ungrabbing %i , %i", 
-		   XKeysymToKeycode(wm->xdpy, key->keysym), 
+	  MBWM_DBG("ungrabbing %i , %i",
+		   XKeysymToKeycode(wm->xdpy, key->keysym),
 		   key->modifier_mask);
 
-	  XUngrabKey(wm->xdpy, 
-		     XKeysymToKeycode(wm->xdpy, key->keysym), 
+	  XUngrabKey(wm->xdpy,
+		     XKeysymToKeycode(wm->xdpy, key->keysym),
 		     key->modifier_mask | ignored_mask,
 		     wm->root_win->xwindow);
-	} 
-      else 
+	}
+      else
 	{
-	  int result; 
+	  int result;
 
 	  mb_wm_util_trap_x_errors();
 
-	  MBWM_DBG("grabbing keycode: %i, keysym %li, mask: %i", 
+	  printf ("grabbing keycode: %i, keysym %li, mask: %i",
 		   XKeysymToKeycode(wm->xdpy, key->keysym),
 		   key->keysym,
 		   key->modifier_mask | ignored_mask);
 
-	  XGrabKey(wm->xdpy, XKeysymToKeycode(wm->xdpy, key->keysym), 
+	  XGrabKey(wm->xdpy, XKeysymToKeycode(wm->xdpy, key->keysym),
 		   key->modifier_mask | ignored_mask,
 		   wm->root_win->xwindow, True, GrabModeAsync, GrabModeAsync);
 
-	  result = mb_wm_util_untrap_x_errors(); 
+	  result = mb_wm_util_untrap_x_errors();
 
 	  if (result != Success)
 	    {
 	      if (result == BadAccess)
-		mb_wm_util_warn ("Some other program is already using the key %s with modifiers %x as a binding\n",  
-				 (XKeysymToString(key->keysym)) ? XKeysymToString (key->keysym) : "unknown", 
+		mb_wm_util_warn ("Some other program is already using the key %s with modifiers %x as a binding\n",
+				 (XKeysymToString(key->keysym)) ? XKeysymToString (key->keysym) : "unknown",
 				 key->modifier_mask | ignored_mask );
 	      else
-		mb_wm_util_warn ("Unable to grab the key %s with modifiers %x as a binding\n",  
-				 (XKeysymToString(key->keysym)) ? XKeysymToString (key->keysym) : "unknown", 
+		mb_wm_util_warn ("Unable to grab the key %s with modifiers %x as a binding\n",
+				 (XKeysymToString(key->keysym)) ? XKeysymToString (key->keysym) : "unknown",
 				 key->modifier_mask | ignored_mask );
 	      return False;
 	    }
@@ -115,7 +115,7 @@ mb_wm_keys_binding_remove (MBWindowManager    *wm,
 }
 
 MBWMKeyBinding*
-mb_wm_keys_binding_add (MBWindowManager    *wm, 
+mb_wm_keys_binding_add (MBWindowManager    *wm,
 			KeySym              ks,
 			int                 mask,
 			MBWMKeyPressedFunc  press_func,
@@ -128,7 +128,7 @@ mb_wm_keys_binding_add (MBWindowManager    *wm,
   MBWM_ASSERT (wm->keys != NULL);
 
   binding = mb_wm_util_malloc0(sizeof(MBWMKeyBinding));
-  
+
   binding->keysym        = ks;
   binding->modifier_mask = mask;
   binding->pressed       = press_func;
@@ -147,8 +147,8 @@ mb_wm_keys_binding_add (MBWindowManager    *wm,
 }
 
 MBWMKeyBinding*
-mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm, 
-				  const char         *keystr, 
+mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm,
+				  const char         *keystr,
 				  MBWMKeyPressedFunc  press_func,
 				  MBWMKeyDestroyFunc  destroy_func,
 				  void               *userdata)
@@ -160,7 +160,7 @@ mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm,
   MBWMKeys       *keys = wm->keys;
   MBWMKeyBinding *binding = NULL;
 
-  struct { char *def; int mask; } lookup[] = 
+  struct { char *def; int mask; } lookup[] =
     {
       { "ctrl", ControlMask },
       { "alt",  keys->AltMask },
@@ -184,14 +184,14 @@ mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm,
     {
       Bool found = False;
 
-      if (*p == '<') 
+      if (*p == '<')
 	{
 	  q = ++p; i = 0;
 
-	  while (*q != '\0' && *q != '>') 
+	  while (*q != '\0' && *q != '>')
 	    q++;
 
-	  if (*q == '\0') 
+	  if (*q == '\0')
 	    goto out; /* Parse error */
 
 	  while (lookup[i].def != NULL && !found)
@@ -203,16 +203,16 @@ mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm,
 		  else
 		    mask |= lookup[i].mask;
 		  found = True;
-		} 
+		}
 	      i++;
 	    }
 
-	  if (found) 
+	  if (found)
 	      p = q;
-	  else 
+	  else
 	    goto out;
 	}
-      else if (!isspace(*p)) 
+      else if (!isspace(*p))
 	{
 	  keydef = p;
 	  break;
@@ -221,11 +221,11 @@ mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm,
       p++;
     }
 
-  if (!keydef) 
+  if (!keydef)
     goto out;
 
   MBWM_DBG("keydefinition is %s, want_shift is %i", keydef, want_shift);
-  
+
   if ((ks = XStringToKeysym(keydef)) == (KeySym)NULL)
     {
       if (islower(keydef[0]))          /* Try again, changing case */
@@ -250,8 +250,8 @@ mb_wm_keys_binding_add_with_spec (MBWindowManager    *wm,
       goto out;
     }
 
-  binding = mb_wm_keys_binding_add (wm, ks, mask, 
-				    press_func, destroy_func, userdata); 
+  binding = mb_wm_keys_binding_add (wm, ks, mask,
+				    press_func, destroy_func, userdata);
 
  out:
 
@@ -270,28 +270,41 @@ mb_wm_keys_press (MBWindowManager *wm,
   if (!wm->keys)
     return;
 
-  MBWM_DBG("Looking up keysym <%li>, ( mask %i )", keysym, modifier_mask);
+  MBWM_DBG ("Looking up keysym <%li>, ( mask %i )", keysym, modifier_mask);
 
   iter = wm->keys->bindings;
 
   while (iter)
     {
+      int ignored_mask = 0;
+
       binding = (MBWMKeyBinding*)iter->data;
 
-      MBWM_DBG("Checking up keysym <%li>, ( mask %i )", 
+      MBWM_DBG ("Checking up keysym <%li>, ( mask %i )",
 	       binding->keysym,
 	       binding->modifier_mask);
 
       /* FIXME: Assumes multiple bindings per key */
-      if (binding->pressed
-	  && binding->keysym == keysym 
-	  && binding->modifier_mask == modifier_mask)
-	binding->pressed(wm, binding, binding->userdata);
+      while (ignored_mask < (int) wm->keys->lock_mask)
+	{
+	  if (ignored_mask & ~(wm->keys->lock_mask))
+	    {
+	      ++ignored_mask;
+	      continue;
+	    }
+
+	  if (binding->pressed
+	      && binding->keysym == keysym
+	      && binding->modifier_mask|ignored_mask == modifier_mask)
+	    binding->pressed(wm, binding, binding->userdata);
+
+	  ++ignored_mask;
+	}
 
       iter = mb_wm_util_list_next(iter);
     }
 }
- 
+
 
 Bool
 mb_wm_keys_init(MBWindowManager *wm)
@@ -308,10 +321,10 @@ mb_wm_keys_init(MBWindowManager *wm)
 
   kpm = mod_map->max_keypermod;
   for (mod_idx = 0; mod_idx < 8; mod_idx++)
-    for (mod_key = 0; mod_key < kpm; mod_key++) 
+    for (mod_key = 0; mod_key < kpm; mod_key++)
       {
 	KeySym last_sym = 0;
-	for (col = 0; col < 4; col += 2) 
+	for (col = 0; col < 4; col += 2)
 	  {
 	    KeyCode code = mod_map->modifiermap[mod_idx * kpm + mod_key];
 	    KeySym sym = (code ? XKeycodeToKeysym(wm->xdpy, code, col) : 0);
@@ -319,14 +332,14 @@ mb_wm_keys_init(MBWindowManager *wm)
 	    if (sym == last_sym) continue;
 	    last_sym = sym;
 
-	    switch (sym) 
+	    switch (sym)
 	      {
 	      case XK_Mode_switch:
 		/* XXX store_modifier("Mode_switch", mode_bit); */
 		break;
 	      case XK_Meta_L:
 	      case XK_Meta_R:
-		keys->MetaMask |= (1 << mod_idx); 
+		keys->MetaMask |= (1 << mod_idx);
 		break;
 	      case XK_Super_L:
 	      case XK_Super_R:
@@ -351,8 +364,8 @@ mb_wm_keys_init(MBWindowManager *wm)
       }
 
   /* XXX check this. assume alt <=> meta if only either set */
-  if (!keys->AltMask)  keys->AltMask  = keys->MetaMask; 
-  if (!keys->MetaMask) keys->MetaMask = keys->AltMask; 
+  if (!keys->AltMask)  keys->AltMask  = keys->MetaMask;
+  if (!keys->MetaMask) keys->MetaMask = keys->AltMask;
 
   keys->lock_mask = keys->ScrollLockMask | keys->NumLockMask | LockMask;
 
