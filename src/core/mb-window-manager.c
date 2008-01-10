@@ -1611,7 +1611,7 @@ mb_wm_cycle_apps (MBWindowManager *wm, Bool reverse)
 
   new_top = mb_wm_stack_cycle_by_type(wm, MBWMClientTypeApp, reverse);
 
-  if (old_top != new_top)
+  if (new_top && old_top != new_top)
     {
       mb_wm_activate_client (wm, new_top);
     }

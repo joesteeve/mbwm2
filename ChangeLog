@@ -2,6 +2,16 @@
 
         * src/core/mb-wm-keys.c:
 	(mb_wm_keys_press):
+	Only call a specific binding once.
+
+        * src/core/mb-window-manager.c
+	(mb_wm_cycle_apps):
+	Do not crash if there is no application to cycle to.
+
+2008-01-10  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-keys.c:
+	(mb_wm_keys_press):
 	Fixed handling of modifier mask.
 
 2008-01-09  Tomas Frydrych  <tf@o-hand.com>

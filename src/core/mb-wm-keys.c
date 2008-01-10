@@ -296,7 +296,10 @@ mb_wm_keys_press (MBWindowManager *wm,
 	  if (binding->pressed
 	      && binding->keysym == keysym
 	      && binding->modifier_mask|ignored_mask == modifier_mask)
-	    binding->pressed(wm, binding, binding->userdata);
+	    {
+	      binding->pressed(wm, binding, binding->userdata);
+	      break;
+	    }
 
 	  ++ignored_mask;
 	}
