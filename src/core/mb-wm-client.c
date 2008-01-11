@@ -375,7 +375,10 @@ mb_wm_client_stack (MBWindowManagerClient *client,
   if (klass->stack)
     {
       klass->stack(client, flags);
-      mb_wm_client_stacking_mark_dirty (client);
+
+      /* Schedule stack sync, but not if the client is of override type */
+      if (MB_WM_CLIENT_CLIENT_TYPE (client) != MBWMClientTypeOverride)
+	mb_wm_client_stacking_mark_dirty (client);
     }
 }
 

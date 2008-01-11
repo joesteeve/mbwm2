@@ -837,7 +837,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
     mb_wm_comp_mgr_register_client (wm->comp_mgr, client);
 #endif
 
-  if (activate)
+  if (activate && MB_WM_CLIENT_CLIENT_TYPE (client) != MBWMClientTypeDesktop)
     mb_wm_activate_client (wm, client);
   else
     mb_wm_client_show (client);
@@ -1003,7 +1003,11 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
      {
        XGetWindowAttributes(wm->xdpy, wins[i], &attr);
 
-       if (!attr.override_redirect && attr.map_state == IsViewable)
+       if (
+#ifndef ENABLE_COMPOSITE
+	   !attr.override_redirect &&
+#endif
+	   attr.map_state == IsViewable)
 	 {
 	   MBWMClientWindow      *win = NULL;
 	   MBWindowManagerClient *client = NULL;

@@ -1,5 +1,23 @@
 2008-01-11  Tomas Frydrych  <tf@o-hand.com>
 
+        * src/client-types/mb-wm-client-desktop.c:
+	(mb_wm_client_desktop_request_geometry):
+	Avoid querying theme for decor dimensions if client is not
+	decorated.
+	
+        * src/core/mb-window-manager.c:
+	(mb_wm_manage_client):
+	Do not activate desktop-type clients when starting to manage them.
+
+	(mb_wm_manage_preexistsing_wins):
+	Handle pre-existing override windows when compositing is enabled.
+	
+        * src/core/mb-wm-client.c:
+	(mb_wm_client_stack):
+	Do not schedule restack when handling override-type client.
+	
+2008-01-11  Tomas Frydrych  <tf@o-hand.com>
+
         * src/core/mb-window-manager.c
 	(mb_wm_manage_client):
 	(mb_wm_unmanage_client):

@@ -119,11 +119,12 @@ mb_wm_client_desktop_request_geometry (MBWindowManagerClient *client,
 {
   if (flags & (MBWMClientReqGeomIsViaLayoutManager|MBWMClientReqGeomForced))
     {
-      int north, south, west, east;
+      int north = 0, south = 0, west = 0, east = 0;
       MBWindowManager *wm = client->wmref;
 
-      mb_wm_theme_get_decor_dimensions (wm->theme, client,
-					&north, &south, &west, &east);
+      if (client->decor)
+	mb_wm_theme_get_decor_dimensions (wm->theme, client,
+					  &north, &south, &west, &east);
 
       client->frame_geometry.x      = new_geometry->x;
       client->frame_geometry.y      = new_geometry->y;
