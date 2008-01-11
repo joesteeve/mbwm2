@@ -809,6 +809,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
 		     Bool                   activate)
 {
   /* Add to our list of managed clients */
+  MBWMSyncType sync_flags = MBWMSyncVisibility | MBWMSyncGeometry;
 
   if (client == NULL)
     return;
@@ -825,6 +826,12 @@ mb_wm_manage_client (MBWindowManager       *wm,
   else if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypeDesktop)
     wm->desktop = client;
 
+  /*
+   * Must not mess with stacking if the client if is of the override type
+   */
+  if (MB_WM_CLIENT_CLIENT_TYPE (client) != MBWMClientTypeOverride)
+    sync_flags |= MBWMSyncStacking;
+
 #ifdef ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     mb_wm_comp_mgr_register_client (wm->comp_mgr, client);
@@ -835,10 +842,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
   else
     mb_wm_client_show (client);
 
-  mb_wm_display_sync_queue (client->wmref,
-			    MBWMSyncStacking   |
-			    MBWMSyncVisibility |
-			    MBWMSyncGeometry);
+  mb_wm_display_sync_queue (client->wmref, sync_flags);
 }
 
 /*
@@ -853,8 +857,14 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   /* FIXME: set a managed flag in client object ? */
   MBWindowManagerClient *c;
   MBWMClientType c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
-  MBWMSyncType sync_flags = MBWMSyncStacking;
+  MBWMSyncType sync_flags = 0;
   MBWindowManagerClient * next_focused;
+
+  /*
+   * Must not mess with stacking if the client if is of the override type
+   */
+  if (c_type != MBWMClientTypeOverride)
+    sync_flags |= MBWMSyncStacking;
 
   if (c_type & (MBWMClientTypePanel | MBWMClientTypeInput))
     sync_flags |= MBWMSyncGeometry;

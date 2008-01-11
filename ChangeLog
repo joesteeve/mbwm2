@@ -1,8 +1,16 @@
 2008-01-11  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-window-manager.c
+	(mb_wm_manage_client):
+	(mb_wm_unmanage_client):
+	Make sure that we do not try to restack windows when
+	managing/unmanaging an override-type client.
+
+2008-01-11  Tomas Frydrych  <tf@o-hand.com>
         * src/core/mb-wm-keys.c:
 	(key_binding_set_grab):
 	Replaced stray printf with MBWM_DBG.
-	
+
 2008-01-10  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-keys.c:
