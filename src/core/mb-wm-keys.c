@@ -69,7 +69,7 @@ key_binding_set_grab (MBWindowManager *wm,
 
 	  mb_wm_util_trap_x_errors();
 
-	  printf ("grabbing keycode: %i, keysym %li, mask: %i",
+	  MBWM_DBG ("grabbing keycode: %i, keysym %li, mask: %i",
 		   XKeysymToKeycode(wm->xdpy, key->keysym),
 		   key->keysym,
 		   key->modifier_mask | ignored_mask);
