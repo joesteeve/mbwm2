@@ -51,28 +51,9 @@ mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
   MBWMDecorButton          *button;
   MBWindowManager          *wm = NULL;
   MBWMClientDesktopClass   *inp_class;
+  MBGeometry                geom;
 
   inp_class = MB_WM_CLIENT_DESKTOP_CLASS (MB_WM_OBJECT_GET_CLASS (this));
-
-#if 0
-  /*
-   * Property parsing not needed for now, as there are no ClientDesktop specific
-   * properties
-   */
-  prop = va_arg(vap, MBWMObjectProp);
-  while (prop)
-    {
-      if (prop == MBWMObjectPropWm)
-	{
-	  wm = va_arg(vap, MBWindowManager *);
-	  break;
-	}
-      else
-	MBWMO_PROP_EAT (vap, prop);
-
-      prop = va_arg (vap, MBWMObjectProp);
-    }
-#endif
 
   wm = client->wmref;
 
@@ -88,6 +69,17 @@ mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
   mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
   mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
   mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
+
+  /*
+   * Initialize window geometry, so that the frame size is correct
+   */
+  geom.x      = 0;
+  geom.y      = 0;
+  geom.width  = wm->xdpy_width;
+  geom.height = wm->xdpy_height;
+
+  mb_wm_client_desktop_request_geometry (client, &geom,
+					 MBWMClientReqGeomForced);
 
   return 1;
 }
