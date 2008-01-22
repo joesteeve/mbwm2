@@ -45,6 +45,7 @@
 #define MBWM_WINDOW_PROP_ALLOWED_ACTIONS (1<<14)
 #define MBWM_WINDOW_PROP_NET_USER_TIME   (1<<15)
 #define MBWM_WINDOW_PROP_CM_TRANSLUCENCY (1<<17)
+#define MBWM_WINDOW_PROP_MWM_HINTS       (1<<18)
 
 #define MBWM_WINDOW_PROP_ALL        (0xffffffff)
 
@@ -144,8 +145,9 @@ struct MBWMClientWindow
   unsigned long                  user_time;
 
   int                            gravity;
-  Bool                           override_redirect;
   int                            window_class;
+  Bool                           override_redirect;
+  Bool                           undecorated;
 };
 
 struct MBWMClientWindowClass

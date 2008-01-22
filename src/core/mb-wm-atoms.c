@@ -87,7 +87,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "_NET_STARTUP_ID",
 
     "UTF8_STRING",
-    "MOTIF_WM_HINTS",
+    "_MOTIF_WM_HINTS",
     "WIN_SUPPORTING_WM_CHECK",
 
     "_NET_WM_CONTEXT_HELP",

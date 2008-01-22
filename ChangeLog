@@ -1,27 +1,42 @@
+2008-01-22  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/core/mb-wm-atoms.c:
+	Changed MOTIF_WM_HINTS to the correct _MOTIF_WM_HINTS.
+
+        * src/core/mb-wm-client-window.c:
+        * src/core/mb-wm-client-window.h:
+	Handling of _MOTIF_WM_HINTS.decorations == 0 (used by gtk to
+	indicate client window should not be decorated).
+
+        * src/client-types/mb-wm-client-app.c:
+        * src/client-types/mb-wm-client-desktop.c:
+        * src/client-types/mb-wm-client-dialog.c:
+	Do not decorate windows with undecorated hint.
+
 2008-01-18  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-desktop.c:
 	(mb_wm_client_desktop_init):
 	Initialize frame geometry to desktop size.
-	
+
 2008-01-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-desktop.c:
 	(mb_wm_client_desktop_request_geometry):
 	Avoid querying theme for decor dimensions if client is not
 	decorated.
-	
+
         * src/core/mb-window-manager.c:
 	(mb_wm_manage_client):
 	Do not activate desktop-type clients when starting to manage them.
 
 	(mb_wm_manage_preexistsing_wins):
 	Handle pre-existing override windows when compositing is enabled.
-	
+
         * src/core/mb-wm-client.c:
 	(mb_wm_client_stack):
 	Do not schedule restack when handling override-type client.
-	
+
 2008-01-11  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-window-manager.c

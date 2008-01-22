@@ -65,10 +65,13 @@ mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
   mb_wm_client_set_layout_hints (client,
 				 LayoutPrefFullscreen|LayoutPrefVisible);
 
-  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeNorth);
-  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
-  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
-  mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
+  if (!client->window->undecorated)
+    {
+      mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeNorth);
+      mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeSouth);
+      mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeWest);
+      mb_wm_theme_create_decor (wm->theme, client, MBWMDecorTypeEast);
+    }
 
   /*
    * Initialize window geometry, so that the frame size is correct
@@ -165,10 +168,20 @@ mb_wm_client_desktop_theme_change (MBWindowManagerClient *client)
 
   client->decor = NULL;
 
-  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeNorth);
-  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeSouth);
-  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeWest);
-  mb_wm_theme_create_decor (client->wmref->theme, client, MBWMDecorTypeEast);
+  if (!client->window->undecorated)
+    {
+      mb_wm_theme_create_decor (client->wmref->theme,
+				client, MBWMDecorTypeNorth);
+
+      mb_wm_theme_create_decor (client->wmref->theme,
+				client, MBWMDecorTypeSouth);
+
+      mb_wm_theme_create_decor (client->wmref->theme,
+				client, MBWMDecorTypeWest);
+
+      mb_wm_theme_create_decor (client->wmref->theme,
+				client, MBWMDecorTypeEast);
+    }
 
   mb_wm_client_geometry_mark_dirty (client);
   mb_wm_client_visibility_mark_dirty (client);

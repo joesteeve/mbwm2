@@ -40,9 +40,20 @@ enum {
   COOKIE_WIN_USER_TIME,
   COOKIE_WIN_CM_TRANSLUCENCY,
   COOKIE_WIN_NET_STATE,
+  COOKIE_WIN_MWM_HINTS,
 
   N_COOKIES
 };
+
+#define PROP_MOTIF_WM_HINTS_ELEMENTS    5
+#define MWM_HINTS_DECORATIONS   (1L << 1)
+
+#define MWM_DECOR_BORDER              (1L << 1)
+#define MWM_DECOR_RESIZEH             (1L << 2)
+#define MWM_DECOR_TITLE               (1L << 3)
+#define MWM_DECOR_MENU                (1L << 4)
+#define MWM_DECOR_MINIMIZE            (1L << 5)
+#define MWM_DECOR_MAXIMIZE            (1L << 6)
 
 static Bool
 validate_reply(void)
@@ -256,6 +267,18 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 			      1024L,
 			      False,
 			      XA_WM_HINTS);
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_MWM_HINTS)
+    {
+      cookies[COOKIE_WIN_MWM_HINTS]
+	= mb_wm_property_req (wm,
+			      xwin,
+			      wm->atoms[MBWM_ATOM_MOTIF_WM_HINTS],
+			      0,
+			      PROP_MOTIF_WM_HINTS_ELEMENTS,
+			      False,
+			      wm->atoms[MBWM_ATOM_MOTIF_WM_HINTS]);
     }
 
   if (props_req & MBWM_WINDOW_PROP_TRANSIENCY)
@@ -567,6 +590,53 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 
 	  /* FIXME: should track better if thus has changed or not */
 	  changes |= MBWM_WINDOW_PROP_WM_HINTS;
+	}
+    }
+
+  if (props_req & MBWM_WINDOW_PROP_MWM_HINTS)
+    {
+      /*
+       * Handle the Motif decoration hint (Gtk uses it).
+       *
+       * We currently only differentiate between decorated and undecorated
+       * windows, but do not allow finer customisation of the decor.
+       */
+      typedef struct
+      {
+	unsigned long       flags;
+	unsigned long       functions;
+	unsigned long       decorations;
+	long                inputMode;
+	unsigned long       status;
+      } MotifWmHints;
+
+      MotifWmHints *mwmhints = NULL;
+
+      mwmhints =
+	mb_wm_property_get_reply_and_validate (wm,
+					       cookies[COOKIE_WIN_MWM_HINTS],
+					       wm->atoms[MBWM_ATOM_MOTIF_WM_HINTS],
+					       32,
+					       PROP_MOTIF_WM_HINTS_ELEMENTS,
+					       NULL,
+					       &x_error_code);
+
+      if (mwmhints)
+	{
+	  MBWM_DBG("@@@ New Window Motif WM Hints @@@");
+
+	  if (mwmhints->flags & MWM_HINTS_DECORATIONS)
+	    {
+	      if (mwmhints->decorations == 0)
+		{
+		  win->undecorated = TRUE;
+		}
+	    }
+
+	  XFree(mwmhints);
+
+	  /* FIXME: should track better if thus has changed or not */
+	  changes |= MBWM_WINDOW_PROP_MWM_HINTS;
 	}
     }
 
