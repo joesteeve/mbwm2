@@ -1,3 +1,33 @@
+2008-01-31  Tomas Frydrych  <tf@o-hand.com>
+
+        * src/client-types/mb-wm-client-dialog.c:
+	(mb_wm_client_dialog_show):
+	Fixed wrong cast generating wornings.
+
+        * src/comp-mgr/Makefile.am:
+        * src/comp-mgr/mb-wm-comp-mgr-default.c:
+        * src/comp-mgr/mb-wm-comp-mgr-default.h:
+        * src/comp-mgr/mb-wm-comp-mgr.c:
+        * src/comp-mgr/mb-wm-comp-mgr.h:
+        * src/core/mb-wm-types.h:
+	Split MBWMCompMgr into an abstract object and separate
+	MBWMCompMgrDefault implementation.
+
+        * src/core/mb-window-manager.c:
+	(mb_wm_real_comp_mgr_new):
+	Use the new MBWMCompMgrDefault object.
+
+	(mb_wm_unmanage_client):
+	Avoid accessing stale pointer (patch by Johan Bilien).
+
+	(mb_wm_activate_client_real): Call mb_wm_client_show () when asked
+	to activate an override-type client (compositing mode only) so
+	that the compositing manager gets chance to do it's stuff with it.
+
+	(mb_wm_compositing_on):
+	Use the MBWindowManager comp_mgr_new() virtual to create a new
+	manager if needed.
+
 2008-01-22  Tomas Frydrych  <tf@o-hand.com>
 
         * src/core/mb-wm-atoms.c:

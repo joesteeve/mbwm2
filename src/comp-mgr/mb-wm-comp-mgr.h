@@ -2,8 +2,7 @@
  *  Matchbox Window Manager - A lightweight window manager not for the
  *                            desktop.
  *
- *  Authored By Matthew Allum <mallum@o-hand.com>
- *              Tomas Frydrych <tf@o-hand.com>
+ *  Authored By Tomas Frydrych <tf@o-hand.com>
  *
  *  Copyright (c) 2002, 2004, 2007 OpenedHand Ltd - http://o-hand.com
  *
@@ -38,8 +37,6 @@ struct MBWMCompMgr
 
   MBWindowManager     *wm;
   Bool                 disabled;
-
-  MBWMCompMgrPrivate  *priv;
 };
 
 struct MBWMCompMgrClass
@@ -56,9 +53,6 @@ struct MBWMCompMgrClass
 
 int
 mb_wm_comp_mgr_class_type ();
-
-MBWMCompMgr*
-mb_wm_comp_mgr_new (MBWindowManager *wm);
 
 void
 mb_wm_comp_mgr_register_client (MBWMCompMgr * mgr, MBWindowManagerClient *c);
@@ -81,6 +75,13 @@ mb_wm_comp_mgr_enabled (MBWMCompMgr *mgr);
 
 Bool
 mb_wm_comp_mgr_handle_events (MBWMCompMgr * mgr, XEvent *ev);
+
+struct MBWMCompMgrClient
+{
+  MBWMObject              parent;
+
+  MBWindowManagerClient * wm_client;
+};
 
 struct MBWMCompMgrClientClass
 {

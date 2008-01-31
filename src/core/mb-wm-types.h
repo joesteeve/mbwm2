@@ -105,10 +105,15 @@ typedef struct MBWMLayoutClass             MBWMLayoutClass;
 typedef struct MBWMMainContext             MBWMMainContext;
 typedef struct MBWMMainContextClass        MBWMMainContextClass;
 typedef struct MBWMCompMgr                 MBWMCompMgr;
-typedef struct MBWMCompMgrPrivate          MBWMCompMgrPrivate;
 typedef struct MBWMCompMgrClass            MBWMCompMgrClass;
+typedef struct MBWMCompMgrDefault          MBWMCompMgrDefault;
+typedef struct MBWMCompMgrDefaultPrivate   MBWMCompMgrDefaultPrivate;
+typedef struct MBWMCompMgrDefaultClass     MBWMCompMgrDefaultClass;
 typedef struct MBWMCompMgrClient           MBWMCompMgrClient;
 typedef struct MBWMCompMgrClientClass      MBWMCompMgrClientClass;
+typedef struct MBWMCompMgrDefaultClient    MBWMCompMgrDefaultClient;
+typedef struct MBWMCompMgrDefaultClientClass MBWMCompMgrDefaultClientClass;
+typedef struct MBWMCompMgrDefaultClentPrivate MBWMCompMgrDefaultClientPrivate;
 
 typedef enum MBWMClientType
 {

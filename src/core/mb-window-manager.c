@@ -10,6 +10,7 @@
 
 #ifdef ENABLE_COMPOSITE
 #include "mb-wm-comp-mgr.h"
+#include "mb-wm-comp-mgr-default.h"
 #include "../client-types/mb-wm-client-override.h"
 #endif
 
@@ -123,7 +124,7 @@ mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
 static MBWMCompMgr *
 mb_wm_real_comp_mgr_new (MBWindowManager *wm)
 {
-  return mb_wm_comp_mgr_new (wm);
+  return mb_wm_comp_mgr_default_new (wm);
 }
 #endif
 
@@ -530,6 +531,8 @@ mb_wm_handle_map_notify   (XMapEvent  *xev,
     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
   MBWMClientWindow *win = NULL;
 
+  MBWM_NOTE (COMPOSITOR, "@@@@ Map Notify for %x @@@@\n", xev->window);
+
   if (!wm_class->client_new)
     {
       MBWM_DBG("### No new client hook exists ###");
@@ -913,7 +916,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
   if (destroy)
     mb_wm_object_unref (MB_WM_OBJECT(client));
 
-  mb_wm_display_sync_queue (client->wmref, sync_flags);
+  mb_wm_display_sync_queue (wm, sync_flags);
 }
 
 MBWindowManagerClient*
@@ -1361,10 +1364,14 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
   c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
 
   /*
-   * No circumtances attempt to activate override windows.
+   * Under no circumtances attempt to activate override windows; only call
+   * show on them.
    */
   if (c_type == MBWMClientTypeOverride)
-    return True;
+    {
+      mb_wm_client_show (c);
+      return True;
+    }
 
   was_desktop = (wm->flags & MBWindowManagerFlagDesktop);
 
@@ -1736,8 +1743,11 @@ void
 mb_wm_compositing_on (MBWindowManager * wm)
 {
 #ifdef ENABLE_COMPOSITE
-  if (!wm->comp_mgr)
-    wm->comp_mgr = mb_wm_comp_mgr_new (wm);
+  MBWindowManagerClass  *wm_class =
+    MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+
+  if (!wm->comp_mgr && wm_class->comp_mgr_new)
+    wm->comp_mgr = wm_class->comp_mgr_new (wm);
 
   if (wm->comp_mgr && !mb_wm_comp_mgr_enabled (wm->comp_mgr))
     mb_wm_comp_mgr_turn_on (wm->comp_mgr);

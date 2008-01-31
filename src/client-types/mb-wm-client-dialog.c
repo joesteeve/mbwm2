@@ -22,7 +22,7 @@ mb_wm_client_dialog_show (MBWindowManagerClient *client)
    * We need the parent of the MBWMClientDialogClass to chain up
    */
   if (MB_WM_IS_CLIENT_DIALOG (client))
-    parent_klass = MB_WM_CLIENT (MB_WM_OBJECT_GET_PARENT_CLASS (client));
+    parent_klass = MB_WM_CLIENT_CLASS (MB_WM_OBJECT_GET_PARENT_CLASS (client));
   else
     {
       /*
