@@ -31,6 +31,10 @@
 #define MB_WM_COMP_MGR_CLIENT_CLASS(c) ((MBWMCompMgrClientClass*)(c))
 #define MB_WM_TYPE_COMP_MGR_CLIENT (mb_wm_comp_mgr_client_class_type ())
 
+#define MB_WM_COMP_MGR_EFFECT(c) ((MBWMCompMgrEffect*)(c))
+#define MB_WM_COMP_MGR_EFFECT_CLASS(c) ((MBWMCompMgrEffectClass*)(c))
+#define MB_WM_TYPE_COMP_MGR_EFFECT (mb_wm_comp_mgr_effect_class_type ())
+
 struct MBWMCompMgr
 {
   MBWMObject           parent;
@@ -48,7 +52,9 @@ struct MBWMCompMgrClass
   void   (*turn_on)           (MBWMCompMgr * mgr);
   void   (*turn_off)          (MBWMCompMgr * mgr);
   void   (*render)            (MBWMCompMgr * mgr);
+  void   (*map_notify)        (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   Bool   (*handle_events)     (MBWMCompMgr * mgr, XEvent *ev);
+  Bool   (*my_window)         (MBWMCompMgr * mgr, Window xwin);
 };
 
 int
@@ -70,17 +76,27 @@ mb_wm_comp_mgr_turn_on (MBWMCompMgr *mgr);
 void
 mb_wm_comp_mgr_render (MBWMCompMgr *mgr);
 
+void
+mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c);
+
 Bool
 mb_wm_comp_mgr_enabled (MBWMCompMgr *mgr);
 
 Bool
 mb_wm_comp_mgr_handle_events (MBWMCompMgr * mgr, XEvent *ev);
 
+Bool
+mb_wm_comp_mgr_is_my_window (MBWMCompMgr * mgr, Window xwin);
+
 struct MBWMCompMgrClient
 {
   MBWMObject              parent;
 
   MBWindowManagerClient * wm_client;
+
+  /* Make private ? */
+  MBWMList              * effects; /* List of MBWMCompMgrEffectAssociation */
+ Bool                     is_argb32;
 };
 
 struct MBWMCompMgrClientClass
@@ -89,8 +105,14 @@ struct MBWMCompMgrClientClass
 
   void (*show)      (MBWMCompMgrClient * client);
   void (*hide)      (MBWMCompMgrClient * client);
-  void (*repair)    (MBWMCompMgrClient * client);  
-  void (*configure) (MBWMCompMgrClient * client);  
+  void (*repair)    (MBWMCompMgrClient * client);
+  void (*configure) (MBWMCompMgrClient * client);
+
+  MBWMCompMgrEffect * (*effect_new)    (MBWMCompMgrClient * client,
+					MBWMCompMgrEffectEvent event,
+					MBWMCompMgrEffectType type,
+					unsigned long duration);
+
 };
 
 int
@@ -107,5 +129,45 @@ mb_wm_comp_mgr_client_repair (MBWMCompMgrClient * client);
 
 void
 mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client);
+
+void
+mb_wm_comp_mgr_client_add_effects (MBWMCompMgrClient      * client,
+				   MBWMCompMgrEffectEvent   event,
+				   MBWMList               * effects);
+
+void
+mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
+				  MBWMCompMgrEffectEvent      event,
+				  MBWMCompMgrEffectCallback   completed_cb,
+				  void                      * data);
+
+MBWMList *
+mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient * client,
+				   MBWMCompMgrEffectEvent event,
+				   MBWMCompMgrEffectType type,
+				   unsigned long duration);
+
+/*
+ * Generic effect that can applied to a client
+ */
+struct MBWMCompMgrEffect
+{
+  MBWMObject              parent;
+  MBWMCompMgrEffectType   type;
+  unsigned long           duration;
+};
+
+struct MBWMCompMgrEffectClass
+{
+  MBWMObjectClass        parent;
+
+  void (*run)  (MBWMList                  * effects,
+		MBWMCompMgrEffectEvent      event,
+		MBWMCompMgrEffectCallback   completed_cb,
+		void                      * data);
+};
+
+int
+mb_wm_comp_mgr_effect_class_type ();
 
 #endif

@@ -31,7 +31,7 @@
 #include <stdarg.h>
 
 static void
-maemo_window_manager_process_cmdline (MBWindowManager *, int , char **);
+maemo_window_manager_process_cmdline (MBWindowManager *);
 
 static Bool
 maemo_window_manager_client_activate (MBWindowManager * wm,
@@ -183,7 +183,7 @@ maemo_window_manager_process_cmdline (MBWindowManager *wm,
     MB_WINDOW_MANAGER_CLASS(MB_WM_OBJECT_GET_PARENT_CLASS(MB_WM_OBJECT(wm)));
 
   if (wm_class->process_cmdline)
-    wm_class->process_cmdline (wm, argc, argv);
+    wm_class->process_cmdline (wm);
 }
 
 static Bool

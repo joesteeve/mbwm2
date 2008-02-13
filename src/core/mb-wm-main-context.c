@@ -90,7 +90,7 @@ mb_wm_main_context_destroy (MBWMObject *this)
 }
 
 #ifdef USE_GLIB_MAINLOOP
-static gboolean
+gboolean
 mb_wm_main_context_gloop_xevent (gpointer userdata)
 {
   MBWMMainContext * ctx = userdata;
@@ -129,7 +129,8 @@ mb_wm_main_context_init (MBWMObject *this, va_list vap)
   ctx->wm = wm;
 
 #ifdef USE_GLIB_MAINLOOP
-  g_idle_add (mb_wm_main_context_gloop_xevent, ctx);
+/*   g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, */
+/* 		   mb_wm_main_context_gloop_xevent, ctx, NULL); */
 #endif
 
   return 1;
@@ -167,7 +168,7 @@ mb_wm_main_context_new (MBWindowManager *wm)
   return ctx;
 }
 
-static Bool
+Bool
 mb_wm_main_context_handle_x_event (XEvent          *xev,
 				   MBWMMainContext *ctx)
 {
@@ -212,7 +213,6 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 	  mb_wm_root_window_handle_message (wm->root_win,
 					    (XClientMessageEvent *)xev);
 	}
-
       break;
     case Expose:
       break;
@@ -473,6 +473,7 @@ mb_wm_main_context_spin_xevent (MBWMMainContext *ctx)
 {
   MBWindowManager * wm = ctx->wm;
   XEvent xev;
+  clock_t ct = clock ();
 
   if (!XEventsQueued (wm->xdpy, QueuedAfterFlush))
     return False;
@@ -526,13 +527,6 @@ mb_wm_main_context_loop (MBWMMainContext *ctx)
       if (wm->sync_type)
 	mb_wm_sync (wm);
     }
-
-#else
-  GMainLoop * loop = g_main_loop_new (NULL, FALSE);
-
-  g_main_loop_run (loop);
-
-  g_main_loop_unref (loop);
 #endif
 }
 

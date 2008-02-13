@@ -94,18 +94,21 @@ struct MBWindowManager
   const char                  *theme_path;
 
   MBWMModality                 modality_type;
+
+  char                       **argv;
+  int                          argc;
 };
 
 struct MBWindowManagerClass
 {
   MBWMObjectClass parent;
 
-  void (*process_cmdline) (MBWindowManager * wm, int argc, char **argv);
+  void (*process_cmdline) (MBWindowManager * wm);
 
   MBWindowManagerClient* (*client_new) (MBWindowManager *wm,
 					MBWMClientWindow *w);
   MBWMLayout           * (*layout_new) (MBWindowManager *wm);
-  
+
   /* These return True if now further action to be taken */
   Bool (*client_activate)   (MBWindowManager *wm, MBWindowManagerClient *c);
   Bool (*client_responding) (MBWindowManager *wm, MBWindowManagerClient *c);
@@ -116,10 +119,15 @@ struct MBWindowManagerClass
 #ifdef ENABLE_COMPOSITE
   MBWMCompMgr * (*comp_mgr_new) (MBWindowManager *wm);
 #endif
+
+  void (*main) (MBWindowManager *wm);
 };
 
 MBWindowManager *
 mb_wm_new (int argc, char **argv);
+
+MBWindowManager *
+mb_wm_new_with_dpy (int argc, char **argv, Display * dpy);
 
 void
 mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout);
@@ -200,5 +208,8 @@ mb_wm_compositing_enabled (MBWindowManager * wm);
 
 MBWMModality
 mb_wm_get_modality_type (MBWindowManager * wm);
+
+void
+mb_wm_sync (MBWindowManager *wm);
 
 #endif

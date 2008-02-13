@@ -19,6 +19,7 @@
  */
 
 #include "mb-wm-theme-xml.h"
+#include "mb-wm-theme.h"
 
 /*****************************************************************
  * XML Parser stuff
@@ -76,6 +77,14 @@ mb_wm_xml_decor_free (MBWMXmlDecor * d)
   free (d);
 }
 
+#ifdef ENABLE_COMPOSITE
+static void
+mb_wm_theme_effects_free (MBWMThemeEffects *e)
+{
+  free (e);
+}
+#endif
+
 MBWMXmlClient *
 mb_wm_xml_client_new ()
 {
@@ -107,6 +116,19 @@ mb_wm_xml_client_free (MBWMXmlClient * c)
 
       l = n;
     }
+
+#ifdef ENABLE_COMPOSITE
+  l = c->effects;
+  while (l)
+    {
+      MBWMThemeEffects * e = l->data;
+      MBWMList * n = l->next;
+      mb_wm_theme_effects_free (e);
+      free (l);
+
+      l = n;
+    }
+#endif
 
   free (c);
 }

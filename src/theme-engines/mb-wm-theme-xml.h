@@ -64,6 +64,10 @@ typedef struct Client
   MBWMList       *decors;
 
   MBWMClientLayoutHints layout_hints;
+
+#ifdef ENABLE_COMPOSITE
+  MBWMList       *effects;
+#endif
 }MBWMXmlClient;
 
 MBWMXmlButton *

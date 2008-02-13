@@ -959,6 +959,21 @@ mb_wm_client_reset_iconizing (MBWindowManagerClient *client)
   client->priv->iconizing = False;
 }
 
+#ifdef ENABLE_COMPOSITE
+static void
+mb_wm_client_effect_completed (void *data)
+{
+  MBWindowManagerClient *client = data;
+
+      client->priv->iconizing = True;
+
+
+      mb_wm_client_set_state (client,
+			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			      MBWMClientWindowStateChangeAdd);
+}
+
+#endif
 void
 mb_wm_client_iconize (MBWindowManagerClient *client)
 {
@@ -967,11 +982,28 @@ mb_wm_client_iconize (MBWindowManagerClient *client)
    * This triggers an umap event, at which point the client gets unmanaged
    * by the window manager.
    */
-  client->priv->iconizing = True;
+#ifdef ENABLE_COMPOSITE
+  /*
+   * We cannot iconize the client until the effect finished, otherwise it
+   * will unmap before the effect takes place, so we do this in the callback.
+   */
+  if (mb_wm_compositing_enabled (client->wmref))
+    {
+      mb_wm_comp_mgr_client_run_effect (client->cm_client,
+					MBWMCompMgrEffectEventMinimize,
+					mb_wm_client_effect_completed,
+					client);
+    }
+  else
+#endif
+    {
+      client->priv->iconizing = True;
 
-  mb_wm_client_set_state (client,
-			  MBWM_ATOM_NET_WM_STATE_HIDDEN,
-			  MBWMClientWindowStateChangeAdd);
+
+      mb_wm_client_set_state (client,
+			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			      MBWMClientWindowStateChangeAdd);
+    }
 }
 
 int

@@ -87,6 +87,13 @@ typedef enum MBWMObjectProp
     MBWMObjectPropThemeCompositing        = _MKOPROP(24, int),
     MBWMObjectPropThemeShaped             = _MKOPROP(25, int),
 
+    MBWMObjectPropCompMgrEffectType       = _MKOPROP(26, int),
+    MBWMObjectPropCompMgrEffectDuration   = _MKOPROP(27, unsigned long),
+    MBWMObjectPropCompMgrClutterEffectTimeline  = _MKOPROP(28, void*),
+    MBWMObjectPropCompMgrClutterEffectBehaviour = _MKOPROP(29, void*),
+
+    MBWMObjectPropDpy                     = _MKOPROP(30, void*),
+
     _MBWMObjectPropLastGlobal = 0x00fffff0,
   }
 MBWMObjectProp;

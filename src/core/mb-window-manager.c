@@ -9,9 +9,14 @@
 #include "../theme-engines/mb-wm-theme.h"
 
 #ifdef ENABLE_COMPOSITE
-#include "mb-wm-comp-mgr.h"
-#include "mb-wm-comp-mgr-default.h"
-#include "../client-types/mb-wm-client-override.h"
+# include "mb-wm-comp-mgr.h"
+#  ifdef USE_CLUTTER
+#   include <clutter/clutter-x11.h>
+#   include "mb-wm-comp-mgr-clutter.h"
+#  else
+#   include "mb-wm-comp-mgr-default.h"
+#  endif
+# include "../client-types/mb-wm-client-override.h"
 #endif
 
 #include <stdarg.h>
@@ -29,7 +34,7 @@
 #include <X11/cursorfont.h>
 
 static void
-mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv);
+mb_wm_process_cmdline (MBWindowManager *wm);
 
 static void
 mb_wm_focus_client (MBWindowManager *wm, MBWindowManagerClient *client);
@@ -40,8 +45,9 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c);
 static void
 mb_wm_update_root_win_rectangles (MBWindowManager *wm);
 
-static MBWindowManagerClient *
-mb_wm_is_my_window (MBWindowManager *wm, Window xwin);
+static Bool
+mb_wm_is_my_window (MBWindowManager *wm, Window xwin,
+		    MBWindowManagerClient **client);
 
 static MBWindowManagerClient*
 mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
@@ -124,7 +130,11 @@ mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
 static MBWMCompMgr *
 mb_wm_real_comp_mgr_new (MBWindowManager *wm)
 {
+#ifdef USE_CLUTTER
+  return mb_wm_comp_mgr_clutter_new (wm);
+#else
   return mb_wm_comp_mgr_default_new (wm);
+#endif
 }
 #endif
 
@@ -138,6 +148,29 @@ mb_wm_layout_new_real (MBWindowManager *wm)
 
   return layout;
 }
+
+#ifdef USE_CLUTTER
+static ClutterX11FilterReturn
+mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
+{
+  MBWindowManager * wm = data;
+
+  mb_wm_main_context_handle_x_event (xev, wm->main_ctx);
+
+  if (wm->sync_type)
+    mb_wm_sync (wm);
+
+  return CLUTTER_X11_FILTER_CONTINUE;
+}
+
+static void
+mb_wm_main_real (MBWindowManager *wm)
+{
+  clutter_x11_add_filter (mb_wm_clutter_xevent_filter, wm);
+
+  clutter_main ();
+}
+#endif
 
 static void
 mb_wm_class_init (MBWMObjectClass *klass)
@@ -153,6 +186,10 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->theme_new       = mb_wm_real_theme_new;
   wm_class->client_activate = mb_wm_activate_client_real;
   wm_class->layout_new      = mb_wm_layout_new_real;
+
+#ifdef USE_CLUTTER
+  wm_class->main            = mb_wm_main_real;
+#endif
 
 #ifdef ENABLE_COMPOSITE
   wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
@@ -225,6 +262,23 @@ mb_wm_new (int argc, char **argv)
   return wm;
 }
 
+MBWindowManager*
+mb_wm_new_with_dpy (int argc, char **argv, Display * dpy)
+{
+  MBWindowManager      *wm = NULL;
+
+  wm = MB_WINDOW_MANAGER (mb_wm_object_new (MB_TYPE_WINDOW_MANAGER,
+					    MBWMObjectPropArgc, argc,
+					    MBWMObjectPropArgv, argv,
+					    MBWMObjectPropDpy,  dpy,
+					    NULL));
+
+  if (!wm)
+    return wm;
+
+  return wm;
+}
+
 Bool
 test_key_press (XKeyEvent       *xev,
 		void            *userdata)
@@ -247,7 +301,7 @@ test_button_press (XButtonEvent *xev, void *userdata)
   if (xev->button != 1)
     return True;
 
-  client = mb_wm_is_my_window (wm, xev->window);
+  mb_wm_is_my_window (wm, xev->window, &client);
 
   if (!client)
     return True;
@@ -504,16 +558,41 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
   return True;
 }
 
-static MBWindowManagerClient *
-mb_wm_is_my_window (MBWindowManager *wm, Window xwin)
+/*
+ * Check if this window belongs to the WM, and if it does, and is a client
+ * window, optionaly return the client.
+ */
+static Bool
+mb_wm_is_my_window (MBWindowManager *wm,
+		    Window xwin,
+		    MBWindowManagerClient **client)
 {
   MBWindowManagerClient *c;
 
+#ifdef ENABLE_COMPOSITE
+  if (wm->comp_mgr && mb_wm_comp_mgr_is_my_window (wm->comp_mgr, xwin))
+    {
+      /* Make sure to set the returned client to NULL, as this is a
+       * window that belongs to the composite manager, and so it has no
+       * client associated with it.
+       */
+      if (client)
+	*client = NULL;
+
+      return True;
+    }
+#endif
+
   mb_wm_stack_enumerate_reverse(wm, c)
     if (mb_wm_client_owns_xwindow (c, xwin))
-      return c;
+      {
+	if (client)
+	  *client = c;
 
-  return NULL;
+	return True;
+      }
+
+  return False;
 }
 
 #ifdef ENABLE_COMPOSITE
@@ -539,8 +618,16 @@ mb_wm_handle_map_notify   (XMapEvent  *xev,
       return True;
     }
 
-  if (mb_wm_is_my_window (wm, xev->window))
-    return True;
+  if (mb_wm_is_my_window (wm, xev->window, &client))
+    {
+      if (wm->comp_mgr && client)
+	{
+	  MBWM_NOTE (COMPOSITOR, "@@@@ client %p @@@@\n", client);
+	  mb_wm_comp_mgr_map_notify (wm->comp_mgr, client);
+	}
+
+      return True;
+    }
 
   win = mb_wm_client_window_new (wm, xev->window);
 
@@ -559,6 +646,7 @@ mb_wm_handle_map_notify   (XMapEvent  *xev,
     }
 
   mb_wm_manage_client (wm, client, True);
+  mb_wm_comp_mgr_map_notify (wm->comp_mgr, client);
 
   return True;
 }
@@ -576,9 +664,13 @@ mb_wm_handle_map_request (XMapRequestEvent  *xev,
 
   MBWM_MARK();
 
-  if ((client = mb_wm_managed_client_from_xwindow(wm, xev->window)))
+  MBWM_NOTE (COMPOSITOR, "@@@@ Map Request for %x @@@@\n", xev->window);
+
+  if (mb_wm_is_my_window (wm, xev->window, &client))
     {
-      mb_wm_activate_client (wm, client);
+      if (client)
+	mb_wm_activate_client (wm, client);
+
       return True;
     }
 
@@ -903,8 +995,8 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
     }
 
 #ifdef ENABLE_COMPOSITE
-  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
-    mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
+   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+     mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
 #endif
 
   if (wm->focused_client == client)
@@ -965,10 +1057,41 @@ mb_wm_managed_client_from_frame (MBWindowManager *wm, Window frame)
   return NULL;
 }
 
+/*
+ * Run the main loop; there are three options dependent on how we were
+ * configured at build time:
+ *
+ * * If configured without glib main loop integration, we defer to our own
+ *   main loop implementation provided by MBWMMainContext.
+ *
+ * * If configured with glib main loop integration:
+ *
+ *   * If there is an implemetation for the MBWindowManager main() virtual
+ *     function, we call it.
+ *
+ *   * Otherwise, start a normal glib main loop.
+ */
 void
 mb_wm_main_loop(MBWindowManager *wm)
 {
+#ifndef USE_GLIB_MAINLOOP
   mb_wm_main_context_loop (wm->main_ctx);
+#else
+   MBWindowManagerClass * wm_class =
+     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+
+  if (!wm_class->main)
+    {
+      GMainLoop * loop = g_main_loop_new (NULL, FALSE);
+
+      g_main_loop_run (loop);
+      g_main_loop_unref (loop);
+    }
+  else
+    {
+      wm_class->main (wm);
+    }
+#endif
 }
 
 void
@@ -1128,11 +1251,11 @@ mb_wm_init_xdpy (MBWindowManager * wm, const char * display)
 	  mb_wm_util_fatal_error("Display connection failed");
 	  return 0;
 	}
-
-      wm->xscreen     = DefaultScreen(wm->xdpy);
-      wm->xdpy_width  = DisplayWidth(wm->xdpy, wm->xscreen);
-      wm->xdpy_height = DisplayHeight(wm->xdpy, wm->xscreen);
     }
+
+  wm->xscreen     = DefaultScreen(wm->xdpy);
+  wm->xdpy_width  = DisplayWidth(wm->xdpy, wm->xscreen);
+  wm->xdpy_height = DisplayHeight(wm->xdpy, wm->xscreen);
 
   return 1;
 }
@@ -1178,6 +1301,8 @@ mb_wm_init (MBWMObject *this, va_list vap)
 	case MBWMObjectPropArgv:
 	  argv = va_arg(vap, char **);
 	  break;
+	case MBWMObjectPropDpy:
+	  wm->xdpy = va_arg(vap, Display *);
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}
@@ -1187,10 +1312,13 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   wm_class = (MBWindowManagerClass *) MB_WM_OBJECT_GET_CLASS (wm);
 
-  if (argc && argv && wm_class->process_cmdline)
-    wm_class->process_cmdline (wm, argc, argv);
+  wm->argv = argv;
+  wm->argc = argc;
 
-  if (!wm->xdpy && !mb_wm_init_xdpy (wm, NULL))
+  if (argc && argv && wm_class->process_cmdline)
+    wm_class->process_cmdline (wm);
+
+  if (!mb_wm_init_xdpy (wm, NULL))
     return 0;
 
   if (getenv("MB_SYNC"))
@@ -1290,10 +1418,12 @@ mb_wm_init (MBWMObject *this, va_list vap)
 }
 
 static void
-mb_wm_process_cmdline (MBWindowManager *wm, int argc, char **argv)
+mb_wm_process_cmdline (MBWindowManager *wm)
 {
   int i;
   const char * theme_path = NULL;
+  char ** argv = wm->argv;
+  int     argc = wm->argc;
 
   for (i = 0; i < argc; ++i)
     {
@@ -1750,7 +1880,10 @@ mb_wm_compositing_on (MBWindowManager * wm)
     wm->comp_mgr = wm_class->comp_mgr_new (wm);
 
   if (wm->comp_mgr && !mb_wm_comp_mgr_enabled (wm->comp_mgr))
-    mb_wm_comp_mgr_turn_on (wm->comp_mgr);
+    {
+      mb_wm_comp_mgr_turn_on (wm->comp_mgr);
+      XSync (wm->xdpy, False);
+    }
 #endif
 }
 

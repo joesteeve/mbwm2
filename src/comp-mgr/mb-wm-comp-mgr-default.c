@@ -48,7 +48,6 @@ struct MBWMCompMgrDefaultClient
   Picture	          picture;
   XserverRegion	          extents;
   XserverRegion	          border_clip;
-  Bool                    is_argb32;
 };
 
 static void
@@ -85,18 +84,11 @@ mb_wm_comp_mgr_default_client_init (MBWMObject *obj, va_list vap)
   MBWMCompMgrDefaultClient  *dclient = MB_WM_COMP_MGR_DEFAULT_CLIENT (obj);
   MBWindowManager           *wm;
   MBWindowManagerClient     *wm_client = client->wm_client;
-  XRenderPictFormat         *format;
 
   if (!wm_client || !wm_client->wmref)
     return 0;
 
   wm = wm_client->wmref;
-
-  /* Check visual */
-  format = XRenderFindVisualFormat (wm->xdpy, wm_client->window->visual);
-
-  if (format && format->type == PictTypeDirect && format->direct.alphaMask)
-    dclient->is_argb32 = True;
 
   return 1;
 }
@@ -235,7 +227,7 @@ mb_wm_comp_mgr_default_client_show_real (MBWMCompMgrClient * client)
 			      wm_client->xwin_frame ?
 			      wm_client->xwin_frame :
 			      wm_client->window->xwindow,
-			      dclient->is_argb32 ?
+			      client->is_argb32 ?
 			      XRenderFindStandardFormat (wm->xdpy,
 							 PictStandardARGB32)
 
@@ -1421,6 +1413,8 @@ mb_wm_comp_mgr_default_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
   MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
   MBWindowManager           * wm   = mgr->wm;
 
+  printf ("### got event %d ###\n", ev->type);
+
   if (ev->type == priv->damage_event + XDamageNotify)
     {
       XDamageNotifyEvent    * de = (XDamageNotifyEvent*) ev;
@@ -1473,7 +1467,7 @@ _render_a_client (MBWMCompMgrClient * client,
   mb_wm_client_get_coverage (wm_client, &geom);
 
   /* Translucency only done for dialogs and overides */
-  if ( !dclient->is_argb32 &&
+  if ( !client->is_argb32 &&
        (ctype == MBWMClientTypeApp     ||
 	ctype == MBWMClientTypeDesktop ||
 	ctype == MBWMClientTypeInput   ||
@@ -1497,7 +1491,7 @@ _render_a_client (MBWMCompMgrClient * client,
 
       XFixesDestroyRegion (wm->xdpy, winborder);
     }
-  else if (dclient->is_argb32 ||
+  else if (client->is_argb32 ||
 	   mb_wm_comp_mgr_default_client_get_translucency (client) != -1)
     {
       /*
@@ -1687,7 +1681,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
       if (done &&
 	  (MB_WM_CLIENT_CLIENT_TYPE (wmc_temp) &
 	   (MBWMClientTypeApp | MBWMClientTypeDesktop)) &&
-	 !MB_WM_COMP_MGR_DEFAULT_CLIENT (wmc_temp->cm_client)->is_argb32 &&
+	 !wmc_temp->cm_client->is_argb32 &&
 	  mb_wm_comp_mgr_default_client_get_translucency (wmc_temp->cm_client)
 	  == -1)
 	{
@@ -1735,7 +1729,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
        * We have to process all dialogs and, if the top client is translucent,
        * any translucent windows as well.
        */
-      is_translucent = (dc->is_argb32 ||
+      is_translucent = (c->is_argb32 ||
 			mb_wm_comp_mgr_default_client_get_translucency (c)
 			!= -1);
 
@@ -1775,7 +1769,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 					      0, 0, shadow_region);
 
 		  /* now paint them */
-		  if (MB_WM_COMP_MGR_DEFAULT_CLIENT (wmc_temp->cm_client)->is_argb32)
+		  if (wmc_temp->cm_client->is_argb32)
 		    {
 		      XRenderComposite (wm->xdpy, PictOpOver,
 					priv->black_picture,
@@ -1823,7 +1817,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 		      XFixesSetPictureClipRegion (wm->xdpy, priv->root_buffer,
 						  0, 0, shadow_region);
 
-		      if (dc->is_argb32)
+		      if (c->is_argb32)
 			XRenderComposite (wm->xdpy, PictOpOver,
 					  dc->picture, None,
 					  priv->root_buffer,

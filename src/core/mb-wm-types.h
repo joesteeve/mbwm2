@@ -114,6 +114,16 @@ typedef struct MBWMCompMgrClientClass      MBWMCompMgrClientClass;
 typedef struct MBWMCompMgrDefaultClient    MBWMCompMgrDefaultClient;
 typedef struct MBWMCompMgrDefaultClientClass MBWMCompMgrDefaultClientClass;
 typedef struct MBWMCompMgrDefaultClentPrivate MBWMCompMgrDefaultClientPrivate;
+typedef struct MBWMCompMgrClutter          MBWMCompMgrClutter;
+typedef struct MBWMCompMgrClutterPrivate   MBWMCompMgrClutterPrivate;
+typedef struct MBWMCompMgrClutterClass     MBWMCompMgrClutterClass;
+typedef struct MBWMCompMgrClutterClient    MBWMCompMgrClutterClient;
+typedef struct MBWMCompMgrClutterClientClass MBWMCompMgrClutterClientClass;
+typedef struct MBWMCompMgrClutterClentPrivate MBWMCompMgrClutterClientPrivate;
+typedef struct MBWMCompMgrEffect           MBWMCompMgrEffect;
+typedef struct MBWMCompMgrEffectClass      MBWMCompMgrEffectClass;
+typedef struct MBWMCompMgrClutterEffect    MBWMCompMgrClutterEffect;
+typedef struct MBWMCompMgrClutterEffectClass MBWMCompMgrClutterEffectClass;
 
 typedef enum MBWMClientType
 {
@@ -128,6 +138,40 @@ typedef enum MBWMClientType
 
   MBWMClientTypeLast    = MBWMClientTypeOverride,
 } MBWMClientType;
+
+typedef enum _MBWMCompMgrEffectEvent
+{
+  MBWMCompMgrEffectEventNone     = 0,
+  MBWMCompMgrEffectEventMinimize,
+
+  _MBWMCompMgrEffectEventLast,
+} MBWMCompMgrEffectEvent;
+
+typedef enum _MBWMCompMgrEffectType
+{
+  MBWMCompMgrEffectScaleUp   = (1<<0), /* 0 reserved for unknown */
+  MBWMCompMgrEffectScaleDown = (1<<1),
+  MBWMCompMgrEffectSpinXCW   = (1<<2),
+  MBWMCompMgrEffectSpinXCCW  = (1<<3),
+  MBWMCompMgrEffectSpinYCW   = (1<<4),
+  MBWMCompMgrEffectSpinYCCW  = (1<<5),
+  MBWMCompMgrEffectSpinZCW   = (1<<6),
+  MBWMCompMgrEffectSpinZCCW  = (1<<7),
+  MBWMCompMgrEffectFade      = (1<<8),
+  MBWMCompMgrEffectUnfade    = (1<<9),
+  MBWMCompMgrEffectSlideN    = (1<<10),
+  MBWMCompMgrEffectSlideS    = (1<<11),
+  MBWMCompMgrEffectSlideE    = (1<<12),
+  MBWMCompMgrEffectSlideW    = (1<<13),
+  MBWMCompMgrEffectSlideNW   = (1<<14),
+  MBWMCompMgrEffectSlideNE   = (1<<15),
+  MBWMCompMgrEffectSlideSW   = (1<<16),
+  MBWMCompMgrEffectSlideSE   = (1<<17),
+
+  _MBWMCompMgrEffectLast,
+} MBWMCompMgrEffectType;
+
+typedef void (*MBWMCompMgrEffectCallback) (void * data);
 
 typedef unsigned long MBWMCookie;
 

@@ -1,3 +1,32 @@
+2008-02-13  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac
+        * src/comp-mgr/Makefile.am:
+        * src/comp-mgr/mb-wm-comp-mgr-default.c:
+        * src/comp-mgr/mb-wm-comp-mgr-default.h:
+        * src/comp-mgr/mb-wm-comp-mgr.c:
+        * src/comp-mgr/mb-wm-comp-mgr.h:
+        * src/core/mb-window-manager.c:
+        * src/core/mb-window-manager.h:
+        * src/core/mb-wm-client.c:
+        * src/core/mb-wm-main-context.c:
+        * src/core/mb-wm-object-props.h:
+        * src/core/mb-wm-types.h:
+        * src/managers/maemo/maemo-window-manager.c:
+        * src/managers/simple/matchbox-window-manager-2-simple.c:
+	Changes to improve the flexibility of the compositor framework.
+	Framework for compositor effects.
+	Initial implementation of a clutter-based compositor.
+
+        * src/theme-engines/mb-wm-theme-xml.c:
+        * src/theme-engines/mb-wm-theme-xml.h:
+        * src/theme-engines/mb-wm-theme.c:
+        * src/theme-engines/mb-wm-theme.h:
+	Added support for effects.
+
+        * data/themes/Default/theme.xml:
+	Added sample effect for application clients.
+
 2008-01-31  Tomas Frydrych  <tf@o-hand.com>
 
         * src/client-types/mb-wm-client-dialog.c:

@@ -43,6 +43,15 @@
 #define MB_WM_THEME_PNG_CLASS(c) ((MBWMThemePngClass*)(c))
 #define MB_WM_TYPE_THEME_PNG (mb_wm_theme_png_class_type ())
 
+#ifdef ENABLE_COMPOSITE
+typedef struct _MBWMThemeEffects
+{
+  MBWMCompMgrEffectEvent   event;
+  MBWMCompMgrEffectType    type;
+  unsigned long            duration;
+} MBWMThemeEffects;
+#endif
+
 enum MBWMThemeCaps
 {
   MBWMThemeCapsFrameMainButtonActionAccept = (1<<0),
@@ -170,6 +179,12 @@ mb_wm_theme_get_client_geometry (MBWMTheme             * theme,
 MBWMClientLayoutHints
 mb_wm_theme_get_client_layout_hints (MBWMTheme             * theme,
 				     MBWindowManagerClient * client);
+
+#ifdef ENABLE_COMPOSITE
+const MBWMList *
+mb_wm_theme_get_client_effects (MBWMTheme             * theme,
+				MBWindowManagerClient * client);
+#endif
 
 Bool
 mb_wm_theme_is_client_shaped (MBWMTheme             * theme,

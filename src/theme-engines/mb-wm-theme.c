@@ -600,6 +600,28 @@ mb_wm_theme_get_client_layout_hints (MBWMTheme             * theme,
   return c->layout_hints;
 }
 
+#ifdef ENABLE_COMPOSITE
+const MBWMList *
+mb_wm_theme_get_client_effects (MBWMTheme              * theme,
+				MBWindowManagerClient  * client)
+{
+  MBWMXmlClient * c;
+  MBWMClientType  c_type;
+
+  if (!client || !theme)
+    return NULL;
+
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if (!theme->xml_clients ||
+      !(c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)))
+    {
+      return NULL;
+    }
+
+  return c->effects;
+}
+#endif
 
 /*
  * Returns True if the theme prescribes at least one value for the geometry
@@ -1022,6 +1044,149 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
 	      free (duph);
 	    }
+#ifdef ENABLE_COMPOSITE
+	  else if (!strcmp (*p, "effects") && *(p+1))
+	    {
+	      /* comma-separate list of effects in format
+	       *
+	       * event:duration|effect1|effect2 ...
+	       */
+	      char * dupe = strdup (*(p+1));
+	      char * comma;
+	      char * e = dupe;
+
+	      while (e)
+		{
+		  MBWMThemeEffects *eff;
+		  char * bar;
+		  char * colon;
+
+		  comma = strchr (e, ',');
+
+		  if (comma)
+		    *comma = 0;
+
+		  eff = mb_wm_util_malloc0 (sizeof (MBWMThemeEffects));
+
+		  if (!strncmp (e, "minimize", 8))
+		    {
+		      eff->event = MBWMCompMgrEffectEventMinimize;
+		    }
+		  else
+		    {
+		      if (comma)
+			e = comma + 1;
+
+		      continue;
+		    }
+
+		  colon = strchr (e, ':');
+
+		  if (colon)
+		    eff->duration = atoi (colon+1);
+		  else
+		    eff->duration = 100;
+
+		  while (e && *e)
+		    {
+		      char * collon = NULL;
+
+		      if (!strncmp (e, "scale-up", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectScaleUp;
+			}
+		      else if (!strncmp (e, "scale-down", 12))
+			{
+			  eff->type |= MBWMCompMgrEffectScaleDown;
+			}
+		      else if (!strncmp (e, "scale-down", 12))
+			{
+			  eff->type |= MBWMCompMgrEffectScaleDown;
+			}
+		      else if (!strncmp (e, "spin-xcw", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSpinXCW;
+			}
+		      else if (!strncmp (e, "spin-xccw", 9))
+			{
+			  eff->type |= MBWMCompMgrEffectSpinXCCW;
+			}
+		      else if (!strncmp (e, "spin-ycw", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSpinYCW;
+			}
+		      else if (!strncmp (e, "spin-yccw", 9))
+			{
+			  eff->type |= MBWMCompMgrEffectSpinYCCW;
+			}
+		      else if (!strncmp (e, "spin-zcw", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSpinZCW;
+			}
+		      else if (!strncmp (e, "spin-zccw", 9))
+			{
+			  eff->type |= MBWMCompMgrEffectSpinZCCW;
+			}
+		      else if (!strncmp (e, "fade", 4))
+			{
+			  eff->type |= MBWMCompMgrEffectFade;
+			}
+		      else if (!strncmp (e, "unfade", 4))
+			{
+			  eff->type |= MBWMCompMgrEffectUnfade;
+			}
+		      else if (!strncmp (e, "slide-n", 7))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideN;
+			}
+		      else if (!strncmp (e, "slide-s", 7))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideS;
+			}
+		      else if (!strncmp (e, "slide-w", 7))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideW;
+			}
+		      else if (!strncmp (e, "slide-e", 7))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideE;
+			}
+		      else if (!strncmp (e, "slide-nw", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideNW;
+			}
+		      else if (!strncmp (e, "slide-sw", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideSW;
+			}
+		      else if (!strncmp (e, "slide-ne", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideNE;
+			}
+		      else if (!strncmp (e, "slide-se", 8))
+			{
+			  eff->type |= MBWMCompMgrEffectSlideSE;
+			}
+
+		      bar = strchr (e, '|');
+
+		      if (bar)
+			e = bar + 1;
+		      else
+			*e = 0;
+		    }
+
+		  c->effects = mb_wm_util_list_prepend (c->effects, eff);
+
+		  if (comma)
+		    e = comma + 1;
+		  else
+		    break;
+		}
+
+	      free (dupe);
+	    }
+#endif
 
 	  p += 2;
 	}

@@ -50,9 +50,16 @@ if test "x$use_gtk" = "xyes"; then
   needed_pkgs="$needed_pkgs gtk+-2.0 "
 fi
 
-if test "x$comp_mgr" = "xyes"; then
-  needed_pkgs="$needed_pkgs xcomposite xdamage "
-fi
+case $comp_mgr in
+     yes | default ) comp_mgr="yes (default)"
+                     needed_pkgs="$needed_pkgs xcomposite xdamage " ;;
+
+     clutter )       comp_mgr="yes (clutter)"
+                     needed_pkgs="$needed_pkgs clutter-0.5 xcomposite xdamage "
+	             gmloop="yes" ;;
+
+     * )             comp_mgr = no ;;
+esac
 
 if test "x$want_debug" = "xyes"; then
   MBWM_DEBUG_CFLAGS="-O0 $MBWM_DEBUG_CFLAGS -DMBWM_WANT_DEBUG"
@@ -85,9 +92,14 @@ if test "$use_gtk" = yes; then
   AC_DEFINE(USE_GTK, 1, [GTK Integration])
 fi
 
-AM_CONDITIONAL(ENABLE_COMPOSITE, [test "x$comp_mgr" = "xyes"])
-if test "$comp_mgr" = yes; then
+AM_CONDITIONAL(ENABLE_COMPOSITE, [test "x$comp_mgr" != "xno"])
+if test "$comp_mgr" != no; then
   AC_DEFINE(ENABLE_COMPOSITE, 1, [Enable composite manager code])
+fi
+
+AM_CONDITIONAL(USE_CLUTTER, [test "x$comp_mgr" = "xyes (clutter)"])
+if test "$comp_mgr" = "yes (clutter)"; then
+  AC_DEFINE(USE_CLUTTER, 1, [Use clutter for compositing])
 fi
 
 AC_ARG_ENABLE(simple-manager,

@@ -42,7 +42,7 @@ struct MBWMCompMgrDefault
 
 struct MBWMCompMgrDefaultClass
 {
-  MBWMCompMgr        parent;
+  MBWMCompMgrClass parent;
 };
 
 int
@@ -53,7 +53,7 @@ mb_wm_comp_mgr_default_new (MBWindowManager *wm);
 
 struct MBWMCompMgrDefaultClientClass
 {
-  MBWMObjectClass        parent;
+  MBWMCompMgrClientClass  parent;
 };
 
 int

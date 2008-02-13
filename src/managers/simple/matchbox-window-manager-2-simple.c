@@ -4,6 +4,10 @@
 #include "mb-wm-client-dialog.h"
 #include <signal.h>
 
+#ifdef USE_CLUTTER
+# include <clutter/clutter-x11.h>
+#endif
+
 enum {
   KEY_ACTION_PAGE_NEXT,
   KEY_ACTION_PAGE_PREV,
@@ -75,6 +79,8 @@ key_binding_func (MBWindowManager   *wm,
 int
 main(int argc, char **argv)
 {
+  Display * dpy = NULL;
+
 #ifdef MBWM_WANT_DEBUG
   struct sigaction sa;
   sigfillset(&sa.sa_mask);
@@ -84,7 +90,17 @@ main(int argc, char **argv)
 
   mb_wm_object_init();
 
-  wm = mb_wm_new(argc, argv);
+#ifdef USE_CLUTTER
+  /*
+   * If using clutter, we share the display connection, and hook
+   * our xevent handler into the clutter main loop.
+   */
+  clutter_init (&argc, &argv);
+
+  dpy = clutter_x11_get_default_display ();
+#endif
+
+  wm = mb_wm_new_with_dpy (argc, argv, dpy);
 
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");
