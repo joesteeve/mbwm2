@@ -159,19 +159,26 @@ typedef enum _MBWMCompMgrEffectType
   MBWMCompMgrEffectSpinZCCW  = (1<<7),
   MBWMCompMgrEffectFade      = (1<<8),
   MBWMCompMgrEffectUnfade    = (1<<9),
-  MBWMCompMgrEffectSlideN    = (1<<10),
-  MBWMCompMgrEffectSlideS    = (1<<11),
-  MBWMCompMgrEffectSlideE    = (1<<12),
-  MBWMCompMgrEffectSlideW    = (1<<13),
-  MBWMCompMgrEffectSlideNW   = (1<<14),
-  MBWMCompMgrEffectSlideNE   = (1<<15),
-  MBWMCompMgrEffectSlideSW   = (1<<16),
-  MBWMCompMgrEffectSlideSE   = (1<<17),
+  MBWMCompMgrEffectSlide     = (1<<10),
 
   _MBWMCompMgrEffectLast,
 } MBWMCompMgrEffectType;
 
 typedef void (*MBWMCompMgrEffectCallback) (void * data);
+
+typedef enum _MBWMGravity
+{
+  MBWMGravityNone       = 0,
+  MBWMGravityNorth,
+  MBWMGravityNorthEast,
+  MBWMGravityEast,
+  MBWMGravitySouthEast,
+  MBWMGravitySouth,
+  MBWMGravitySouthWest,
+  MBWMGravityWest,
+  MBWMGravityNorthWest,
+  MBWMGravityCenter,
+} MBWMGravity;
 
 typedef unsigned long MBWMCookie;
 

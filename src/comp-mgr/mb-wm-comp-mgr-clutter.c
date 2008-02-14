@@ -72,7 +72,8 @@ static MBWMCompMgrEffect *
 mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
 					       MBWMCompMgrEffectEvent event,
 					       MBWMCompMgrEffectType type,
-					       unsigned long duration);
+					       unsigned long duration,
+					       MBWMGravity gravity);
 static void
 mb_wm_comp_mgr_clutter_client_class_init (MBWMObjectClass *klass)
 {
@@ -315,6 +316,7 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
 static MBWMCompMgrEffect *
 mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrEffectType    type,
 				   unsigned long            duration,
+				   MBWMGravity              gravity,
 				   ClutterTimeline        * timeline,
 				   ClutterBehaviour       * behaviour);
 
@@ -348,19 +350,25 @@ static MBWMCompMgrEffect *
 mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
 					       MBWMCompMgrEffectEvent event,
 					       MBWMCompMgrEffectType type,
-					       unsigned long duration)
+					       unsigned long duration,
+					       MBWMGravity   gravity)
 {
   MBWMCompMgrEffect        * eff;
   ClutterTimeline          * timeline;
   ClutterBehaviour         * behaviour;
   ClutterAlpha             * alpha;
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+  ClutterKnot                knots[2];
+  MBWindowManager          * wm = client->wm_client->wmref;
+  int                        x, y;
 
   timeline =
     mb_wm_comp_mgr_clutter_client_get_timeline (client, event, duration);
 
   if (!timeline)
     return NULL;
+
+  clutter_actor_get_position (cclient->actor, &x, &y);
 
   alpha = clutter_alpha_new_full (timeline,
 				  CLUTTER_ALPHA_RAMP_INC, NULL, NULL);
@@ -425,28 +433,67 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
       break;
 
       /* FIXME -- add the path behaviours here */
-    case MBWMCompMgrEffectSlideN:
-      break;
-    case MBWMCompMgrEffectSlideS:
-      break;
-    case MBWMCompMgrEffectSlideE:
-      break;
-    case MBWMCompMgrEffectSlideW:
-      break;
-    case MBWMCompMgrEffectSlideNW:
-      break;
-    case MBWMCompMgrEffectSlideNE:
-      break;
-    case MBWMCompMgrEffectSlideSW:
-      break;
-    case MBWMCompMgrEffectSlideSE:
-      break;
-    default:
-      ;
+    case MBWMCompMgrEffectSlide:
+      switch (gravity)
+	{
+	case MBWMGravityNorth:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x;
+	  knots[1].y = y - wm->xdpy_height;
+	  break;
+	case MBWMGravitySouth:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x;
+	  knots[1].y = y + wm->xdpy_height;
+	  break;
+	case MBWMGravityEast:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x + wm->xdpy_width;
+	  knots[1].y = y;
+	  break;
+	case MBWMGravityWest:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x - wm->xdpy_width;
+	  knots[1].y = y;
+	  break;
+	case MBWMGravityNorthWest:
+	case MBWMGravityNone:
+	default:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x - wm->xdpy_width;
+	  knots[1].y = y - wm->xdpy_height;
+	  break;
+	case MBWMGravityNorthEast:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x + wm->xdpy_width;
+	  knots[1].y = y - wm->xdpy_height;
+	  break;
+	case MBWMGravitySouthWest:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x - wm->xdpy_width;
+	  knots[1].y = y + wm->xdpy_height;
+	  break;
+	case MBWMGravitySouthEast:
+	  knots[0].x = x;
+	  knots[0].y = y;
+	  knots[1].x = x + wm->xdpy_width;
+	  knots[1].y = y + wm->xdpy_height;
+	  break;
+	}
+
+      behaviour = clutter_behaviour_path_new (alpha, &knots[0], 2);
     }
 
   eff =
-    mb_wm_comp_mgr_clutter_effect_new (type, duration, timeline, behaviour);
+    mb_wm_comp_mgr_clutter_effect_new (type, duration, gravity,
+				       timeline, behaviour);
 
   if (eff)
     {
@@ -893,7 +940,8 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
       m_effects = mb_wm_comp_mgr_client_get_effects (client,
 						     t_effects->event,
 						     t_effects->type,
-						     t_effects->duration);
+						     t_effects->duration,
+						     t_effects->gravity);
 
       mb_wm_comp_mgr_client_add_effects (client, t_effects->event, m_effects);
       l = l->next;
@@ -963,7 +1011,7 @@ struct MBWMCompMgrClutterEffect
 {
   MBWMCompMgrEffect       parent;
   ClutterTimeline        *timeline;
-  ClutterBehaviour       *behaviour;
+  ClutterBehaviour       *behaviour; /* can be either behaviour or effect */
 };
 
 struct completed_cb_data
@@ -1009,14 +1057,11 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
    */
   if (effects && effects->data)
     {
-      MBWMCompMgrClutterEffect * eff = effects->data;
-      printf ("^^^^ running effect %p\n", eff);
+      MBWMCompMgrEffect        * eff = effects->data;
+      MBWMCompMgrClutterEffect * ceff = MB_WM_COMP_MGR_CLUTTER_EFFECT (eff);
 
-      if (eff->timeline)
+      if (ceff->timeline)
 	{
-	  GSList * actors;
-	  ClutterActor *a;
-
 	  if (completed_cb)
 	    {
 	      struct completed_cb_data * d =
@@ -1025,18 +1070,25 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	      d->completed_cb = completed_cb;
 	      d->cb_data = data;
 
-	      d->my_id = g_signal_connect (eff->timeline, "completed",
+	      d->my_id = g_signal_connect (ceff->timeline, "completed",
 		      G_CALLBACK (mb_wm_comp_mgr_clutter_effect_completed_cb),
 		      d);
 	    }
 
-	  actors = clutter_behaviour_get_actors (eff->behaviour);
-	  a = actors->data;
+	  if (eff->gravity != CLUTTER_GRAVITY_NONE)
+	    {
+	      GSList * actors;
+	      ClutterActor *a;
 
-	  clutter_actor_move_anchor_point_from_gravity (a,
-						CLUTTER_GRAVITY_NORTH_EAST);
+	      actors = clutter_behaviour_get_actors (ceff->behaviour);
+	      a = actors->data;
 
-	  clutter_timeline_start (eff->timeline);
+	      clutter_actor_move_anchor_point_from_gravity (a, eff->gravity);
+
+	      g_slist_free (actors);
+	    }
+
+	  clutter_timeline_start (ceff->timeline);
 	}
     }
 }
@@ -1127,6 +1179,7 @@ mb_wm_comp_mgr_clutter_effect_class_type ()
 static MBWMCompMgrEffect *
 mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrEffectType    type,
 				   unsigned long            duration,
+				   MBWMGravity              gravity,
 				   ClutterTimeline        * timeline,
 				   ClutterBehaviour       * behaviour)
 {
@@ -1136,6 +1189,7 @@ mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrEffectType    type,
     mb_wm_object_new (MB_WM_TYPE_COMP_MGR_CLUTTER_EFFECT,
 		      MBWMObjectPropCompMgrEffectType,             type,
 		      MBWMObjectPropCompMgrEffectDuration,         duration,
+		      MBWMObjectPropCompMgrEffectGravity,          gravity,
 		      MBWMObjectPropCompMgrClutterEffectTimeline,  timeline,
 		      MBWMObjectPropCompMgrClutterEffectBehaviour, behaviour,
 		      NULL);

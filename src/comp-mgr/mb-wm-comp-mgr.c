@@ -447,10 +447,11 @@ mb_wm_comp_mgr_is_my_window (MBWMCompMgr * mgr, Window xwin)
  * by theme into actual effect instances.
  */
 MBWMList *
-mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient * client,
-				   MBWMCompMgrEffectEvent event,
-				   MBWMCompMgrEffectType type,
-				   unsigned long duration)
+mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient      * client,
+				   MBWMCompMgrEffectEvent   event,
+				   MBWMCompMgrEffectType    type,
+				   unsigned long            duration,
+				   MBWMGravity              gravity)
 {
   MBWMList                *l = NULL;
   MBWMCompMgrEffectType    t = (MBWMCompMgrEffectType) 1;
@@ -465,7 +466,7 @@ mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient * client,
       MBWMCompMgrEffect *e = NULL;
 
       if (t & type)
-	e = klass->effect_new (client, event, t, duration);
+	e = klass->effect_new (client, event, t, duration, gravity);
 
       if (e)
 	l = mb_wm_util_list_prepend (l, e);
@@ -542,6 +543,7 @@ mb_wm_comp_mgr_effect_init (MBWMObject *obj, va_list vap)
   MBWMObjectProp         prop;
   MBWMCompMgrEffectType  type = 0;
   unsigned long          duration = 0;
+  MBWMGravity            gravity = MBWMGravityNone;
 
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -553,6 +555,9 @@ mb_wm_comp_mgr_effect_init (MBWMObject *obj, va_list vap)
 	  break;
 	case MBWMObjectPropCompMgrEffectDuration:
 	  duration = va_arg(vap, unsigned long);
+	  break;
+	case MBWMObjectPropCompMgrEffectGravity:
+	  gravity = va_arg(vap, MBWMGravity);
 	  break;
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
@@ -566,6 +571,7 @@ mb_wm_comp_mgr_effect_init (MBWMObject *obj, va_list vap)
 
   MB_WM_COMP_MGR_EFFECT (obj)->type     = type;
   MB_WM_COMP_MGR_EFFECT (obj)->duration = duration;
+  MB_WM_COMP_MGR_EFFECT (obj)->gravity  = gravity;
 
   return 1;
 }

@@ -1,3 +1,16 @@
+2008-02-14  Tomas Frydrych  <tf@o-hand.com>
+
+	* data/themes/Default/theme.xml:
+	* src/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* src/comp-mgr/mb-wm-comp-mgr.c:
+	* src/comp-mgr/mb-wm-comp-mgr.h:
+	* src/core/mb-wm-object-props.h:
+	* src/core/mb-wm-types.h:
+	* src/theme-engines/mb-wm-theme.c:
+	* src/theme-engines/mb-wm-theme.h:
+	Added gravity to MBWCompMgrEffect to add flexibility and reduce
+	effect types; implemeted slide effect.
+
 2008-02-13  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac

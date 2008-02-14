@@ -49,6 +49,7 @@ typedef struct _MBWMThemeEffects
   MBWMCompMgrEffectEvent   event;
   MBWMCompMgrEffectType    type;
   unsigned long            duration;
+  MBWMGravity              gravity;
 } MBWMThemeEffects;
 #endif
 

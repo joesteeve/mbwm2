@@ -3,7 +3,7 @@
        desc="" version="1.0" engine-version="2" engine-type="default"
        shadow-type="gaussian" >
 <img src="test.png" />
-<client type="app" effects="minimize:300|scale-down">
+<client type="app" effects="minimize:300;ne|scale-down">
  <decor type="north" clr-bg="#ff0000" clr-bg2="#ffffff" clr-fg="#ffffff"
 height="22" font-family="Sans" font-size="18" clr-frame="#000000">
   <button type="close"    packing="end"   clr-fg="#ffffff" clr-bg="#59595f"

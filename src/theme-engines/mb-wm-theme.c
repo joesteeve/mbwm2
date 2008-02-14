@@ -1047,9 +1047,10 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 #ifdef ENABLE_COMPOSITE
 	  else if (!strcmp (*p, "effects") && *(p+1))
 	    {
-	      /* comma-separate list of effects in format
+	      /* comma-separate list of effects in format; the duration and
+	       * gravity components are optional
 	       *
-	       * event:duration|effect1|effect2 ...
+	       * event:duration;gravity|effect1|effect2 ...
 	       */
 	      char * dupe = strdup (*(p+1));
 	      char * comma;
@@ -1060,6 +1061,7 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		  MBWMThemeEffects *eff;
 		  char * bar;
 		  char * colon;
+		  char * semi;
 
 		  comma = strchr (e, ',');
 
@@ -1087,10 +1089,41 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		  else
 		    eff->duration = 100;
 
+		  semi = strchr (e, ';');
+
+		  if (semi)
+		    {
+		      semi++;
+		      if (!strncmp (semi, "none", 2))
+			eff->gravity = MBWMGravityNone;
+		      else if (!strncmp (semi, "nw", 2))
+			eff->gravity = MBWMGravityNorthWest;
+		      else if (!strncmp (semi, "ne", 2))
+			eff->gravity = MBWMGravityNorthEast;
+		      else if (!strncmp (semi, "sw", 2))
+			eff->gravity = MBWMGravitySouthWest;
+		      else if (!strncmp (semi, "se", 2))
+			eff->gravity = MBWMGravitySouthEast;
+		      else
+			{
+			  switch (*semi)
+			    {
+			    case 'n':
+			      eff->gravity = MBWMGravityNone; break;
+			    case 's':
+			      eff->gravity = MBWMGravityNone; break;
+			    case 'w':
+			      eff->gravity = MBWMGravityNone; break;
+			    case 'e':
+			      eff->gravity = MBWMGravityNone; break;
+			    default:
+			      eff->gravity = MBWMGravityNone;
+			    }
+			}
+		    }
+
 		  while (e && *e)
 		    {
-		      char * collon = NULL;
-
 		      if (!strncmp (e, "scale-up", 8))
 			{
 			  eff->type |= MBWMCompMgrEffectScaleUp;
@@ -1135,37 +1168,9 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 			{
 			  eff->type |= MBWMCompMgrEffectUnfade;
 			}
-		      else if (!strncmp (e, "slide-n", 7))
+		      else if (!strncmp (e, "slide", 7))
 			{
-			  eff->type |= MBWMCompMgrEffectSlideN;
-			}
-		      else if (!strncmp (e, "slide-s", 7))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideS;
-			}
-		      else if (!strncmp (e, "slide-w", 7))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideW;
-			}
-		      else if (!strncmp (e, "slide-e", 7))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideE;
-			}
-		      else if (!strncmp (e, "slide-nw", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideNW;
-			}
-		      else if (!strncmp (e, "slide-sw", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideSW;
-			}
-		      else if (!strncmp (e, "slide-ne", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideNE;
-			}
-		      else if (!strncmp (e, "slide-se", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSlideSE;
+			  eff->type |= MBWMCompMgrEffectSlide;
 			}
 
 		      bar = strchr (e, '|');

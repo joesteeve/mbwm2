@@ -111,7 +111,8 @@ struct MBWMCompMgrClientClass
   MBWMCompMgrEffect * (*effect_new)    (MBWMCompMgrClient * client,
 					MBWMCompMgrEffectEvent event,
 					MBWMCompMgrEffectType type,
-					unsigned long duration);
+					unsigned long duration,
+					MBWMGravity   gravity);
 
 };
 
@@ -142,10 +143,11 @@ mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
 				  void                      * data);
 
 MBWMList *
-mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient * client,
-				   MBWMCompMgrEffectEvent event,
-				   MBWMCompMgrEffectType type,
-				   unsigned long duration);
+mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient      * client,
+				   MBWMCompMgrEffectEvent   event,
+				   MBWMCompMgrEffectType    type,
+				   unsigned long            duration,
+				   MBWMGravity              gravity);
 
 /*
  * Generic effect that can applied to a client
@@ -155,6 +157,7 @@ struct MBWMCompMgrEffect
   MBWMObject              parent;
   MBWMCompMgrEffectType   type;
   unsigned long           duration;
+  MBWMGravity             gravity;
 };
 
 struct MBWMCompMgrEffectClass
