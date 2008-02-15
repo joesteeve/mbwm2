@@ -336,6 +336,7 @@ typedef enum
   XML_CTX_DECOR,
   XML_CTX_BUTTON,
   XML_CTX_IMG,
+  XML_CTX_EFFECT,
 } XmlCtx;
 
 struct stack_data
@@ -429,7 +430,6 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
   if (path)
     {
       struct expat_data  udata;
-      udata.compositing = True;
 
       if (!(file = fopen (path, "r")) ||
 	  !(par = XML_ParserCreate(NULL)))
@@ -438,7 +438,8 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 	}
 
       memset (&udata, 0, sizeof (struct expat_data));
-      udata.par = par;
+      udata.compositing = True;
+      udata.par         = par;
 
       XML_SetElementHandler (par,
 			     xml_element_start_cb,
@@ -1053,154 +1054,6 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
 	      free (duph);
 	    }
-#ifdef ENABLE_COMPOSITE
-	  else if (!strcmp (*p, "effects") && *(p+1))
-	    {
-	      /* comma-separate list of effects in format; the duration and
-	       * gravity components are optional
-	       *
-	       * event:duration;gravity|effect1|effect2 ...
-	       */
-	      char * dupe = strdup (*(p+1));
-	      char * comma;
-	      char * e = dupe;
-
-	      while (e)
-		{
-		  MBWMThemeEffects *eff;
-		  char * bar;
-		  char * colon;
-		  char * semi;
-
-		  comma = strchr (e, ',');
-
-		  if (comma)
-		    *comma = 0;
-
-		  eff = mb_wm_util_malloc0 (sizeof (MBWMThemeEffects));
-
-		  if (!strncmp (e, "minimize", 8))
-		    {
-		      eff->event = MBWMCompMgrEffectEventMinimize;
-		    }
-		  else
-		    {
-		      if (comma)
-			e = comma + 1;
-
-		      continue;
-		    }
-
-		  colon = strchr (e, ':');
-
-		  if (colon)
-		    eff->duration = atoi (colon+1);
-		  else
-		    eff->duration = 100;
-
-		  semi = strchr (e, ';');
-
-		  if (semi)
-		    {
-		      semi++;
-		      if (!strncmp (semi, "none", 2))
-			eff->gravity = MBWMGravityNone;
-		      else if (!strncmp (semi, "nw", 2))
-			eff->gravity = MBWMGravityNorthWest;
-		      else if (!strncmp (semi, "ne", 2))
-			eff->gravity = MBWMGravityNorthEast;
-		      else if (!strncmp (semi, "sw", 2))
-			eff->gravity = MBWMGravitySouthWest;
-		      else if (!strncmp (semi, "se", 2))
-			eff->gravity = MBWMGravitySouthEast;
-		      else
-			{
-			  switch (*semi)
-			    {
-			    case 'n':
-			      eff->gravity = MBWMGravityNone; break;
-			    case 's':
-			      eff->gravity = MBWMGravityNone; break;
-			    case 'w':
-			      eff->gravity = MBWMGravityNone; break;
-			    case 'e':
-			      eff->gravity = MBWMGravityNone; break;
-			    default:
-			      eff->gravity = MBWMGravityNone;
-			    }
-			}
-		    }
-
-		  while (e && *e)
-		    {
-		      if (!strncmp (e, "scale-up", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectScaleUp;
-			}
-		      else if (!strncmp (e, "scale-down", 12))
-			{
-			  eff->type |= MBWMCompMgrEffectScaleDown;
-			}
-		      else if (!strncmp (e, "scale-down", 12))
-			{
-			  eff->type |= MBWMCompMgrEffectScaleDown;
-			}
-		      else if (!strncmp (e, "spin-xcw", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSpinXCW;
-			}
-		      else if (!strncmp (e, "spin-xccw", 9))
-			{
-			  eff->type |= MBWMCompMgrEffectSpinXCCW;
-			}
-		      else if (!strncmp (e, "spin-ycw", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSpinYCW;
-			}
-		      else if (!strncmp (e, "spin-yccw", 9))
-			{
-			  eff->type |= MBWMCompMgrEffectSpinYCCW;
-			}
-		      else if (!strncmp (e, "spin-zcw", 8))
-			{
-			  eff->type |= MBWMCompMgrEffectSpinZCW;
-			}
-		      else if (!strncmp (e, "spin-zccw", 9))
-			{
-			  eff->type |= MBWMCompMgrEffectSpinZCCW;
-			}
-		      else if (!strncmp (e, "fade", 4))
-			{
-			  eff->type |= MBWMCompMgrEffectFade;
-			}
-		      else if (!strncmp (e, "unfade", 4))
-			{
-			  eff->type |= MBWMCompMgrEffectUnfade;
-			}
-		      else if (!strncmp (e, "slide", 7))
-			{
-			  eff->type |= MBWMCompMgrEffectSlide;
-			}
-
-		      bar = strchr (e, '|');
-
-		      if (bar)
-			e = bar + 1;
-		      else
-			*e = 0;
-		    }
-
-		  c->effects = mb_wm_util_list_prepend (c->effects, eff);
-
-		  if (comma)
-		    e = comma + 1;
-		  else
-		    break;
-		}
-
-	      free (dupe);
-	    }
-#endif
 
 	  p += 2;
 	}
@@ -1216,6 +1069,145 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
       return;
     }
+
+#ifdef ENABLE_COMPOSITE
+  if (!strcmp (tag, "effect"))
+    {
+      MBWMThemeEffects   *eff = mb_wm_util_malloc0 (sizeof (MBWMThemeEffects));
+      const char        **p   = expat_attr;
+      XmlCtx              ctx = xml_stack_top_ctx (exd->stack);
+      MBWMXmlClient      *c   = xml_stack_top_data (exd->stack);
+
+      xml_stack_push (&exd->stack, XML_CTX_EFFECT);
+
+      if (ctx != XML_CTX_CLIENT || !c)
+	{
+	  MBWM_DBG ("Expected context client");
+	  return;
+	}
+
+      while (*p)
+	{
+	  if (!strcmp (*p, "event"))
+	    {
+	      if (!strcmp (*(p+1), "minimize"))
+		eff->event = MBWMCompMgrEffectEventMinimize;
+	    }
+	  else if (!strcmp (*p, "duration"))
+	    eff->duration = atoi (*(p+1));
+	  else if (!strcmp (*p, "gravity"))
+	    {
+	      const char * g = *(p+1);
+
+	      if (!strncmp (g, "none", 2))
+		eff->gravity = MBWMGravityNone;
+	      else if (!strncmp (g, "nw", 2))
+		eff->gravity = MBWMGravityNorthWest;
+	      else if (!strncmp (g, "ne", 2))
+		eff->gravity = MBWMGravityNorthEast;
+	      else if (!strncmp (g, "sw", 2))
+		eff->gravity = MBWMGravitySouthWest;
+	      else if (!strncmp (g, "se", 2))
+		eff->gravity = MBWMGravitySouthEast;
+	      else
+		{
+		  switch (*g)
+		    {
+		    case 'n':
+		      eff->gravity = MBWMGravityNone; break;
+		    case 's':
+		      eff->gravity = MBWMGravityNone; break;
+		    case 'w':
+		      eff->gravity = MBWMGravityNone; break;
+		    case 'e':
+		      eff->gravity = MBWMGravityNone; break;
+		    default:
+		      eff->gravity = MBWMGravityNone;
+		    }
+		}
+	    }
+	  else if (!strcmp (*p, "type"))
+	    {
+	      const char *e = *(p+1);
+
+	      while (e && *e)
+		{
+		  char *bar;
+
+		  if (!strncmp (e, "scale-up", 8))
+		    {
+		      eff->type |= MBWMCompMgrEffectScaleUp;
+		    }
+		  else if (!strncmp (e, "scale-down", 12))
+		    {
+		      eff->type |= MBWMCompMgrEffectScaleDown;
+		    }
+		  else if (!strncmp (e, "scale-down", 12))
+		    {
+		      eff->type |= MBWMCompMgrEffectScaleDown;
+		    }
+		  else if (!strncmp (e, "spin-xcw", 8))
+		    {
+		      eff->type |= MBWMCompMgrEffectSpinXCW;
+		    }
+		  else if (!strncmp (e, "spin-xccw", 9))
+		    {
+		      eff->type |= MBWMCompMgrEffectSpinXCCW;
+		    }
+		  else if (!strncmp (e, "spin-ycw", 8))
+		    {
+		      eff->type |= MBWMCompMgrEffectSpinYCW;
+		    }
+		  else if (!strncmp (e, "spin-yccw", 9))
+		    {
+		      eff->type |= MBWMCompMgrEffectSpinYCCW;
+		    }
+		  else if (!strncmp (e, "spin-zcw", 8))
+		    {
+		      eff->type |= MBWMCompMgrEffectSpinZCW;
+		    }
+		  else if (!strncmp (e, "spin-zccw", 9))
+		    {
+		      eff->type |= MBWMCompMgrEffectSpinZCCW;
+		    }
+		  else if (!strncmp (e, "fade", 4))
+		    {
+		      eff->type |= MBWMCompMgrEffectFade;
+		    }
+		  else if (!strncmp (e, "unfade", 4))
+		    {
+		      eff->type |= MBWMCompMgrEffectUnfade;
+		    }
+		  else if (!strncmp (e, "slide", 7))
+		    {
+		      eff->type |= MBWMCompMgrEffectSlide;
+		    }
+
+		  bar = strchr (e, '|');
+
+		  if (bar)
+		    e = bar + 1;
+		  else
+		    break;
+		}
+	    }
+
+	  p += 2;
+	}
+
+      if (!eff->event)
+	{
+	  free (eff);
+	  return;
+	}
+
+      c->effects = mb_wm_util_list_prepend (c->effects, eff);
+
+      xml_stack_top_set_data (exd->stack, eff);
+
+      return;
+    }
+#endif
 
   if (!strcmp (tag, "decor"))
     {
@@ -1444,6 +1436,15 @@ xml_element_end_cb (void *data, const char *tag)
 	}
       else
 	MBWM_DBG ("Expected client on the top of the stack!");
+    }
+  else if (!strcmp (tag, "effect"))
+    {
+      if (ctx == XML_CTX_EFFECT)
+	{
+	  xml_stack_pop (&exd->stack);
+	}
+      else
+	MBWM_DBG ("Expected effect on the top of the stack!");
     }
   else if (!strcmp (tag, "decor"))
     {

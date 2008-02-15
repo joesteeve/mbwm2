@@ -1,5 +1,12 @@
 2008-02-15  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/theme-engines/mb-wm-theme.c:
+	* data/themes/Default/theme.xml:
+	Moved effect description from <client> attribute to an <effect>
+	element.
+
+2008-02-15  Tomas Frydrych  <tf@o-hand.com>
+
 	* configure.ac:
 	Improved help for --enable-compositing-manager.
 
