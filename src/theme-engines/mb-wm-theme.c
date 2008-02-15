@@ -1195,11 +1195,17 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  p += 2;
 	}
 
-      if (!eff->event)
+      if (!eff->event || !eff->type)
 	{
 	  free (eff);
 	  return;
 	}
+
+      /*
+       * Default to sensible value when no duration set
+       */
+      if (!eff->duration)
+	eff->duration = 200;
 
       c->effects = mb_wm_util_list_prepend (c->effects, eff);
 
