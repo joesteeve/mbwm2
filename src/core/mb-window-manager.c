@@ -1,3 +1,23 @@
+/*
+ *  Matchbox Window Manager II - A lightweight window manager not for the
+ *                               desktop.
+ *
+ *  Authored By Matthew Allum <mallum@o-hand.com>
+ *              Tomas Frydrych <tf@o-hand.com>
+ *
+ *  Copyright (c) 2005, 2007, 2008 OpenedHand Ltd - http://o-hand.com
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2, or (at your option)
+ *  any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ */
 #include "mb-wm.h"
 #include "../client-types/mb-wm-client-app.h"
 #include "../client-types/mb-wm-client-panel.h"
@@ -1418,6 +1438,34 @@ mb_wm_init (MBWMObject *this, va_list vap)
 }
 
 static void
+mb_wm_cmdline_help (const char *arg0, Bool quit)
+{
+  FILE * f = stdout;
+  const char * name;
+  char * p = strrchr (arg0, '/');
+
+  if (p)
+    name = p+1;
+  else
+    name = arg0;
+
+  fprintf (f, "\nThis is Matchbox Window Manager 2.\n");
+
+  fprintf (f, "\nUsage: %s [options]\n\n", name);
+  fprintf (f, "Options:\n");
+  fprintf (f, "  -display display      : X display to connect to (alternatively, display\n"
+              "                          can be specified using the DISPLAY environment\n"
+              "                          variable).\n");
+  fprintf (f, "  -sm-client-id id      : Session id.\n");
+  fprintf (f, "  -theme-always-reload  : Reload theme even if it matches the currently\n"
+              "                          loaded theme.\n");
+  fprintf (f, "  -theme theme          : Load the specified theme\n");
+
+  if (quit)
+    exit (0);
+}
+
+static void
 mb_wm_process_cmdline (MBWindowManager *wm)
 {
   int i;
@@ -1427,9 +1475,17 @@ mb_wm_process_cmdline (MBWindowManager *wm)
 
   for (i = 0; i < argc; ++i)
     {
-      /* These need to have a value after the name parameter */
-      if (i < argc - 1)
+      if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help"))
 	{
+	  mb_wm_cmdline_help (argv[0], True);
+	}
+      else if (!strcmp(argv[i], "-theme-always-reload"))
+	{
+	  wm->flags |= MBWindowManagerFlagAlwaysReloadTheme;
+	}
+      else if (i < argc - 1)
+	{
+	  /* These need to have a value after the name parameter */
 	  if (!strcmp(argv[i], "-display"))
 	    {
 	      mb_wm_init_xdpy (wm, argv[++i]);
@@ -1443,11 +1499,6 @@ mb_wm_process_cmdline (MBWindowManager *wm)
 	      theme_path = argv[++i];
 	    }
 	}
-
-	  if (!strcmp(argv[i], "-theme-always-reload"))
-	    {
-	      wm->flags |= MBWindowManagerFlagAlwaysReloadTheme;
-	    }
     }
 
   /*

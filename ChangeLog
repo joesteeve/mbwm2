@@ -1,3 +1,18 @@
+2008-02-15  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	Improved help for --enable-compositing-manager.
+
+	* src/theme-engines/mb-wm-theme.c:
+	(mb_wm_theme_new):
+	Try to load default theme when no theme is specified.
+	Turn compositing on by default.
+
+	* src/core/mb-window-manager.c:
+	(mb_wm_process_cmdline):
+	Added -help option for those uncomfortable with self-documenting
+	source code.
+
 2008-02-14  Tomas Frydrych  <tf@o-hand.com>
 
 	* data/themes/Default/theme.xml:

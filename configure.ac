@@ -33,7 +33,10 @@ AC_ARG_ENABLE(debug,
   [want_debug=$enableval], [want_debug=no])
 
 AC_ARG_ENABLE(compositing-manager,
-  [  --enable-compositing-manager      Enable compositing manager],
+  [  --enable-compositing-manager@<:@=BACKEND@:>@  Enable compositing manager,
+                          optionally choosing compositor backend. Available
+                          backends are: 'default' (XRender based backend),
+                                        'clutter' (Clutter based backend).],
   [comp_mgr=$enableval], [comp_mgr=no])
 
 AC_ARG_ENABLE(glib-main-loop,

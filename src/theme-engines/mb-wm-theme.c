@@ -362,19 +362,27 @@ struct expat_data
 MBWMTheme *
 mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 {
-  MBWMTheme *theme = NULL;
-  int        theme_type = 0;
-  char      *path = NULL;
-  char       buf[256];
-  XML_Parser par = NULL;
-  FILE      *file = NULL;
-  MBWMList  *xml_clients = NULL;
-  char      *img = NULL;
-  MBWMColor  clr_lowlight;
-  MBWMColor  clr_shadow;
+  MBWMTheme     *theme = NULL;
+  int            theme_type = 0;
+  char          *path = NULL;
+  char           buf[256];
+  XML_Parser     par = NULL;
+  FILE          *file = NULL;
+  MBWMList      *xml_clients = NULL;
+  char          *img = NULL;
+  MBWMColor      clr_lowlight;
+  MBWMColor      clr_shadow;
   MBWMCompMgrShadowType shadow_type;
-  Bool       compositing;
-  Bool       shaped;
+  Bool           compositing;
+  Bool           shaped;
+  struct stat    st;
+
+  /*
+   * If no theme specified, we try to load the default one, if that fails,
+   * we automatically fallback on the built-in defaults.
+   */
+  if (!theme_path)
+    theme_path = "Default";
 
   /* Attempt to parse the xml theme, if any, retrieving the theme type
    *
@@ -382,122 +390,119 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
    *     type *before* we can create the underlying object on which the
    *     init method operates.
    */
-  if (theme_path)
+
+  if (*theme_path == '/')
     {
-      struct stat  st;
+      if (!stat (theme_path, &st))
+	path = (char *) theme_path;
+    }
+  else
+    {
+      const char  *home = getenv("HOME");
+      int          size;
 
-      if (*theme_path == '/')
+      if (home)
 	{
-	  if (!stat (theme_path, &st))
-	    path = (char *) theme_path;
-	}
-      else
-	{
-	  const char  *home = getenv("HOME");
-	  int          size;
+	  const char  *fmt = "%s/.themes/%s/matchbox2/theme.xml";
 
-	  if (home)
-	    {
-	      const char  *fmt = "%s/.themes/%s/matchbox2/theme.xml";
+	  size = strlen (theme_path) + strlen (fmt) + strlen (home);
+	  path = alloca (size);
+	  snprintf (path, size, fmt, home, theme_path);
 
-	      size = strlen (theme_path) + strlen (fmt) + strlen (home);
-	      path = alloca (size);
-	      snprintf (path, size, fmt, home, theme_path);
-
-	      if (stat (path, &st))
-		path = NULL;
-	    }
-
-	  if (!path)
-	    {
-	      const char * fmt = "%s/themes/%s/matchbox2/theme.xml";
-
-	      size = strlen (theme_path) + strlen (fmt) + strlen (DATADIR);
-	      path = alloca (size);
-	      snprintf (path, size, fmt, DATADIR, theme_path);
-
-	      if (stat (path, &st))
-		path = NULL;
-	    }
+	  if (stat (path, &st))
+	    path = NULL;
 	}
 
-      if (path)
+      if (!path)
 	{
-	  struct expat_data  udata;
+	  const char * fmt = "%s/themes/%s/matchbox2/theme.xml";
 
-	  if (!(file = fopen (path, "r")) ||
-	      !(par = XML_ParserCreate(NULL)))
+	  size = strlen (theme_path) + strlen (fmt) + strlen (DATADIR);
+	  path = alloca (size);
+	  snprintf (path, size, fmt, DATADIR, theme_path);
+
+	  if (stat (path, &st))
+	    path = NULL;
+	}
+    }
+
+  if (path)
+    {
+      struct expat_data  udata;
+      udata.compositing = True;
+
+      if (!(file = fopen (path, "r")) ||
+	  !(par = XML_ParserCreate(NULL)))
+	{
+	  goto default_theme;
+	}
+
+      memset (&udata, 0, sizeof (struct expat_data));
+      udata.par = par;
+
+      XML_SetElementHandler (par,
+			     xml_element_start_cb,
+			     xml_element_end_cb);
+
+      XML_SetUserData(par, (void *)&udata);
+
+      while (fgets (buf, sizeof (buf), file) &&
+	     XML_Parse(par, buf, strlen(buf), 0));
+
+      XML_Parse(par, NULL, 0, 1);
+
+      if (udata.version == 2)
+	{
+	  theme_type  = udata.theme_type;
+	  xml_clients = udata.xml_clients;
+
+	  if (udata.img)
 	    {
-	      goto default_theme;
-	    }
-
-	  memset (&udata, 0, sizeof (struct expat_data));
-	  udata.par = par;
-
-	  XML_SetElementHandler (par,
-				 xml_element_start_cb,
-				 xml_element_end_cb);
-
-	  XML_SetUserData(par, (void *)&udata);
-
-	  while (fgets (buf, sizeof (buf), file) &&
-		 XML_Parse(par, buf, strlen(buf), 0));
-
-	  XML_Parse(par, NULL, 0, 1);
-
-	  if (udata.version == 2)
-	    {
-	      theme_type  = udata.theme_type;
-	      xml_clients = udata.xml_clients;
-
-	      if (udata.img)
+	      if (*udata.img == '/')
+		img = udata.img;
+	      else
 		{
-		  if (*udata.img == '/')
-		    img = udata.img;
+		  int len = strlen (path) + strlen (udata.img);
+		  char * s;
+		  char * p = malloc (len + 1);
+		  strncpy (p, path, len);
+
+		  s = strrchr (p, '/');
+
+		  if (s)
+		    {
+		      *(s+1) = 0;
+		      strcat (p, udata.img);
+		    }
 		  else
 		    {
-		      int len = strlen (path) + strlen (udata.img);
-		      char * s;
-		      char * p = malloc (len + 1);
-		      strncpy (p, path, len);
-
-		      s = strrchr (p, '/');
-
-		      if (s)
-			{
-			  *(s+1) = 0;
-			  strcat (p, udata.img);
-			}
-		      else
-			{
-			  strncpy (p, udata.img, len);
-			}
-
-		      img = p;
-		      free (udata.img);
+		      strncpy (p, udata.img, len);
 		    }
+
+		  img = p;
+		  free (udata.img);
 		}
 	    }
-
-	  clr_lowlight.r   = udata.color_lowlight.r;
-	  clr_lowlight.g   = udata.color_lowlight.g;
-	  clr_lowlight.b   = udata.color_lowlight.b;
-	  clr_lowlight.a   = udata.color_lowlight.a;
-	  clr_lowlight.set = udata.color_lowlight.set;
-
-	  clr_shadow.r   = udata.color_shadow.r;
-	  clr_shadow.g   = udata.color_shadow.g;
-	  clr_shadow.b   = udata.color_shadow.b;
-	  clr_shadow.a   = udata.color_shadow.a;
-	  clr_shadow.set = udata.color_shadow.set;
-
-	  shadow_type = udata.shadow_type;
-	  compositing = udata.compositing;
-	  shaped      = udata.shaped;
-
-	  xml_stack_free (udata.stack);
 	}
-  }
+
+      clr_lowlight.r   = udata.color_lowlight.r;
+      clr_lowlight.g   = udata.color_lowlight.g;
+      clr_lowlight.b   = udata.color_lowlight.b;
+      clr_lowlight.a   = udata.color_lowlight.a;
+      clr_lowlight.set = udata.color_lowlight.set;
+
+      clr_shadow.r   = udata.color_shadow.r;
+      clr_shadow.g   = udata.color_shadow.g;
+      clr_shadow.b   = udata.color_shadow.b;
+      clr_shadow.a   = udata.color_shadow.a;
+      clr_shadow.set = udata.color_shadow.set;
+
+      shadow_type = udata.shadow_type;
+      compositing = udata.compositing;
+      shaped      = udata.shaped;
+
+      xml_stack_free (udata.stack);
+    }
 
   if (theme_type)
     {
@@ -530,6 +535,8 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
 			MBWMObjectPropThemeColorLowlight, &clr_lowlight,
 			MBWMObjectPropThemeColorShadow,   &clr_shadow,
 			MBWMObjectPropThemeShadowType,     shadow_type,
+			MBWMObjectPropThemeCompositing,    compositing,
+			MBWMObjectPropThemeShaped,         shaped,
 			NULL));
     }
 
@@ -906,6 +913,8 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    {
 	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
 		exd->compositing = True;
+	      else
+		exd->compositing = False;
 	    }
 
 	  p += 2;
