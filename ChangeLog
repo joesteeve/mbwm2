@@ -1,5 +1,10 @@
 2008-02-18  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/comp-mgr/README:
+	A simple outline of the compositing manager framework.
+
+2008-02-18  Tomas Frydrych  <tf@o-hand.com>
+
 	* src/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	(mb_wm_comp_mgr_clutter_map_notify_real):
 	(mb_wm_comp_mgr_clutter_effect_run_real):
