@@ -346,8 +346,6 @@ test_destroy_notify (XDestroyWindowEvent  *xev,
 
   if (client)
     {
-      printf ("Window destroyed for client %p\n", client);
-
       if (mb_wm_client_window_is_state_set (client->window,
 					    MBWMClientWindowEWMHStateHidden))
 	{
@@ -428,9 +426,6 @@ mb_wm_handle_unmap_notify (XUnmapEvent          *xev,
 	       */
 	      if (mb_wm_compositing_enabled (wm))
 		{
-		  printf ("unmap effect for %p, %x\n",
-			  client, xev->window);
-
 		  mb_wm_comp_mgr_client_run_effect (client->cm_client,
 					MBWMCompMgrEffectEventUnmap,
 					mb_wm_unmap_effect_completed,

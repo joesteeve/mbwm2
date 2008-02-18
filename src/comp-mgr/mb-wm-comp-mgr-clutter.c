@@ -992,6 +992,14 @@ mb_wm_comp_mgr_clutter_render_real (MBWMCompMgr *mgr)
 }
 
 static void
+mb_wm_map_effect_completed (void *data)
+{
+  ClutterActor * a = data;
+
+  clutter_actor_show (a);
+}
+
+static void
 mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 					MBWindowManagerClient *c)
 {
@@ -1043,12 +1051,15 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
   mb_wm_comp_mgr_clutter_client_show_internal (c->cm_client);
 
+  /*
+   * Run map event effect *before* we call show() on the actor
+   * (the effect will take care of showing the actor, and if not, show() gets
+   * called from the completed callback).
+   */
   mb_wm_comp_mgr_client_run_effect (c->cm_client,
 				    MBWMCompMgrEffectEventMap,
-				    NULL,
-				    NULL);
-
-  clutter_actor_show (cclient->actor);
+				    mb_wm_map_effect_completed,
+				    actor);
 }
 
 /*
@@ -1141,21 +1152,24 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 {
   /*
    * Since the entire effect group for a single event type shares
-   * a timeline, we just need to start it.
+   * a timeline, we just need to start it for one of the behaviours.
    *
    * TODO -- there is no need for the effect objects to carry the timeline
-   * point, so remove it; will need to change this API to take
-   * MBWMCompMgrClient pointer.
+   * pointer, so remove it.
    */
   if (effects && effects->data)
     {
       MBWMCompMgrEffect        * eff = effects->data;
       MBWMCompMgrClutterEffect * ceff = MB_WM_COMP_MGR_CLUTTER_EFFECT (eff);
 
+      /*
+       * Don't attempt to start the timeline if it is already playing
+       */
       if (ceff->timeline &&
 	  !clutter_timeline_is_playing (ceff->timeline))
 	{
-	  printf ("Running effect for event %d\n", event);
+	  GSList * actors;
+	  ClutterActor *a;
 
 	  if (completed_cb)
 	    {
@@ -1171,24 +1185,49 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	    }
 
 	  /*
+	   * This is bit of a pain; we know that our actor is attached to
+	   * a single actor, but the current API only provides us with a copy
+	   * of the actor list; ideally, we would like to be able to access
+	   * the first actor directly.
+	   */
+	  actors = clutter_behaviour_get_actors (ceff->behaviour);
+	  a = actors->data;
+
+	  /*
 	   * Deal with gravity, but not for path behaviours (there the
 	   * gravity translates into the path itself, and is already
-	   * set up
+	   * set up).
 	   */
 	  if (eff->gravity != CLUTTER_GRAVITY_NONE &&
 	      !CLUTTER_IS_BEHAVIOUR_PATH (ceff->behaviour))
 	    {
-	      GSList * actors;
-	      ClutterActor *a;
-
-	      printf ("---- MOVING anchor point \n");
-
-	      actors = clutter_behaviour_get_actors (ceff->behaviour);
-	      a = actors->data;
-
 	      clutter_actor_move_anchor_point_from_gravity (a, eff->gravity);
+	    }
+	  else if (CLUTTER_IS_BEHAVIOUR_PATH (ceff->behaviour) &&
+		   !CLUTTER_ACTOR_IS_VISIBLE (ceff->behaviour))
+	    {
+	      /*
+	       * At this stage, if the actor is not yet visible, move it to
+	       * the starting point of the path (this is mostly because of
+	       * 'map' effects,  where the clutter_actor_show () is delayed
+	       * until this point, so that the actor can be positioned in the
+	       * correct location without visible artefacts).
+	       *
+	       * FIXME -- this is very clumsy; we need clutter API to query
+	       * the first knot of the path to avoid messing about with copies
+	       * of the list.
+	       */
+	      GSList * knots =
+		clutter_behaviour_path_get_knots (
+				  CLUTTER_BEHAVIOUR_PATH (ceff->behaviour));
 
-	      g_slist_free (actors);
+	      if (knots)
+		{
+		  ClutterKnot * k = knots->data;
+		  clutter_actor_set_position (a, k->x, k->y);
+
+		  g_slist_free (knots);
+		}
 	    }
 
 	  if (event == MBWMCompMgrEffectEventUnmap)
@@ -1196,10 +1235,17 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	      MBWMCompMgrClutterClient *c =
 		MB_WM_COMP_MGR_CLUTTER_CLIENT (cm_client);
 
-	      printf ("setting dont_update\n");
-
 	      c->dont_update = True;
 	    }
+
+	  /*
+	   * Make sure the actor is showing (for example with 'map' effects,
+	   * the show() is delayed until the effect had chance to
+	   * set up the actor postion).
+	   */
+	  clutter_actor_show (a);
+
+	  g_slist_free (actors);
 
 	  clutter_timeline_start (ceff->timeline);
 	}

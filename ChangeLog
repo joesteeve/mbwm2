@@ -1,5 +1,16 @@
 2008-02-18  Tomas Frydrych  <tf@o-hand.com>
 
+	* src/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_map_notify_real):
+	(mb_wm_comp_mgr_clutter_effect_run_real):
+	Delayed clutter_actor_show () call until 'map' effects had a
+	chance to setup starting position of the actor.
+
+	*src/core/mb-window-manager.c:
+	Removed leftover printfs.
+
+2008-02-18  Tomas Frydrych  <tf@o-hand.com>
+
 	* data/themes/Default/theme.xml:
 	* src/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	* src/comp-mgr/mb-wm-comp-mgr.c:
