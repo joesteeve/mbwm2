@@ -96,7 +96,7 @@ struct MBWMCompMgrClient
 
   /* Make private ? */
   MBWMList              * effects; /* List of MBWMCompMgrEffectAssociation */
- Bool                     is_argb32;
+  Bool                    is_argb32;
 };
 
 struct MBWMCompMgrClientClass
@@ -165,6 +165,7 @@ struct MBWMCompMgrEffectClass
   MBWMObjectClass        parent;
 
   void (*run)  (MBWMList                  * effects,
+		MBWMCompMgrClient         * cm_client,
 		MBWMCompMgrEffectEvent      event,
 		MBWMCompMgrEffectCallback   completed_cb,
 		void                      * data);

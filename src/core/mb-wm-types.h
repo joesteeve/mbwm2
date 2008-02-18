@@ -143,6 +143,8 @@ typedef enum _MBWMCompMgrEffectEvent
 {
   MBWMCompMgrEffectEventNone     = 0,
   MBWMCompMgrEffectEventMinimize,
+  MBWMCompMgrEffectEventMap,
+  MBWMCompMgrEffectEventUnmap,
 
   _MBWMCompMgrEffectEventLast,
 } MBWMCompMgrEffectEvent;
@@ -159,7 +161,8 @@ typedef enum _MBWMCompMgrEffectType
   MBWMCompMgrEffectSpinZCCW  = (1<<7),
   MBWMCompMgrEffectFade      = (1<<8),
   MBWMCompMgrEffectUnfade    = (1<<9),
-  MBWMCompMgrEffectSlide     = (1<<10),
+  MBWMCompMgrEffectSlideIn   = (1<<10),
+  MBWMCompMgrEffectSlideOut  = (1<<11),
 
   _MBWMCompMgrEffectLast,
 } MBWMCompMgrEffectType;

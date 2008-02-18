@@ -1092,6 +1092,10 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    {
 	      if (!strcmp (*(p+1), "minimize"))
 		eff->event = MBWMCompMgrEffectEventMinimize;
+	      else if (!strcmp (*(p+1), "map"))
+		eff->event = MBWMCompMgrEffectEventMap;
+	      else if (!strcmp (*(p+1), "unmap"))
+		eff->event = MBWMCompMgrEffectEventUnmap;
 	    }
 	  else if (!strcmp (*p, "duration"))
 	    eff->duration = atoi (*(p+1));
@@ -1114,13 +1118,13 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		  switch (*g)
 		    {
 		    case 'n':
-		      eff->gravity = MBWMGravityNone; break;
+		      eff->gravity = MBWMGravityNorth; break;
 		    case 's':
-		      eff->gravity = MBWMGravityNone; break;
+		      eff->gravity = MBWMGravitySouth; break;
 		    case 'w':
-		      eff->gravity = MBWMGravityNone; break;
+		      eff->gravity = MBWMGravityWest;  break;
 		    case 'e':
-		      eff->gravity = MBWMGravityNone; break;
+		      eff->gravity = MBWMGravityEast;  break;
 		    default:
 		      eff->gravity = MBWMGravityNone;
 		    }
@@ -1178,9 +1182,13 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		    {
 		      eff->type |= MBWMCompMgrEffectUnfade;
 		    }
-		  else if (!strncmp (e, "slide", 7))
+		  else if (!strncmp (e, "slide-in", 8))
 		    {
-		      eff->type |= MBWMCompMgrEffectSlide;
+		      eff->type |= MBWMCompMgrEffectSlideIn;
+		    }
+		  else if (!strncmp (e, "slide-out", 9))
+		    {
+		      eff->type |= MBWMCompMgrEffectSlideOut;
 		    }
 
 		  bar = strchr (e, '|');

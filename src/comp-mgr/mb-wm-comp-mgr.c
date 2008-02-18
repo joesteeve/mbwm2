@@ -226,7 +226,7 @@ mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
 	  if (!eklass)
 	    continue;
 
-	  eklass->run (el, event, completed_cb, data);
+	  eklass->run (el, client, event, completed_cb, data);
 	  done_effect = True;
 	}
 
@@ -237,7 +237,7 @@ mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
    * If there were no effects to run for this event, we manually call
    * the callback to signal the effect is completed
    */
-  if (!done_effect)
+  if (!done_effect && completed_cb)
     completed_cb (data);
 }
 

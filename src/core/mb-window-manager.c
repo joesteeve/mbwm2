@@ -346,24 +346,43 @@ test_destroy_notify (XDestroyWindowEvent  *xev,
 
   if (client)
     {
+      printf ("Window destroyed for client %p\n", client);
+
       if (mb_wm_client_window_is_state_set (client->window,
 					    MBWMClientWindowEWMHStateHidden))
 	{
 	  wm->clients = mb_wm_util_list_remove (wm->clients, client);
 	  mb_wm_object_unref (MB_WM_OBJECT (client));
 	}
+#if 0
+      /*
+       * Do not unamage the client here -- we get a unmap notification before
+       * the window is destroyed, and if the compositor has an effect hooked
+       * into it, this messes about with it.
+       */
       else
 	{
 	  mb_wm_unmanage_client (wm, client, True);
 	}
+#endif
     }
 
   return True;
 }
 
-Bool
-test_unmap_notify (XUnmapEvent          *xev,
-		   void                 *userdata)
+#ifdef ENABLE_COMPOSITE
+static void
+mb_wm_unmap_effect_completed (void *data)
+{
+  MBWindowManagerClient *client = data;
+
+  mb_wm_unmanage_client (client->wmref, client, True);
+}
+#endif
+
+static Bool
+mb_wm_handle_unmap_notify (XUnmapEvent          *xev,
+			   void                 *userdata)
 {
   MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client = NULL;
@@ -402,8 +421,27 @@ test_unmap_notify (XUnmapEvent          *xev,
 	  else if (!mb_wm_client_window_is_state_set (client->window,
 					    MBWMClientWindowEWMHStateHidden))
 	    {
-	      MBWM_DBG ("removing client %p\n", client);
-	      mb_wm_unmanage_client (wm, client, True);
+#ifdef ENABLE_COMPOSITE
+	      /*
+	       * Run unmap effect and do the actual un-managing from the
+	       * completion call back.
+	       */
+	      if (mb_wm_compositing_enabled (wm))
+		{
+		  printf ("unmap effect for %p, %x\n",
+			  client, xev->window);
+
+		  mb_wm_comp_mgr_client_run_effect (client->cm_client,
+					MBWMCompMgrEffectEventUnmap,
+					mb_wm_unmap_effect_completed,
+					client);
+		}
+	      else
+#endif
+		{
+		  MBWM_DBG ("removing client %p\n", client);
+		  mb_wm_unmanage_client (wm, client, True);
+		}
 	    }
 	}
     }
@@ -1402,7 +1440,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     UnmapNotify,
-			     (MBWMXEventFunc)test_unmap_notify,
+			     (MBWMXEventFunc)mb_wm_handle_unmap_notify,
 			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,

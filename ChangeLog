@@ -1,3 +1,15 @@
+2008-02-18  Tomas Frydrych  <tf@o-hand.com>
+
+	* data/themes/Default/theme.xml:
+	* src/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* src/comp-mgr/mb-wm-comp-mgr.c:
+	* src/comp-mgr/mb-wm-comp-mgr.h:
+	* src/core/mb-window-manager.c:
+	* src/core/mb-wm-types.h:
+	* src/theme-engines/mb-wm-theme.c:
+	More effects works: split slide effect into slide-in and
+	slide-out; added effect events for map and unmap.
+
 2008-02-15  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/theme-engines/mb-wm-theme.c:

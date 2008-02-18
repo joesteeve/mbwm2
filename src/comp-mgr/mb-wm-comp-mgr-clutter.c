@@ -50,7 +50,8 @@ struct MBWMCompMgrClutterClient
   int                     pxm_height;
   int                     pxm_depth;
   Bool                    mapped;
-  Damage	          damage;
+  Bool                    dont_update;
+  Damage                  damage;
 
   /* 1-based array holding timelines for effect events */
   ClutterTimeline       * timelines[_MBWMCompMgrEffectEventLast-1];
@@ -273,8 +274,12 @@ mb_wm_comp_mgr_clutter_client_add_damage (MBWMCompMgrClutterClient * cclient,
   mb_wm_display_sync_queue (wm, MBWMSyncVisibility);
 }
 
+/*
+ * Does all the work we need to show a client, except for calling
+ * clutter_actor_show ()
+ */
 static void
-mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_clutter_client_show_internal (MBWMCompMgrClient * client)
 {
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
   MBGeometry                 geom;
@@ -310,6 +315,24 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
 
   mb_wm_comp_mgr_clutter_client_add_damage (cclient, region);
 
+}
+
+static void
+mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
+{
+  MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+
+  if (!cclient->actor)
+    {
+      /*
+       * This can happen if show() is called on our client before it is
+       * actually mapped (we only alocate the actor in response to map
+       * notification.
+       */
+      return;
+    }
+
+  mb_wm_comp_mgr_clutter_client_show_internal (client);
   clutter_actor_show (cclient->actor);
 }
 
@@ -358,9 +381,10 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
   ClutterBehaviour         * behaviour;
   ClutterAlpha             * alpha;
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+  MBWindowManagerClient    * wm_client = client->wm_client;
+  MBWindowManager          * wm = wm_client->wmref;
   ClutterKnot                knots[2];
-  MBWindowManager          * wm = client->wm_client->wmref;
-  int                        x, y;
+  MBGeometry                 geom;
 
   timeline =
     mb_wm_comp_mgr_clutter_client_get_timeline (client, event, duration);
@@ -368,10 +392,10 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
   if (!timeline)
     return NULL;
 
-  clutter_actor_get_position (cclient->actor, &x, &y);
-
   alpha = clutter_alpha_new_full (timeline,
 				  CLUTTER_ALPHA_RAMP_INC, NULL, NULL);
+
+  mb_wm_client_get_coverage (wm_client, &geom);
 
   switch (type)
     {
@@ -432,59 +456,119 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
       behaviour = clutter_behaviour_opacity_new (alpha, 0, 0xff);
       break;
 
-      /* FIXME -- add the path behaviours here */
-    case MBWMCompMgrEffectSlide:
+      /*
+       * Currently ClutterBehaviourPath does not handle negative coords,
+       * so anything here that needs them is broken.
+       */
+    case MBWMCompMgrEffectSlideIn:
       switch (gravity)
 	{
 	case MBWMGravityNorth:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x;
-	  knots[1].y = y - wm->xdpy_height;
+	  knots[0].x = geom.x;
+	  knots[0].y = wm->xdpy_height;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
 	  break;
 	case MBWMGravitySouth:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x;
-	  knots[1].y = y + wm->xdpy_height;
-	  break;
-	case MBWMGravityEast:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x + wm->xdpy_width;
-	  knots[1].y = y;
+	  knots[0].x = geom.x;
+	  knots[0].y = -geom.height;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
 	  break;
 	case MBWMGravityWest:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x - wm->xdpy_width;
-	  knots[1].y = y;
+	  knots[0].x = wm->xdpy_width;
+	  knots[0].y = geom.y;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
+	  break;
+	case MBWMGravityEast:
+	  knots[0].x = -geom.width;
+	  knots[0].y = geom.y;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
 	  break;
 	case MBWMGravityNorthWest:
 	case MBWMGravityNone:
 	default:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x - wm->xdpy_width;
-	  knots[1].y = y - wm->xdpy_height;
+	  knots[0].x = wm->xdpy_width;
+	  knots[0].y = wm->xdpy_height;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
 	  break;
 	case MBWMGravityNorthEast:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x + wm->xdpy_width;
-	  knots[1].y = y - wm->xdpy_height;
+	  knots[0].x = -geom.width;
+	  knots[0].y = wm->xdpy_height;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
 	  break;
 	case MBWMGravitySouthWest:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x - wm->xdpy_width;
-	  knots[1].y = y + wm->xdpy_height;
+	  knots[0].x = wm->xdpy_width;
+	  knots[0].y = -geom.height;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
 	  break;
 	case MBWMGravitySouthEast:
-	  knots[0].x = x;
-	  knots[0].y = y;
-	  knots[1].x = x + wm->xdpy_width;
-	  knots[1].y = y + wm->xdpy_height;
+	  knots[0].x = -geom.width;
+	  knots[0].y = -geom.height;
+	  knots[1].x = geom.x;
+	  knots[1].y = geom.y;
+	  break;
+	}
+
+      behaviour = clutter_behaviour_path_new (alpha, &knots[0], 2);
+      break;
+    case MBWMCompMgrEffectSlideOut:
+      switch (gravity)
+	{
+	case MBWMGravityNorth:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = geom.x;
+	  knots[1].y = -(geom.y + geom.height);
+	  break;
+	case MBWMGravitySouth:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = geom.x;
+	  knots[1].y = wm->xdpy_height;
+	  break;
+	case MBWMGravityEast:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = wm->xdpy_width;
+	  knots[1].y = geom.y;
+	  break;
+	case MBWMGravityWest:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = -(geom.x + geom.width);
+	  knots[1].y = geom.y;
+	  break;
+	case MBWMGravityNorthWest:
+	case MBWMGravityNone:
+	default:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = -(geom.x + geom.width);
+	  knots[1].y = -(geom.y + geom.height);
+	  break;
+	case MBWMGravityNorthEast:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = wm->xdpy_width;
+	  knots[1].y = -(geom.y + geom.height);
+	  break;
+	case MBWMGravitySouthWest:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = -(geom.x + geom.width);
+	  knots[1].y = wm->xdpy_height;
+	  break;
+	case MBWMGravitySouthEast:
+	  knots[0].x = geom.x;
+	  knots[0].y = geom.y;
+	  knots[1].x = wm->xdpy_width;
+	  knots[1].y = wm->xdpy_height;
 	  break;
 	}
 
@@ -840,7 +924,7 @@ mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 	  MBWMCompMgrClutterClient *cclient =
 	    MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
 
-	  if (!cclient->actor)
+	  if (!cclient->actor || cclient->dont_update)
 	    return False;
 
 	  /* FIXME -- see if we can make some use of the 'more' parameter
@@ -955,9 +1039,16 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   mb_wm_client_get_coverage (c, &geom);
   clutter_actor_set_position (actor, geom.x, geom.y);
 
-  mb_wm_comp_mgr_clutter_client_show_real (c->cm_client);
-
   mb_wm_comp_mgr_clutter_add_actor (cmgr, actor);
+
+  mb_wm_comp_mgr_clutter_client_show_internal (c->cm_client);
+
+  mb_wm_comp_mgr_client_run_effect (c->cm_client,
+				    MBWMCompMgrEffectEventMap,
+				    NULL,
+				    NULL);
+
+  clutter_actor_show (cclient->actor);
 }
 
 /*
@@ -1043,6 +1134,7 @@ mb_wm_comp_mgr_clutter_effect_completed_cb (ClutterTimeline * t, void * data)
 
 static void
 mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
+					MBWMCompMgrClient       * cm_client,
 					MBWMCompMgrEffectEvent    event,
 					MBWMCompMgrEffectCallback completed_cb,
 					void                    * data)
@@ -1060,8 +1152,11 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
       MBWMCompMgrEffect        * eff = effects->data;
       MBWMCompMgrClutterEffect * ceff = MB_WM_COMP_MGR_CLUTTER_EFFECT (eff);
 
-      if (ceff->timeline)
+      if (ceff->timeline &&
+	  !clutter_timeline_is_playing (ceff->timeline))
 	{
+	  printf ("Running effect for event %d\n", event);
+
 	  if (completed_cb)
 	    {
 	      struct completed_cb_data * d =
@@ -1075,10 +1170,18 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 		      d);
 	    }
 
-	  if (eff->gravity != CLUTTER_GRAVITY_NONE)
+	  /*
+	   * Deal with gravity, but not for path behaviours (there the
+	   * gravity translates into the path itself, and is already
+	   * set up
+	   */
+	  if (eff->gravity != CLUTTER_GRAVITY_NONE &&
+	      !CLUTTER_IS_BEHAVIOUR_PATH (ceff->behaviour))
 	    {
 	      GSList * actors;
 	      ClutterActor *a;
+
+	      printf ("---- MOVING anchor point \n");
 
 	      actors = clutter_behaviour_get_actors (ceff->behaviour);
 	      a = actors->data;
@@ -1086,6 +1189,16 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	      clutter_actor_move_anchor_point_from_gravity (a, eff->gravity);
 
 	      g_slist_free (actors);
+	    }
+
+	  if (event == MBWMCompMgrEffectEventUnmap)
+	    {
+	      MBWMCompMgrClutterClient *c =
+		MB_WM_COMP_MGR_CLUTTER_CLIENT (cm_client);
+
+	      printf ("setting dont_update\n");
+
+	      c->dont_update = True;
 	    }
 
 	  clutter_timeline_start (ceff->timeline);

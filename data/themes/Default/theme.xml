@@ -5,6 +5,8 @@
 <img src="test.png" />
 <client type="app">
  <effect event="minimize" duration="300" gravity="ne" type="scale-down" />
+ <effect event="map"   duration="100" gravity="e"     type="slide-in" />
+ <effect event="unmap" duration="100" gravity="none"  type="fade" />
  <decor type="north" clr-bg="#ff0000" clr-bg2="#ffffff" clr-fg="#ffffff"
 height="22" font-family="Sans" font-size="18" clr-frame="#000000">
   <button type="close"    packing="end"   clr-fg="#ffffff" clr-bg="#59595f"
