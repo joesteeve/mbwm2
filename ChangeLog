@@ -1,5 +1,10 @@
 2008-02-19  Tomas Frydrych  <tf@o-hand.com>
 
+	* data/Makefile.am:
+	Generate API-version specific .pc file.
+
+2008-02-19  Tomas Frydrych  <tf@o-hand.com>
+
 	* configure.ac, *.am, *.h:
 	Changes for building mbwm2 as a library (based on patch by Johan
 	Bilien):
