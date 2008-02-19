@@ -65,7 +65,7 @@ typedef struct Client
 
   MBWMClientLayoutHints layout_hints;
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   MBWMList       *effects;
 #endif
 }MBWMXmlClient;

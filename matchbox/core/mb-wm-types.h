@@ -23,7 +23,7 @@
 
 #include <matchbox/mb-wm-config.h>
 
-#ifdef USE_GLIB_MAINLOOP
+#if USE_GLIB_MAINLOOP
 #include <glib.h>
 #endif
 
@@ -384,7 +384,7 @@ typedef Bool (*MBWindowManagerMotionNotifyFunc)
 typedef Bool (*MBWindowManagerTimeOutFunc)
      (void                    *userdata);
 
-#ifdef USE_GLIB_MAINLOOP
+#if USE_GLIB_MAINLOOP
 typedef GIOChannel   MBWMIOChannel;
 typedef GIOCondition MBWMIOCondition;
 #else

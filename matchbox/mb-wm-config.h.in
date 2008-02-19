@@ -1,0 +1,26 @@
+
+#ifndef _MB_MW_CONFIG_H
+#define _MB_WM_CONFIG_H
+
+/* Enable composite manager code */
+#define ENABLE_COMPOSITE @ENABLE_COMPOSITE@
+
+/* Build PNG-image based theme engine */
+#define THEME_PNG @THEME_PNG@
+
+/* Use cairo for theme rendering */
+#define USE_CAIRO @USE_CAIRO@
+
+/* Build simple, plain X, theme engine */
+#define THEME_SIMPLE @THEME_SIMPLE@
+
+/* Use clutter for compositing */
+#define USE_CLUTTER @USE_CLUTTER@
+
+/* Use glib main loop */
+#define USE_GLIB_MAINLOOP @USE_GLIB_MAINLOOP@
+
+/* GTK Integration */
+#define USE_GTK @USE_GTK@
+
+#endif

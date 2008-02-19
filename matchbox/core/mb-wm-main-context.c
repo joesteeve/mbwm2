@@ -89,7 +89,7 @@ mb_wm_main_context_destroy (MBWMObject *this)
 {
 }
 
-#ifdef USE_GLIB_MAINLOOP
+#if USE_GLIB_MAINLOOP
 gboolean
 mb_wm_main_context_gloop_xevent (gpointer userdata)
 {
@@ -128,7 +128,7 @@ mb_wm_main_context_init (MBWMObject *this, va_list vap)
 
   ctx->wm = wm;
 
-#ifdef USE_GLIB_MAINLOOP
+#if USE_GLIB_MAINLOOP
 /*   g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, */
 /* 		   mb_wm_main_context_gloop_xevent, ctx, NULL); */
 #endif
@@ -459,7 +459,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       break;
     }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     if (mb_wm_comp_mgr_handle_events (wm->comp_mgr, xev))
       return True;
@@ -501,7 +501,7 @@ mb_wm_main_context_spin_xevent_blocking (MBWMMainContext *ctx)
 void
 mb_wm_main_context_loop (MBWMMainContext *ctx)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   MBWindowManager * wm = ctx->wm;
 
   while (True)
@@ -683,7 +683,7 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
     }
 }
 
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
 static void
 mb_wm_main_context_timeout_setup (MBWMTimeOutEventInfo * tinfo,
 				  struct timeval       * current_time)
@@ -771,7 +771,7 @@ mb_wm_main_context_timeout_handler_add (MBWMMainContext            *ctx,
 					MBWindowManagerTimeOutFunc  func,
 					void                       *userdata)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   static unsigned long ids = 0;
   MBWMTimeOutEventInfo * tinfo;
   struct timeval current_time;
@@ -801,7 +801,7 @@ void
 mb_wm_main_context_timeout_handler_remove (MBWMMainContext *ctx,
 					   unsigned long    id)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   MBWMList * l = ctx->event_funcs.timeout;
 
   while (l)
@@ -841,7 +841,7 @@ mb_wm_main_context_fd_watch_add (MBWMMainContext           *ctx,
 				 MBWindowManagerFdWatchFunc func,
 				 void                      *userdata)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   static unsigned long ids = 0;
   MBWMFdWatchInfo * finfo;
   struct pollfd * fds;
@@ -876,7 +876,7 @@ void
 mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
 				    unsigned long    id)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   MBWMList * l = ctx->event_funcs.fd_watch;
 
   while (l)
@@ -915,7 +915,7 @@ mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
 MBWMIOChannel *
 mb_wm_main_context_io_channel_new (int fd)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   MBWMIOChannel * c = mb_wm_util_malloc0 (sizeof (MBWMIOChannel));
   *c = fd;
 #else
@@ -927,7 +927,7 @@ mb_wm_main_context_io_channel_new (int fd)
 void
 mb_wm_main_context_io_channel_destroy (MBWMIOChannel * channel)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   if (channel)
     free (channel);
 #else
@@ -938,14 +938,14 @@ mb_wm_main_context_io_channel_destroy (MBWMIOChannel * channel)
 int
 mb_wm_main_context_io_channel_get_fd (MBWMIOChannel * channel)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   return *channel;
 #else
   g_io_channel_unix_get_fd (channel);
 #endif
 }
 
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
 static void
 mb_wm_main_context_setup_poll_cache (MBWMMainContext *ctx)
 {

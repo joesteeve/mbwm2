@@ -4,7 +4,7 @@
 #include "mb-wm-client-dialog.h"
 #include <signal.h>
 
-#ifdef USE_CLUTTER
+#if USE_CLUTTER
 # include <clutter/clutter-x11.h>
 #endif
 
@@ -90,7 +90,7 @@ main(int argc, char **argv)
 
   mb_wm_object_init();
 
-#ifdef USE_CLUTTER
+#if USE_CLUTTER
   /*
    * If using clutter, we share the display connection, and hook
    * our xevent handler into the clutter main loop.

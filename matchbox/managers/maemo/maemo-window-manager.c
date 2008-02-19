@@ -44,7 +44,7 @@ maemo_window_manager_client_new_func (MBWindowManager *wm,
   if (win->override_redirect)
     {
       printf ("### override-redirect window ###\n");
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
       return mb_wm_client_override_new (wm, win);
 #else
       return NULL;

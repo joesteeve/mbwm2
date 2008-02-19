@@ -24,7 +24,6 @@ MBWM2_INCDIR=matchbox-wm-2/$MBWM2_API_VERSION
 AC_SUBST(MBWM2_INCDIR)
 
 AM_MAINTAINER_MODE
-AM_CONFIG_HEADER(matchbox/mb-wm-config.h)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL
@@ -93,41 +92,58 @@ if test "x$want_debug" = "xyes"; then
   MBWM_DEBUG_LDFLAGS="$MBWM_DEBUG_LDFLAGS -rdynamic"
 fi
 
+USE_GLIB_MAINLOOP=0
 if test "x$gmloop" = "xyes"; then
   needed_pkgs="$needed_pkgs glib-2.0 "
-  AC_DEFINE(USE_GLIB_MAINLOOP, 1, [Use glib main loop])
+  USE_GLIB_MAINLOOP=1
 fi
+AC_SUBST(USE_GLIB_MAINLOOP)
 
 PKG_CHECK_MODULES(MBWM, $needed_pkgs)
 
+USE_CAIRO=0
 AM_CONDITIONAL(THEME_CAIRO, [test "x$use_cairo" = "xyes"])
 if test "$use_cairo" = yes; then
-  AC_DEFINE(USE_CAIRO, 1, [Use cairo for theme rendering])
+  USE_CAIRO=1
 fi
+AC_SUBST(USE_CAIRO)
 
+THEME_PNG=0
 AM_CONDITIONAL(THEME_PNG, [test "x$png_theme" = "xyes"])
 if test "$png_theme" = yes; then
-  AC_DEFINE(THEME_PNG, 1, [Build PNG-image based theme engine])
+  THEME_PNG=1
   PKG_CHECK_MODULES(THEME_PNG, xft libpng12)
 fi
+AC_SUBST(THEME_PNG)
 
 # only build simple theme if cairo theme disabled
+THEME_SIMPLE=0
 AM_CONDITIONAL(THEME_SIMPLE, [test "x$use_cairo" != "xyes"])
+if test "$use_cairo" != yes; then
+  THEME_SIMPLE=1
+fi
+AC_SUBST(THEME_SIMPLE)
 
+USE_GTK=0
 AM_CONDITIONAL(USE_GTK, test "x$use_gtk" = "xyes")
 if test "$use_gtk" = yes; then
-  AC_DEFINE(USE_GTK, 1, [GTK Integration])
+  USE_GTK=1
 fi
+AC_SUBST(USE_GTK)
 
+ENABLE_COMPOSITE=0
 AM_CONDITIONAL(ENABLE_COMPOSITE, [test "x$comp_mgr" != "xno"])
 if test "$comp_mgr" != no; then
-  AC_DEFINE(ENABLE_COMPOSITE, 1, [Enable composite manager code])
+   ENABLE_COMPOSITE=1
 fi
+AC_SUBST(ENABLE_COMPOSITE)
 
+USE_CLUTTER=0
 AM_CONDITIONAL(USE_CLUTTER, [test "x$comp_mgr" = "xyes (clutter)"])
 if test "$comp_mgr" = "yes (clutter)"; then
-  AC_DEFINE(USE_CLUTTER, 1, [Use clutter for compositing])
+  USE_CLUTTER=1
 fi
+AC_SUBST(USE_CLUTTER)
 
 AM_CONDITIONAL(ENABLE_LIBMATCHBOX, [test "x$libmatchbox" = "xyes"])
 
@@ -188,6 +204,7 @@ AC_SUBST([MBWM_DEBUG_LDFLAGS])
 AC_OUTPUT([
 Makefile
 matchbox/Makefile
+matchbox/mb-wm-config.h
 matchbox/core/Makefile
 matchbox/client-types/Makefile
 matchbox/comp-mgr/Makefile

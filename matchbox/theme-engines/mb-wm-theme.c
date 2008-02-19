@@ -21,7 +21,7 @@
 #include "mb-wm-theme.h"
 #include "mb-wm-theme-xml.h"
 
-#ifdef USE_CAIRO
+#if USE_CAIRO
 #include "mb-wm-theme-cairo.h"
 #else
 #include "mb-wm-theme-simple.h"
@@ -282,7 +282,7 @@ mb_wm_theme_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   if (klass->paint_decor)
     klass->paint_decor (theme, decor);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
  {
    MBWindowManagerClient *c  = decor->parent_client;
 
@@ -307,7 +307,7 @@ mb_wm_theme_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
   if (klass->paint_button)
     klass->paint_button (theme, button);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
  {
    MBWindowManagerClient *c  = button->decor->parent_client;
 
@@ -526,7 +526,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
   if (!theme)
     {
       theme = MB_WM_THEME (mb_wm_object_new (
-#ifdef USE_CAIRO
+#if USE_CAIRO
 			MB_WM_TYPE_THEME_CAIRO,
 #else
 			MB_WM_TYPE_THEME_SIMPLE,
@@ -608,7 +608,7 @@ mb_wm_theme_get_client_layout_hints (MBWMTheme             * theme,
   return c->layout_hints;
 }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 const MBWMList *
 mb_wm_theme_get_client_effects (MBWMTheme              * theme,
 				MBWindowManagerClient  * client)
@@ -870,12 +870,12 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  else if (!strcmp (*p, "engine-type"))
 	    {
 	      if (!strcmp (*(p+1), "default"))
-#ifdef USE_CAIRO
+#if USE_CAIRO
 		exd->theme_type = MB_WM_TYPE_THEME_CAIRO;
 #else
 		exd->theme_type = MB_WM_TYPE_THEME_SIMPLE;
 #endif
-#ifdef THEME_PNG
+#if THEME_PNG
 	      else if (!strcmp (*(p+1), "png"))
 		exd->theme_type = MB_WM_TYPE_THEME_PNG;
 #endif
@@ -1070,7 +1070,7 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
       return;
     }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (!strcmp (tag, "effect"))
     {
       MBWMThemeEffects   *eff = mb_wm_util_malloc0 (sizeof (MBWMThemeEffects));

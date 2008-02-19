@@ -70,7 +70,7 @@ mb_wm_client_window_class_init (MBWMObjectClass *klass)
 
   rw_class = (MBWMClientWindowClass *)klass;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientWindow";
 #endif
 }

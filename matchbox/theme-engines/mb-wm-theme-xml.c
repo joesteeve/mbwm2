@@ -77,7 +77,7 @@ mb_wm_xml_decor_free (MBWMXmlDecor * d)
   free (d);
 }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 static void
 mb_wm_theme_effects_free (MBWMThemeEffects *e)
 {
@@ -117,7 +117,7 @@ mb_wm_xml_client_free (MBWMXmlClient * c)
       l = n;
     }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   l = c->effects;
   while (l)
     {

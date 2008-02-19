@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-#ifdef USE_GTK
+#if USE_GTK
 #ifndef GTK_DISABLE_DEPRECATED
 #define GTK_DISABLE_DEPRECATED
 #endif
@@ -76,7 +76,7 @@ mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
 {
   MBWMTheme         *theme = MB_WM_THEME (obj);
 
-#ifdef USE_GTK
+#if USE_GTK
   GtkWidget            *gwin;
   /*
    * Plan here is to just get the GTK settings so we can follow

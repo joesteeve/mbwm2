@@ -24,7 +24,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 #include <X11/extensions/Xrender.h>
 #endif
 
@@ -59,7 +59,7 @@ mb_wm_client_destroy (MBWMObject *obj)
     mb_wm_main_context_timeout_handler_remove (wm->main_ctx,
 					       client->ping_cb_id);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (mb_wm_compositing_enabled (wm))
     {
       mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
@@ -179,7 +179,7 @@ mb_wm_client_init (MBWMObject *obj, va_list vap)
 	     status,
 	     win->xwindow);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   {
     XRenderPictFormat *format;
 
@@ -314,7 +314,7 @@ mb_wm_client_on_property_change (MBWMClientWindow        *window,
   if (property & MBWM_WINDOW_PROP_GEOMETRY)
     mb_wm_client_geometry_mark_dirty (client);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if ((property & MBWM_WINDOW_PROP_CM_TRANSLUCENCY) &&
       client->cm_client && mb_wm_comp_mgr_enabled (client->wmref->comp_mgr))
     {
@@ -509,7 +509,7 @@ mb_wm_client_display_sync (MBWindowManagerClient *client)
   if (klass->sync)
     klass->sync (client);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (client->cm_client)
     {
       if (client->priv->mapped)
@@ -959,7 +959,7 @@ mb_wm_client_reset_iconizing (MBWindowManagerClient *client)
   client->priv->iconizing = False;
 }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 static void
 mb_wm_client_effect_completed (void *data)
 {
@@ -982,7 +982,7 @@ mb_wm_client_iconize (MBWindowManagerClient *client)
    * This triggers an umap event, at which point the client gets unmanaged
    * by the window manager.
    */
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   /*
    * We cannot iconize the client until the effect finished, otherwise it
    * will unmap before the effect takes place, so we do this in the callback.

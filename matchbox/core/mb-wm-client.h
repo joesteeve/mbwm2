@@ -168,7 +168,7 @@ struct MBWindowManagerClient
 
   Bool                         is_argb32;
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   MBWMCompMgrClient           *cm_client;
 #endif
 };

@@ -22,7 +22,7 @@
 
 #include <X11/Xmd.h>
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 #include <X11/extensions/Xrender.h>
 #endif
 
@@ -168,7 +168,7 @@ mb_wm_client_base_realize (MBWindowManagerClient *client)
     {
       if (client->xwin_frame == None)
 	{
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 	  if (mb_wm_client_is_argb32 (client))
 	    {
 	      attr.colormap = client->window->colormap;

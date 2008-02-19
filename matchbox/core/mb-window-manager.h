@@ -81,7 +81,7 @@ struct MBWindowManager
   MBWMLayout                  *layout;
   MBWMMainContext             *main_ctx;
   MBWindowManagerFlag          flags;
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   MBWMCompMgr                 *comp_mgr;
 #endif
 
@@ -114,7 +114,7 @@ struct MBWindowManagerClass
 
   MBWMTheme * (*theme_new)  (MBWindowManager *wm, const char * path);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   MBWMCompMgr * (*comp_mgr_new) (MBWindowManager *wm);
 #endif
 

@@ -28,7 +28,7 @@
 #include "../client-types/mb-wm-client-menu.h"
 #include "../theme-engines/mb-wm-theme.h"
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 # include "mb-wm-comp-mgr.h"
 #  ifdef USE_CLUTTER
 #   include <clutter/clutter-x11.h>
@@ -75,7 +75,7 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
   if (win->override_redirect)
     {
       MBWM_DBG ("### override-redirect window ###\n");
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
       return mb_wm_client_override_new (wm, win);
 #else
       return NULL;
@@ -146,11 +146,11 @@ mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
   return mb_wm_theme_new (wm, path);
 }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 static MBWMCompMgr *
 mb_wm_real_comp_mgr_new (MBWindowManager *wm)
 {
-#ifdef USE_CLUTTER
+#if USE_CLUTTER
   return mb_wm_comp_mgr_clutter_new (wm);
 #else
   return mb_wm_comp_mgr_default_new (wm);
@@ -169,7 +169,7 @@ mb_wm_layout_new_real (MBWindowManager *wm)
   return layout;
 }
 
-#ifdef USE_CLUTTER
+#if USE_CLUTTER
 static ClutterX11FilterReturn
 mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
 {
@@ -207,11 +207,11 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->client_activate = mb_wm_activate_client_real;
   wm_class->layout_new      = mb_wm_layout_new_real;
 
-#ifdef USE_CLUTTER
+#if USE_CLUTTER
   wm_class->main            = mb_wm_main_real;
 #endif
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
 #endif
 
@@ -368,7 +368,7 @@ test_destroy_notify (XDestroyWindowEvent  *xev,
   return True;
 }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 static void
 mb_wm_unmap_effect_completed (void *data)
 {
@@ -419,7 +419,7 @@ mb_wm_handle_unmap_notify (XUnmapEvent          *xev,
 	  else if (!mb_wm_client_window_is_state_set (client->window,
 					    MBWMClientWindowEWMHStateHidden))
 	    {
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 	      /*
 	       * Run unmap effect and do the actual un-managing from the
 	       * completion call back.
@@ -601,7 +601,7 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
 
     }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     {
       mb_wm_comp_mgr_client_configure (client->cm_client);
@@ -622,7 +622,7 @@ mb_wm_is_my_window (MBWindowManager *wm,
 {
   MBWindowManagerClient *c;
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (wm->comp_mgr && mb_wm_comp_mgr_is_my_window (wm->comp_mgr, xwin))
     {
       /* Make sure to set the returned client to NULL, as this is a
@@ -648,7 +648,7 @@ mb_wm_is_my_window (MBWindowManager *wm,
   return False;
 }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 
 /*  For the compositing engine we need to track overide redirect
  *  windows so the compositor can paint them.
@@ -837,7 +837,7 @@ mb_wm_sync (MBWindowManager *wm)
     if (mb_wm_client_needs_sync (client))
       mb_wm_client_display_sync (client);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     mb_wm_comp_mgr_render (wm->comp_mgr);
 #endif
@@ -980,7 +980,7 @@ mb_wm_manage_client (MBWindowManager       *wm,
   if (MB_WM_CLIENT_CLIENT_TYPE (client) != MBWMClientTypeOverride)
     sync_flags |= MBWMSyncStacking;
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     mb_wm_comp_mgr_register_client (wm->comp_mgr, client);
 #endif
@@ -1047,7 +1047,7 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 	}
     }
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
    if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
      mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
 #endif
@@ -1127,7 +1127,7 @@ mb_wm_managed_client_from_frame (MBWindowManager *wm, Window frame)
 void
 mb_wm_main_loop(MBWindowManager *wm)
 {
-#ifndef USE_GLIB_MAINLOOP
+#if !USE_GLIB_MAINLOOP
   mb_wm_main_context_loop (wm->main_ctx);
 #else
    MBWindowManagerClass * wm_class =
@@ -1183,7 +1183,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
        XGetWindowAttributes(wm->xdpy, wins[i], &attr);
 
        if (
-#ifndef ENABLE_COMPOSITE
+#if ! ENABLE_COMPOSITE
 	   !attr.override_redirect &&
 #endif
 	   attr.map_state == IsViewable)
@@ -1400,7 +1400,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
 			     (MBWMXEventFunc)mb_wm_handle_map_request,
 			     wm);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     MapNotify,
@@ -1462,7 +1462,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_manage_preexistsing_wins (wm);
 
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (wm_class->comp_mgr_new && mb_wm_theme_use_compositing_mgr (wm->theme))
     mb_wm_compositing_on (wm);
 #endif
@@ -1956,7 +1956,7 @@ mb_wm_set_cursor (MBWindowManager * wm, MBWindowManagerCursor cursor)
 void
 mb_wm_compositing_on (MBWindowManager * wm)
 {
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   MBWindowManagerClass  *wm_class =
     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
@@ -1975,7 +1975,7 @@ mb_wm_compositing_on (MBWindowManager * wm)
 void
 mb_wm_compositing_off (MBWindowManager * wm)
 {
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   if (wm->comp_mgr && mb_wm_comp_mgr_enabled (wm->comp_mgr))
     mb_wm_comp_mgr_turn_off (wm->comp_mgr);
 #endif
@@ -1984,7 +1984,7 @@ mb_wm_compositing_off (MBWindowManager * wm)
 Bool
 mb_wm_compositing_enabled (MBWindowManager * wm)
 {
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
   return mb_wm_comp_mgr_enabled (wm->comp_mgr);
 #else
   return False;

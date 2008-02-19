@@ -1,5 +1,34 @@
 2008-02-19  Tomas Frydrych  <tf@o-hand.com>
 
+	* configure.ac:
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-window-manager.h:
+	* matchbox/core/mb-wm-client-base.c:
+	* matchbox/core/mb-wm-client-window.c:
+	* matchbox/core/mb-wm-client.c:
+	* matchbox/core/mb-wm-client.h:
+	* matchbox/core/mb-wm-main-context.c:
+	* matchbox/core/mb-wm-main-context.h:
+	* matchbox/core/mb-wm-root-window.c:
+	* matchbox/core/mb-wm-types.h:
+	* matchbox/core/mb-wm-util.h:
+	* matchbox/managers/maemo/maemo-window-manager.c:
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	* matchbox/mb-wm-config.h.in:
+	* matchbox/theme-engines/mb-wm-theme-cairo.c:
+	* matchbox/theme-engines/mb-wm-theme-xml.c:
+	* matchbox/theme-engines/mb-wm-theme-xml.h:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	* matchbox/theme-engines/mb-wm-theme.h:
+
+	Manually generate mb-wm-config.h so as to avoid any clashes with
+	with any auto-generated application config.h.
+
+	Changed number of #ifdef's to #if's following the changes to
+	mb-wm-config.h.
+
+2008-02-19  Tomas Frydrych  <tf@o-hand.com>
+
 	* removed src directory that for some reason did not get deleted
 	in earlier commit.
 

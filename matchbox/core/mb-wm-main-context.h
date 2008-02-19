@@ -46,7 +46,7 @@ typedef struct MBWMEventFuncs
   MBWMList *button_release;
   MBWMList *motion_notify;
 
-#ifndef USE_GLIB_MAINLOOP
+#if ! USE_GLIB_MAINLOOP
   MBWMList *timeout;
   MBWMList *fd_watch;
 #endif

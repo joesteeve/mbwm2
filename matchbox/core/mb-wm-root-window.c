@@ -399,7 +399,7 @@ mb_wm_root_window_handle_message (MBWMRootWindow *win, XClientMessageEvent *e)
 	 case MB_CMD_DESKTOP:
 	   mb_wm_toggle_desktop (wm);
 	   break;
-#ifdef ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE
 	 case MB_CMD_COMPOSITE:
 	   if (mb_wm_compositing_enabled (wm))
 	     mb_wm_compositing_off (wm);
