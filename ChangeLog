@@ -1,5 +1,10 @@
 2008-02-19  Tomas Frydrych  <tf@o-hand.com>
 
+	* removed src directory that for some reason did not get deleted
+	in earlier commit.
+
+2008-02-19  Tomas Frydrych  <tf@o-hand.com>
+
 	* data/Makefile.am:
 	Generate API-version specific .pc file.
 
