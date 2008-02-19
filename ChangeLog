@@ -1,3 +1,13 @@
+2008-02-19  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac, *.am, *.h:
+	Changes for building mbwm2 as a library (based on patch by Johan
+	Bilien):
+
+	Moved 'src' to 'matchbox'; fixed up headers to use #include <>.
+	Moved config.h to matchbox/mb-wm-config.h.
+	Added --enable-libmatchbox configure option, libmatchbox2.pc.in
+
 2008-02-18  Tomas Frydrych  <tf@o-hand.com>
 
 	* src/comp-mgr/README:

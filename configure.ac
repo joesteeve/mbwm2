@@ -1,10 +1,30 @@
+# mbwm2 package version number, (as distinct from shared library version)
+# An odd minor number indicates in-progress development, (eg. from svn)
+# An even minor number indicates a released version.
+m4_define([mbwm2_major_version], [0])
+m4_define([mbwm2_minor_version], [1])
+m4_define([mbwm2_micro_version], [0])
+
+m4_define([mbwm2_version],
+          [mbwm2_major_version.mbwm2_minor_version.mbwm2_micro_version])
+
+m4_define([mbwm2_api_version],
+          [mbwm2_major_version.mbwm2_minor_version])
+
 AC_PREREQ(2.59)
-AC_INIT([matchbox-window-manager-2], 0.0.0, [mallum@handhelds.org])
-AC_CONFIG_SRCDIR([src/core/mb-window-manager.c])
+AC_INIT([matchbox-window-manager-2], mbwm2_version, [mallum@handhelds.org])
+AC_CONFIG_SRCDIR([matchbox/core/mb-window-manager.c])
 
 AM_INIT_AUTOMAKE()
+
+MBWM2_API_VERSION=mbwm2_api_version
+AC_SUBST(MBWM2_API_VERSION)
+
+MBWM2_INCDIR=matchbox-wm-2/$MBWM2_API_VERSION
+AC_SUBST(MBWM2_INCDIR)
+
 AM_MAINTAINER_MODE
-AM_CONFIG_HEADER(config.h)
+AM_CONFIG_HEADER(matchbox/mb-wm-config.h)
 
 AC_PROG_CC
 AM_PROG_LIBTOOL
@@ -42,6 +62,10 @@ AC_ARG_ENABLE(compositing-manager,
 AC_ARG_ENABLE(glib-main-loop,
   [  --enable-glib-main-loop      Enable use of glib main loop],
   [gmloop=$enableval], [gmloop=no])
+
+AC_ARG_ENABLE(libmatchbox,
+  [  --enable-libmatchbox      Enable building as a library],
+  [libmatchbox=$enableval], [libmatchbox=no])
 
 if test "x$use_cairo" = "xyes"; then
   needed_pkgs="$needed_pkgs pangocairo "
@@ -105,6 +129,8 @@ if test "$comp_mgr" = "yes (clutter)"; then
   AC_DEFINE(USE_CLUTTER, 1, [Use clutter for compositing])
 fi
 
+AM_CONDITIONAL(ENABLE_LIBMATCHBOX, [test "x$libmatchbox" = "xyes"])
+
 AC_ARG_ENABLE(simple-manager,
   [  --disable-simple-manager   Do not build simple window manager],
   [simple_manager=$enableval], [simple_manager=yes])
@@ -141,11 +167,11 @@ if test x$have_xcursor = xyes; then
   AC_DEFINE(HAVE_XCURSOR, [1], [Use XCursor to sync pointer themes])
 fi
 
-MBWM_INCS='-I$(top_srcdir)/src/core -I$(top_srcdir)/src/client-types -I$(top_srcdir)/src/theme-engines -I$(top_srcdir)/src/comp-mgr'
-MBWM_CORE_LIB='$(top_builddir)/src/core/libmatchbox-window-manager-2-core.a'
-MBWM_CLIENT_LIBS='$(top_builddir)/src/client-types'
-MBWM_THEME_LIBS='$(top_builddir)/src/theme-engines'
-MBWM_COMPMGR_LIBS='$(top_builddir)/src/comp-mgr'
+MBWM_INCS='-I$(top_srcdir) -I$(top_srcdir)/matchbox/core -I$(top_srcdir)/matchbox/client-types -I$(top_srcdir)/matchbox/theme-engines -I$(top_srcdir)/matchbox/comp-mgr'
+MBWM_CORE_LIB='$(top_builddir)/matchbox/core/libmatchbox-window-manager-2-core.a'
+MBWM_CLIENT_LIBS='$(top_builddir)/matchbox/client-types'
+MBWM_THEME_LIBS='$(top_builddir)/matchbox/theme-engines'
+MBWM_COMPMGR_LIBS='$(top_builddir)/matchbox/comp-mgr'
 MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS $XFIXES_CFLAGS $XEXT_CFLAGS $XCURSOR_CFLAGS"
 MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS $XFIXES_LIBS $XEXT_LIBS $XCURSOR_LIBS"
 
@@ -161,18 +187,19 @@ AC_SUBST([MBWM_DEBUG_LDFLAGS])
 
 AC_OUTPUT([
 Makefile
-src/Makefile
-src/core/Makefile
-src/client-types/Makefile
-src/comp-mgr/Makefile
-src/managers/Makefile
-src/managers/simple/Makefile
-src/managers/maemo/Makefile
-src/managers/maemo/theme/Makefile
-src/theme-engines/Makefile
+matchbox/Makefile
+matchbox/core/Makefile
+matchbox/client-types/Makefile
+matchbox/comp-mgr/Makefile
+matchbox/managers/Makefile
+matchbox/managers/simple/Makefile
+matchbox/managers/maemo/Makefile
+matchbox/managers/maemo/theme/Makefile
+matchbox/theme-engines/Makefile
 data/Makefile
 data/themes/Makefile
 data/themes/Default/Makefile
+data/libmatchbox2.pc
 doc/Makefile
 ])
 
@@ -202,5 +229,6 @@ echo "
 
     Miscel:
         Glib main loop      :   ${gmloop}
+	Build libmatchbox   :   ${libmatchbox}
 	Debugging output    :   ${want_debug}
 "

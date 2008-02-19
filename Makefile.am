@@ -1,4 +1,4 @@
-SUBDIRS = src data doc
+SUBDIRS = matchbox data doc
 
 # Extra clean files so that maintainer-clean removes *everything*
 
