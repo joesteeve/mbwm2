@@ -41,21 +41,21 @@
 #define FALSE 0
 #endif
 
-#include <mb-wm-macros.h>
-#include <mb-wm-debug.h>
-#include <mb-wm-types.h>
-#include <mb-wm-util.h>
-#include <mb-wm-object.h>
-#include <mb-wm-atoms.h>
-#include <mb-wm-props.h>
-#include <mb-wm-keys.h>
-#include <mb-wm-decor.h>
-#include <mb-wm-client-window.h>
-#include <mb-wm-root-window.h>
-#include <mb-wm-client.h>
-#include <mb-wm-client-base.h>
-#include <mb-wm-layout.h>
-#include <mb-wm-stack.h>
-#include <mb-window-manager.h>
-#include <mb-wm-main-context.h>
+#include <matchbox/core/mb-wm-macros.h>
+#include <matchbox/core/mb-wm-debug.h>
+#include <matchbox/core/mb-wm-types.h>
+#include <matchbox/core/mb-wm-util.h>
+#include <matchbox/core/mb-wm-object.h>
+#include <matchbox/core/mb-wm-atoms.h>
+#include <matchbox/core/mb-wm-props.h>
+#include <matchbox/core/mb-wm-keys.h>
+#include <matchbox/core/mb-wm-decor.h>
+#include <matchbox/core/mb-wm-client-window.h>
+#include <matchbox/core/mb-wm-root-window.h>
+#include <matchbox/core/mb-wm-client.h>
+#include <matchbox/core/mb-wm-client-base.h>
+#include <matchbox/core/mb-wm-layout.h>
+#include <matchbox/core/mb-wm-stack.h>
+#include <matchbox/core/mb-window-manager.h>
+#include <matchbox/core/mb-wm-main-context.h>
 #endif

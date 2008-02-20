@@ -1,5 +1,10 @@
 2008-02-20  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm.h:
+	Fixed local includes.
+
+2008-02-20  Tomas Frydrych  <tf@o-hand.com>
+
 	* configure.ac:
 	Fixed the header dirctory for libmatchbox.
 
