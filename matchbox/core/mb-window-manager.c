@@ -1361,6 +1361,7 @@ mb_wm_init (MBWMObject *this, va_list vap)
 	  break;
 	case MBWMObjectPropDpy:
 	  wm->xdpy = va_arg(vap, Display *);
+	  break;
 	default:
 	  MBWMO_PROP_EAT (vap, prop);
 	}

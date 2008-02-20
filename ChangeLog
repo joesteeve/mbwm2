@@ -1,6 +1,12 @@
 2008-02-20  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-window-manager.c:
+	(mb_wm_init):
+	Added missing break statement.
+
+2008-02-20  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-window-manager.c:
 	(mb_wm_main_loop):
 	Fixed build.
 
