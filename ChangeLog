@@ -1,5 +1,10 @@
 2008-02-20  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-main-context.h:
+	Added missing prototype for mb_wm_main_context_handle_x_event().
+
+2008-02-20  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-window-manager.c:
 	(mb_wm_init):
 	Added missing break statement.
