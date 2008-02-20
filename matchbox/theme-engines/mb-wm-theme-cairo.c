@@ -82,9 +82,6 @@ mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
    * Plan here is to just get the GTK settings so we can follow
    * colors set by widgets.
   */
-
-  gtk_init (NULL, NULL);
-
   gwin = gtk_window_new (GTK_WINDOW_POPUP);
   gtk_widget_ensure_style (gwin);
 #endif

@@ -8,6 +8,10 @@
 # include <clutter/clutter-x11.h>
 #endif
 
+#if USE_GTK
+#include <gdk/gdkx.h>
+#endif
+
 enum {
   KEY_ACTION_PAGE_NEXT,
   KEY_ACTION_PAGE_PREV,
@@ -90,14 +94,29 @@ main(int argc, char **argv)
 
   mb_wm_object_init();
 
+#if USE_GTK
+  printf ("initializing gtk\n");
+
+  gtk_init (&argc, &argv);
+  dpy = GDK_DISPLAY();
+#endif
+
 #if USE_CLUTTER
   /*
    * If using clutter, we share the display connection, and hook
    * our xevent handler into the clutter main loop.
+   *
+   * If we are also doing gtk integration, we need to make clutter to
+   * use the gtk display connection.
    */
+  if (dpy)
+    clutter_x11_set_display (dpy);
+
   clutter_init (&argc, &argv);
 
-  dpy = clutter_x11_get_default_display ();
+  if (!dpy)
+    dpy = clutter_x11_get_default_display ();
+
 #endif
 
   wm = mb_wm_new_with_dpy (argc, argv, dpy);

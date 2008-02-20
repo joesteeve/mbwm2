@@ -82,7 +82,7 @@ case $comp_mgr in
                      needed_pkgs="$needed_pkgs xcomposite xdamage " ;;
 
      clutter )       comp_mgr="yes (clutter)"
-                     needed_pkgs="$needed_pkgs clutter-0.5 xcomposite xdamage "
+                     needed_pkgs="$needed_pkgs clutter-0.7 xcomposite xdamage "
 	             gmloop="yes" ;;
 
      framework-only ) comp_mgr="yes (framework only)" ;;

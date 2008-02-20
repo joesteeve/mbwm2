@@ -1,5 +1,19 @@
 2008-02-20  Tomas Frydrych  <tf@o-hand.com>
 
+	* configure.ac:
+	Bumped clutter requirement to 0.7.
+
+	* matchbox/theme-engines/mb-wm-theme-cairo.c:
+	(mb_wm_theme_cairo_init):
+	Removed call to gtk_init (must be called by the application main()
+	function so display connection can be set up correctly.
+
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	(main):
+	Call gtk_init() if GTK integration is enabled.
+
+2008-02-20  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-main-context.h:
 	Added missing prototype for mb_wm_main_context_handle_x_event().
 
