@@ -1,3 +1,11 @@
+2008-02-20  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	Fixed the header dirctory for libmatchbox.
+
+	* matchbox/core/mb-window-manager.c:
+	Fixed stray #ifdef.
+
 2008-02-19  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

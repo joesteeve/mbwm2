@@ -30,7 +30,7 @@
 
 #if ENABLE_COMPOSITE
 # include "mb-wm-comp-mgr.h"
-#  ifdef USE_CLUTTER
+#  if USE_CLUTTER
 #   include <clutter/clutter-x11.h>
 #   include "mb-wm-comp-mgr-clutter.h"
 #  else
