@@ -1139,7 +1139,7 @@ mb_wm_main_loop(MBWindowManager *wm)
       GMainLoop * loop = g_main_loop_new (NULL, FALSE);
 
       g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-		       mb_wm_main_context_gloop_xevent, ctx, NULL);
+		       mb_wm_main_context_gloop_xevent, wm->main_ctx, NULL);
 
       g_main_loop_run (loop);
       g_main_loop_unref (loop);

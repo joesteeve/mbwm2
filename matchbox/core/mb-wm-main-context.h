@@ -118,6 +118,11 @@ void
 mb_wm_main_context_fd_watch_remove (MBWMMainContext *ctx,
 				    unsigned long    id);
 
+#if USE_GLIB_MAINLOOP
+gboolean
+mb_wm_main_context_gloop_xevent (gpointer userdata);
+#endif
+
 void
 mb_wm_main_context_loop (MBWMMainContext *ctx);
 
