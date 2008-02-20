@@ -17,6 +17,12 @@
 /* Use clutter for compositing */
 #define USE_CLUTTER @USE_CLUTTER@
 
+/* Use default compositing manager backend */
+#define DEFAULT_COMP_MGR @DEFAULT_COMP_MGR@
+
+/* Include at least one of the default compositing manager backends */
+#define COMP_MGR_BACKEND @COMP_MGR_BACKEND@
+
 /* Use glib main loop */
 #define USE_GLIB_MAINLOOP @USE_GLIB_MAINLOOP@
 

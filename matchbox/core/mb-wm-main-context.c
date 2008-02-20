@@ -128,11 +128,6 @@ mb_wm_main_context_init (MBWMObject *this, va_list vap)
 
   ctx->wm = wm;
 
-#if USE_GLIB_MAINLOOP
-/*   g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, */
-/* 		   mb_wm_main_context_gloop_xevent, ctx, NULL); */
-#endif
-
   return 1;
 }
 

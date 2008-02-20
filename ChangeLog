@@ -1,5 +1,23 @@
 2008-02-20  Tomas Frydrych  <tf@o-hand.com>
 
+	* configure.ac:
+	* matchbox/comp-mgr/Makefile.am:
+	* matchbox/mb-wm-config.h.in:
+	* matchbox/core/mb-window-manager.c:
+	Added --enable-compositing-manager=framework-only to make it
+	possible to build libmatchox with compositing capabilites, but
+	without any of the provided backends.
+
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_main_loop):
+	Added missing xeven callback to the plain main glib loop.
+
+	* matchbox/core/mb-wm-main-context.c:
+	(mb_wm_main_context_init):
+	Removed unused code.
+
+2008-02-20  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm.h:
 	Fixed local includes.
 

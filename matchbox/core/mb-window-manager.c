@@ -146,7 +146,7 @@ mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
   return mb_wm_theme_new (wm, path);
 }
 
-#if ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE && COMP_MGR_BACKEND
 static MBWMCompMgr *
 mb_wm_real_comp_mgr_new (MBWindowManager *wm)
 {
@@ -211,7 +211,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->main            = mb_wm_main_real;
 #endif
 
-#if ENABLE_COMPOSITE
+#if ENABLE_COMPOSITE && COMP_MGR_BACKEND
   wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
 #endif
 
@@ -1130,17 +1130,22 @@ mb_wm_main_loop(MBWindowManager *wm)
 #if !USE_GLIB_MAINLOOP
   mb_wm_main_context_loop (wm->main_ctx);
 #else
-   MBWindowManagerClass * wm_class =
-     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
+  MBWindowManagerClass * wm_class =
+    MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
+#if !USE_CLUTTER
   if (!wm_class->main)
     {
       GMainLoop * loop = g_main_loop_new (NULL, FALSE);
+
+      g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+		       mb_wm_main_context_gloop_xevent, ctx, NULL);
 
       g_main_loop_run (loop);
       g_main_loop_unref (loop);
     }
   else
+#endif
     {
       wm_class->main (wm);
     }

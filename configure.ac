@@ -55,7 +55,8 @@ AC_ARG_ENABLE(compositing-manager,
   [  --enable-compositing-manager@<:@=BACKEND@:>@  Enable compositing manager,
                           optionally choosing compositor backend. Available
                           backends are: 'default' (XRender based backend),
-                                        'clutter' (Clutter based backend).],
+                                        'clutter' (Clutter based backend),
+                                        'framework-only' (Compositing frameworks without a backend).],
   [comp_mgr=$enableval], [comp_mgr=no])
 
 AC_ARG_ENABLE(glib-main-loop,
@@ -83,6 +84,8 @@ case $comp_mgr in
      clutter )       comp_mgr="yes (clutter)"
                      needed_pkgs="$needed_pkgs clutter-0.5 xcomposite xdamage "
 	             gmloop="yes" ;;
+
+     framework-only ) comp_mgr="yes (framework only)" ;;
 
      * )             comp_mgr = no ;;
 esac
@@ -131,6 +134,7 @@ if test "$use_gtk" = yes; then
 fi
 AC_SUBST(USE_GTK)
 
+COMP_MGR_BACKEND=0
 ENABLE_COMPOSITE=0
 AM_CONDITIONAL(ENABLE_COMPOSITE, [test "x$comp_mgr" != "xno"])
 if test "$comp_mgr" != no; then
@@ -142,8 +146,20 @@ USE_CLUTTER=0
 AM_CONDITIONAL(USE_CLUTTER, [test "x$comp_mgr" = "xyes (clutter)"])
 if test "$comp_mgr" = "yes (clutter)"; then
   USE_CLUTTER=1
+  COMP_MGR_BACKEND=1
 fi
 AC_SUBST(USE_CLUTTER)
+
+DEFAULT_COMP_MGR=0
+AM_CONDITIONAL(DEFAULT_COMP_MGR, [test "x$comp_mgr" = "xyes (default)"])
+if test "$comp_mgr" = "yes (default)"; then
+  DEFAULT_COMP_MGR=1
+  COMP_MGR_BACKEND=1
+fi
+AC_SUBST(DEFAULT_COMP_MGR)
+
+AM_CONDITIONAL(COMP_MGR_BACKEND, [test "x$COMP_MGR_BACKEND" = "x1"])
+AC_SUBST(COMP_MGR_BACKEND)
 
 AM_CONDITIONAL(ENABLE_LIBMATCHBOX, [test "x$libmatchbox" = "xyes"])
 
