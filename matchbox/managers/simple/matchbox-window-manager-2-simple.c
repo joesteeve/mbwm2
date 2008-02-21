@@ -94,11 +94,13 @@ main(int argc, char **argv)
 
   mb_wm_object_init();
 
+#if 0
 #if USE_GTK
   printf ("initializing gtk\n");
 
   gtk_init (&argc, &argv);
   dpy = GDK_DISPLAY();
+#endif
 #endif
 
 #if USE_CLUTTER

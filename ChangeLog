@@ -1,3 +1,10 @@
+2008-02-21  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/theme-engines/mb-wm-theme-cairo.c:
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	Disabled gtk integration until I can find a way for the gtk main
+	loop not to mess us about.
+
 2008-02-20  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

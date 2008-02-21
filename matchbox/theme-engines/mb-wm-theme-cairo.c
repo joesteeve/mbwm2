@@ -76,6 +76,7 @@ mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
 {
   MBWMTheme         *theme = MB_WM_THEME (obj);
 
+#if 0
 #if USE_GTK
   GtkWidget            *gwin;
   /*
@@ -84,6 +85,7 @@ mb_wm_theme_cairo_init (MBWMObject *obj, va_list vap)
   */
   gwin = gtk_window_new (GTK_WINDOW_POPUP);
   gtk_widget_ensure_style (gwin);
+#endif
 #endif
 
   /*
