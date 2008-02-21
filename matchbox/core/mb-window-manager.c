@@ -190,6 +190,25 @@ mb_wm_gdk_xevent_filter (GdkXEvent *xevent, GdkEvent *event, gpointer data)
 #endif
 
 #if USE_CLUTTER
+#if USE_GTK
+static GdkFilterReturn
+mb_wm_clutter_gdk_xevent_filter (GdkXEvent *xevent, GdkEvent *event,
+				 gpointer data)
+{
+  switch (clutter_x11_handle_event ((XEvent*)xevent))
+    {
+    default:
+    case CLUTTER_X11_FILTER_CONTINUE:
+      return GDK_FILTER_CONTINUE;
+    case CLUTTER_X11_FILTER_TRANSLATE:
+      return GDK_FILTER_TRANSLATE;
+    case CLUTTER_X11_FILTER_REMOVE:
+      return GDK_FILTER_REMOVE;
+    }
+
+  return GDK_FILTER_CONTINUE;
+}
+#else
 static ClutterX11FilterReturn
 mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
 {
@@ -203,6 +222,7 @@ mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
   return CLUTTER_X11_FILTER_CONTINUE;
 }
 #endif
+#endif
 
 #if USE_CLUTTER || USE_GTK
 static void
@@ -211,7 +231,9 @@ mb_wm_main_real (MBWindowManager *wm)
 
 #if USE_GTK
   gdk_window_add_filter (NULL, mb_wm_gdk_xevent_filter, wm);
-  clutter_x11_add_filter (mb_wm_clutter_xevent_filter, wm);
+#if USE_CLUTTER
+  gdk_window_add_filter (NULL, mb_wm_clutter_gdk_xevent_filter, NULL);
+#endif
   gtk_main ();
 #else
   clutter_x11_add_filter (mb_wm_clutter_xevent_filter, wm);

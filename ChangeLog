@@ -1,6 +1,15 @@
 2008-02-21  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-window-manager.c:
+	(mb_wm_main_real):
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	(main):
+	Use clutter_x11_handle_event and clutter_x11_disable_event_retrieval
+	to hook clutter into gdk event processing (needs clutter r2243+).
+
+2008-02-21  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-window-manager.c:
 	(mb_wm_unmanage_client):
 	Make sure that mb_wm_comp_mgr_client_hide() is called when
 	unmanaging a client.

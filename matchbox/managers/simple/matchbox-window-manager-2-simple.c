@@ -112,6 +112,10 @@ main(int argc, char **argv)
   if (dpy)
     clutter_x11_set_display (dpy);
 
+#if USE_GTK
+  clutter_x11_disable_event_retrieval ();
+#endif
+
   clutter_init (&argc, &argv);
 
   if (!dpy)
