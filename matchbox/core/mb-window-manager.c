@@ -39,6 +39,10 @@
 # include "../client-types/mb-wm-client-override.h"
 #endif
 
+#if USE_GTK
+#  include <gdk/gdk.h>
+#endif
+
 #include <stdarg.h>
 
 #include <X11/Xmd.h>
@@ -169,6 +173,22 @@ mb_wm_layout_new_real (MBWindowManager *wm)
   return layout;
 }
 
+#if USE_GTK
+static GdkFilterReturn
+mb_wm_gdk_xevent_filter (GdkXEvent *xevent, GdkEvent *event, gpointer data)
+{
+  MBWindowManager * wm = data;
+  XEvent          * xev = (XEvent*) xevent;
+
+  mb_wm_main_context_handle_x_event (xev, wm->main_ctx);
+
+  if (wm->sync_type)
+    mb_wm_sync (wm);
+
+  return GDK_FILTER_CONTINUE;
+}
+#endif
+
 #if USE_CLUTTER
 static ClutterX11FilterReturn
 mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
@@ -182,13 +202,21 @@ mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
 
   return CLUTTER_X11_FILTER_CONTINUE;
 }
+#endif
 
+#if USE_CLUTTER || USE_GTK
 static void
 mb_wm_main_real (MBWindowManager *wm)
 {
-  clutter_x11_add_filter (mb_wm_clutter_xevent_filter, wm);
 
+#if USE_GTK
+  gdk_window_add_filter (NULL, mb_wm_gdk_xevent_filter, wm);
+  clutter_x11_add_filter (mb_wm_clutter_xevent_filter, wm);
+  gtk_main ();
+#else
+  clutter_x11_add_filter (mb_wm_clutter_xevent_filter, wm);
   clutter_main ();
+#endif
 }
 #endif
 
