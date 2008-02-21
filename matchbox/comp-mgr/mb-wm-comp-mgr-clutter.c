@@ -170,8 +170,6 @@ mb_wm_comp_mgr_clutter_client_destroy (MBWMObject* obj)
   MBWMCompMgrClutterClient * cc = MB_WM_COMP_MGR_CLUTTER_CLIENT (obj);
   MBWindowManager          * wm = c->wm_client->wmref;
 
-  mb_wm_comp_mgr_client_hide (c);
-
   if (cc->actor)
     g_object_unref (cc->actor);
 

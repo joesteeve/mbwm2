@@ -1,5 +1,16 @@
 2008-02-21  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_unmanage_client):
+	Make sure that mb_wm_comp_mgr_client_hide() is called when
+	unmanaging a client.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_client_destroy):
+	Removed a superfluous call to mb_wm_comp_mgr_client_hide().
+
+2008-02-21  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/theme-engines/mb-wm-theme-cairo.c:
 	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
 	Disabled gtk integration until I can find a way for the gtk main
