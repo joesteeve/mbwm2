@@ -132,8 +132,12 @@ mb_wm_comp_mgr_client_class_type ()
 void
 mb_wm_comp_mgr_client_hide (MBWMCompMgrClient * client)
 {
-  MBWMCompMgrClientClass *klass
-    = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
+  MBWMCompMgrClientClass *klass;
+
+  if (!client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
 
   MBWM_ASSERT (klass->hide != NULL);
   klass->hide (client);
@@ -350,7 +354,12 @@ mb_wm_comp_mgr_unregister_client (MBWMCompMgr           * mgr,
     = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   MBWM_ASSERT (klass->unregister_client != NULL);
+
+  mb_wm_comp_mgr_client_hide (client->cm_client);
+
   klass->unregister_client (mgr, client);
+
+  client->cm_client = NULL;
 }
 
 /*
@@ -378,7 +387,7 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 {
   MBWMCompMgrClass *klass;
 
-  if (!mgr || !c)
+  if (!mgr || !c || !c->cm_client)
     return;
 
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));

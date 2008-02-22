@@ -1266,6 +1266,16 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 		* We need to skip it.
 		*/
 	       client->skip_unmaps++;
+
+#if ENABLE_COMPOSITE
+	       /*
+	        * Register the new client with the composite manager before
+	        * we call mb_wm_manage_client() -- this is necessary so that
+	        * we can process map notification on the frame.
+	        */
+	       if (wm->comp_mgr && mb_wm_comp_mgr_enabled (wm->comp_mgr))
+		 mb_wm_comp_mgr_register_client (wm->comp_mgr, client);
+#endif
 	       mb_wm_manage_client(wm, client, False);
 	     }
 	   else
@@ -1521,12 +1531,12 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   mb_wm_set_layout (wm, wm_class->layout_new (wm));
 
-  mb_wm_manage_preexistsing_wins (wm);
-
 #if ENABLE_COMPOSITE
   if (wm_class->comp_mgr_new && mb_wm_theme_use_compositing_mgr (wm->theme))
     mb_wm_compositing_on (wm);
 #endif
+
+  mb_wm_manage_preexistsing_wins (wm);
 
   return 1;
 }

@@ -1,5 +1,31 @@
 2008-02-22  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_manage_preexistsing_wins):
+	Fixed handling of pre-exising windows when compositing.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_turn_on_real):
+	Remove no longer needed pre-existing windows code.
+
+	(mb_wm_comp_mgr_clutter_fetch_texture):
+	Update actor position when re-fetching texture; use client
+	geometry rather than pixmap geometery for actor size.
+
+	(mb_wm_comp_mgr_clutter_map_notify_real):
+	Removed unneeded effect callback.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_client_hide):
+	(mb_wm_comp_mgr_map_notify):
+	Added checks for NULL.
+
+	(mb_wm_comp_mgr_unregister_client):
+	Call mb_wm_comp_mgr_client_hide() to provide more coherent
+	show/hide behaviour; clear the client data pointer.
+
+2008-02-22  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-client.c:
 	(mb_wm_comp_mgr_map_notify):
 	Removed superfluous mb_wm_comp_mgr_client_show/hide().

@@ -75,6 +75,7 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
 					       MBWMCompMgrEffectType type,
 					       unsigned long duration,
 					       MBWMGravity gravity);
+
 static void
 mb_wm_comp_mgr_clutter_client_class_init (MBWMObjectClass *klass)
 {
@@ -100,6 +101,7 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
   MBWMCompMgrClutterClient  *cclient  = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
   MBWindowManagerClient     *wm_client = client->wm_client;
   MBWindowManager           *wm        = wm_client->wmref;
+  MBGeometry                 geom;
   Window                     xwin;
   Window root;
   int x, y, w, h, bw, depth;
@@ -121,11 +123,14 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
   XGetGeometry (wm->xdpy, cclient->pixmap, &root,
 		&x, &y, &w, &h, &bw, &depth);
 
+  mb_wm_client_get_coverage (wm_client, &geom);
+
   cclient->pxm_width  = w;
   cclient->pxm_height = h;
   cclient->pxm_depth  = depth;
 
-  clutter_actor_set_size (cclient->actor, w, h);
+  clutter_actor_set_position (cclient->actor, geom.x, geom.y);
+  clutter_actor_set_size (cclient->actor, geom.width, geom.height);
 
   clutter_x11_texture_pixmap_set_pixmap (
 				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
@@ -735,26 +740,6 @@ mb_wm_comp_mgr_clutter_turn_on_real (MBWMCompMgr *mgr)
 
       clutter_actor_show (stage);
     }
-
-  /*
-   * Take care of any pre-existing windows
-   */
-  if (!mb_wm_stack_empty (wm))
-    {
-      MBWindowManagerClient * c;
-
-      mb_wm_stack_enumerate (wm, c)
-	{
-	  mb_wm_comp_mgr_clutter_register_client_real (mgr, c);
-
-	  /*
-	   * Need to call map_notify here manually, since we will have missed
-	   * the original map notification when this client mapped, and
-	   * we relly on it to create our actor.
-	   */
-	  mb_wm_comp_mgr_clutter_map_notify_real (mgr, c);
-	}
-    }
 }
 
 static void
@@ -888,14 +873,6 @@ mb_wm_comp_mgr_clutter_render_real (MBWMCompMgr *mgr)
 }
 
 static void
-mb_wm_map_effect_completed (void *data)
-{
-  ClutterActor * a = data;
-
-  clutter_actor_show (a);
-}
-
-static void
 mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 					MBWindowManagerClient *c)
 {
@@ -947,6 +924,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   g_object_set_data (G_OBJECT (actor), "MBWMCompMgrClutterClient", cclient);
 
   mb_wm_client_get_coverage (c, &geom);
+
   clutter_actor_set_position (actor, geom.x, geom.y);
 
   mb_wm_comp_mgr_clutter_add_actor (cmgr, actor);
@@ -954,12 +932,10 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   /*
    * Run map event effect *before* we call show() on the actor
    * (the effect will take care of showing the actor, and if not, show() gets
-   * called from the completed callback).
+   * called by mb_wm_comp_mgr_map_notify()).
    */
   mb_wm_comp_mgr_client_run_effect (c->cm_client,
-				    MBWMCompMgrEffectEventMap,
-				    mb_wm_map_effect_completed,
-				    actor);
+				    MBWMCompMgrEffectEventMap, NULL, NULL);
 }
 
 /*
