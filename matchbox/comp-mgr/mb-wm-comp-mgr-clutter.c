@@ -97,7 +97,7 @@ mb_wm_comp_mgr_clutter_client_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
 {
-  MBWMCompMgrClutterClient  *cclient  = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+  MBWMCompMgrClutterClient  *cclient  = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
   MBWindowManagerClient     *wm_client = client->wm_client;
   MBWindowManager           *wm        = wm_client->wmref;
   Window                     xwin;
@@ -118,7 +118,8 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
   if (!cclient->pixmap)
     return;
 
-  XGetGeometry (wm->xdpy, cclient->pixmap, &root, &x, &y, &w, &h, &bw, &depth);
+  XGetGeometry (wm->xdpy, cclient->pixmap, &root,
+		&x, &y, &w, &h, &bw, &depth);
 
   cclient->pxm_width  = w;
   cclient->pxm_height = h;
@@ -130,31 +131,6 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
 				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
 				cclient->pixmap,
 				w, h, depth);
-}
-
-/*
- * Update region x,y,width x height in our client texture.
- */
-static void
-mb_wm_comp_mgr_clutter_update_texture (MBWMCompMgrClient *client,
-				       int x, int y, int width, int height)
-{
-  MBWMCompMgrClutterClient  *cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
-  MBWindowManagerClient     *wm_client = client->wm_client;
-  MBWindowManager           *wm        = wm_client->wmref;
-
-  if (!cclient->mapped)
-    return;
-
-  if (!cclient->pixmap)
-    {
-      mb_wm_comp_mgr_clutter_fetch_texture (client);
-      return;
-    }
-
-  clutter_x11_texture_pixmap_update_area (
-				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
-				x, y, width, height);
 }
 
 static int
@@ -226,95 +202,6 @@ mb_wm_comp_mgr_clutter_client_hide_real (MBWMCompMgrClient * client)
   clutter_actor_hide (cclient->actor);
 }
 
-/*
- * Helper function for manipulating damage. Gets the extents of this client,
- * expressed as XserverRegion.
- */
-static XserverRegion
-mb_wm_comp_mgr_clutter_client_extents (MBWMCompMgrClient *client)
-{
-  MBWindowManagerClient     *wm_client = client->wm_client;
-  MBWindowManager           *wm = wm_client->wmref;
-  MBGeometry                 geom;
-  XRectangle	             r;
-  XserverRegion              extents;
-
-  mb_wm_client_get_coverage (wm_client, &geom);
-
-  r.x      = geom.x;
-  r.y      = geom.y;
-  r.width  = geom.width;
-  r.height = geom.height;
-
-  extents = XFixesCreateRegion (wm->xdpy, &r, 1);
-
-  return extents;
-}
-
-/*
- * Adds region damage to the overall damage of the client.
- */
-static void
-mb_wm_comp_mgr_clutter_client_add_damage (MBWMCompMgrClutterClient * cclient,
-					  XserverRegion damage)
-{
-  MBWindowManagerClient     *wm_client =
-    MB_WM_COMP_MGR_CLIENT (cclient)->wm_client;
-  MBWindowManager           *wm = wm_client->wmref;
-
-  XFixesUnionRegion (wm->xdpy,
-		     cclient->damage,
-		     cclient->damage,
-		     damage);
-
-  XFixesDestroyRegion (wm->xdpy, damage);
-
-  mb_wm_display_sync_queue (wm, MBWMSyncVisibility);
-}
-
-/*
- * Does all the work we need to show a client, except for calling
- * clutter_actor_show ()
- */
-static void
-mb_wm_comp_mgr_clutter_client_show_internal (MBWMCompMgrClient * client)
-{
-  MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
-  MBGeometry                 geom;
-  XserverRegion              region;
-  MBWindowManagerClient     *wm_client =
-    MB_WM_COMP_MGR_CLIENT (cclient)->wm_client;
-  MBWindowManager           *wm = wm_client->wmref;
-
-  MBWM_NOTE (COMPOSITOR, "showing client");
-
-  if (!cclient->actor)
-    {
-      /*
-       * This can happen if show() is called on our client before it is
-       * actually mapped (we only alocate the actor in response to map
-       * notification.
-       */
-      return;
-    }
-
-  if (!cclient->damage)
-    cclient->damage = XDamageCreate (wm->xdpy,
-				     wm_client->xwin_frame ?
-				     wm_client->xwin_frame :
-				     wm_client->window->xwindow,
-				     XDamageReportNonEmpty);
-
-  /*
-   * FIXME -- is it really necessary to invalidate the entire client area
-   * here ?
-   */
-  region = mb_wm_comp_mgr_clutter_client_extents (client);
-
-  mb_wm_comp_mgr_clutter_client_add_damage (cclient, region);
-
-}
-
 static void
 mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
 {
@@ -330,7 +217,6 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
       return;
     }
 
-  mb_wm_comp_mgr_clutter_client_show_internal (client);
   clutter_actor_show (cclient->actor);
 }
 
@@ -342,8 +228,8 @@ mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrEffectType    type,
 				   ClutterBehaviour       * behaviour);
 
 /*
- * Helper method to get a timeline for given event (all effects associated with
- * the same event share a single timeline.
+ * Helper method to get a timeline for given event (all effects associated
+ * with the same event share a single timeline.
  */
 static ClutterTimeline *
 mb_wm_comp_mgr_clutter_client_get_timeline (MBWMCompMgrClient      *client,
@@ -876,16 +762,55 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
 {
   MBWindowManagerClient    * wm_client = client->wm_client;
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+  MBWindowManager          * wm   = wm_client->wmref;
+  XserverRegion              parts;
+  int                        i, r_count;
+  XRectangle               * r_damage;
+  XRectangle                 r_bounds;
 
   MBWM_NOTE (COMPOSITOR, "REPAIRING %x", wm_client->window->xwindow);
 
   if (!cclient->actor)
     return;
 
-  XDamageSubtract (wm_client->wmref->xdpy,
-		   cclient->damage, None, None );
+  if (!cclient->pixmap)
+    {
+      /*
+       * First time we have been called since creation/configure,
+       * fetch the whole texture.
+       */
+      XDamageSubtract (wm->xdpy, cclient->damage, None, None);
+      mb_wm_comp_mgr_clutter_fetch_texture (client);
+      return;
+    }
 
-  mb_wm_comp_mgr_clutter_fetch_texture (client);
+  /*
+   * Retrieve the damaged region and break it down into individual
+   * rectangles so we do not have to update the whole shebang.
+   */
+  parts = XFixesCreateRegion (wm->xdpy, 0, 0);
+  XDamageSubtract (wm->xdpy, cclient->damage, None, parts);
+
+  r_damage = XFixesFetchRegionAndBounds (wm->xdpy, parts,
+					 &r_count,
+					 &r_bounds);
+
+  if (r_damage)
+    {
+      for (i = 0; i < r_count; ++i)
+	{
+	  clutter_x11_texture_pixmap_update_area (
+				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
+				r_damage[i].x,
+				r_damage[i].y,
+				r_damage[i].width,
+				r_damage[i].height);
+	}
+
+      XFree (r_damage);
+    }
+
+  XFixesDestroyRegion (wm->xdpy, parts);
 }
 
 static void
@@ -896,7 +821,15 @@ mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client)
 
   MBWM_NOTE (COMPOSITOR, "CONFIGURE request");
 
-  mb_wm_comp_mgr_clutter_fetch_texture (client);
+  /*
+   * Release the backing pixmap; we will recreate it next time we get damage
+   * notification for this window.
+   */
+  if (cclient->pixmap)
+    {
+      XFreePixmap (wm_client->wmref->xdpy, cclient->pixmap);
+      cclient->pixmap = None;
+    }
 }
 
 static Bool
@@ -914,20 +847,12 @@ mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 
       if (c && c->cm_client)
 	{
-	  XserverRegion   parts;
-	  int             i, r_count;
-	  XRectangle    * r_damage;
-	  XRectangle      r_bounds;
-
 	  MBWMCompMgrClutterClient *cclient =
 	    MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
 
 	  if (!cclient->actor || cclient->dont_update)
 	    return False;
 
-	  /* FIXME -- see if we can make some use of the 'more' parameter
-	   * to compress the damage events
-	   */
 	  MBWM_NOTE (COMPOSITOR,
 		     "Reparing window %x, geometry %d,%d;%dx%d; more %d\n",
 		     de->drawable,
@@ -937,32 +862,7 @@ mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 		     de->geometry.height,
 		     de->more);
 
-	  /*
-	   * Retrieve the damaged region and break it down into individual
-	   * rectangles so we do not have to update the whole shebang.
-	   */
-	  parts = XFixesCreateRegion (wm->xdpy, 0, 0);
-	  XDamageSubtract (wm->xdpy, de->damage, None, parts);
-
-	  r_damage = XFixesFetchRegionAndBounds (wm->xdpy, parts,
-						 &r_count,
-						 &r_bounds);
-
-	  if (r_damage)
-	    {
-	      for (i = 0; i < r_count; ++i)
-		{
-		  mb_wm_comp_mgr_clutter_update_texture (c->cm_client,
-							 r_damage[i].x,
-							 r_damage[i].y,
-							 r_damage[i].width,
-							 r_damage[i].height);
-		}
-
-	      XFree (r_damage);
-	    }
-
-	  XFixesDestroyRegion (wm->xdpy, parts);
+	  mb_wm_comp_mgr_clutter_client_repair_real (c->cm_client);
 	}
       else
 	{
@@ -980,8 +880,6 @@ mb_wm_comp_mgr_clutter_render_real (MBWMCompMgr *mgr)
   MBWMCompMgrClutterPrivate * priv = MB_WM_COMP_MGR_CLUTTER (mgr)->priv;
   MBWindowManagerClient     * wm_client;
   MBWindowManager           * wm = mgr->wm;
-
-  MBWM_NOTE (COMPOSITOR, "Rendering");
 
   /*
    * We do not need to do anything, as rendering is done automatically for us
@@ -1003,7 +901,8 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 {
   MBWMCompMgrClutter        * cmgr    = MB_WM_COMP_MGR_CLUTTER (mgr);
   MBWMCompMgrClient         * client  = c->cm_client;
-  MBWMCompMgrClutterClient  * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+  MBWMCompMgrClutterClient  * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
+  MBWindowManager           * wm      = c->wmref;
   ClutterActor *actor;
   MBGeometry                  geom;
   const MBWMList            * l;
@@ -1016,11 +915,18 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
     return;
 
   cclient->mapped = True;
+
+  cclient->damage = XDamageCreate (wm->xdpy,
+				   c->xwin_frame ?
+				   c->xwin_frame :
+				   c->window->xwindow,
+				   XDamageReportNonEmpty);
+
   actor = g_object_ref (clutter_x11_texture_pixmap_new ());
   cclient->actor = actor;
 
   l =
-    mb_wm_theme_get_client_effects (c->wmref->theme, c);
+    mb_wm_theme_get_client_effects (wm->theme, c);
 
   while (l)
     {
@@ -1040,14 +946,10 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
   g_object_set_data (G_OBJECT (actor), "MBWMCompMgrClutterClient", cclient);
 
-  mb_wm_comp_mgr_clutter_fetch_texture (MB_WM_COMP_MGR_CLIENT (cclient));
-
   mb_wm_client_get_coverage (c, &geom);
   clutter_actor_set_position (actor, geom.x, geom.y);
 
   mb_wm_comp_mgr_clutter_add_actor (cmgr, actor);
-
-  mb_wm_comp_mgr_clutter_client_show_internal (c->cm_client);
 
   /*
    * Run map event effect *before* we call show() on the actor

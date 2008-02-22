@@ -509,16 +509,6 @@ mb_wm_client_display_sync (MBWindowManagerClient *client)
   if (klass->sync)
     klass->sync (client);
 
-#if ENABLE_COMPOSITE
-  if (client->cm_client)
-    {
-      if (client->priv->mapped)
-	mb_wm_comp_mgr_client_show (client->cm_client);
-      else
-	mb_wm_comp_mgr_client_hide (client->cm_client);
-    }
-#endif
-
   client->priv->sync_state = 0;
 }
 

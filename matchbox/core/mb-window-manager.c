@@ -1100,10 +1100,10 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 #if ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     {
-      mb_wm_comp_mgr_client_hide (client->cm_client);
-
       if (destroy)
         mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
+      else
+	mb_wm_comp_mgr_client_hide (client->cm_client);
     }
 #endif
 

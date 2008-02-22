@@ -385,6 +385,9 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 
   if (klass->map_notify)
     klass->map_notify (mgr, c);
+
+  if (c->cm_client)
+    mb_wm_comp_mgr_client_show (c->cm_client);
 }
 
 void

@@ -1,3 +1,22 @@
+2008-02-22  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-wm-client.c:
+	(mb_wm_comp_mgr_map_notify):
+	Removed superfluous mb_wm_comp_mgr_client_show/hide().
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_map_notify):
+	Call mb_wm_comp_mgr_client_show() to provide more coherent
+	show/hide behaviour.
+
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_comp_mgr_map_notify):
+	Only call mb_wm_comp_mgr_client_hide() if we are not
+	unregistering the client.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	Code cleanup.
+
 2008-02-21  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-window-manager.c:
