@@ -1,5 +1,16 @@
 2008-02-22  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(MBWMCompMgrClutterClient):
+	Collapsed a bunch of boolean members into flag set; 'done' flag
+	for effects that should only run once.
+
+	* matchbox/core/mb-wm-client.c:
+	(mb_wm_client_deliver_delete):
+	Hooked unmap effect in.
+
+2008-02-22  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-window-manager.c:
 	(mb_wm_manage_preexistsing_wins):
 	Fixed handling of pre-exising windows when compositing.

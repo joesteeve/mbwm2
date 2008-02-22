@@ -799,8 +799,8 @@ mb_wm_client_shutdown (MBWindowManagerClient *client)
   XKillClient(wm->xdpy, xwin);
 }
 
-void
-mb_wm_client_deliver_delete (MBWindowManagerClient *client)
+static void
+mb_wm_client_do_delete (MBWindowManagerClient *client)
 {
   MBWindowManager        *wm     = client->wmref;
   Window                  xwin   = client->window->xwindow;
@@ -815,6 +815,23 @@ mb_wm_client_deliver_delete (MBWindowManagerClient *client)
     }
   else
     mb_wm_client_shutdown (client);
+}
+
+
+void
+mb_wm_client_deliver_delete (MBWindowManagerClient *client)
+{
+#if ENABLE_COMPOSITE
+  if (mb_wm_compositing_enabled (client->wmref))
+    {
+      mb_wm_comp_mgr_client_run_effect (client->cm_client,
+					MBWMCompMgrEffectEventUnmap,
+					mb_wm_client_do_delete,
+					client);
+    }
+#else
+  mb_wm_client_do_delete (client);
+#endif
 }
 
 void
@@ -951,7 +968,7 @@ mb_wm_client_reset_iconizing (MBWindowManagerClient *client)
 
 #if ENABLE_COMPOSITE
 static void
-mb_wm_client_effect_completed (void *data)
+mb_wm_client_minimize_effect_completed (void *data)
 {
   MBWindowManagerClient *client = data;
 
@@ -981,7 +998,7 @@ mb_wm_client_iconize (MBWindowManagerClient *client)
     {
       mb_wm_comp_mgr_client_run_effect (client->cm_client,
 					MBWMCompMgrEffectEventMinimize,
-					mb_wm_client_effect_completed,
+					mb_wm_client_minimize_effect_completed,
 					client);
     }
   else

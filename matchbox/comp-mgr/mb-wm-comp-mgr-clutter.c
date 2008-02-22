@@ -38,6 +38,13 @@
 static void
 mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter * , ClutterActor *);
 
+enum
+{
+  MBWMCompMgrClutterClientMapped     = (1<<0),
+  MBWMCompMgrClutterClientDontUpdate = (1<<1),
+  MBWMCompMgrClutterClientDone       = (1<<2),
+};
+
 /*
  * A helper object to store manager's per-client data
  */
@@ -49,8 +56,7 @@ struct MBWMCompMgrClutterClient
   int                     pxm_width;
   int                     pxm_height;
   int                     pxm_depth;
-  Bool                    mapped;
-  Bool                    dont_update;
+  unsigned int            flags;
   Damage                  damage;
 
   /* 1-based array holding timelines for effect events */
@@ -106,7 +112,7 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
   Window root;
   int x, y, w, h, bw, depth;
 
-  if (!cclient->mapped)
+  if (!(cclient->flags & MBWMCompMgrClutterClientMapped))
     return;
 
   xwin =
@@ -835,7 +841,8 @@ mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 	  MBWMCompMgrClutterClient *cclient =
 	    MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
 
-	  if (!cclient->actor || cclient->dont_update)
+	  if (!cclient->actor ||
+	      (cclient->flags & MBWMCompMgrClutterClientDontUpdate))
 	    return False;
 
 	  MBWM_NOTE (COMPOSITOR,
@@ -880,7 +887,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   MBWMCompMgrClient         * client  = c->cm_client;
   MBWMCompMgrClutterClient  * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
   MBWindowManager           * wm      = c->wmref;
-  ClutterActor *actor;
+  ClutterActor              * actor;
   MBGeometry                  geom;
   const MBWMList            * l;
 
@@ -888,10 +895,10 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
    * We get called for windows as well as their children, so once we are
    * mapped do nothing.
    */
-  if (cclient->mapped)
+  if (cclient->flags & MBWMCompMgrClutterClientMapped)
     return;
 
-  cclient->mapped = True;
+  cclient->flags |= MBWMCompMgrClutterClientMapped;
 
   cclient->damage = XDamageCreate (wm->xdpy,
 				   c->xwin_frame ?
@@ -1046,6 +1053,7 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	{
 	  GSList * actors;
 	  ClutterActor *a;
+	  Bool          dont_run = False;
 
 	  if (completed_cb)
 	    {
@@ -1111,7 +1119,12 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	      MBWMCompMgrClutterClient *c =
 		MB_WM_COMP_MGR_CLUTTER_CLIENT (cm_client);
 
-	      c->dont_update = True;
+	      c->flags |= MBWMCompMgrClutterClientDontUpdate;
+
+	      if (c->flags & MBWMCompMgrClutterClientDone)
+		dont_run = True;
+	      else
+		c->flags |= MBWMCompMgrClutterClientDone;
 	    }
 
 	  /*
@@ -1119,11 +1132,14 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	   * the show() is delayed until the effect had chance to
 	   * set up the actor postion).
 	   */
-	  clutter_actor_show (a);
+	  if (!dont_run)
+	    {
+	      clutter_actor_show (a);
+	      clutter_timeline_start (ceff->timeline);
+	    }
 
 	  g_slist_free (actors);
 
-	  clutter_timeline_start (ceff->timeline);
 	}
     }
 }
