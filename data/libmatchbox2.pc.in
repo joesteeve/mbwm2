@@ -1,7 +1,7 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
-includedir=@includedir@/@MBWM2_INCDIR@
+includedir=@includedir@/@MBWM2_PKGINCDIR@
 localedir=@localedir@
 apiversion=@MBWM2_API_VERSION@
 
