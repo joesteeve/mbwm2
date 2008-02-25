@@ -2,6 +2,12 @@
 
 	* configure.ac:
 	* data/libmatchbox2-0.1.pc.in:
+	Fixed Requires field of pc file.
+
+2008-02-25  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	* data/libmatchbox2-0.1.pc.in:
 	Fixed pkgconfig include path.
 
 2008-02-25  Tomas Frydrych  <tf@o-hand.com>
