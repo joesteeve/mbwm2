@@ -22,6 +22,7 @@
 #define _HAVE_MB_WM_COMP_MGR_CLUTTER_H
 
 #include <matchbox/mb-wm-config.h>
+#include <clutter/clutter.h>
 
 #define MB_WM_COMP_MGR_CLUTTER(c) ((MBWMCompMgrClutter*)(c))
 #define MB_WM_COMP_MGR_CLUTTER_CLASS(c) ((MBWMCompMgrClutterClass*)(c))
@@ -52,6 +53,9 @@ mb_wm_comp_mgr_clutter_class_type ();
 
 MBWMCompMgr*
 mb_wm_comp_mgr_clutter_new (MBWindowManager *wm);
+
+ClutterActor *
+mb_wm_comp_mgr_clutter_get_desktop (MBWMCompMgrClutter * cmgr);
 
 struct MBWMCompMgrClutterClientClass
 {

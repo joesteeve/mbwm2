@@ -492,6 +492,7 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
 struct MBWMCompMgrClutterPrivate
 {
   ClutterActor * stage;
+  ClutterActor * desktop;
   Window         overlay_window;
   int            damage_event;
 };
@@ -616,6 +617,10 @@ mb_wm_comp_mgr_clutter_init (MBWMObject *obj, va_list vap)
     return 0;
 
   priv->stage = clutter_stage_get_default ();
+  priv->desktop = clutter_group_new ();
+
+  clutter_actor_show (priv->desktop);
+  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), priv->desktop);
 
   return 1;
 }
@@ -968,13 +973,19 @@ static void
 mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter * cmgr,
 				     ClutterActor * a)
 {
-  clutter_container_remove_actor (CLUTTER_CONTAINER (cmgr->priv->stage), a);
+  clutter_container_remove_actor (CLUTTER_CONTAINER (cmgr->priv->desktop), a);
 }
 
 static void
 mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter * cmgr, ClutterActor * a)
 {
-  clutter_container_add_actor (CLUTTER_CONTAINER (cmgr->priv->stage), a);
+  clutter_container_add_actor (CLUTTER_CONTAINER (cmgr->priv->desktop), a);
+}
+
+ClutterActor *
+mb_wm_comp_mgr_clutter_get_desktop (MBWMCompMgrClutter * cmgr)
+{
+  return cmgr->priv->desktop;
 }
 
 MBWMCompMgr *

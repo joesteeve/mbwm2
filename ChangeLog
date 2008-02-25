@@ -1,3 +1,9 @@
+2008-02-25  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	Insert texture actors into a 'desktop' ClutterGroup rather than
+	directly into stage to provide greater flexibility in subclassing.
+
 2008-02-22  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
