@@ -228,6 +228,10 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
       return;
     }
 
+  /*
+   * Clear the don't update flag, if set
+   */
+  cclient->flags &= ~MBWMCompMgrClutterClientDontUpdate;
   clutter_actor_show (cclient->actor);
 }
 
@@ -775,6 +779,7 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
        * First time we have been called since creation/configure,
        * fetch the whole texture.
        */
+      MBWM_NOTE (DAMAGE, "Full screen repair.");
       XDamageSubtract (wm->xdpy, cclient->damage, None, None);
       mb_wm_comp_mgr_clutter_fetch_texture (client);
       return;
@@ -795,6 +800,12 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
     {
       for (i = 0; i < r_count; ++i)
 	{
+	  MBWM_NOTE (DAMAGE, "Repairing %d,%d;%dx%d",
+		     r_damage[i].x,
+		     r_damage[i].y,
+		     r_damage[i].width,
+		     r_damage[i].height);
+
 	  clutter_x11_texture_pixmap_update_area (
 				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
 				r_damage[i].x,

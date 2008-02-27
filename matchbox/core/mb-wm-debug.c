@@ -1,4 +1,4 @@
-/* 
+/*
  *  Matchbox Window Manager II - A lightweight window manager not for the
  *                               desktop.
  *
@@ -36,6 +36,7 @@ static const struct { const char *key; MBWMDebugFlag flag; } debug_keys[] = {
   { "obj-unref", MBWM_DEBUG_OBJ_UNREF },
   { "xas",       MBWM_DEBUG_XAS },
   { "compositor",MBWM_DEBUG_COMPOSITOR },
+  { "damage",    MBWM_DEBUG_DAMAGE },
 };
 #endif
 

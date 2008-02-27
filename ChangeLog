@@ -1,5 +1,18 @@
 2008-02-27  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-debug.c:
+	* matchbox/core/mb-wm-debug.h:
+	Added DAMAGE debug domain.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_client_show_real):
+	Clear DontUpdate flag if set.
+
+	(mb_wm_comp_mgr_clutter_client_repair_real):
+	Added debug output.
+
+2008-02-27  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-theme.c:
 	(mb_wm_theme_paint_decor):
 	(mb_wm_theme_paint_button):
