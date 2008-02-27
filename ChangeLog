@@ -1,3 +1,10 @@
+2008-02-27  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-wm-theme.c:
+	(mb_wm_theme_paint_decor):
+	(mb_wm_theme_paint_button):
+	Remove superfluous calls to mb_wm_comp_mgr_client_repair().
+
 2008-02-26  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-wm-client.c:

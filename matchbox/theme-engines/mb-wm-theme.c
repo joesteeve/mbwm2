@@ -281,17 +281,6 @@ mb_wm_theme_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 
   if (klass->paint_decor)
     klass->paint_decor (theme, decor);
-
-#if ENABLE_COMPOSITE
- {
-   MBWindowManagerClient *c  = decor->parent_client;
-
-   if (c->cm_client)
-     {
-       mb_wm_comp_mgr_client_repair (c->cm_client);
-     }
- }
-#endif
 }
 
 void
@@ -306,17 +295,6 @@ mb_wm_theme_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
   if (klass->paint_button)
     klass->paint_button (theme, button);
-
-#if ENABLE_COMPOSITE
- {
-   MBWindowManagerClient *c  = button->decor->parent_client;
-
-   if (c->cm_client)
-     {
-       mb_wm_comp_mgr_client_repair (c->cm_client);
-     }
- }
-#endif
 }
 
 Bool
