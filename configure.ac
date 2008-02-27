@@ -90,7 +90,7 @@ case $comp_mgr in
 
      framework-only ) comp_mgr="yes (framework only)" ;;
 
-     * )             comp_mgr = no ;;
+     * )             comp_mgr ="no" ;;
 esac
 
 if test "x$want_debug" = "xyes"; then

@@ -1,5 +1,39 @@
 2008-02-27  Tomas Frydrych  <tf@o-hand.com>
 
+	* configure.ac:
+	Fixed incorrect string quoting.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-default.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_unregister_client):
+	Moved shared code into the public function, and removed
+	unnecessary implementations from the default and clutter managers.
+	Removed call to mb_wm_comp_mgr_client_hide() as this interfers
+	with managers implementing an unmap effect.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	Added MBWMCompMgr::unmap_notify virtual.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_map_notify):
+	(mb_wm_comp_mgr_unmap_notify):
+	Moved the effects handling for map and umap events out of
+	MBWindowManager into the CM.
+
+	(mb_wm_comp_mgr_client_run_effect):
+	Take a temporary reference of the CM client object to enusure that
+	it is not destroyed while an effect is running.
+
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_handle_unmap_notify):
+	Removed handling of CM unmap effect.
+
+	(mb_wm_unmanage_client):
+	Extra comments.
+
+2008-02-27  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-debug.c:
 	* matchbox/core/mb-wm-debug.h:
 	Added DAMAGE debug domain.

@@ -523,17 +523,6 @@ mb_wm_comp_mgr_clutter_register_client_real (MBWMCompMgr           * mgr,
 }
 
 static void
-mb_wm_comp_mgr_clutter_unregister_client_real (MBWMCompMgr           * mgr,
-					       MBWindowManagerClient * client)
-{
-  if (!client || !client->cm_client)
-    return;
-
-  mb_wm_object_unref (MB_WM_OBJECT (client->cm_client));
-  client->cm_client = NULL;
-}
-
-static void
 mb_wm_comp_mgr_clutter_turn_on_real (MBWMCompMgr *mgr);
 
 static void
@@ -562,7 +551,6 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
 #endif
 
   cm_klass->register_client   = mb_wm_comp_mgr_clutter_register_client_real;
-  cm_klass->unregister_client = mb_wm_comp_mgr_clutter_unregister_client_real;
   cm_klass->turn_on           = mb_wm_comp_mgr_clutter_turn_on_real;
   cm_klass->turn_off          = mb_wm_comp_mgr_clutter_turn_off_real;
   cm_klass->render            = mb_wm_comp_mgr_clutter_render_real;
@@ -681,7 +669,7 @@ mb_wm_comp_mgr_clutter_turn_off_real (MBWMCompMgr *mgr)
 
       mb_wm_stack_enumerate (wm, c)
 	{
-	  mb_wm_comp_mgr_clutter_unregister_client_real (mgr, c);
+	  mb_wm_comp_mgr_unregister_client (mgr, c);
 	}
     }
 
@@ -951,14 +939,6 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   clutter_actor_set_position (actor, geom.x, geom.y);
 
   mb_wm_comp_mgr_clutter_add_actor (cmgr, actor);
-
-  /*
-   * Run map event effect *before* we call show() on the actor
-   * (the effect will take care of showing the actor, and if not, show() gets
-   * called by mb_wm_comp_mgr_map_notify()).
-   */
-  mb_wm_comp_mgr_client_run_effect (c->cm_client,
-				    MBWMCompMgrEffectEventMap, NULL, NULL);
 }
 
 /*
@@ -1026,6 +1006,7 @@ struct completed_cb_data
   MBWMCompMgrEffectCallback   completed_cb;
   void                      * cb_data;
   gulong                      my_id;
+  MBWMCompMgrClient         * cclient;
 };
 
 
@@ -1044,6 +1025,12 @@ mb_wm_comp_mgr_clutter_effect_completed_cb (ClutterTimeline * t, void * data)
     d->completed_cb (d->cb_data);
 
   g_signal_handler_disconnect (t, d->my_id);
+
+  /*
+   * Release the extra reference on the CM client that was added for the sake
+   * of the effect
+   */
+  mb_wm_object_unref (MB_WM_OBJECT (d->cclient));
 
   free (d);
 }
@@ -1075,20 +1062,19 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	{
 	  GSList * actors;
 	  ClutterActor *a;
-	  Bool          dont_run = False;
+	  Bool dont_run = False;
 
-	  if (completed_cb)
-	    {
-	      struct completed_cb_data * d =
-		mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
+	  struct completed_cb_data * d;
 
-	      d->completed_cb = completed_cb;
-	      d->cb_data = data;
+	  d = mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
 
-	      d->my_id = g_signal_connect (ceff->timeline, "completed",
+	  d->completed_cb = completed_cb;
+	  d->cb_data = data;
+	  d->cclient = cm_client;
+
+	  d->my_id = g_signal_connect (ceff->timeline, "completed",
 		      G_CALLBACK (mb_wm_comp_mgr_clutter_effect_completed_cb),
 		      d);
-	    }
 
 	  /*
 	   * This is bit of a pain; we know that our actor is attached to
@@ -1110,7 +1096,7 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	      clutter_actor_move_anchor_point_from_gravity (a, eff->gravity);
 	    }
 	  else if (CLUTTER_IS_BEHAVIOUR_PATH (ceff->behaviour) &&
-		   !CLUTTER_ACTOR_IS_VISIBLE (ceff->behaviour))
+		   !CLUTTER_ACTOR_IS_VISIBLE (a))
 	    {
 	      /*
 	       * At this stage, if the actor is not yet visible, move it to
@@ -1123,6 +1109,7 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	       * the first knot of the path to avoid messing about with copies
 	       * of the list.
 	       */
+
 	      GSList * knots =
 		clutter_behaviour_path_get_knots (
 				  CLUTTER_BEHAVIOUR_PATH (ceff->behaviour));
@@ -1130,6 +1117,7 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	      if (knots)
 		{
 		  ClutterKnot * k = knots->data;
+
 		  clutter_actor_set_position (a, k->x, k->y);
 
 		  g_slist_free (knots);

@@ -418,16 +418,6 @@ test_destroy_notify (XDestroyWindowEvent  *xev,
   return True;
 }
 
-#if ENABLE_COMPOSITE
-static void
-mb_wm_unmap_effect_completed (void *data)
-{
-  MBWindowManagerClient *client = data;
-
-  mb_wm_unmanage_client (client->wmref, client, True);
-}
-#endif
-
 static Bool
 mb_wm_handle_unmap_notify (XUnmapEvent          *xev,
 			   void                 *userdata)
@@ -470,23 +460,11 @@ mb_wm_handle_unmap_notify (XUnmapEvent          *xev,
 					    MBWMClientWindowEWMHStateHidden))
 	    {
 #if ENABLE_COMPOSITE
-	      /*
-	       * Run unmap effect and do the actual un-managing from the
-	       * completion call back.
-	       */
 	      if (mb_wm_compositing_enabled (wm))
-		{
-		  mb_wm_comp_mgr_client_run_effect (client->cm_client,
-					MBWMCompMgrEffectEventUnmap,
-					mb_wm_unmap_effect_completed,
-					client);
-		}
-	      else
+		mb_wm_comp_mgr_unmap_notify (wm->comp_mgr, client);
 #endif
-		{
-		  MBWM_DBG ("removing client %p\n", client);
-		  mb_wm_unmanage_client (wm, client, True);
-		}
+	      MBWM_DBG ("removing client %p\n", client);
+	      mb_wm_unmanage_client (wm, client, True);
 	    }
 	}
     }
@@ -1100,8 +1078,14 @@ mb_wm_unmanage_client (MBWindowManager       *wm,
 #if ENABLE_COMPOSITE
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
     {
+      /*
+       * If destroy == False, this unmap was triggered by iconizing the
+       * client; in that case, we do not destory the CM client data, only
+       * make sure the client is hidden (note that any 'minimize' effect
+       * has already completed by the time we get here).
+       */
       if (destroy)
-        mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
+	mb_wm_comp_mgr_unregister_client (wm->comp_mgr, client);
       else
 	mb_wm_comp_mgr_client_hide (client->cm_client);
     }

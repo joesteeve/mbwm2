@@ -375,19 +375,6 @@ mb_wm_comp_mgr_default_register_client_real (MBWMCompMgr           * mgr,
 }
 
 static void
-mb_wm_comp_mgr_default_unregister_client_real (MBWMCompMgr           * mgr,
-					       MBWindowManagerClient * client)
-{
-  MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
-
-  if (!client || !client->cm_client)
-    return;
-
-  mb_wm_object_unref (MB_WM_OBJECT (client->cm_client));
-  client->cm_client = NULL;
-}
-
-static void
 mb_wm_comp_mgr_default_turn_on_real (MBWMCompMgr *mgr);
 
 static void
@@ -409,7 +396,6 @@ mb_wm_comp_mgr_default_class_init (MBWMObjectClass *klass)
 #endif
 
   cm_klass->register_client   = mb_wm_comp_mgr_default_register_client_real;
-  cm_klass->unregister_client = mb_wm_comp_mgr_default_unregister_client_real;
   cm_klass->turn_on           = mb_wm_comp_mgr_default_turn_on_real;
   cm_klass->turn_off          = mb_wm_comp_mgr_default_turn_off_real;
   cm_klass->render            = mb_wm_comp_mgr_default_render_real;

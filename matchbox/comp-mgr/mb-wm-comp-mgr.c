@@ -216,6 +216,13 @@ mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
   if (!client)
     return;
 
+  /*
+   * Take a reference to the CM client object, so that it does not disappear
+   * underneath us while the effect is running; it is the responsibility
+   * of the subclassed run() to release this reference when it is done.
+   */
+  mb_wm_object_ref (MB_WM_OBJECT (client));
+
   while (l)
     {
       MBWMCompMgrEffectAssociation * a = l->data;
@@ -353,12 +360,10 @@ mb_wm_comp_mgr_unregister_client (MBWMCompMgr           * mgr,
   MBWMCompMgrClass *klass
     = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
-  MBWM_ASSERT (klass->unregister_client != NULL);
+  if (klass->unregister_client)
+    klass->unregister_client (mgr, client);
 
-  mb_wm_comp_mgr_client_hide (client->cm_client);
-
-  klass->unregister_client (mgr, client);
-
+  mb_wm_object_unref (MB_WM_OBJECT (client->cm_client));
   client->cm_client = NULL;
 }
 
@@ -395,8 +400,39 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
   if (klass->map_notify)
     klass->map_notify (mgr, c);
 
+  /*
+   * Run map event effect *before* we call show() on the actor
+   * (the effect will take care of showing the actor, and if not, show() gets
+   * called by mb_wm_comp_mgr_map_notify()).
+   */
+  mb_wm_comp_mgr_client_run_effect (c->cm_client,
+				    MBWMCompMgrEffectEventMap, NULL, NULL);
+
   if (c->cm_client)
     mb_wm_comp_mgr_client_show (c->cm_client);
+}
+
+void
+mb_wm_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
+{
+  MBWMCompMgrClass *klass;
+
+  if (!mgr || !c || !c->cm_client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+
+  mb_wm_comp_mgr_client_run_effect (c->cm_client,
+				    MBWMCompMgrEffectEventUnmap, NULL, NULL);
+
+  if (klass->unmap_notify)
+    klass->unmap_notify (mgr, c);
+
+  /*
+   * NB: cannot call hide() here, as at this point an effect could be running
+   *     -- the subclass needs to take care of this from the effect and/or
+   *     unmap_notify() function.
+   */
 }
 
 void
