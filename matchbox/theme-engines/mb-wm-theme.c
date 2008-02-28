@@ -315,6 +315,7 @@ typedef enum
   XML_CTX_BUTTON,
   XML_CTX_IMG,
   XML_CTX_EFFECT,
+  XML_CTX_TRANSITION,
 } XmlCtx;
 
 struct stack_data
@@ -606,6 +607,27 @@ mb_wm_theme_get_client_effects (MBWMTheme              * theme,
     }
 
   return c->effects;
+}
+
+MBWMThemeTransition *
+mb_wm_theme_get_client_transition (MBWMTheme             * theme,
+				   MBWindowManagerClient * client)
+{
+  MBWMXmlClient * c;
+  MBWMClientType  c_type;
+
+  if (!client || !theme)
+    return NULL;
+
+  c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
+
+  if (!theme->xml_clients ||
+      !(c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)))
+    {
+      return NULL;
+    }
+
+  return c->transition;
 }
 #endif
 
@@ -1199,6 +1221,95 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
       return;
     }
+
+  if (!strcmp (tag, "transition"))
+    {
+      MBWMThemeTransition *trs;
+      XmlCtx               ctx = xml_stack_top_ctx (exd->stack);
+      MBWMXmlClient       *c   = xml_stack_top_data (exd->stack);
+      const char         **p   = expat_attr;
+
+      trs = mb_wm_util_malloc0 (sizeof (MBWMThemeTransition));
+
+      xml_stack_push (&exd->stack, XML_CTX_TRANSITION);
+
+      if (ctx != XML_CTX_CLIENT || !c)
+	{
+	  MBWM_DBG ("Expected context client");
+	  return;
+	}
+
+      while (*p)
+	{
+	  if (!strcmp (*p, "type"))
+	    {
+	      const char *e = *(p+1);
+
+	      if (!strncmp (e, "fade", 4))
+		{
+		  trs->type = MBWMCompMgrTransitionFade;
+		}
+	      else if (!strncmp (e, "slide", 5))
+		{
+		  trs->type = MBWMCompMgrTransitionSlide;
+		}
+	      else if (!strcmp (*p, "gravity"))
+		{
+		  const char * g = *(p+1);
+
+		  if (!strncmp (g, "none", 2))
+		    trs->gravity = MBWMGravityNone;
+		  else if (!strncmp (g, "nw", 2))
+		    trs->gravity = MBWMGravityNorthWest;
+		  else if (!strncmp (g, "ne", 2))
+		    trs->gravity = MBWMGravityNorthEast;
+		  else if (!strncmp (g, "sw", 2))
+		    trs->gravity = MBWMGravitySouthWest;
+		  else if (!strncmp (g, "se", 2))
+		    trs->gravity = MBWMGravitySouthEast;
+		  else
+		    {
+		      switch (*g)
+			{
+			case 'n':
+			  trs->gravity = MBWMGravityNorth; break;
+			case 's':
+			  trs->gravity = MBWMGravitySouth; break;
+			case 'w':
+			  trs->gravity = MBWMGravityWest;  break;
+			case 'e':
+			  trs->gravity = MBWMGravityEast;  break;
+			default:
+			  trs->gravity = MBWMGravityNone;
+			}
+		    }
+		}
+	    }
+	  else if (!strcmp (*p, "duration"))
+	    trs->duration = atoi (*(p+1));
+
+	  p += 2;
+	}
+
+      if (!trs->type)
+	{
+	  free (trs);
+	  return;
+	}
+
+      /*
+       * Default to sensible value when no duration set
+       */
+      if (!trs->duration)
+	trs->duration = 200;
+
+      c->transition = trs;
+
+      xml_stack_top_set_data (exd->stack, trs);
+
+      return;
+    }
+
 #endif
 
   if (!strcmp (tag, "decor"))
@@ -1437,6 +1548,15 @@ xml_element_end_cb (void *data, const char *tag)
 	}
       else
 	MBWM_DBG ("Expected effect on the top of the stack!");
+    }
+  else if (!strcmp (tag, "transition"))
+    {
+      if (ctx == XML_CTX_TRANSITION)
+	{
+	  xml_stack_pop (&exd->stack);
+	}
+      else
+	MBWM_DBG ("Expected transition on the top of the stack!");
     }
   else if (!strcmp (tag, "decor"))
     {

@@ -2,7 +2,7 @@
 #define _HAVE_MB_WM_THEME_PRIVATE_H
 
 #include <matchbox/core/mb-wm.h>
-
+#include <matchbox/theme-engines/mb-wm-theme.h>
 /*
  * Helper structs for xml theme
  */
@@ -66,7 +66,8 @@ typedef struct Client
   MBWMClientLayoutHints layout_hints;
 
 #if ENABLE_COMPOSITE
-  MBWMList       *effects;
+  MBWMList            *effects;
+  MBWMThemeTransition *transition;
 #endif
 }MBWMXmlClient;
 

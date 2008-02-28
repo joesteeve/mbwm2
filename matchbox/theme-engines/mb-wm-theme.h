@@ -48,6 +48,13 @@ typedef struct _MBWMThemeEffects
   unsigned long            duration;
   MBWMGravity              gravity;
 } MBWMThemeEffects;
+
+typedef struct _MBWMThemeTransition
+{
+  MBWMCompMgrTransitionType type;
+  unsigned long             duration;
+  MBWMGravity               gravity;
+} MBWMThemeTransition;
 #endif
 
 enum MBWMThemeCaps
@@ -182,6 +189,9 @@ mb_wm_theme_get_client_layout_hints (MBWMTheme             * theme,
 const MBWMList *
 mb_wm_theme_get_client_effects (MBWMTheme             * theme,
 				MBWindowManagerClient * client);
+MBWMThemeTransition *
+mb_wm_theme_get_client_transition (MBWMTheme             * theme,
+				   MBWindowManagerClient * client);
 #endif
 
 Bool

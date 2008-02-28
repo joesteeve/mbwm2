@@ -169,6 +169,15 @@ typedef enum _MBWMCompMgrEffectType
   _MBWMCompMgrEffectLast,
 } MBWMCompMgrEffectType;
 
+typedef enum _MBWMCompMgrTransitionType
+{
+  MBWMCompMgrTransitionFade             = 1, /* 0 reserved for unknown */
+  MBWMCompMgrTransitionSlide,
+
+  _MBWMCompMgrTransitionLast,
+} MBWMCompMgrTransitionType;
+
+
 typedef void (*MBWMCompMgrEffectCallback) (void * data);
 
 typedef enum _MBWMGravity

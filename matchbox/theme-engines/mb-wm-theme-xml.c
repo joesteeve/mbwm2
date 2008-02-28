@@ -128,6 +128,9 @@ mb_wm_xml_client_free (MBWMXmlClient * c)
 
       l = n;
     }
+
+  if (c->transition)
+    free (c->transition);
 #endif
 
   free (c);

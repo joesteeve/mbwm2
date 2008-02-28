@@ -4,6 +4,7 @@
        shadow-type="gaussian" >
 <img src="test.png" />
 <client type="app">
+ <transition type="fade" duration="200" />
  <effect event="minimize" duration="300" gravity="ne" type="scale-down" />
  <effect event="map"   duration="100" gravity="e"     type="slide-in" />
  <effect event="unmap" duration="100" gravity="none"  type="fade" />

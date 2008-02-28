@@ -445,7 +445,12 @@ mb_wm_comp_mgr_do_transition (MBWMCompMgr * mgr,
 {
   MBWMCompMgrClass *klass;
 
-  if (!mgr || !c1 || !c2)
+  /*
+   * Transitions can only be done for clients of the same type, so
+   * check the types here.
+   */
+  if (!mgr || !c1 || !c2 ||
+      MB_WM_CLIENT_CLIENT_TYPE (c1) != MB_WM_CLIENT_CLIENT_TYPE (c1))
     return;
 
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));

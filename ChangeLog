@@ -1,5 +1,17 @@
 2008-02-28  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-types.h:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	* matchbox/theme-engines/mb-wm-theme.h:
+	* matchbox/theme-engines/mb-wm-theme-xml.c:
+	* matchbox/theme-engines/mb-wm-theme-xml.h:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* data/themes/Default/theme.xml:
+	Added transition support to theme.
+
+2008-02-28  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
 	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
 	* matchbox/core/mb-window-manager.c
