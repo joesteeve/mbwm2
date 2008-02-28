@@ -554,6 +554,9 @@ mb_wm_comp_mgr_clutter_transition_real (MBWMCompMgr * mgr,
 					MBWindowManagerClient *c2,
 					Bool reverse);
 
+static void
+mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr);
+
 static Bool
 mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev);
 
@@ -577,6 +580,7 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
   cm_klass->handle_events     = mb_wm_comp_mgr_clutter_handle_events_real;
   cm_klass->my_window         = mb_wm_comp_mgr_is_my_window_real;
   cm_klass->transition        = mb_wm_comp_mgr_clutter_transition_real;
+  cm_klass->restack           = mb_wm_comp_mgr_clutter_restack_real;
 }
 
 /*
@@ -891,6 +895,33 @@ mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 }
 
 static void
+mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
+{
+  MBWindowManager *wm = mgr->wm;
+
+  if (!mb_wm_stack_empty (wm))
+    {
+      MBWindowManagerClient * c;
+      ClutterActor * prev = NULL;
+
+      mb_wm_stack_enumerate (wm, c)
+	{
+	  MBWMCompMgrClutterClient * cc =
+	    MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
+
+	  ClutterActor * a = cc->actor;
+
+	  if (!a)
+	    continue;
+
+	  clutter_actor_raise (a, prev);
+	  prev = a;
+	}
+    }
+
+}
+
+static void
 mb_wm_comp_mgr_clutter_render_real (MBWMCompMgr *mgr)
 {
   MBWMCompMgrClutterPrivate * priv = MB_WM_COMP_MGR_CLUTTER (mgr)->priv;
@@ -963,62 +994,88 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
 struct _fade_cb_data
 {
-  ClutterActor * a1;
-  ClutterActor * a2;
-  ClutterTimeline * timeline;
-  ClutterEffectTemplate * tmpl;
+  MBWMCompMgrClutterClient *c1;
+  MBWMCompMgrClutterClient *c2;
+  ClutterTimeline  * timeline;
+  ClutterBehaviour * beh;
 };
 
 static void
 mb_wm_comp_mgr_clutter_transtion_fade_cb (ClutterTimeline * t, void * data)
 {
   struct _fade_cb_data * d  = data;
-  ClutterActor   * a1 = d->a1;
-  ClutterActor   * a2 = d->a2;
+  ClutterActor   * a1 = d->c1->actor;
+  ClutterActor   * a2 = d->c2->actor;
 
   clutter_actor_set_opacity (a1, 0xff);
-  clutter_actor_raise_top (a2);
+
+  d->c1->flags &= ~MBWMCompMgrClutterClientEffectRunning;
+  d->c2->flags &= ~MBWMCompMgrClutterClientEffectRunning;
 
   g_object_unref (d->timeline);
-  g_object_unref (d->tmpl);
+  g_object_unref (d->beh);
 }
 
 static void
-mb_wm_comp_mgr_clutter_transition_fade (ClutterActor *a1,
-					ClutterActor *a2,
+_fade_apply_behaviour_to_client (MBWindowManagerClient * wc,
+				 ClutterBehaviour      * b)
+{
+  MBWMList * l;
+  ClutterActor * a = MB_WM_COMP_MGR_CLUTTER_CLIENT (wc->cm_client)->actor;
+
+  clutter_actor_set_opacity (a, 0);
+  clutter_behaviour_apply (b, a);
+
+  l = mb_wm_client_get_transients (wc);
+  while (l)
+    {
+      MBWindowManagerClient * c = l->data;
+
+      _fade_apply_behaviour_to_client (c, b);
+      l = l->next;
+    }
+}
+
+static void
+mb_wm_comp_mgr_clutter_transition_fade (MBWMCompMgrClutterClient *c1,
+					MBWMCompMgrClutterClient *c2,
 					unsigned long duration)
 {
-  ClutterTimeline *t1, *t2;
-  guint8 opacity;
+  ClutterTimeline             * timeline;
+  ClutterAlpha                * alpha;
+  static struct _fade_cb_data   cb_data;
+  ClutterBehaviour            * b;
 
-  ClutterTimeline * timeline;
-  ClutterEffectTemplate * tmpl;
-  static struct _fade_cb_data cb_data;
-
-
+  /*
+   * Fade is simple -- we only need to animate the second actor and its
+   * children, as the stacking order automatically takes care of the
+   * actor appearing to fade out from the first one
+   */
   timeline = clutter_timeline_new_for_duration (duration);
-  tmpl = clutter_effect_template_new (timeline, CLUTTER_ALPHA_RAMP_INC);
 
-  cb_data.a1 = a1;
-  cb_data.a2 = a2;
+  alpha = clutter_alpha_new_full (timeline,
+				  CLUTTER_ALPHA_RAMP_DEC, NULL, NULL);
+
+  b = clutter_behaviour_opacity_new (alpha, 0xff, 0);
+
+  cb_data.c1 = c1;
+  cb_data.c2 = c2;
   cb_data.timeline = timeline;
-  cb_data.tmpl = tmpl;
+  cb_data.beh = b;
 
-  opacity = clutter_actor_get_opacity (a1);
-  clutter_actor_set_opacity (a2, 0);
-
-  t1 = clutter_effect_fade (tmpl, a1, 0, NULL, NULL);
-  t2 = clutter_effect_fade (tmpl, a2, 0xff, NULL, NULL);
+  _fade_apply_behaviour_to_client (MB_WM_COMP_MGR_CLIENT (c2)->wm_client, b);
 
   /*
    * Must restore the opacity on the 'from' actor
    */
-  g_signal_connect (t1, "completed",
+  g_signal_connect (timeline, "completed",
 		    G_CALLBACK (mb_wm_comp_mgr_clutter_transtion_fade_cb),
 		    &cb_data);
 
-  clutter_timeline_start (t1);
-  clutter_timeline_start (t2);
+  c1->flags |= MBWMCompMgrClutterClientEffectRunning;
+  c2->flags |= MBWMCompMgrClutterClientEffectRunning;
+
+  clutter_timeline_start (timeline);
 }
 
 static void
@@ -1038,18 +1095,16 @@ mb_wm_comp_mgr_clutter_transition_real (MBWMCompMgr * mgr,
   if (!trs)
     return;
 
-#if 0
   switch (trs->type)
     {
     case MBWMCompMgrTransitionFade:
-      mb_wm_comp_mgr_clutter_transition_fade (cc1->actor,
-					      cc2->actor,
+      mb_wm_comp_mgr_clutter_transition_fade (cc1,
+					      cc2,
 					      trs->duration);
       break;
     default:
       MBWM_DBG ("Unimplemented transition type %d", trs->type);
     }
-#endif
 }
 
 /*

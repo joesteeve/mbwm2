@@ -382,6 +382,20 @@ mb_wm_comp_mgr_render (MBWMCompMgr *mgr)
   klass->render (mgr);
 }
 
+void
+mb_wm_comp_mgr_restack (MBWMCompMgr *mgr)
+{
+  MBWMCompMgrClass *klass;
+
+  if (!mgr)
+    return;
+
+  klass  = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+
+  if (klass->restack)
+    klass->restack (mgr);
+}
+
 /*
  * Called when a window we are interested in maps.
  */

@@ -842,7 +842,14 @@ mb_wm_sync (MBWindowManager *wm)
 
   /* First of all, make sure stack is correct */
   if (wm->sync_type & MBWMSyncStacking)
-    mb_wm_stack_ensure (wm);
+    {
+      mb_wm_stack_ensure (wm);
+
+#if ENABLE_COMPOSITE
+      if (wm->comp_mgr && mb_wm_comp_mgr_enabled (wm->comp_mgr))
+	mb_wm_comp_mgr_restack (wm->comp_mgr);
+#endif
+    }
 
   /* Size stuff first assume newly managed windows unmapped ?
    *

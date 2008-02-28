@@ -52,6 +52,7 @@ struct MBWMCompMgrClass
   void   (*turn_on)           (MBWMCompMgr * mgr);
   void   (*turn_off)          (MBWMCompMgr * mgr);
   void   (*render)            (MBWMCompMgr * mgr);
+  void   (*restack)           (MBWMCompMgr * mgr);
   void   (*map_notify)        (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   void   (*unmap_notify)      (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   Bool   (*handle_events)     (MBWMCompMgr * mgr, XEvent *ev);
@@ -80,6 +81,9 @@ mb_wm_comp_mgr_turn_on (MBWMCompMgr *mgr);
 
 void
 mb_wm_comp_mgr_render (MBWMCompMgr *mgr);
+
+void
+mb_wm_comp_mgr_restack (MBWMCompMgr *mgr);
 
 void
 mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c);
