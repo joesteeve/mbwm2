@@ -205,9 +205,7 @@ mb_wm_comp_mgr_client_add_effects (MBWMCompMgrClient      * client,
  */
 void
 mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
-				  MBWMCompMgrEffectEvent      event,
-				  MBWMCompMgrEffectCallback   completed_cb,
-				  void                      * data)
+				  MBWMCompMgrEffectEvent      event)
 {
   MBWMList               * l = client->effects;
   Bool                     done_effect = False;
@@ -237,7 +235,7 @@ mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
 	  if (!eklass)
 	    continue;
 
-	  eklass->run (el, client, event, completed_cb, data);
+	  eklass->run (el, client, event);
 	  done_effect = True;
 	}
 
@@ -245,11 +243,11 @@ mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
     }
 
   /*
-   * If there were no effects to run for this event, we manually call
-   * the callback to signal the effect is completed
+   * If there were no effects to run for this event, release the
+   * temporary reference on the client object.
    */
-  if (!done_effect && completed_cb)
-    completed_cb (data);
+  if (!done_effect)
+    mb_wm_object_unref (MB_WM_OBJECT (client));
 }
 
 /*
@@ -406,7 +404,7 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
    * called by mb_wm_comp_mgr_map_notify()).
    */
   mb_wm_comp_mgr_client_run_effect (c->cm_client,
-				    MBWMCompMgrEffectEventMap, NULL, NULL);
+				    MBWMCompMgrEffectEventMap);
 
   if (c->cm_client)
     mb_wm_comp_mgr_client_show (c->cm_client);
@@ -423,7 +421,7 @@ mb_wm_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   mb_wm_comp_mgr_client_run_effect (c->cm_client,
-				    MBWMCompMgrEffectEventUnmap, NULL, NULL);
+				    MBWMCompMgrEffectEventUnmap);
 
   if (klass->unmap_notify)
     klass->unmap_notify (mgr, c);

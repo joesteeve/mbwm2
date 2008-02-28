@@ -142,9 +142,7 @@ mb_wm_comp_mgr_client_add_effects (MBWMCompMgrClient      * client,
 
 void
 mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
-				  MBWMCompMgrEffectEvent      event,
-				  MBWMCompMgrEffectCallback   completed_cb,
-				  void                      * data);
+				  MBWMCompMgrEffectEvent      event);
 
 MBWMList *
 mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient      * client,
@@ -170,9 +168,7 @@ struct MBWMCompMgrEffectClass
 
   void (*run)  (MBWMList                  * effects,
 		MBWMCompMgrClient         * cm_client,
-		MBWMCompMgrEffectEvent      event,
-		MBWMCompMgrEffectCallback   completed_cb,
-		void                      * data);
+		MBWMCompMgrEffectEvent      event);
 };
 
 int

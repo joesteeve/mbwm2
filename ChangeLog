@@ -1,3 +1,31 @@
+2008-02-28  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	(MBWMCompMgrEffect::run):
+	(mb_wm_comp_mgr_client_run_effect):
+	Simplified effect API by removing completion callback from run()
+	function (no longer required; custom CM implementations must
+	implement effects in a way that does not block the WM processing).
+
+	* matchbox/core/mb-wm-client.c:
+	(mb_wm_client_iconize):
+	Adjusted following the above API change.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_effect_run_real):
+	Set an EffectRunning flag on client to indicate that effect is in
+	progress.
+	(mb_wm_comp_mgr_clutter_client_hide_real):
+	Do not hide client actor if effect is in progress.
+	(mb_wm_comp_mgr_clutter_effect_completed_cb):
+	Call clutter_actor_hide() when unmap or minimize effects are
+	completed.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_client_run_effect):
+	Release assumed reference on client object if no effects were
+	started to avoid memory leak.
+
 2008-02-27  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

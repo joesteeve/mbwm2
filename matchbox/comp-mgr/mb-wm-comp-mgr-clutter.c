@@ -40,9 +40,10 @@ mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter * , ClutterActor *);
 
 enum
 {
-  MBWMCompMgrClutterClientMapped     = (1<<0),
-  MBWMCompMgrClutterClientDontUpdate = (1<<1),
-  MBWMCompMgrClutterClientDone       = (1<<2),
+  MBWMCompMgrClutterClientMapped        = (1<<0),
+  MBWMCompMgrClutterClientDontUpdate    = (1<<1),
+  MBWMCompMgrClutterClientDone          = (1<<2),
+  MBWMCompMgrClutterClientEffectRunning = (1<<3),
 };
 
 /*
@@ -209,6 +210,12 @@ static void
 mb_wm_comp_mgr_clutter_client_hide_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
+
+  /*
+   * Do not hide the actor if effect is in progress
+   */
+  if (cclient->flags & MBWMCompMgrClutterClientEffectRunning)
+    return;
 
   clutter_actor_hide (cclient->actor);
 }
@@ -1003,10 +1010,9 @@ struct MBWMCompMgrClutterEffect
 
 struct completed_cb_data
 {
-  MBWMCompMgrEffectCallback   completed_cb;
-  void                      * cb_data;
   gulong                      my_id;
-  MBWMCompMgrClient         * cclient;
+  MBWMCompMgrClutterClient  * cclient;
+  MBWMCompMgrEffectEvent      event;
 };
 
 
@@ -1021,10 +1027,20 @@ mb_wm_comp_mgr_clutter_effect_completed_cb (ClutterTimeline * t, void * data)
 {
   struct completed_cb_data * d = data;
 
-  if (d->completed_cb)
-    d->completed_cb (d->cb_data);
+  d->cclient->flags &= ~MBWMCompMgrClutterClientEffectRunning;
 
   g_signal_handler_disconnect (t, d->my_id);
+
+  switch (d->event)
+    {
+    case MBWMCompMgrEffectEventUnmap:
+    case MBWMCompMgrEffectEventMinimize:
+      clutter_actor_hide (d->cclient->actor);
+      break;
+
+    default:
+      break;
+    }
 
   /*
    * Release the extra reference on the CM client that was added for the sake
@@ -1038,10 +1054,11 @@ mb_wm_comp_mgr_clutter_effect_completed_cb (ClutterTimeline * t, void * data)
 static void
 mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 					MBWMCompMgrClient       * cm_client,
-					MBWMCompMgrEffectEvent    event,
-					MBWMCompMgrEffectCallback completed_cb,
-					void                    * data)
+					MBWMCompMgrEffectEvent    event)
 {
+  MBWMCompMgrClutterClient *cclient =
+    MB_WM_COMP_MGR_CLUTTER_CLIENT (cm_client);
+
   /*
    * Since the entire effect group for a single event type shares
    * a timeline, we just need to start it for one of the behaviours.
@@ -1068,9 +1085,8 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 
 	  d = mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
 
-	  d->completed_cb = completed_cb;
-	  d->cb_data = data;
-	  d->cclient = cm_client;
+	  d->cclient = cclient;
+	  d->event   = event;
 
 	  d->my_id = g_signal_connect (ceff->timeline, "completed",
 		      G_CALLBACK (mb_wm_comp_mgr_clutter_effect_completed_cb),
@@ -1126,15 +1142,12 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 
 	  if (event == MBWMCompMgrEffectEventUnmap)
 	    {
-	      MBWMCompMgrClutterClient *c =
-		MB_WM_COMP_MGR_CLUTTER_CLIENT (cm_client);
+	      cclient->flags |= MBWMCompMgrClutterClientDontUpdate;
 
-	      c->flags |= MBWMCompMgrClutterClientDontUpdate;
-
-	      if (c->flags & MBWMCompMgrClutterClientDone)
+	      if (cclient->flags & MBWMCompMgrClutterClientDone)
 		dont_run = True;
 	      else
-		c->flags |= MBWMCompMgrClutterClientDone;
+		cclient->flags |= MBWMCompMgrClutterClientDone;
 	    }
 
 	  /*
@@ -1144,6 +1157,7 @@ mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
 	   */
 	  if (!dont_run)
 	    {
+	      cclient->flags |= MBWMCompMgrClutterClientEffectRunning;
 	      clutter_actor_show (a);
 	      clutter_timeline_start (ceff->timeline);
 	    }
