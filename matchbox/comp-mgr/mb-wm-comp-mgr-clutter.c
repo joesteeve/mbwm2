@@ -36,7 +36,10 @@
 #include <X11/extensions/shape.h>
 
 static void
-mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter * , ClutterActor *);
+mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter *, ClutterActor *);
+
+static void
+mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter *, ClutterActor *);
 
 enum
 {
@@ -154,9 +157,12 @@ mb_wm_comp_mgr_clutter_client_init (MBWMObject *obj, va_list vap)
 static void
 mb_wm_comp_mgr_clutter_client_destroy (MBWMObject* obj)
 {
-  MBWMCompMgrClient        * c  = MB_WM_COMP_MGR_CLIENT (obj);
-  MBWMCompMgrClutterClient * cc = MB_WM_COMP_MGR_CLUTTER_CLIENT (obj);
-  MBWindowManager          * wm = c->wm_client->wmref;
+  MBWMCompMgrClient        * c   = MB_WM_COMP_MGR_CLIENT (obj);
+  MBWMCompMgrClutterClient * cc  = MB_WM_COMP_MGR_CLUTTER_CLIENT (obj);
+  MBWindowManager          * wm  = c->wm_client->wmref;
+  MBWMCompMgrClutter       * mgr = MB_WM_COMP_MGR_CLUTTER (wm->comp_mgr);
+
+  mb_wm_comp_mgr_clutter_remove_actor (mgr, cc->actor);
 
   if (cc->actor)
     g_object_unref (cc->actor);
@@ -542,6 +548,12 @@ static void
 mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 					MBWindowManagerClient *c);
 
+static void
+mb_wm_comp_mgr_clutter_transition_real (MBWMCompMgr * mgr,
+					MBWindowManagerClient *c1,
+					MBWindowManagerClient *c2,
+					Bool reverse);
+
 static Bool
 mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev);
 
@@ -564,6 +576,7 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
   cm_klass->map_notify        = mb_wm_comp_mgr_clutter_map_notify_real;
   cm_klass->handle_events     = mb_wm_comp_mgr_clutter_handle_events_real;
   cm_klass->my_window         = mb_wm_comp_mgr_is_my_window_real;
+  cm_klass->transition        = mb_wm_comp_mgr_clutter_transition_real;
 }
 
 /*
@@ -946,6 +959,67 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   clutter_actor_set_position (actor, geom.x, geom.y);
 
   mb_wm_comp_mgr_clutter_add_actor (cmgr, actor);
+}
+
+static struct _cbdata
+{
+  ClutterActor * a1;
+  ClutterActor * a2;
+}cb_data;
+
+static void
+mb_wm_comp_mgr_clutter_transtion_cb (ClutterTimeline * t, void * data)
+{
+  struct _cbdata * d  = data;
+  ClutterActor   * a1 = d->a1;
+  ClutterActor   * a2 = d->a2;
+
+  clutter_actor_set_opacity (a1, 0xff);
+  clutter_actor_raise_top (a2);
+}
+
+static void
+mb_wm_comp_mgr_clutter_transition_real (MBWMCompMgr * mgr,
+					MBWindowManagerClient *c1,
+					MBWindowManagerClient *c2,
+					Bool reverse)
+{
+  MBWMCompMgrClutterClient * cc1 =
+    MB_WM_COMP_MGR_CLUTTER_CLIENT (c1->cm_client);
+  MBWMCompMgrClutterClient * cc2 =
+    MB_WM_COMP_MGR_CLUTTER_CLIENT (c2->cm_client);
+  ClutterTimeline *t1, *t2;
+  guint8 opacity;
+
+  static ClutterTimeline * timeline = NULL;
+  static ClutterEffectTemplate * tmpl;
+  static struct _cbdata cb_data;
+
+
+  if (!timeline)
+    {
+      timeline = clutter_timeline_new_for_duration (200);
+      tmpl = clutter_effect_template_new (timeline, CLUTTER_ALPHA_RAMP_INC);
+    }
+
+  cb_data.a1 = cc1->actor;
+  cb_data.a2 = cc2->actor;
+
+  opacity = clutter_actor_get_opacity (cc1->actor);
+  clutter_actor_set_opacity (cc2->actor, 0);
+
+  t1 = clutter_effect_fade (tmpl, cc1->actor, 0, NULL, NULL);
+  t2 = clutter_effect_fade (tmpl, cc2->actor, 0xff, NULL, NULL);
+
+  /*
+   * Must restore the opacity on the 'from' actor
+   */
+  g_signal_connect (t1, "completed",
+		    G_CALLBACK (mb_wm_comp_mgr_clutter_transtion_cb),
+		    &cb_data);
+
+  clutter_timeline_start (t1);
+  clutter_timeline_start (t2);
 }
 
 /*

@@ -56,6 +56,10 @@ struct MBWMCompMgrClass
   void   (*unmap_notify)      (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   Bool   (*handle_events)     (MBWMCompMgr * mgr, XEvent *ev);
   Bool   (*my_window)         (MBWMCompMgr * mgr, Window xwin);
+  void   (*transition)        (MBWMCompMgr * mgr,
+			       MBWindowManagerClient *c1,
+			       MBWindowManagerClient *c2,
+			       Bool reverse);
 };
 
 int
@@ -91,6 +95,12 @@ mb_wm_comp_mgr_handle_events (MBWMCompMgr * mgr, XEvent *ev);
 
 Bool
 mb_wm_comp_mgr_is_my_window (MBWMCompMgr * mgr, Window xwin);
+
+void
+mb_wm_comp_mgr_do_transition (MBWMCompMgr           * mgr,
+			      MBWindowManagerClient * c1,
+			      MBWindowManagerClient * c2,
+			      Bool                    reverse);
 
 struct MBWMCompMgrClient
 {

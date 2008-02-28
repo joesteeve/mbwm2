@@ -1,5 +1,19 @@
 2008-02-28  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	* matchbox/core/mb-window-manager.c
+	(mb_wm_cycle_apps):
+	Simple API for client transition effects.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_client_destroy):
+	Remove actor from stage when destroying cm client.
+	(mb_wm_comp_mgr_clutter_transition_real):
+	Sample transition implementation.
+
+2008-02-28  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
 	(MBWMCompMgrEffect::run):
 	(mb_wm_comp_mgr_client_run_effect):

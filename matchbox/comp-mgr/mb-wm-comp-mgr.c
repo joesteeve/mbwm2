@@ -433,6 +433,28 @@ mb_wm_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
    */
 }
 
+/*
+ * Runs a transition-effect from client c1 to client c2; the reverse argument
+ * indicates notional direction of the transition
+ */
+void
+mb_wm_comp_mgr_do_transition (MBWMCompMgr * mgr,
+			      MBWindowManagerClient *c1,
+			      MBWindowManagerClient *c2,
+			      Bool reverse)
+{
+  MBWMCompMgrClass *klass;
+
+  if (!mgr || !c1 || !c2)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+
+  if (klass->transition)
+    klass->transition (mgr, c1, c2, reverse);
+}
+
+
 void
 mb_wm_comp_mgr_turn_on (MBWMCompMgr *mgr)
 {

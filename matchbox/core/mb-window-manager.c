@@ -1903,6 +1903,10 @@ mb_wm_cycle_apps (MBWindowManager *wm, Bool reverse)
 
   if (new_top && old_top != new_top)
     {
+#if ENABLE_COMPOSITE
+      if (wm->comp_mgr && mb_wm_comp_mgr_enabled (wm->comp_mgr))
+	mb_wm_comp_mgr_do_transition (wm->comp_mgr, old_top, new_top, reverse);
+#endif
       mb_wm_activate_client (wm, new_top);
     }
 }
