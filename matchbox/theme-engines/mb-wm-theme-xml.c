@@ -139,15 +139,19 @@ mb_wm_xml_client_free (MBWMXmlClient * c)
 void
 mb_wm_xml_clr_from_string (MBWMColor * clr, const char *s)
 {
-  int  r, g, b;
+  int  r, g, b, a;
 
   if (!s || *s != '#')
-    return;
+    {
+      clr->set = False;
+      return;
+    }
 
-  sscanf (s+1,"%2x%2x%2x", &r, &g, &b);
+  sscanf (s+1,"%2x%2x%2x%2x", &r, &g, &b, &a);
   clr->r = (double) r / 255.0;
   clr->g = (double) g / 255.0;
   clr->b = (double) b / 255.0;
+  clr->a = (double) a / 255.0;
 
   clr->set = True;
 }

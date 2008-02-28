@@ -888,20 +888,28 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  else if (!strcmp (*p, "clr-shadow"))
 	    {
 	      mb_wm_xml_clr_from_string (&clr, *(p+1));
-	      exd->color_shadow.r = clr.r;
-	      exd->color_shadow.g = clr.g;
-	      exd->color_shadow.b = clr.b;
-	      exd->color_shadow.a = clr.a;
-	      exd->color_shadow.set = True;
+
+	      if (clr.set)
+		{
+		  exd->color_shadow.r = clr.r;
+		  exd->color_shadow.g = clr.g;
+		  exd->color_shadow.b = clr.b;
+		  exd->color_shadow.a = clr.a;
+		  exd->color_shadow.set = True;
+		}
 	    }
 	  else if (!strcmp (*p, "clr-lowlight"))
 	    {
 	      mb_wm_xml_clr_from_string (&clr, *(p+1));
-	      exd->color_lowlight.r = clr.r;
-	      exd->color_lowlight.g = clr.g;
-	      exd->color_lowlight.b = clr.b;
-	      exd->color_lowlight.a = clr.a;
-	      exd->color_lowlight.set = True;
+
+	      if (clr.set)
+		{
+		  exd->color_lowlight.r = clr.r;
+		  exd->color_lowlight.g = clr.g;
+		  exd->color_lowlight.b = clr.b;
+		  exd->color_lowlight.a = clr.a;
+		  exd->color_lowlight.set = True;
+		}
 	    }
 	  else if (!strcmp (*p, "shadow-type"))
 	    {

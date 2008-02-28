@@ -55,7 +55,8 @@ enum
 struct MBWMCompMgrClutterClient
 {
   MBWMCompMgrClient       parent;
-  ClutterActor          * actor;
+  ClutterActor          * actor;  /* Overall actor */
+  ClutterActor          * texture; /* The texture part of our actor */
   Pixmap                  pixmap;
   int                     pxm_width;
   int                     pxm_height;
@@ -140,10 +141,10 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
   cclient->pxm_depth  = depth;
 
   clutter_actor_set_position (cclient->actor, geom.x, geom.y);
-  clutter_actor_set_size (cclient->actor, geom.width, geom.height);
+  clutter_actor_set_size (cclient->texture, geom.width, geom.height);
 
   clutter_x11_texture_pixmap_set_pixmap (
-				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
+				CLUTTER_X11_TEXTURE_PIXMAP (cclient->texture),
 				cclient->pixmap,
 				w, h, depth);
 }
@@ -245,7 +246,7 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
    * Clear the don't update flag, if set
    */
   cclient->flags &= ~MBWMCompMgrClutterClientDontUpdate;
-  clutter_actor_show (cclient->actor);
+  clutter_actor_show_all (cclient->actor);
 }
 
 static MBWMCompMgrEffect *
@@ -819,7 +820,7 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
 		     r_damage[i].height);
 
 	  clutter_x11_texture_pixmap_update_area (
-				CLUTTER_X11_TEXTURE_PIXMAP (cclient->actor),
+				CLUTTER_X11_TEXTURE_PIXMAP (cclient->texture),
 				r_damage[i].x,
 				r_damage[i].y,
 				r_damage[i].width,
@@ -943,8 +944,12 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   MBWMCompMgrClutterClient  * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
   MBWindowManager           * wm      = c->wmref;
   ClutterActor              * actor;
+  ClutterActor              * texture;
+  ClutterActor              * rect;
   MBGeometry                  geom;
   const MBWMList            * l;
+  unsigned int                shadow_clr[4];
+  ClutterColor                shadow_cclr;
 
   /*
    * We get called for windows as well as their children, so once we are
@@ -961,8 +966,33 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 				   c->window->xwindow,
 				   XDamageReportNonEmpty);
 
-  actor = g_object_ref (clutter_x11_texture_pixmap_new ());
+  mb_wm_client_get_coverage (c, &geom);
+
+  actor = g_object_ref (clutter_group_new ());
+  texture = clutter_x11_texture_pixmap_new ();
+  clutter_actor_show (texture);
+
+  mb_wm_theme_get_shadow_color (wm->theme,
+				&shadow_clr[0],
+				&shadow_clr[1],
+				&shadow_clr[2],
+				&shadow_clr[3]);
+
+  shadow_cclr.red   = 0xff * shadow_clr[0] / 0xffff;
+  shadow_cclr.green = 0xff * shadow_clr[1] / 0xffff;
+  shadow_cclr.blue  = 0xff * shadow_clr[2] / 0xffff;
+  shadow_cclr.alpha = 0xff * shadow_clr[3] / 0xffff;
+
+  rect = clutter_rectangle_new_with_color (&shadow_cclr);
+  clutter_actor_set_position (rect, 4, 4);
+  clutter_actor_set_size (rect, geom.width, geom.height);
+
+  clutter_actor_show (rect);
+
+  clutter_container_add (CLUTTER_CONTAINER (actor), rect, texture, NULL);
+
   cclient->actor = actor;
+  cclient->texture = texture;
 
   l =
     mb_wm_theme_get_client_effects (wm->theme, c);
@@ -984,8 +1014,6 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
 
   g_object_set_data (G_OBJECT (actor), "MBWMCompMgrClutterClient", cclient);
-
-  mb_wm_client_get_coverage (c, &geom);
 
   clutter_actor_set_position (actor, geom.x, geom.y);
 

@@ -1,5 +1,17 @@
 2008-02-28  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/theme-engines/mb-wm-theme-xml.c:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	Fixed parsing of colour alpha.
+
+	* data/themes/Default/theme.xml
+	Added shaddow colour definition.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	Implemented simple shaddows.
+
+2008-02-28  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
 	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
 	* matchbox/core/mb-window-manager.c:

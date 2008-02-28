@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <theme name="Default" author="Tomas Frydrych, tf@o-hand.com"
        desc="" version="1.0" engine-version="2" engine-type="default"
-       shadow-type="gaussian" >
+       shadow-type="gaussian" clr-shadow="#44444444">
 <img src="test.png" />
 <client type="app">
  <transition type="fade" duration="200" />
