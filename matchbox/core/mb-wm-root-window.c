@@ -379,6 +379,20 @@ mb_wm_root_window_handle_message (MBWMRootWindow *win, XClientMessageEvent *e)
 	}
       return 1;
     }
+
+  else if (e->message_type == wm->atoms[MBWM_ATOM_WM_CHANGE_STATE])
+    {
+      switch (e->data.l[0])
+	{
+	case IconicState:
+	  if ((c = mb_wm_managed_client_from_xwindow (wm, e->window)))
+	    mb_wm_client_iconize (c);
+
+	default:
+	  MBWM_DBG ("Unhandled value %d for WM_CHANGE_STATE ClientMessage",
+		    e->data.l[0]);
+	}
+    }
   else if (e->message_type == wm->atoms[MBWM_ATOM_NET_SHOWING_DESKTOP])
     {
       mb_wm_handle_show_desktop (wm, e->data.l[0]);
