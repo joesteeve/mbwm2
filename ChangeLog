@@ -1,5 +1,10 @@
 2008-02-29  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	Initial stab at gaussian shadows.
+
+2008-02-29  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-root-window.c:
 	(mb_wm_root_window_handle_message):
 	Handle WM_CHANGE_STATE client message per ICCC.
