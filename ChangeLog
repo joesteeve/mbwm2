@@ -1,5 +1,13 @@
 2008-02-28  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_fetch_texture):
+	Handle shaped windows correctly.
+	(mb_wm_comp_mgr_clutter_turn_on_real):
+	Removed debug colour for stage.
+
+2008-02-28  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/theme-engines/mb-wm-theme-xml.c:
 	* matchbox/theme-engines/mb-wm-theme.c:
 	Fixed parsing of colour alpha.
