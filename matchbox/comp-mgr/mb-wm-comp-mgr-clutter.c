@@ -1061,6 +1061,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   unsigned int                shadow_clr[4];
   ClutterColor                shadow_cclr;
   MBWMCompMgrShadowType       shadow_type;
+  MBWMClientType              ctype = MB_WM_CLIENT_CLIENT_TYPE (c);
 
   /*
    * We get called for windows as well as their children, so once we are
@@ -1083,63 +1084,76 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   texture = clutter_x11_texture_pixmap_new ();
   clutter_actor_show (texture);
 
-  shadow_type = mb_wm_theme_get_shadow_type (wm->theme);
+  if (ctype == MBWMClientTypeDialog   ||
+      ctype == MBWMClientTypeMenu     ||
+      ctype == MBWMClientTypeNote     ||
+      ctype == MBWMClientTypeOverride)
+    {
+      shadow_type = mb_wm_theme_get_shadow_type (wm->theme);
 
-  if (shadow_type == MBWM_COMP_MGR_SHADOW_NONE)
-    {
-      clutter_container_add (CLUTTER_CONTAINER (actor), texture, NULL);
-    }
-  else
-    {
-      if (shadow_type == MBWM_COMP_MGR_SHADOW_SIMPLE)
+      if (shadow_type == MBWM_COMP_MGR_SHADOW_NONE)
 	{
-	  mb_wm_theme_get_shadow_color (wm->theme,
-					&shadow_clr[0],
-					&shadow_clr[1],
-					&shadow_clr[2],
-					&shadow_clr[3]);
-
-	  shadow_cclr.red   = 0xff * shadow_clr[0] / 0xffff;
-	  shadow_cclr.green = 0xff * shadow_clr[1] / 0xffff;
-	  shadow_cclr.blue  = 0xff * shadow_clr[2] / 0xffff;
-	  shadow_cclr.alpha = 0xff * shadow_clr[3] / 0xffff;
-
-	  rect = clutter_rectangle_new_with_color (&shadow_cclr);
-	  clutter_actor_set_position (rect, 4, 4);
+	  clutter_container_add (CLUTTER_CONTAINER (actor), texture, NULL);
 	}
       else
 	{
-	  ClutterActor  * txt = cmgr->priv->shadow;
-	  if (!txt)
+	  if (shadow_type == MBWM_COMP_MGR_SHADOW_SIMPLE)
 	    {
-	      unsigned char * data;
+	      mb_wm_theme_get_shadow_color (wm->theme,
+					    &shadow_clr[0],
+					    &shadow_clr[1],
+					    &shadow_clr[2],
+					    &shadow_clr[3]);
 
-	      data = mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ();
+	      shadow_cclr.red   = 0xff * shadow_clr[0] / 0xffff;
+	      shadow_cclr.green = 0xff * shadow_clr[1] / 0xffff;
+	      shadow_cclr.blue  = 0xff * shadow_clr[2] / 0xffff;
+	      shadow_cclr.alpha = 0xff * shadow_clr[3] / 0xffff;
 
-	      txt = g_object_new (CLUTTER_TYPE_TEXTURE, "tiled", FALSE, NULL);
+	      rect = clutter_rectangle_new_with_color (&shadow_cclr);
+	      clutter_actor_set_position (rect, 4, 4);
+	    }
+	  else
+	    {
+	      ClutterActor  * txt = cmgr->priv->shadow;
+	      if (!txt)
+		{
+		  unsigned char * data;
 
-	      clutter_texture_set_from_rgb_data (CLUTTER_TEXTURE (txt),
-						 data,
-						 TRUE,
-						 WIDTH,
-						 HEIGHT,
-						 WIDTH*4,
-						 4,
-						 0,
-						 NULL);
-	      free (data);
+		  data = mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ();
 
-	      cmgr->priv->shadow = txt;
+		  txt = g_object_new (CLUTTER_TYPE_TEXTURE, "tiled",
+				      FALSE, NULL);
+
+		  clutter_texture_set_from_rgb_data (CLUTTER_TEXTURE (txt),
+						     data,
+						     TRUE,
+						     WIDTH,
+						     HEIGHT,
+						     WIDTH*4,
+						     4,
+						     0,
+						     NULL);
+		  free (data);
+
+		  cmgr->priv->shadow = txt;
+		}
+
+	      rect = clutter_clone_texture_new (CLUTTER_TEXTURE (txt));
+
+	      clutter_actor_set_position (rect,
+					  2*SHADOW_RADIUS, 2*SHADOW_RADIUS);
 	    }
 
-	  rect = clutter_clone_texture_new (CLUTTER_TEXTURE (txt));
-
-	  clutter_actor_set_position (rect, 2*SHADOW_RADIUS, 2*SHADOW_RADIUS);
+	  clutter_actor_set_size (rect, geom.width, geom.height);
+	  clutter_actor_show (rect);
+	  clutter_container_add (CLUTTER_CONTAINER (actor),
+				 rect, texture, NULL);
 	}
-
-      clutter_actor_set_size (rect, geom.width, geom.height);
-      clutter_actor_show (rect);
-      clutter_container_add (CLUTTER_CONTAINER (actor), rect, texture, NULL);
+    }
+  else
+    {
+      clutter_container_add (CLUTTER_CONTAINER (actor), texture, NULL);
     }
 
 

@@ -22,7 +22,7 @@
 #define _HAVE_MB_WM_THEME_SIMPLE_H
 
 #include <matchbox/mb-wm-config.h>
-#include <matchbox/mb-wm-theme.h>
+#include <matchbox/theme-engines/mb-wm-theme.h>
 
 struct MBWMThemeSimpleClass
 {
