@@ -1,9 +1,18 @@
+2008-03-04  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	* Makefile.am:
+	* util/Makefile.am:
+	* util/matchbox-remote.c:
+
+	Added matchbox-remote (from mbwm1 + -select-desktop option).
+
 2008-03-02  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	(mb_wm_comp_mgr_clutter_map_notify_real):
 	Only create shadows for select group of client types.
-	
+
 	* matchbox/theme-engines/mb-wm-theme-simple.h:
 	Fixed broken include.
 

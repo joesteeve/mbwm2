@@ -239,6 +239,7 @@ data/themes/Makefile
 data/themes/Default/Makefile
 data/libmatchbox2.pc
 doc/Makefile
+util/Makefile
 ])
 
 echo "
