@@ -398,6 +398,11 @@ mb_wm_root_window_handle_message (MBWMRootWindow *win, XClientMessageEvent *e)
       mb_wm_handle_show_desktop (wm, e->data.l[0]);
       return 1;
     }
+  else if (e->message_type == wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP])
+    {
+      mb_wm_select_desktop (wm, e->data.l[0]);
+      return 1;
+    }
   else if (e->message_type == wm->atoms[MBWM_ATOM_MB_COMMAND])
     {
        switch (e->data.l[0])

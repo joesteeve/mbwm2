@@ -168,6 +168,8 @@ struct MBWindowManagerClient
 
   Bool                         is_argb32;
 
+  int                          desktop;
+
 #if ENABLE_COMPOSITE
   MBWMCompMgrClient           *cm_client;
 #endif
@@ -361,5 +363,17 @@ mb_wm_client_ping_start (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_is_argb32 (MBWindowManagerClient *client);
+
+void
+mb_wm_client_set_desktop (MBWindowManagerClient * client, int desktop);
+
+int
+mb_wm_client_get_desktop (MBWindowManagerClient * client);
+
+void
+mb_wm_client_desktop_change (MBWindowManagerClient * client, int desktop);
+
+Bool
+mb_wm_client_is_hiding_from_desktop (MBWindowManagerClient * client);
 
 #endif

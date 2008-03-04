@@ -1,5 +1,15 @@
 2008-03-04  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-window-manager.h:
+	* matchbox/core/mb-wm-client-base.c:
+	* matchbox/core/mb-wm-client.c:
+	* matchbox/core/mb-wm-client.h:
+	* matchbox/core/mb-wm-root-window.c:
+	Start of multi-desktop infrastructure.
+
+2008-03-04  Tomas Frydrych  <tf@o-hand.com>
+
 	* configure.ac:
 	* Makefile.am:
 	* util/Makefile.am:

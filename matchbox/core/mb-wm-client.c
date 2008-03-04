@@ -33,6 +33,7 @@ struct MBWindowManagerClientPriv
   Bool          realized;
   Bool          mapped;
   Bool          iconizing;
+  Bool          hiding_from_desktop;
   MBWMSyncType  sync_state;
 };
 
@@ -880,9 +881,13 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
       win->ewmh_state &= ~state_flag;
     }
 
-  if (new_state && (state_flag & MBWMClientWindowEWMHStateHidden))
+  if (state_flag & MBWMClientWindowEWMHStateHidden)
     {
-      mb_wm_client_hide (client);
+      if (new_state)
+	mb_wm_client_hide (client);
+      else
+	mb_wm_client_show (client);
+
       return;
     }
 
@@ -1046,3 +1051,44 @@ mb_wm_client_is_argb32 (MBWindowManagerClient *client)
   return client->is_argb32;
 }
 
+void
+mb_wm_client_set_desktop (MBWindowManagerClient * client, int desktop)
+{
+  client->desktop = desktop;
+}
+
+int
+mb_wm_client_get_desktop (MBWindowManagerClient * client)
+{
+  return client->desktop;
+}
+
+void
+mb_wm_client_desktop_change (MBWindowManagerClient * client, int desktop)
+{
+  if (client->desktop < 0)
+    return;
+
+  if (client->desktop == desktop)
+    {
+      client->priv->hiding_from_desktop = False;
+
+      mb_wm_client_set_state (client,
+			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			      MBWMClientWindowStateChangeRemove);
+    }
+  else
+    {
+      client->priv->hiding_from_desktop = True;
+
+      mb_wm_client_set_state (client,
+			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
+			      MBWMClientWindowStateChangeAdd);
+    }
+}
+
+Bool
+mb_wm_client_is_hiding_from_desktop (MBWindowManagerClient * client)
+{
+  return client->priv->hiding_from_desktop;
+}

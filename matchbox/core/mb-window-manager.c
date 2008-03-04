@@ -1005,9 +1005,36 @@ mb_wm_manage_client (MBWindowManager       *wm,
   mb_wm_update_root_win_lists (wm);
 
   if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypePanel)
-    mb_wm_update_root_win_rectangles (wm);
+    {
+      mb_wm_update_root_win_rectangles (wm);
+      mb_wm_client_set_desktop (client, -1);
+    }
   else if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypeDesktop)
-    wm->desktop = client;
+    {
+      wm->desktop = client;
+      mb_wm_client_set_desktop (client, -1);
+    }
+  else if (client->transient_for)
+    {
+      /*
+       * For transient clients, set the desktop to that of the top level
+       * parent; if this does not match the active desktop, hide the client.
+       */
+      MBWindowManagerClient * parent = client->transient_for;
+      int                     desktop;
+
+      while (parent->transient_for)
+	parent = parent->transient_for;
+
+      desktop = mb_wm_client_get_desktop (parent);
+
+      mb_wm_client_set_desktop (client, desktop);
+
+      if (desktop != wm->active_desktop)
+	mb_wm_client_desktop_change (client, wm->active_desktop);
+    }
+  else
+    mb_wm_client_set_desktop (client, wm->active_desktop);
 
   /*
    * Must not mess with stacking if the client if is of the override type
@@ -2061,5 +2088,41 @@ MBWMModality
 mb_wm_get_modality_type (MBWindowManager * wm)
 {
   return wm->modality_type;
+}
+
+void
+mb_wm_set_n_desktops (MBWindowManager *wm, int n_desktops)
+{
+  CARD32 card32 = n_desktops;
+
+  wm->n_desktops = n_desktops;
+
+  XChangeProperty(wm->xdpy, wm->root_win->xwindow,
+		  wm->atoms[MBWM_ATOM_NET_NUMBER_OF_DESKTOPS],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&card32, 1);
+
+  /* FIXME -- deal with the case where the number is shrinking */
+}
+
+
+void
+mb_wm_select_desktop (MBWindowManager *wm, int desktop)
+{
+  CARD32                 card32 = desktop;
+  MBWindowManagerClient *c;
+
+  if (desktop >= wm->n_desktops)
+    {
+      mb_wm_set_n_desktops (wm, desktop + 1);
+    }
+
+  mb_wm_stack_enumerate (wm, c)
+    mb_wm_client_desktop_change (c, desktop);
+
+  XChangeProperty(wm->xdpy, wm->root_win->xwindow,
+		  wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
+		  XA_CARDINAL, 32, PropModeReplace,
+		  (unsigned char *)&card32, 1);
 }
 

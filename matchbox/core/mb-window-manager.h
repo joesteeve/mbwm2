@@ -63,6 +63,9 @@ struct MBWindowManager
   MBWindowManagerClient       *desktop;
   MBWindowManagerClient       *focused_client;
 
+  int                          n_desktops;
+  int                          active_desktop;
+
   Atom                         atoms[MBWM_ATOM_COUNT];
 
   MBWMKeys                    *keys; /* Keybindings etc */
@@ -209,5 +212,11 @@ mb_wm_get_modality_type (MBWindowManager * wm);
 
 void
 mb_wm_sync (MBWindowManager *wm);
+
+void
+mb_wm_set_n_desktops (MBWindowManager *wm, int n_desktops);
+
+void
+mb_wm_select_desktop (MBWindowManager *wm, int desktop);
 
 #endif
