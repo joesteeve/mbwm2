@@ -31,10 +31,6 @@
 #define MB_WM_COMP_MGR_CLIENT_CLASS(c) ((MBWMCompMgrClientClass*)(c))
 #define MB_WM_TYPE_COMP_MGR_CLIENT (mb_wm_comp_mgr_client_class_type ())
 
-#define MB_WM_COMP_MGR_EFFECT(c) ((MBWMCompMgrEffect*)(c))
-#define MB_WM_COMP_MGR_EFFECT_CLASS(c) ((MBWMCompMgrEffectClass*)(c))
-#define MB_WM_TYPE_COMP_MGR_EFFECT (mb_wm_comp_mgr_effect_class_type ())
-
 struct MBWMCompMgr
 {
   MBWMObject           parent;
@@ -57,6 +53,9 @@ struct MBWMCompMgrClass
   void   (*unmap_notify)      (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   Bool   (*handle_events)     (MBWMCompMgr * mgr, XEvent *ev);
   Bool   (*my_window)         (MBWMCompMgr * mgr, Window xwin);
+  void   (*effect)            (MBWMCompMgr * mgr,
+			       MBWindowManagerClient *c1,
+			       MBWMCompMgrEffectEvent event);
   void   (*transition)        (MBWMCompMgr * mgr,
 			       MBWindowManagerClient *c1,
 			       MBWindowManagerClient *c2,
@@ -106,6 +105,11 @@ mb_wm_comp_mgr_do_transition (MBWMCompMgr           * mgr,
 			      MBWindowManagerClient * c2,
 			      Bool                    reverse);
 
+void
+mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
+			  MBWindowManagerClient  * client,
+			  MBWMCompMgrEffectEvent   event);
+
 struct MBWMCompMgrClient
 {
   MBWMObject              parent;
@@ -113,7 +117,6 @@ struct MBWMCompMgrClient
   MBWindowManagerClient * wm_client;
 
   /* Make private ? */
-  MBWMList              * effects; /* List of MBWMCompMgrEffectAssociation */
   Bool                    is_argb32;
 };
 
@@ -125,13 +128,6 @@ struct MBWMCompMgrClientClass
   void (*hide)      (MBWMCompMgrClient * client);
   void (*repair)    (MBWMCompMgrClient * client);
   void (*configure) (MBWMCompMgrClient * client);
-
-  MBWMCompMgrEffect * (*effect_new)    (MBWMCompMgrClient * client,
-					MBWMCompMgrEffectEvent event,
-					MBWMCompMgrEffectType type,
-					unsigned long duration,
-					MBWMGravity   gravity);
-
 };
 
 int
@@ -149,43 +145,5 @@ mb_wm_comp_mgr_client_repair (MBWMCompMgrClient * client);
 void
 mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client);
 
-void
-mb_wm_comp_mgr_client_add_effects (MBWMCompMgrClient      * client,
-				   MBWMCompMgrEffectEvent   event,
-				   MBWMList               * effects);
-
-void
-mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
-				  MBWMCompMgrEffectEvent      event);
-
-MBWMList *
-mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient      * client,
-				   MBWMCompMgrEffectEvent   event,
-				   MBWMCompMgrEffectType    type,
-				   unsigned long            duration,
-				   MBWMGravity              gravity);
-
-/*
- * Generic effect that can applied to a client
- */
-struct MBWMCompMgrEffect
-{
-  MBWMObject              parent;
-  MBWMCompMgrEffectType   type;
-  unsigned long           duration;
-  MBWMGravity             gravity;
-};
-
-struct MBWMCompMgrEffectClass
-{
-  MBWMObjectClass        parent;
-
-  void (*run)  (MBWMList                  * effects,
-		MBWMCompMgrClient         * cm_client,
-		MBWMCompMgrEffectEvent      event);
-};
-
-int
-mb_wm_comp_mgr_effect_class_type ();
 
 #endif

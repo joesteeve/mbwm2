@@ -94,13 +94,6 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client);
 static void
 mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client);
 
-static MBWMCompMgrEffect *
-mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
-					       MBWMCompMgrEffectEvent event,
-					       MBWMCompMgrEffectType type,
-					       unsigned long duration,
-					       MBWMGravity gravity);
-
 static void
 mb_wm_comp_mgr_clutter_client_class_init (MBWMObjectClass *klass)
 {
@@ -110,7 +103,6 @@ mb_wm_comp_mgr_clutter_client_class_init (MBWMObjectClass *klass)
   c_klass->hide       = mb_wm_comp_mgr_clutter_client_hide_real;
   c_klass->repair     = mb_wm_comp_mgr_clutter_client_repair_real;
   c_klass->configure  = mb_wm_comp_mgr_clutter_client_configure_real;
-  c_klass->effect_new = mb_wm_comp_mgr_clutter_client_effect_new_real;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgrClutterClient";
@@ -360,12 +352,21 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
   clutter_actor_show_all (cclient->actor);
 }
 
-static MBWMCompMgrEffect *
-mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrEffectType    type,
-				   unsigned long            duration,
-				   MBWMGravity              gravity,
-				   ClutterTimeline        * timeline,
-				   ClutterBehaviour       * behaviour);
+/*
+ * MBWMCompMgrClutterEffect
+ */
+typedef struct MBWMCompMgrClutterEffect
+{
+  ClutterTimeline        *timeline;
+  ClutterBehaviour       *behaviour; /* can be either behaviour or effect */
+} MBWMCompMgrClutterEffect;
+
+struct completed_cb_data
+{
+  gulong                      my_id;
+  MBWMCompMgrClutterClient  * cclient;
+  MBWMCompMgrEffectEvent      event;
+};
 
 /*
  * Helper method to get a timeline for given event (all effects associated
@@ -390,17 +391,12 @@ mb_wm_comp_mgr_clutter_client_get_timeline (MBWMCompMgrClient      *client,
   return cclient->timelines[event-1];
 }
 
-/*
- * Implementation of the MBWMCompMgrClient->effect_new() method.
- */
-static MBWMCompMgrEffect *
-mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
-					       MBWMCompMgrEffectEvent event,
-					       MBWMCompMgrEffectType type,
-					       unsigned long duration,
-					       MBWMGravity   gravity)
+static MBWMCompMgrClutterEffect *
+mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrClient      * client,
+				   MBWMCompMgrEffectEvent   event,
+				   unsigned long            duration)
 {
-  MBWMCompMgrEffect        * eff;
+  MBWMCompMgrClutterEffect * eff;
   ClutterTimeline          * timeline;
   ClutterBehaviour         * behaviour;
   ClutterAlpha             * alpha;
@@ -421,196 +417,29 @@ mb_wm_comp_mgr_clutter_client_effect_new_real (MBWMCompMgrClient *client,
 
   mb_wm_client_get_coverage (wm_client, &geom);
 
-  switch (type)
+  switch (event)
     {
-    case MBWMCompMgrEffectScaleUp:
-      behaviour =
-	clutter_behaviour_scale_newx (alpha, 0, 0, CFX_ONE, CFX_ONE);
-      break;
-    case MBWMCompMgrEffectScaleDown:
+    case MBWMCompMgrEffectEventMinimize:
       behaviour =
 	clutter_behaviour_scale_newx (alpha, CFX_ONE, CFX_ONE, 0, 0);
       break;
-    case MBWMCompMgrEffectSpinXCW:
-      behaviour = clutter_behaviour_rotate_newx (alpha,
-						 CLUTTER_X_AXIS,
-						 CLUTTER_ROTATE_CW,
-						 0,
-						 CLUTTER_INT_TO_FIXED (360));
-      break;
-    case MBWMCompMgrEffectSpinXCCW:
-      behaviour = clutter_behaviour_rotate_newx (alpha,
-						 CLUTTER_X_AXIS,
-						 CLUTTER_ROTATE_CCW,
-						 0,
-						 CLUTTER_INT_TO_FIXED (360));
-      break;
-    case MBWMCompMgrEffectSpinYCW:
-      behaviour = clutter_behaviour_rotate_newx (alpha,
-						 CLUTTER_Y_AXIS,
-						 CLUTTER_ROTATE_CW,
-						 0,
-						 CLUTTER_INT_TO_FIXED (360));
-      break;
-    case MBWMCompMgrEffectSpinYCCW:
-      behaviour = clutter_behaviour_rotate_newx (alpha,
-						 CLUTTER_Y_AXIS,
-						 CLUTTER_ROTATE_CCW,
-						 0,
-						 CLUTTER_INT_TO_FIXED (360));
-      break;
-    case MBWMCompMgrEffectSpinZCW:
-      behaviour = clutter_behaviour_rotate_newx (alpha,
-						 CLUTTER_Z_AXIS,
-						 CLUTTER_ROTATE_CW,
-						 0,
-						 CLUTTER_INT_TO_FIXED (360));
-      break;
-    case MBWMCompMgrEffectSpinZCCW:
-      behaviour = clutter_behaviour_rotate_newx (alpha,
-						 CLUTTER_Z_AXIS,
-						 CLUTTER_ROTATE_CCW,
-						 0,
-						 CLUTTER_INT_TO_FIXED (360));
-      break;
-    case MBWMCompMgrEffectFade:
+    case MBWMCompMgrEffectEventUnmap:
       behaviour = clutter_behaviour_opacity_new (alpha, 0xff, 0);
       break;
-    case MBWMCompMgrEffectUnfade:
-      behaviour = clutter_behaviour_opacity_new (alpha, 0, 0xff);
-      break;
-
-      /*
-       * Currently ClutterBehaviourPath does not handle negative coords,
-       * so anything here that needs them is broken.
-       */
-    case MBWMCompMgrEffectSlideIn:
-      switch (gravity)
-	{
-	case MBWMGravityNorth:
-	  knots[0].x = geom.x;
-	  knots[0].y = wm->xdpy_height;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravitySouth:
-	  knots[0].x = geom.x;
-	  knots[0].y = -geom.height;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravityWest:
-	  knots[0].x = wm->xdpy_width;
-	  knots[0].y = geom.y;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravityEast:
-	  knots[0].x = -geom.width;
-	  knots[0].y = geom.y;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravityNorthWest:
-	case MBWMGravityNone:
-	default:
-	  knots[0].x = wm->xdpy_width;
-	  knots[0].y = wm->xdpy_height;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravityNorthEast:
-	  knots[0].x = -geom.width;
-	  knots[0].y = wm->xdpy_height;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravitySouthWest:
-	  knots[0].x = wm->xdpy_width;
-	  knots[0].y = -geom.height;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravitySouthEast:
-	  knots[0].x = -geom.width;
-	  knots[0].y = -geom.height;
-	  knots[1].x = geom.x;
-	  knots[1].y = geom.y;
-	  break;
-	}
-
+    case MBWMCompMgrEffectEventMap:
+      knots[0].x = -wm->xdpy_width;
+      knots[0].y = geom.y;
+      knots[1].x = geom.x;
+      knots[1].y = geom.y;
       behaviour = clutter_behaviour_path_new (alpha, &knots[0], 2);
       break;
-    case MBWMCompMgrEffectSlideOut:
-      switch (gravity)
-	{
-	case MBWMGravityNorth:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = geom.x;
-	  knots[1].y = -(geom.y + geom.height);
-	  break;
-	case MBWMGravitySouth:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = geom.x;
-	  knots[1].y = wm->xdpy_height;
-	  break;
-	case MBWMGravityEast:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = wm->xdpy_width;
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravityWest:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = -(geom.x + geom.width);
-	  knots[1].y = geom.y;
-	  break;
-	case MBWMGravityNorthWest:
-	case MBWMGravityNone:
-	default:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = -(geom.x + geom.width);
-	  knots[1].y = -(geom.y + geom.height);
-	  break;
-	case MBWMGravityNorthEast:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = wm->xdpy_width;
-	  knots[1].y = -(geom.y + geom.height);
-	  break;
-	case MBWMGravitySouthWest:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = -(geom.x + geom.width);
-	  knots[1].y = wm->xdpy_height;
-	  break;
-	case MBWMGravitySouthEast:
-	  knots[0].x = geom.x;
-	  knots[0].y = geom.y;
-	  knots[1].x = wm->xdpy_width;
-	  knots[1].y = wm->xdpy_height;
-	  break;
-	}
-
-      behaviour = clutter_behaviour_path_new (alpha, &knots[0], 2);
     }
 
-  eff =
-    mb_wm_comp_mgr_clutter_effect_new (type, duration, gravity,
-				       timeline, behaviour);
+  eff = mb_wm_util_malloc0 (sizeof (MBWMCompMgrClutterEffect));
+  eff->timeline = timeline;
+  eff->behaviour = behaviour;
 
-  if (eff)
-    {
-      /*
-       * We assume that the actor already exists -- if not, clutter will
-       * issue a warning here
-       */
-      clutter_behaviour_apply (behaviour, cclient->actor);
-    }
+  clutter_behaviour_apply (behaviour, cclient->actor);
 
   return eff;
 }
@@ -673,6 +502,11 @@ mb_wm_comp_mgr_clutter_transition_real (MBWMCompMgr * mgr,
 					Bool reverse);
 
 static void
+mb_wm_comp_mgr_clutter_effect_real (MBWMCompMgr            * mgr,
+				    MBWindowManagerClient  * client,
+				    MBWMCompMgrEffectEvent   event);
+
+static void
 mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr);
 
 static Bool
@@ -698,6 +532,7 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
   cm_klass->handle_events     = mb_wm_comp_mgr_clutter_handle_events_real;
   cm_klass->my_window         = mb_wm_comp_mgr_is_my_window_real;
   cm_klass->transition        = mb_wm_comp_mgr_clutter_transition_real;
+  cm_klass->effect            = mb_wm_comp_mgr_clutter_effect_real;
   cm_klass->restack           = mb_wm_comp_mgr_clutter_restack_real;
 }
 
@@ -1160,25 +995,6 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   cclient->actor = actor;
   cclient->texture = texture;
 
-  l =
-    mb_wm_theme_get_client_effects (wm->theme, c);
-
-  while (l)
-    {
-      MBWMThemeEffects * t_effects = l->data;
-      MBWMList         * m_effects;
-
-      m_effects = mb_wm_comp_mgr_client_get_effects (client,
-						     t_effects->event,
-						     t_effects->type,
-						     t_effects->duration,
-						     t_effects->gravity);
-
-      mb_wm_comp_mgr_client_add_effects (client, t_effects->event, m_effects);
-      l = l->next;
-    }
-
-
   g_object_set_data (G_OBJECT (actor), "MBWMCompMgrClutterClient", cclient);
 
   clutter_actor_set_position (actor, geom.x, geom.y);
@@ -1205,6 +1021,9 @@ mb_wm_comp_mgr_clutter_transtion_fade_cb (ClutterTimeline * t, void * data)
 
   d->c1->flags &= ~MBWMCompMgrClutterClientEffectRunning;
   d->c2->flags &= ~MBWMCompMgrClutterClientEffectRunning;
+
+  mb_wm_object_unref (MB_WM_OBJECT (d->c1));
+  mb_wm_object_unref (MB_WM_OBJECT (d->c2));
 
   g_object_unref (d->timeline);
   g_object_unref (d->beh);
@@ -1252,8 +1071,8 @@ mb_wm_comp_mgr_clutter_transition_fade (MBWMCompMgrClutterClient *c1,
 
   b = clutter_behaviour_opacity_new (alpha, 0xff, 0);
 
-  cb_data.c1 = c1;
-  cb_data.c2 = c2;
+  cb_data.c1 = mb_wm_object_ref (MB_WM_OBJECT (c1));
+  cb_data.c2 = mb_wm_object_ref (MB_WM_OBJECT (c2));
   cb_data.timeline = timeline;
   cb_data.beh = b;
 
@@ -1283,21 +1102,180 @@ mb_wm_comp_mgr_clutter_transition_real (MBWMCompMgr * mgr,
   MBWMCompMgrClutterClient * cc2 =
     MB_WM_COMP_MGR_CLUTTER_CLIENT (c2->cm_client);
 
-  MBWMThemeTransition * trs =
-    mb_wm_theme_get_client_transition (c1->wmref->theme, c1);
+  mb_wm_comp_mgr_clutter_transition_fade (cc1,
+					  cc2,
+					  100);
+}
 
-  if (!trs)
+/*
+ * Callback for ClutterTimeline::completed signal.
+ *
+ * One-off; get connected when the timeline is started, and disconnected
+ * again when it finishes.
+ */
+static void
+mb_wm_comp_mgr_clutter_effect_completed_cb (ClutterTimeline * t, void * data)
+{
+  struct completed_cb_data * d = data;
+
+  d->cclient->flags &= ~MBWMCompMgrClutterClientEffectRunning;
+
+  g_signal_handler_disconnect (t, d->my_id);
+
+  switch (d->event)
+    {
+    case MBWMCompMgrEffectEventUnmap:
+    case MBWMCompMgrEffectEventMinimize:
+      clutter_actor_hide (d->cclient->actor);
+      break;
+
+    default:
+      break;
+    }
+
+  /*
+   * Release the extra reference on the CM client that was added for the sake
+   * of the effect
+   */
+  mb_wm_object_unref (MB_WM_OBJECT (d->cclient));
+
+  free (d);
+}
+
+static void
+mb_wm_comp_mgr_clutter_effect_real (MBWMCompMgr            * mgr,
+				    MBWindowManagerClient  * client,
+				    MBWMCompMgrEffectEvent   event)
+{
+  static MBWMCompMgrClutterEffect * eff_map      = NULL;
+  static MBWMCompMgrClutterEffect * eff_unmap    = NULL;
+  static MBWMCompMgrClutterEffect * eff_minimize = NULL;
+
+  MBWMCompMgrClutterEffect * eff;
+  MBWMCompMgrClutterClient * cclient =
+    MB_WM_COMP_MGR_CLUTTER_CLIENT (client->cm_client);
+
+  if (MB_WM_CLIENT_CLIENT_TYPE (client) != MBWMClientTypeApp)
     return;
 
-  switch (trs->type)
+  switch (event)
     {
-    case MBWMCompMgrTransitionFade:
-      mb_wm_comp_mgr_clutter_transition_fade (cc1,
-					      cc2,
-					      trs->duration);
+    case MBWMCompMgrEffectEventMap:
+      if (!eff_map)
+	eff_map = mb_wm_comp_mgr_clutter_effect_new (client->cm_client,
+						     event,
+						     200);
+      eff = eff_map;
+      break;
+    case MBWMCompMgrEffectEventUnmap:
+      if (!eff_unmap)
+	eff_unmap = mb_wm_comp_mgr_clutter_effect_new (client->cm_client,
+						       event, 200);
+      eff = eff_unmap;
+      break;
+    case MBWMCompMgrEffectEventMinimize:
+      if (!eff_minimize)
+	eff_minimize = mb_wm_comp_mgr_clutter_effect_new (client->cm_client,
+							  event, 200);
+      eff = eff_minimize;
       break;
     default:
-      MBWM_DBG ("Unimplemented transition type %d", trs->type);
+      ;
+    }
+
+  /*
+   * Don't attempt to start the timeline if it is already playing
+   */
+  if (eff->timeline &&
+      !clutter_timeline_is_playing (eff->timeline))
+    {
+      GSList * actors;
+      ClutterActor *a;
+      Bool dont_run = False;
+
+      struct completed_cb_data * d;
+
+      d = mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
+
+      d->cclient = mb_wm_object_ref (MB_WM_OBJECT (cclient));
+      d->event   = event;
+
+      d->my_id = g_signal_connect (eff->timeline, "completed",
+		    G_CALLBACK (mb_wm_comp_mgr_clutter_effect_completed_cb),
+				   d);
+
+      /*
+       * This is bit of a pain; we know that our actor is attached to
+       * a single actor, but the current API only provides us with a copy
+       * of the actor list; ideally, we would like to be able to access
+       * the first actor directly.
+       */
+      actors = clutter_behaviour_get_actors (eff->behaviour);
+      a = actors->data;
+
+      if (CLUTTER_IS_BEHAVIOUR_PATH (eff->behaviour) &&
+	  !CLUTTER_ACTOR_IS_VISIBLE (a))
+	{
+	  /*
+	   * At this stage, if the actor is not yet visible, move it to
+	   * the starting point of the path (this is mostly because of
+	   * 'map' effects,  where the clutter_actor_show () is delayed
+	   * until this point, so that the actor can be positioned in the
+	   * correct location without visible artefacts).
+	   *
+	   * FIXME -- this is very clumsy; we need clutter API to query
+	   * the first knot of the path to avoid messing about with copies
+	   * of the list.
+	   */
+
+	  GSList * knots =
+	    clutter_behaviour_path_get_knots (
+				     CLUTTER_BEHAVIOUR_PATH (eff->behaviour));
+
+	  if (knots)
+	    {
+	      ClutterKnot * k = knots->data;
+
+	      clutter_actor_set_position (a, k->x, k->y);
+
+	      g_slist_free (knots);
+	    }
+	}
+
+      if (event == MBWMCompMgrEffectEventUnmap)
+	{
+	  cclient->flags |= MBWMCompMgrClutterClientDontUpdate;
+
+	  if (cclient->flags & MBWMCompMgrClutterClientDone)
+	    dont_run = True;
+	  else
+	    cclient->flags |= MBWMCompMgrClutterClientDone;
+	}
+      else if (event == MBWMCompMgrEffectEventMinimize)
+	{
+	  /*
+	   * This is tied specifically to the unmap scale effect (the
+	   * themable version of effects allowed to handle this is a nice
+	   * generic fashion. :-(
+	   */
+	  clutter_actor_move_anchor_point_from_gravity (a,
+						CLUTTER_GRAVITY_SOUTH_EAST);
+	}
+
+      /*
+       * Make sure the actor is showing (for example with 'map' effects,
+       * the show() is delayed until the effect had chance to
+       * set up the actor postion).
+       */
+      if (!dont_run)
+	{
+	  cclient->flags |= MBWMCompMgrClutterClientEffectRunning;
+	  clutter_actor_show (a);
+	  clutter_timeline_start (eff->timeline);
+	}
+
+      g_slist_free (actors);
+
     }
 }
 
@@ -1349,280 +1327,6 @@ mb_wm_comp_mgr_clutter_new (MBWindowManager *wm)
 			  NULL);
 
   return MB_WM_COMP_MGR (mgr);
-}
-
-/*
- * MBWMCompMgrClutterEffect
- */
-struct MBWMCompMgrClutterEffect
-{
-  MBWMCompMgrEffect       parent;
-  ClutterTimeline        *timeline;
-  ClutterBehaviour       *behaviour; /* can be either behaviour or effect */
-};
-
-struct completed_cb_data
-{
-  gulong                      my_id;
-  MBWMCompMgrClutterClient  * cclient;
-  MBWMCompMgrEffectEvent      event;
-};
-
-
-/*
- * Callback for ClutterTimeline::completed signal.
- *
- * One-off; get connected when the timeline is started, and disconnected
- * again when it finishes.
- */
-static void
-mb_wm_comp_mgr_clutter_effect_completed_cb (ClutterTimeline * t, void * data)
-{
-  struct completed_cb_data * d = data;
-
-  d->cclient->flags &= ~MBWMCompMgrClutterClientEffectRunning;
-
-  g_signal_handler_disconnect (t, d->my_id);
-
-  switch (d->event)
-    {
-    case MBWMCompMgrEffectEventUnmap:
-    case MBWMCompMgrEffectEventMinimize:
-      clutter_actor_hide (d->cclient->actor);
-      break;
-
-    default:
-      break;
-    }
-
-  /*
-   * Release the extra reference on the CM client that was added for the sake
-   * of the effect
-   */
-  mb_wm_object_unref (MB_WM_OBJECT (d->cclient));
-
-  free (d);
-}
-
-static void
-mb_wm_comp_mgr_clutter_effect_run_real (MBWMList                * effects,
-					MBWMCompMgrClient       * cm_client,
-					MBWMCompMgrEffectEvent    event)
-{
-  MBWMCompMgrClutterClient *cclient =
-    MB_WM_COMP_MGR_CLUTTER_CLIENT (cm_client);
-
-  /*
-   * Since the entire effect group for a single event type shares
-   * a timeline, we just need to start it for one of the behaviours.
-   *
-   * TODO -- there is no need for the effect objects to carry the timeline
-   * pointer, so remove it.
-   */
-  if (effects && effects->data)
-    {
-      MBWMCompMgrEffect        * eff = effects->data;
-      MBWMCompMgrClutterEffect * ceff = MB_WM_COMP_MGR_CLUTTER_EFFECT (eff);
-
-      /*
-       * Don't attempt to start the timeline if it is already playing
-       */
-      if (ceff->timeline &&
-	  !clutter_timeline_is_playing (ceff->timeline))
-	{
-	  GSList * actors;
-	  ClutterActor *a;
-	  Bool dont_run = False;
-
-	  struct completed_cb_data * d;
-
-	  d = mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
-
-	  d->cclient = cclient;
-	  d->event   = event;
-
-	  d->my_id = g_signal_connect (ceff->timeline, "completed",
-		      G_CALLBACK (mb_wm_comp_mgr_clutter_effect_completed_cb),
-		      d);
-
-	  /*
-	   * This is bit of a pain; we know that our actor is attached to
-	   * a single actor, but the current API only provides us with a copy
-	   * of the actor list; ideally, we would like to be able to access
-	   * the first actor directly.
-	   */
-	  actors = clutter_behaviour_get_actors (ceff->behaviour);
-	  a = actors->data;
-
-	  /*
-	   * Deal with gravity, but not for path behaviours (there the
-	   * gravity translates into the path itself, and is already
-	   * set up).
-	   */
-	  if (eff->gravity != CLUTTER_GRAVITY_NONE &&
-	      !CLUTTER_IS_BEHAVIOUR_PATH (ceff->behaviour))
-	    {
-	      clutter_actor_move_anchor_point_from_gravity (a, eff->gravity);
-	    }
-	  else if (CLUTTER_IS_BEHAVIOUR_PATH (ceff->behaviour) &&
-		   !CLUTTER_ACTOR_IS_VISIBLE (a))
-	    {
-	      /*
-	       * At this stage, if the actor is not yet visible, move it to
-	       * the starting point of the path (this is mostly because of
-	       * 'map' effects,  where the clutter_actor_show () is delayed
-	       * until this point, so that the actor can be positioned in the
-	       * correct location without visible artefacts).
-	       *
-	       * FIXME -- this is very clumsy; we need clutter API to query
-	       * the first knot of the path to avoid messing about with copies
-	       * of the list.
-	       */
-
-	      GSList * knots =
-		clutter_behaviour_path_get_knots (
-				  CLUTTER_BEHAVIOUR_PATH (ceff->behaviour));
-
-	      if (knots)
-		{
-		  ClutterKnot * k = knots->data;
-
-		  clutter_actor_set_position (a, k->x, k->y);
-
-		  g_slist_free (knots);
-		}
-	    }
-
-	  if (event == MBWMCompMgrEffectEventUnmap)
-	    {
-	      cclient->flags |= MBWMCompMgrClutterClientDontUpdate;
-
-	      if (cclient->flags & MBWMCompMgrClutterClientDone)
-		dont_run = True;
-	      else
-		cclient->flags |= MBWMCompMgrClutterClientDone;
-	    }
-
-	  /*
-	   * Make sure the actor is showing (for example with 'map' effects,
-	   * the show() is delayed until the effect had chance to
-	   * set up the actor postion).
-	   */
-	  if (!dont_run)
-	    {
-	      cclient->flags |= MBWMCompMgrClutterClientEffectRunning;
-	      clutter_actor_show (a);
-	      clutter_timeline_start (ceff->timeline);
-	    }
-
-	  g_slist_free (actors);
-
-	}
-    }
-}
-
-static void
-mb_wm_comp_mgr_clutter_effect_class_init (MBWMObjectClass *klass)
-{
-  MBWMCompMgrEffectClass *c_klass = MB_WM_COMP_MGR_EFFECT_CLASS (klass);
-
-  c_klass->run = mb_wm_comp_mgr_clutter_effect_run_real;
-
-#ifdef MBWM_WANT_DEBUG
-  klass->klass_name = "MBWMCompMgrClutterEffect";
-#endif
-}
-
-static int
-mb_wm_comp_mgr_clutter_effect_init (MBWMObject *obj, va_list vap)
-{
-  MBWMObjectProp         prop;
-  ClutterTimeline       *timeline;
-  ClutterBehaviour      *behaviour;
-
-  prop = va_arg(vap, MBWMObjectProp);
-  while (prop)
-    {
-      switch (prop)
-	{
-	case MBWMObjectPropCompMgrClutterEffectTimeline:
-	  timeline = va_arg(vap, ClutterTimeline *);
-	  break;
-	case MBWMObjectPropCompMgrClutterEffectBehaviour:
-	  behaviour = va_arg(vap, ClutterBehaviour *);
-	  break;
-	default:
-	  MBWMO_PROP_EAT (vap, prop);
-	}
-
-      prop = va_arg(vap, MBWMObjectProp);
-    }
-
-  if (!timeline || !behaviour)
-    return 0;
-
-  MB_WM_COMP_MGR_CLUTTER_EFFECT (obj)->timeline  = timeline;
-  MB_WM_COMP_MGR_CLUTTER_EFFECT (obj)->behaviour = behaviour;
-
-  return 1;
-}
-
-static void
-mb_wm_comp_mgr_clutter_effect_destroy (MBWMObject* obj)
-{
-  MBWMCompMgrClutterEffect * e = MB_WM_COMP_MGR_CLUTTER_EFFECT (obj);
-
-  if (!e || !e->behaviour)
-    return;
-
-  g_object_unref (e->behaviour);
-  g_object_unref (e->timeline);
-}
-
-int
-mb_wm_comp_mgr_clutter_effect_class_type ()
-{
-  static int type = 0;
-
-  if (UNLIKELY(type == 0))
-    {
-      static MBWMObjectClassInfo info = {
-	sizeof (MBWMCompMgrClutterEffectClass),
-	sizeof (MBWMCompMgrClutterEffect),
-	mb_wm_comp_mgr_clutter_effect_init,
-	mb_wm_comp_mgr_clutter_effect_destroy,
-	mb_wm_comp_mgr_clutter_effect_class_init
-      };
-
-      type =
-	mb_wm_object_register_class (&info, MB_WM_TYPE_COMP_MGR_EFFECT, 0);
-    }
-
-  return type;
-}
-
-/*
- * This is private method for use by the manager, hence static.
- */
-static MBWMCompMgrEffect *
-mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrEffectType    type,
-				   unsigned long            duration,
-				   MBWMGravity              gravity,
-				   ClutterTimeline        * timeline,
-				   ClutterBehaviour       * behaviour)
-{
-  MBWMObject *e;
-
-  e =
-    mb_wm_object_new (MB_WM_TYPE_COMP_MGR_CLUTTER_EFFECT,
-		      MBWMObjectPropCompMgrEffectType,             type,
-		      MBWMObjectPropCompMgrEffectDuration,         duration,
-		      MBWMObjectPropCompMgrEffectGravity,          gravity,
-		      MBWMObjectPropCompMgrClutterEffectTimeline,  timeline,
-		      MBWMObjectPropCompMgrClutterEffectBehaviour, behaviour,
-		      NULL);
-
-  return MB_WM_COMP_MGR_EFFECT (e);
 }
 
 /* ------------------------------- */

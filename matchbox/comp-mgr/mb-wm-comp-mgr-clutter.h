@@ -32,11 +32,6 @@
 #define MB_WM_COMP_MGR_CLUTTER_CLIENT_CLASS(c) ((MBWMCompMgrClutterClientClass*)(c))
 #define MB_WM_TYPE_COMP_MGR_CLUTTER_CLIENT (mb_wm_comp_mgr_clutter_client_class_type ())
 
-#define MB_WM_COMP_MGR_CLUTTER_EFFECT(c) ((MBWMCompMgrClutterEffect*)(c))
-#define MB_WM_COMP_MGR_CLUTTER_EFFECT_CLASS(c) ((MBWMCompMgrClutterEffectClass*)(c))
-#define MB_WM_TYPE_COMP_MGR_CLUTTER_EFFECT (mb_wm_comp_mgr_clutter_effect_class_type ())
-
-
 struct MBWMCompMgrClutter
 {
   MBWMCompMgr                 parent;
@@ -64,13 +59,5 @@ struct MBWMCompMgrClutterClientClass
 
 int
 mb_wm_comp_mgr_clutter_client_class_type ();
-
-struct MBWMCompMgrClutterEffectClass
-{
-  MBWMCompMgrEffectClass parent;
-};
-
-int
-mb_wm_comp_mgr_clutter_effect_class_type ();
 
 #endif

@@ -77,14 +77,6 @@ mb_wm_xml_decor_free (MBWMXmlDecor * d)
   free (d);
 }
 
-#if ENABLE_COMPOSITE
-static void
-mb_wm_theme_effects_free (MBWMThemeEffects *e)
-{
-  free (e);
-}
-#endif
-
 MBWMXmlClient *
 mb_wm_xml_client_new ()
 {
@@ -116,22 +108,6 @@ mb_wm_xml_client_free (MBWMXmlClient * c)
 
       l = n;
     }
-
-#if ENABLE_COMPOSITE
-  l = c->effects;
-  while (l)
-    {
-      MBWMThemeEffects * e = l->data;
-      MBWMList * n = l->next;
-      mb_wm_theme_effects_free (e);
-      free (l);
-
-      l = n;
-    }
-
-  if (c->transition)
-    free (c->transition);
-#endif
 
   free (c);
 }

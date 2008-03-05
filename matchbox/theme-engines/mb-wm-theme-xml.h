@@ -64,11 +64,6 @@ typedef struct Client
   MBWMList       *decors;
 
   MBWMClientLayoutHints layout_hints;
-
-#if ENABLE_COMPOSITE
-  MBWMList            *effects;
-  MBWMThemeTransition *transition;
-#endif
 }MBWMXmlClient;
 
 MBWMXmlButton *

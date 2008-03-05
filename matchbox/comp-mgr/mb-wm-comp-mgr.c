@@ -28,24 +28,6 @@
 #include <X11/extensions/Xrender.h>
 #include <X11/extensions/Xcomposite.h>
 
-typedef struct _MBWMCompMgrEffectAssociation MBWMCompMgrEffectAssociation;
-
-/*
- * A helper object used to translate the event-effect association defined
- * by theme into a list of effect instances.
- */
-struct _MBWMCompMgrEffectAssociation
-{
-  MBWMCompMgrEffectEvent   event;
-  MBWMList               * effects;
-};
-
-static MBWMCompMgrEffectAssociation *
-mb_wm_comp_mgr_effect_association_new ();
-
-static void
-mb_wm_comp_mgr_effect_association_free (MBWMCompMgrEffectAssociation * a);
-
 static void
 mb_wm_comp_mgr_client_class_init (MBWMObjectClass *klass)
 {
@@ -97,15 +79,6 @@ mb_wm_comp_mgr_client_init (MBWMObject *obj, va_list vap)
 static void
 mb_wm_comp_mgr_client_destroy (MBWMObject* obj)
 {
-  MBWMList * l = MB_WM_COMP_MGR_CLIENT (obj)->effects;
-
-  while (l)
-    {
-      MBWMCompMgrEffectAssociation * a = l->data;
-      mb_wm_comp_mgr_effect_association_free (a);
-
-      l = l->next;
-    }
 }
 
 int
@@ -173,82 +146,6 @@ mb_wm_comp_mgr_client_repair (MBWMCompMgrClient * client)
   klass->repair (client);
 }
 
-/*
- * Method for sub-classes to add effects to the (private) list
- */
-void
-mb_wm_comp_mgr_client_add_effects (MBWMCompMgrClient      * client,
-				   MBWMCompMgrEffectEvent   event,
-				   MBWMList               * effects)
-{
-  MBWMCompMgr       * mgr    = client->wm_client->wmref->comp_mgr;
-  MBWMCompMgrEffectAssociation * a;
-
-  MBWM_ASSERT (mgr);
-
-  a = mb_wm_comp_mgr_effect_association_new ();
-
-  a->effects = effects;
-  a->event   = event;
-
-  client->effects = mb_wm_util_list_prepend (client->effects, a);
-}
-
-/*
- * Runs all effects associated with this client for the given events.
- *
- * completed_cb is a callback function that will get called when the effect
- * execution is completed (can be NULL), data is user data that will be passed
- * to the callback function.
- *
- * For exmaple of use see mb_wm_client_iconize().w
- */
-void
-mb_wm_comp_mgr_client_run_effect (MBWMCompMgrClient         * client,
-				  MBWMCompMgrEffectEvent      event)
-{
-  MBWMList               * l = client->effects;
-  Bool                     done_effect = False;
-  MBWMCompMgrEffectClass * eklass;
-
-  if (!client)
-    return;
-
-  /*
-   * Take a reference to the CM client object, so that it does not disappear
-   * underneath us while the effect is running; it is the responsibility
-   * of the subclassed run() to release this reference when it is done.
-   */
-  mb_wm_object_ref (MB_WM_OBJECT (client));
-
-  while (l)
-    {
-      MBWMCompMgrEffectAssociation * a = l->data;
-
-      if (a->event == event)
-	{
-	  MBWMList * el = a->effects;
-	  MBWMCompMgrEffect * eff = el->data;
-
-	  eklass = MB_WM_COMP_MGR_EFFECT_CLASS (MB_WM_OBJECT_GET_CLASS (eff));
-
-	  if (!eklass)
-	    continue;
-
-	  eklass->run (el, client, event);
-	  done_effect = True;
-	}
-
-      l = l->next;
-    }
-
-  /*
-   * If there were no effects to run for this event, release the
-   * temporary reference on the client object.
-   */
-  if (!done_effect)
-    mb_wm_object_unref (MB_WM_OBJECT (client));
-}
 
 /*
  * MBWMCompMgr object
@@ -417,8 +314,7 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
    * (the effect will take care of showing the actor, and if not, show() gets
    * called by mb_wm_comp_mgr_map_notify()).
    */
-  mb_wm_comp_mgr_client_run_effect (c->cm_client,
-				    MBWMCompMgrEffectEventMap);
+  mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventMap);
 
   if (c->cm_client)
     mb_wm_comp_mgr_client_show (c->cm_client);
@@ -434,8 +330,7 @@ mb_wm_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
-  mb_wm_comp_mgr_client_run_effect (c->cm_client,
-				    MBWMCompMgrEffectEventUnmap);
+  mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventUnmap);
 
   if (klass->unmap_notify)
     klass->unmap_notify (mgr, c);
@@ -473,6 +368,25 @@ mb_wm_comp_mgr_do_transition (MBWMCompMgr * mgr,
     klass->transition (mgr, c1, c2, reverse);
 }
 
+void
+mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
+			  MBWindowManagerClient  * client,
+			  MBWMCompMgrEffectEvent   event)
+{
+  MBWMCompMgrClass *klass;
+
+  /*
+   * Transitions can only be done for clients of the same type, so
+   * check the types here.
+   */
+  if (!mgr || !client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+
+  if (klass->effect)
+    klass->effect (mgr, client, event);
+}
 
 void
 mb_wm_comp_mgr_turn_on (MBWMCompMgr *mgr)
@@ -525,166 +439,3 @@ mb_wm_comp_mgr_is_my_window (MBWMCompMgr * mgr, Window xwin)
   return False;
 }
 
-/*
- * Returns a list of MBWMCompMgrEffect objects of given type that are to be
- * associated with the given client for the given event. The type parameter
- * can be made up of more that one MBWMComMgrEffectType value, or-ed.
- *
- * This function provides a public API to translate the effects specified
- * by theme into actual effect instances.
- */
-MBWMList *
-mb_wm_comp_mgr_client_get_effects (MBWMCompMgrClient      * client,
-				   MBWMCompMgrEffectEvent   event,
-				   MBWMCompMgrEffectType    type,
-				   unsigned long            duration,
-				   MBWMGravity              gravity)
-{
-  MBWMList                *l = NULL;
-  MBWMCompMgrEffectType    t = (MBWMCompMgrEffectType) 1;
-  MBWMCompMgrClientClass  *klass =
-    MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
-
-  if (!klass->effect_new)
-    return NULL;
-
-  while (t < _MBWMCompMgrEffectLast)
-    {
-      MBWMCompMgrEffect *e = NULL;
-
-      if (t & type)
-	e = klass->effect_new (client, event, t, duration, gravity);
-
-      if (e)
-	l = mb_wm_util_list_prepend (l, e);
-
-      t <<= 1;
-    }
-
-  return l;
-}
-
-
-/*
- * Effect
- *
- * Effects are simple one-off transformations carried out on the client in
- * response to some trigger event. The possible events are given by the
- * MBWMCompMgrEffectEvent enum, while the nature effect is defined by
- * MBWMCompMgrEffectType enum; effects are specified per window manager client
- * type by the theme.
- *
- * Events and effect types form a one to many association (and the type
- * enumeration is or-able).
- *
- * The base MBWMCompMgrEffect class provides some common infrastructure,
- * notably the virtual run() method that needs to be implemented by
- * the derrived classes.
- *
- * NB: the base class does not automatically associate effects with clients;
- * this is the responsibility of the subclasses, mostly because the sub classes
- * might want to allocate the effect objects at different times (for example,
- * the MBWMCompMgrClutterEffect objects cannot be allocated until the
- * the associated client has created its ClutterActor, which only happens when
- * the client window maps).
- */
-static MBWMCompMgrEffectAssociation *
-mb_wm_comp_mgr_effect_association_new ()
-{
-  void * a;
-
-  a = mb_wm_util_malloc0 (sizeof (MBWMCompMgrEffectAssociation));
-
-  return (MBWMCompMgrEffectAssociation*) a;
-}
-
-static void
-mb_wm_comp_mgr_effect_association_free (MBWMCompMgrEffectAssociation * a)
-{
-  MBWMList * l = a->effects;
-
-  while (l)
-    {
-      MBWMCompMgrEffect * e = l->data;
-      mb_wm_object_unref (MB_WM_OBJECT (e));
-
-      l = l->next;
-    }
-
-  free (a);
-}
-
-static void
-mb_wm_comp_mgr_effect_class_init (MBWMObjectClass *klass)
-{
-  MBWMCompMgrEffectClass *c_klass = MB_WM_COMP_MGR_EFFECT_CLASS (klass);
-
-#ifdef MBWM_WANT_DEBUG
-  klass->klass_name = "MBWMCompMgrEffect";
-#endif
-}
-
-static int
-mb_wm_comp_mgr_effect_init (MBWMObject *obj, va_list vap)
-{
-  MBWMObjectProp         prop;
-  MBWMCompMgrEffectType  type = 0;
-  unsigned long          duration = 0;
-  MBWMGravity            gravity = MBWMGravityNone;
-
-  prop = va_arg(vap, MBWMObjectProp);
-  while (prop)
-    {
-      switch (prop)
-	{
-	case MBWMObjectPropCompMgrEffectType:
-	  type = va_arg(vap, MBWMCompMgrEffectType);
-	  break;
-	case MBWMObjectPropCompMgrEffectDuration:
-	  duration = va_arg(vap, unsigned long);
-	  break;
-	case MBWMObjectPropCompMgrEffectGravity:
-	  gravity = va_arg(vap, MBWMGravity);
-	  break;
-	default:
-	  MBWMO_PROP_EAT (vap, prop);
-	}
-
-      prop = va_arg(vap, MBWMObjectProp);
-    }
-
-  if (!type)
-    return 0;
-
-  MB_WM_COMP_MGR_EFFECT (obj)->type     = type;
-  MB_WM_COMP_MGR_EFFECT (obj)->duration = duration;
-  MB_WM_COMP_MGR_EFFECT (obj)->gravity  = gravity;
-
-  return 1;
-}
-
-static void
-mb_wm_comp_mgr_effect_destroy (MBWMObject* obj)
-{
-}
-
-int
-mb_wm_comp_mgr_effect_class_type ()
-{
-  static int type = 0;
-
-  if (UNLIKELY(type == 0))
-    {
-      static MBWMObjectClassInfo info = {
-	sizeof (MBWMCompMgrEffectClass),
-	sizeof (MBWMCompMgrEffect),
-	mb_wm_comp_mgr_effect_init,
-	mb_wm_comp_mgr_effect_destroy,
-	mb_wm_comp_mgr_effect_class_init
-      };
-
-      type = mb_wm_object_register_class (&info, MB_WM_TYPE_OBJECT, 0);
-    }
-
-  return type;
-}

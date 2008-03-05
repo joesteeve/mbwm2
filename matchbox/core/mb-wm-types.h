@@ -122,10 +122,6 @@ typedef struct MBWMCompMgrClutterClass     MBWMCompMgrClutterClass;
 typedef struct MBWMCompMgrClutterClient    MBWMCompMgrClutterClient;
 typedef struct MBWMCompMgrClutterClientClass MBWMCompMgrClutterClientClass;
 typedef struct MBWMCompMgrClutterClentPrivate MBWMCompMgrClutterClientPrivate;
-typedef struct MBWMCompMgrEffect           MBWMCompMgrEffect;
-typedef struct MBWMCompMgrEffectClass      MBWMCompMgrEffectClass;
-typedef struct MBWMCompMgrClutterEffect    MBWMCompMgrClutterEffect;
-typedef struct MBWMCompMgrClutterEffectClass MBWMCompMgrClutterEffectClass;
 
 typedef enum MBWMClientType
 {
@@ -150,35 +146,6 @@ typedef enum _MBWMCompMgrEffectEvent
 
   _MBWMCompMgrEffectEventLast,
 } MBWMCompMgrEffectEvent;
-
-typedef enum _MBWMCompMgrEffectType
-{
-  MBWMCompMgrEffectScaleUp   = (1<<0), /* 0 reserved for unknown */
-  MBWMCompMgrEffectScaleDown = (1<<1),
-  MBWMCompMgrEffectSpinXCW   = (1<<2),
-  MBWMCompMgrEffectSpinXCCW  = (1<<3),
-  MBWMCompMgrEffectSpinYCW   = (1<<4),
-  MBWMCompMgrEffectSpinYCCW  = (1<<5),
-  MBWMCompMgrEffectSpinZCW   = (1<<6),
-  MBWMCompMgrEffectSpinZCCW  = (1<<7),
-  MBWMCompMgrEffectFade      = (1<<8),
-  MBWMCompMgrEffectUnfade    = (1<<9),
-  MBWMCompMgrEffectSlideIn   = (1<<10),
-  MBWMCompMgrEffectSlideOut  = (1<<11),
-
-  _MBWMCompMgrEffectLast,
-} MBWMCompMgrEffectType;
-
-typedef enum _MBWMCompMgrTransitionType
-{
-  MBWMCompMgrTransitionFade             = 1, /* 0 reserved for unknown */
-  MBWMCompMgrTransitionSlide,
-
-  _MBWMCompMgrTransitionLast,
-} MBWMCompMgrTransitionType;
-
-
-typedef void (*MBWMCompMgrEffectCallback) (void * data);
 
 typedef enum _MBWMGravity
 {
