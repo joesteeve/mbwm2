@@ -26,6 +26,11 @@
 
 #include <X11/extensions/Xrender.h>
 
+#if USE_PANGO
+#include <pango/pango.h>
+#include <pango/pangoxft.h>
+#endif
+
 struct MBWMThemePngClass
 {
   MBWMThemeClass    parent;
@@ -39,6 +44,11 @@ struct MBWMThemePng
   Pixmap           xdraw;
   Picture          xpic;
   Pixmap           shape_mask;
+
+#if USE_PANGO
+  PangoContext   * context;
+  PangoFontMap   * fontmap;
+#endif
 };
 
 #endif

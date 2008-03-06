@@ -1,8 +1,8 @@
-#include "mb-wm-theme-png.h"
-#include "mb-wm-theme-xml.h"
-
 #include <math.h>
 #include <png.h>
+
+#include "mb-wm-theme-png.h"
+#include "mb-wm-theme-xml.h"
 
 #include <X11/Xft/Xft.h>
 
@@ -76,9 +76,14 @@ mb_wm_theme_png_destroy (MBWMObject *obj)
 static int
 mb_wm_theme_png_init (MBWMObject *obj, va_list vap)
 {
-  MBWMThemePng     *theme = MB_WM_THEME_PNG (obj);
+  MBWMThemePng     *p_theme = MB_WM_THEME_PNG (obj);
+  MBWMTheme        *theme   = MB_WM_THEME (obj);
   MBWMObjectProp    prop;
   char             *img = NULL;
+#if USE_PANGO
+  Display          *xdpy    = theme->wm->xdpy;
+  int               xscreen = theme->wm->xscreen;
+#endif
 
   prop = va_arg(vap, MBWMObjectProp);
   while (prop)
@@ -95,8 +100,13 @@ mb_wm_theme_png_init (MBWMObject *obj, va_list vap)
       prop = va_arg(vap, MBWMObjectProp);
     }
 
-  if (!img || !mb_wm_theme_png_ximg (theme, img))
+  if (!img || !mb_wm_theme_png_ximg (p_theme, img))
     return 0;
+
+#if USE_PANGO
+  p_theme->context = pango_xft_get_context (xdpy, xscreen);
+  p_theme->fontmap = pango_xft_get_font_map (xdpy, xscreen);
+#endif
 
   return 1;
 }
@@ -129,7 +139,11 @@ struct DecorData
   GC        gc_mask;
   XftDraw  *xftdraw;
   XftColor  clr;
+#if USE_PANGO
+  PangoFont *font;
+#else
   XftFont  *font;
+#endif
 };
 
 static void
@@ -148,8 +162,13 @@ decordata_free (MBWMDecor * decor, void *data)
 
   XftDrawDestroy (dd->xftdraw);
 
+#if USE_PANGO
+  if (dd->font)
+    g_object_unref (dd->font);
+#else
   if (dd->font)
     XftFontClose (xdpy, dd->font);
+#endif
 
   free (dd);
 }
@@ -176,6 +195,7 @@ buttondata_free (MBWMDecorButton * button, void *data)
   free (bd);
 }
 
+#if !USE_PANGO
 static XftFont *
 xft_load_font(MBWMDecor * decor, MBWMXmlDecor *d)
 {
@@ -192,6 +212,7 @@ xft_load_font(MBWMDecor * decor, MBWMXmlDecor *d)
 
   return font;
 }
+#endif
 
 static void
 mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
@@ -438,8 +459,26 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			      DefaultColormap (xdpy, xscreen),
 			      &rclr, &data->clr);
 
-	  data->font = xft_load_font (decor, d);
+#if USE_PANGO
+	  {
+	    PangoFontDescription * pdesc;
+	    char desc[512];
 
+	    snprintf (desc, sizeof (desc), "%s %ipx",
+		      d->font_family ? d->font_family : "Sans",
+		      d->font_size ? d->font_size : 18);
+
+	    pdesc = pango_font_description_from_string (desc);
+
+	    data->font = pango_font_map_load_font (p_theme->fontmap,
+						   p_theme->context,
+						   pdesc);
+
+	    pango_font_description_free (pdesc);
+	  }
+#else
+	  data->font = xft_load_font (decor, d);
+#endif
 	  XSetWindowBackgroundPixmap(xdpy, decor->xwin, data->xpix);
 
 	  mb_wm_decor_set_theme_data (decor, data, decordata_free);
@@ -700,9 +739,28 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  int pack_start_x = mb_wm_decor_get_pack_start_x (decor);
 	  int pack_end_x = mb_wm_decor_get_pack_end_x (decor);
 	  int west_width = mb_wm_client_frame_west_width (client);
-	  int y = (decor->geom.height -
-		   (data->font->ascent + data->font->descent)) / 2
-	    + data->font->ascent;
+	  int y, ascent, descent;
+	  int len = strlen (title);
+
+#if USE_PANGO
+	  PangoFontMetrics * mtx;
+	  PangoGlyphString * glyphs;
+	  GList            * items, *l;
+	  PangoRectangle     rect;
+	  int                xoff = 0;
+
+	  mtx = pango_font_get_metrics (data->font, NULL);
+
+	  ascent  = PANGO_PIXELS (pango_font_metrics_get_ascent (mtx));
+	  descent = PANGO_PIXELS (pango_font_metrics_get_descent (mtx));
+
+	  pango_font_metrics_unref (mtx);
+#else
+	  ascent  = data->font->ascent;
+	  descent = data->font->descent;
+#endif
+
+	  y = (decor->geom.height - (ascent + descent)) / 2 + ascent;
 
 	  rec.x = 0;
 	  rec.y = 0;
@@ -711,11 +769,49 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 
 	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
 
+#if USE_PANGO
+	  glyphs = pango_glyph_string_new ();
+
+	  /*
+	   * Run the pango rendering pipeline on this text and draw with
+	   * the xft backend (why Pango does not provide a convenience
+	   * API for something as common as drawing a string escapes me).
+	   */
+	  items = pango_itemize (p_theme->context, title, 0, len, NULL, NULL);
+
+	  l = items;
+	  while (l)
+	    {
+	      PangoItem * item = l->data;
+
+	      item->analysis.font = data->font;
+
+	      pango_shape (title, len, &item->analysis, glyphs);
+
+	      pango_xft_render (data->xftdraw,
+				&data->clr,
+				data->font,
+				glyphs,
+				xoff + west_width + pack_start_x, y);
+
+	      /* Advance position */
+	      pango_glyph_string_extents (glyphs, data->font, NULL, &rect);
+	      xoff += PANGO_PIXELS (rect.width);
+
+	      l = l->next;
+	    }
+
+	  if (glyphs)
+	    pango_glyph_string_free (glyphs);
+
+	  g_list_free (items);
+#else
 	  XftDrawStringUtf8(data->xftdraw,
 			    &data->clr,
 			    data->font,
 			    west_width + pack_start_x, y,
-			    title, strlen (title));
+			    title, len);
+#endif
 
 	  /* Unset the clipping rectangle */
 	  rec.width = decor->geom.width;
