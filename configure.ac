@@ -39,16 +39,20 @@ AC_CHECK_FUNCS([memset strdup strncasecmp])
 needed_pkgs="x11 "
 
 AC_ARG_ENABLE(cairo-theme,
-  [  --disable-cairo-theme   Disable Cairo graphics rendering support],
-  [use_cairo=$enableval], [use_cairo=yes])
+  [  --enable-cairo-theme    Disable Cairo graphics rendering support],
+  [use_cairo=$enableval], [use_cairo=no])
 
 AC_ARG_ENABLE(png-theme,
   [  --enable-png-theme      Enable PNG-based theme],
   [png_theme=$enableval], [png_theme=no])
 
+AC_ARG_ENABLE(pango,
+  [  --enable-pango          Enable use of pango for text layout],
+  [use_pango=$enableval], [use_pango=no])
+
 AC_ARG_ENABLE(gtk,
-  [  --disable-gtk           Disable GTK integration support],
-  [use_gtk=$enableval], [use_gtk=yes])
+  [  --enable-gtk            Disable GTK integration support],
+  [use_gtk=$enableval], [use_gtk=no])
 
 AC_ARG_ENABLE(debug,
   [  --enable-debug          Enable verbose debugging output],
@@ -57,22 +61,33 @@ AC_ARG_ENABLE(debug,
 AC_ARG_ENABLE(compositing-manager,
   [  --enable-compositing-manager@<:@=BACKEND@:>@  Enable compositing manager,
                           optionally choosing compositor backend. Available
-                          backends are: 'default' (XRender based backend),
-                                        'clutter' (Clutter based backend),
-                                        'framework-only' (Compositing frameworks without a backend).],
+                          backends are: 
+                           'default' (XRender based backend),
+                           'clutter' (Clutter based backend),
+                           'framework-only' (Compositing frameworks without a backend).],
   [comp_mgr=$enableval], [comp_mgr=no])
 
 AC_ARG_ENABLE(glib-main-loop,
-  [  --enable-glib-main-loop      Enable use of glib main loop],
+  [  --enable-glib-main-loop    Enable use of glib main loop],
   [gmloop=$enableval], [gmloop=no])
 
 AC_ARG_ENABLE(libmatchbox,
-  [  --enable-libmatchbox      Enable building as a library],
+  [  --enable-libmatchbox       Enable building as a library],
   [libmatchbox=$enableval], [libmatchbox=no])
+
+AC_ARG_ENABLE(matchbox-remote,
+  [  --enable-matchbox-remote   Enable matchbox remote control utility],
+  [matchbox_remote=$enableval], [matchbox_remote=no])
 
 if test "x$use_cairo" = "xyes"; then
   needed_pkgs="$needed_pkgs pangocairo "
-else
+fi
+
+if test "x$use_pango" = "xyes"; then
+  needed_pkgs="$needed_pkgs pangoxft "
+fi
+
+if ! test "x$use_pango" = "xyes" -o "x$use_pango" = "xyes"; then
   needed_pkgs="$needed_pkgs xft "
 fi
 
@@ -115,6 +130,12 @@ if test "$use_cairo" = yes; then
   USE_CAIRO=1
 fi
 AC_SUBST(USE_CAIRO)
+
+USE_PANGO=0
+if test "$use_pango" = yes; then
+  USE_PANGO=1
+fi
+AC_SUBST(USE_PANGO)
 
 THEME_PNG=0
 AM_CONDITIONAL(THEME_PNG, [test "x$png_theme" = "xyes"])
@@ -168,12 +189,14 @@ AC_SUBST(COMP_MGR_BACKEND)
 
 AM_CONDITIONAL(ENABLE_LIBMATCHBOX, [test "x$libmatchbox" = "xyes"])
 
+AM_CONDITIONAL(ENABLE_MATCHBOX_REMOTE, [test "x$matchbox_remote" = "xyes"])
+
 AC_ARG_ENABLE(simple-manager,
   [  --disable-simple-manager   Do not build simple window manager],
   [simple_manager=$enableval], [simple_manager=yes])
 
 AC_ARG_ENABLE(maemo-manager,
-  [  --enable-maemo-manager   Build maemo window manager],
+  [  --enable-maemo-manager     Build maemo window manager],
   [maemo_manager=$enableval], [maemo_manager=no])
 
 if test $simple_manager = yes; then
@@ -248,26 +271,28 @@ echo "
 
     Directories:
         source code location:   ${srcdir}
-        install prefix      :   ${prefix}
+        install prefix        :   ${prefix}
 
     Extension:
-	Xfixes              :   ${have_xfixes}
-	Xext                :   ${have_xext}
-	Xcursor             :   ${have_xcursor}
+	Xfixes                :   ${have_xfixes}
+	Xext                  :   ${have_xext}
+	Xcursor               :   ${have_xcursor}
 
     Themes:
-	Cairo theme         :   ${use_cairo}
-	PNG theme           :   ${png_theme}
-	GTK integration     :   ${use_gtk}
+	Cairo theme           :   ${use_cairo}
+	PNG theme             :   ${png_theme}
+	GTK integration       :   ${use_gtk}
+	Pango integration     :   ${use_pango}
 
     Managers:
-	Simple manager      :	${simple_manager}
-	Maemo manager       :	${maemo_manager}
+	Simple manager        :	  ${simple_manager}
+	Maemo manager         :	  ${maemo_manager}
 
-	Compositing manager :   ${comp_mgr}
+	Compositing manager   :   ${comp_mgr}
 
     Miscel:
-        Glib main loop      :   ${gmloop}
-	Build libmatchbox   :   ${libmatchbox}
-	Debugging output    :   ${want_debug}
+        Glib main loop        :   ${gmloop}
+	Build libmatchbox     :   ${libmatchbox}
+	Build matchbox-remote :   ${matchbox_remote}
+	Debugging output      :   ${want_debug}
 "
