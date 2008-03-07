@@ -203,10 +203,17 @@ xft_load_font(MBWMDecor * decor, MBWMXmlDecor *d)
   XftFont *font;
   Display * xdpy = decor->parent_client->wmref->xdpy;
   int       xscreen = decor->parent_client->wmref->xscreen;
+  int       font_size = d->font_size ? d->font_size : 18;
+
+  if (d->font_units == MBWMXmlFontUnitsPixels)
+    {
+      font_size = mb_wm_util_pixels_to_points (decor->parent_client->wmref,
+					       font_size);
+    }
 
   snprintf (desc, sizeof (desc), "%s-%i",
 	    d->font_family ? d->font_family : "Sans",
-	    d->font_size ? d->font_size : 18);
+	    font_size);
 
   font = XftFontOpenName (xdpy, xscreen, desc);
 
@@ -464,9 +471,10 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	    PangoFontDescription * pdesc;
 	    char desc[512];
 
-	    snprintf (desc, sizeof (desc), "%s %ipx",
+	    snprintf (desc, sizeof (desc), "%s %i%s",
 		      d->font_family ? d->font_family : "Sans",
-		      d->font_size ? d->font_size : 18);
+		      d->font_size ? d->font_size : 18,
+		      d->font_units == MBWMXmlFontUnitsPoints ? "" : "px");
 
 	    pdesc = pango_font_description_from_string (desc);
 

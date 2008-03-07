@@ -268,3 +268,22 @@ mb_wm_rgba_icon_free (MBWMRgbaIcon *icon)
   free (icon);
 }
 
+int
+mb_wm_util_pixels_to_points (MBWindowManager *wm, int pixels)
+{
+  static double scale = 0.0; /* Points per pixel */
+  int points;
+
+  if (scale == 0.0)
+    {
+      scale =
+	((double)DisplayHeightMM (wm->xdpy, wm->xscreen) * 2.8346456693)
+	/ (double) DisplayHeight(wm->xdpy, wm->xscreen);
+    }
+
+  /* Scale and round */
+  points = (((int)((double)(pixels << 10) * scale) + 512) >> 10);
+
+  return points;
+}
+

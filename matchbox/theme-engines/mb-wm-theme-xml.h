@@ -29,6 +29,12 @@ typedef struct Button
   int press_activated;
 } MBWMXmlButton;
 
+typedef enum _MBWMXmlFontUnits
+{
+  MBWMXmlFontUnitsPixels,
+  MBWMXmlFontUnitsPoints,
+} MBWMXmlFontUnits;
+
 typedef struct Decor
 {
   MBWMDecorType type;
@@ -42,10 +48,11 @@ typedef struct Decor
   int y;
   int width;
   int height;
-  int font_size;
   int show_title;
 
-  char * font_family;
+  int                font_size;
+  MBWMXmlFontUnits   font_units;
+  char             * font_family;
 
   MBWMList * buttons;
 }MBWMXmlDecor;

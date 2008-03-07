@@ -25,7 +25,7 @@
 #include <expat.h>
 #include <X11/Xft/Xft.h>
 
-#define SIMPLE_FRAME_TITLEBAR_HEIGHT 20
+#define SIMPLE_FRAME_TITLEBAR_HEIGHT 40
 #define SIMPLE_FRAME_EDGE_SIZE 3
 
 static void
@@ -1110,7 +1110,26 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    }
 	  else if (!strcmp (*p, "font-size"))
 	    {
-	      d->font_size = atoi (*(p+1));
+	      char * end_size = NULL;
+
+	      d->font_units = MBWMXmlFontUnitsPixels;
+	      d->font_size = strtol (*(p+1), &end_size, 0);
+
+	      if (end_size && *end_size)
+		{
+		  if (*end_size == 'p')
+		    {
+		      switch (*(end_size+1))
+			{
+			case 't':
+			  d->font_units = MBWMXmlFontUnitsPoints;
+			  break;
+			case 'x':
+			default:
+			  ;
+			}
+		    }
+		}
 	    }
 	  else if (!strcmp (*p, "font-family"))
 	    {
@@ -1679,16 +1698,25 @@ pixel_from_clr (Display * dpy, int screen, MBWMColor * clr)
 }
 
 static XftFont *
-xft_load_font (MBWMDecor * decor, const char * family, int size)
+xft_load_font (MBWMDecor * decor, MBWMXmlDecor *d)
 {
-  char desc[512];
-  XftFont *font;
+  char      desc[512];
+  XftFont * font;
   Display * xdpy = decor->parent_client->wmref->xdpy;
   int       xscreen = decor->parent_client->wmref->xscreen;
+  int       font_size;
+
+  font_size = d->font_size ? d->font_size : SIMPLE_FRAME_TITLEBAR_HEIGHT / 2;
+
+  if (d->font_units == MBWMXmlFontUnitsPixels)
+    {
+      font_size = mb_wm_util_pixels_to_points (decor->parent_client->wmref,
+					       font_size);
+    }
 
   snprintf (desc, sizeof (desc), "%s-%i",
-	    family ? family : "Sans",
-	    size ? size : SIMPLE_FRAME_TITLEBAR_HEIGHT / 2);
+	    d->font_family ? d->font_family : "Sans",
+	    font_size);
 
   font = XftFontOpenName (xdpy, xscreen, desc);
 
@@ -1709,8 +1737,6 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   MBWMClientType         c_type;
   MBWMXmlClient         *c = NULL;
   MBWMXmlDecor          *d = NULL;
-  int                    font_size = 0;
-  const char            *font_family = "Sans Serif";
   struct DecorData      *dd;
   int x, y, w, h;
   GC                     gc;
@@ -1765,12 +1791,6 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  clr_frame.g = d->clr_frame.g;
 	  clr_frame.b = d->clr_frame.b;
 	}
-
-      if (d->font_size)
-	font_size = d->font_size;
-
-      if (d->font_family)
-	font_family = d->font_family;
     }
 
   if (!dd)
@@ -1795,7 +1815,7 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			  DefaultColormap (xdpy, xscreen),
 			  &rclr, &dd->clr);
 
-      dd->font = xft_load_font (decor, font_family, font_size);
+      dd->font = xft_load_font (decor, d);
 
       XSetWindowBackgroundPixmap(xdpy, xwin, dd->xpix);
 

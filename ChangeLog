@@ -1,3 +1,21 @@
+2008-03-07  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-wm-util.c:
+	* matchbox/core/mb-wm-util.h:
+	(mb_wm_util_pixels_to_points):
+	Utility function for conversion from pixel font sizes to points.
+
+	* matchbox/theme-engines/mb-wm-theme-xml.h:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	(xft_load_font):
+	(xml_element_start_cb):
+	Allow units to be specified with font sizes; default to pixels.
+
+	* matchbox/theme-engines/mb-wm-theme-png.c:
+	(xft_load_font):
+	(mb_wm_theme_png_paint_decor):
+	Handle font units in xft/Pango backends.
+
 2008-03-07  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox/core/mb-wm-types.h

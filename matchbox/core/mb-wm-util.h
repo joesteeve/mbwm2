@@ -112,20 +112,7 @@ mb_wm_rgba_icon_new ();
 void
 mb_wm_rgba_icon_free (MBWMRgbaIcon *icon);
 
+int
+mb_wm_util_pixels_to_points (MBWindowManager *wm, int pixels);
+
 #endif
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
