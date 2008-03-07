@@ -43,13 +43,13 @@ AC_ARG_ENABLE(png-theme,
   [  --enable-png-theme      Enable PNG-based theme],
   [png_theme=$enableval], [png_theme=no])
 
-AC_ARG_ENABLE(pango,
-  [  --enable-pango          Enable use of pango for text layout],
-  [use_pango=$enableval], [use_pango=no])
+AC_ARG_WITH(pango,
+  [  --with-pango            Use of pango for text layout],
+  [use_pango=$withval], [use_pango=no])
 
-AC_ARG_ENABLE(gtk,
-  [  --enable-gtk            Disable GTK integration support],
-  [use_gtk=$enableval], [use_gtk=no])
+AC_ARG_WITH(gtk,
+  [  --with-gtk              With GTK integration support],
+  [use_gtk=$withval], [use_gtk=no])
 
 AC_ARG_ENABLE(debug,
   [  --enable-debug          Enable verbose debugging output],
@@ -58,7 +58,7 @@ AC_ARG_ENABLE(debug,
 AC_ARG_ENABLE(compositing-manager,
   [  --enable-compositing-manager@<:@=BACKEND@:>@  Enable compositing manager,
                           optionally choosing compositor backend. Available
-                          backends are: 
+                          backends are:
                            'default' (XRender based backend),
                            'clutter' (Clutter based backend),
                            'framework-only' (Compositing frameworks without a backend).],
