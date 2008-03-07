@@ -14,9 +14,6 @@
 /* Use pango for text layout */
 #define USE_PANGO @USE_PANGO@
 
-/* Build simple, plain X, theme engine */
-#define THEME_SIMPLE @THEME_SIMPLE@
-
 /* Use clutter for compositing */
 #define USE_CLUTTER @USE_CLUTTER@
 

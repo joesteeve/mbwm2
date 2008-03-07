@@ -1,3 +1,13 @@
+2008-03-07  Robert Bragg  <bob@o-hand.com>
+
+	* matchbox/core/mb-wm-types.h
+	* matchbox/theme-engines/mb-wm-theme.c
+	* matchbox/theme-engines/mb-wm-theme.h
+	* matchbox/theme-engines/Makefile.am
+	* matchbox/mb-wm-config.h.in
+	Moves the simple xlib based theme engine into the theme engine base
+	class
+
 2008-03-07  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

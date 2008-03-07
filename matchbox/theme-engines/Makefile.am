@@ -1,8 +1,4 @@
 
-if THEME_SIMPLE
-SIMPLE_SRC = mb-wm-theme-simple.c mb-wm-theme-simple.h
-endif
-
 if THEME_PNG
 PNG_SRC = mb-wm-theme-png.c mb-wm-theme-png.h
 endif
@@ -14,11 +10,11 @@ pkgincludedir = $(includedir)/@MBWM2_INCDIR@/theme-engines
 if ENABLE_LIBMATCHBOX
 pkginclude_HEADERS = *.h
 noinst_LTLIBRARIES = libmb-theme.la
-libmb_theme_la_SOURCES = $(COMMON_SRC) $(SIMPLE_SRC) $(PNG_SRC)
+libmb_theme_la_SOURCES = $(COMMON_SRC) $(PNG_SRC)
 libmb_theme_la_CFLAGS =
 else
 noinst_LIBRARIES = libmb-theme.a
-libmb_theme_a_SOURCES = $(COMMON_SRC) $(SIMPLE_SRC) $(PNG_SRC)
+libmb_theme_a_SOURCES = $(COMMON_SRC) $(PNG_SRC)
 endif
 
 INCLUDES = @MBWM_INCS@ @MBWM_CFLAGS@ -DDATADIR=\"$(datadir)\"
