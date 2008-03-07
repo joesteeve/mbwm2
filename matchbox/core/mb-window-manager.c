@@ -701,10 +701,25 @@ mb_wm_handle_map_notify   (XMapEvent  *xev,
 
   if (mb_wm_is_my_window (wm, xev->window, &client))
     {
-      if (wm->comp_mgr && client)
+      if (client)
 	{
-	  MBWM_NOTE (COMPOSITOR, "@@@@ client %p @@@@\n", client);
-	  mb_wm_comp_mgr_map_notify (wm->comp_mgr, client);
+	  Window xwin_top =
+	    client->xwin_frame ? client->xwin_frame : client->window->xwindow;
+
+	  /*
+	   * Only notify the CM when the top-level window maps, not for the
+	   * decors, etc.
+	   */
+	  if (xev->window == xwin_top && wm->comp_mgr)
+	    {
+	      MBWM_NOTE (COMPOSITOR, "@@@@ client %p @@@@\n", client);
+	      mb_wm_comp_mgr_map_notify (wm->comp_mgr, client);
+
+	      /*
+	       * If the hiding_from_deskotp flag is set, reset it
+	       */
+	      mb_wm_client_reset_hiding_from_desktop (client);
+	    }
 	}
 
       return True;
@@ -2112,6 +2127,11 @@ mb_wm_select_desktop (MBWindowManager *wm, int desktop)
   CARD32                 card32 = desktop;
   MBWindowManagerClient *c;
 
+  if (desktop == wm->active_desktop)
+    return;
+
+  wm->active_desktop = desktop;
+
   if (desktop >= wm->n_desktops)
     {
       mb_wm_set_n_desktops (wm, desktop + 1);
@@ -2124,5 +2144,10 @@ mb_wm_select_desktop (MBWindowManager *wm, int desktop)
 		  wm->atoms[MBWM_ATOM_NET_CURRENT_DESKTOP],
 		  XA_CARDINAL, 32, PropModeReplace,
 		  (unsigned char *)&card32, 1);
+
+#if ENABLE_COMPOSITE
+  if (mb_wm_compositing_enabled (wm))
+    mb_wm_comp_mgr_select_desktop (wm->comp_mgr, desktop);
+#endif
 }
 

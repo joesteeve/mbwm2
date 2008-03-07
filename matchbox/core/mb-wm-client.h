@@ -376,4 +376,7 @@ mb_wm_client_desktop_change (MBWindowManagerClient * client, int desktop);
 Bool
 mb_wm_client_is_hiding_from_desktop (MBWindowManagerClient * client);
 
+void
+mb_wm_client_reset_hiding_from_desktop (MBWindowManagerClient * client);
+
 #endif

@@ -1071,11 +1071,16 @@ mb_wm_client_desktop_change (MBWindowManagerClient * client, int desktop)
 
   if (client->desktop == desktop)
     {
-      client->priv->hiding_from_desktop = False;
-
       mb_wm_client_set_state (client,
 			      MBWM_ATOM_NET_WM_STATE_HIDDEN,
 			      MBWMClientWindowStateChangeRemove);
+
+      /*
+       * NB -- we do not reset the hiding_from_desktop flag here
+       * since it is there to indicate to the WM that the window is
+       * mapping because of the desktop change; the WM resets it when
+       * it get the map-notify for it.
+       */
     }
   else
     {
@@ -1092,3 +1097,10 @@ mb_wm_client_is_hiding_from_desktop (MBWindowManagerClient * client)
 {
   return client->priv->hiding_from_desktop;
 }
+
+void
+mb_wm_client_reset_hiding_from_desktop (MBWindowManagerClient * client)
+{
+  client->priv->hiding_from_desktop = False;
+}
+

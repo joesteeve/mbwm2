@@ -60,6 +60,8 @@ struct MBWMCompMgrClass
 			       MBWindowManagerClient *c1,
 			       MBWindowManagerClient *c2,
 			       Bool reverse);
+
+  void   (*select_desktop)    (MBWMCompMgr * mgr, int desktop);
 };
 
 int
@@ -109,6 +111,9 @@ void
 mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
 			  MBWindowManagerClient  * client,
 			  MBWMCompMgrEffectEvent   event);
+
+void
+mb_wm_comp_mgr_select_desktop (MBWMCompMgr * mgr, int desktop);
 
 struct MBWMCompMgrClient
 {

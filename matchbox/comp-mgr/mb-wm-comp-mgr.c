@@ -64,7 +64,13 @@ mb_wm_comp_mgr_client_init (MBWMObject *obj, va_list vap)
   if (!wm_client)
     return 0;
 
-  client->wm_client = wm_client;
+  /*
+   * FIXME -- this is not ideal, but we need the wm_client to be guaranteed
+   * to exist for the entire lifetime of this object (we need access to
+   * the wm in the destructor; really the wm should be a singleton, and we
+   * should have a global accessor, so that all the wmrefs could be removed
+   */
+  client->wm_client = mb_wm_object_ref (MB_WM_OBJECT (wm_client));
 
   /* Check visual */
   format = XRenderFindVisualFormat (wm_client->wmref->xdpy,
@@ -79,6 +85,10 @@ mb_wm_comp_mgr_client_init (MBWMObject *obj, va_list vap)
 static void
 mb_wm_comp_mgr_client_destroy (MBWMObject* obj)
 {
+  MBWMCompMgrClient     *client    = MB_WM_COMP_MGR_CLIENT (obj);
+  MBWindowManagerClient *wm_client = client->wm_client;
+
+  mb_wm_object_unref (MB_WM_OBJECT (wm_client));
 }
 
 int
@@ -275,8 +285,8 @@ mb_wm_comp_mgr_render (MBWMCompMgr *mgr)
 
   klass  = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
-  MBWM_ASSERT (klass->render != NULL);
-  klass->render (mgr);
+  if (klass->render)
+    klass->render (mgr);
 }
 
 void
@@ -314,7 +324,8 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
    * (the effect will take care of showing the actor, and if not, show() gets
    * called by mb_wm_comp_mgr_map_notify()).
    */
-  mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventMap);
+  if (!mb_wm_client_is_hiding_from_desktop (c))
+    mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventMap);
 
   if (c->cm_client)
     mb_wm_comp_mgr_client_show (c->cm_client);
@@ -330,7 +341,8 @@ mb_wm_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
 
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
-  mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventUnmap);
+  if (!mb_wm_client_is_hiding_from_desktop (c))
+    mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventUnmap);
 
   if (klass->unmap_notify)
     klass->unmap_notify (mgr, c);
@@ -386,6 +398,16 @@ mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
 
   if (klass->effect)
     klass->effect (mgr, client, event);
+}
+
+void
+mb_wm_comp_mgr_select_desktop (MBWMCompMgr * mgr, int desktop)
+{
+  MBWMCompMgrClass *klass
+    = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+
+  if (klass->select_desktop)
+    klass->select_desktop (mgr, desktop);
 }
 
 void

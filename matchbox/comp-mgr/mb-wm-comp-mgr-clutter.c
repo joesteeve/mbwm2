@@ -50,10 +50,12 @@ static unsigned char *
 mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ();
 
 static void
-mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter *, ClutterActor *);
+mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter *,
+				  MBWMCompMgrClutterClient *);
 
 static void
-mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter *, ClutterActor *);
+mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter *,
+				     MBWMCompMgrClutterClient *);
 
 enum
 {
@@ -266,7 +268,7 @@ mb_wm_comp_mgr_clutter_client_destroy (MBWMObject* obj)
   MBWindowManager          * wm  = c->wm_client->wmref;
   MBWMCompMgrClutter       * mgr = MB_WM_COMP_MGR_CLUTTER (wm->comp_mgr);
 
-  mb_wm_comp_mgr_clutter_remove_actor (mgr, cc->actor);
+  mb_wm_comp_mgr_clutter_remove_actor (mgr, cc);
 
   if (cc->actor)
     g_object_unref (cc->actor);
@@ -450,7 +452,7 @@ mb_wm_comp_mgr_clutter_effect_new (MBWMCompMgrClient      * client,
 struct MBWMCompMgrClutterPrivate
 {
   ClutterActor * stage;
-  ClutterActor * desktop;
+  MBWMList     * desktops;
   ClutterActor * shadow;
 
   Window         overlay_window;
@@ -489,9 +491,6 @@ static void
 mb_wm_comp_mgr_clutter_turn_off_real (MBWMCompMgr *mgr);
 
 static void
-mb_wm_comp_mgr_clutter_render_real (MBWMCompMgr *mgr);
-
-static void
 mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 					MBWindowManagerClient *c);
 
@@ -516,6 +515,9 @@ static Bool
 mb_wm_comp_mgr_is_my_window_real (MBWMCompMgr * mgr, Window xwin);
 
 static void
+mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr, int desktop);
+
+static void
 mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
 {
   MBWMCompMgrClass *cm_klass = MB_WM_COMP_MGR_CLASS (klass);
@@ -524,16 +526,20 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
   klass->klass_name = "MBWMCompMgrClutter";
 #endif
 
+  /*
+   * NB -- we do not need render() implementation, since that is taken care of
+   * automatically by clutter stage.
+   */
   cm_klass->register_client   = mb_wm_comp_mgr_clutter_register_client_real;
   cm_klass->turn_on           = mb_wm_comp_mgr_clutter_turn_on_real;
   cm_klass->turn_off          = mb_wm_comp_mgr_clutter_turn_off_real;
-  cm_klass->render            = mb_wm_comp_mgr_clutter_render_real;
   cm_klass->map_notify        = mb_wm_comp_mgr_clutter_map_notify_real;
   cm_klass->handle_events     = mb_wm_comp_mgr_clutter_handle_events_real;
   cm_klass->my_window         = mb_wm_comp_mgr_is_my_window_real;
   cm_klass->transition        = mb_wm_comp_mgr_clutter_transition_real;
   cm_klass->effect            = mb_wm_comp_mgr_clutter_effect_real;
   cm_klass->restack           = mb_wm_comp_mgr_clutter_restack_real;
+  cm_klass->select_desktop    = mb_wm_comp_mgr_clutter_select_desktop;
 }
 
 /*
@@ -578,7 +584,7 @@ mb_wm_comp_mgr_clutter_init (MBWMObject *obj, va_list vap)
   MBWMCompMgr                * mgr  = MB_WM_COMP_MGR (obj);
   MBWMCompMgrClutter         * cmgr = MB_WM_COMP_MGR_CLUTTER (obj);
   MBWMCompMgrClutterPrivate  * priv;
-
+  ClutterActor               * desktop;
   priv = mb_wm_util_malloc0 (sizeof (MBWMCompMgrClutterPrivate));
   cmgr->priv = priv;
 
@@ -586,10 +592,10 @@ mb_wm_comp_mgr_clutter_init (MBWMObject *obj, va_list vap)
     return 0;
 
   priv->stage = clutter_stage_get_default ();
-  priv->desktop = clutter_group_new ();
-
-  clutter_actor_show (priv->desktop);
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), priv->desktop);
+  desktop = clutter_group_new ();
+  clutter_actor_show (desktop);
+  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), desktop);
+  priv->desktops = mb_wm_util_list_append (priv->desktops, desktop);
 
   return 1;
 }
@@ -860,24 +866,68 @@ mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
 	  if (!a)
 	    continue;
 
+	  /* FIXME -- handle multiple desktops */
 	  clutter_actor_raise (a, prev);
+
 	  prev = a;
 	}
     }
 
 }
 
-static void
-mb_wm_comp_mgr_clutter_render_real (MBWMCompMgr *mgr)
+/*
+ * Gets the n-th desktop from our desktop list; if we do not have that many
+ * desktops, just append new ones.
+ */
+static ClutterActor *
+mb_wm_comp_mgr_clutter_get_nth_desktop (MBWMCompMgrClutter * cmgr, int desktop)
 {
-  MBWMCompMgrClutterPrivate * priv = MB_WM_COMP_MGR_CLUTTER (mgr)->priv;
-  MBWindowManagerClient     * wm_client;
-  MBWindowManager           * wm = mgr->wm;
+  MBWMCompMgrClutterPrivate * priv = cmgr->priv;
+  MBWMList * l = priv->desktops;
+  int i = 0;
 
-  /*
-   * We do not need to do anything, as rendering is done automatically for us
-   * by clutter stage.
-   */
+  while (l && i != desktop)
+    {
+      ++i;
+
+      if (l->next)
+	l = l->next;
+      else
+	{
+	  /* End of the line -- append new desktop */
+	  ClutterActor * d = clutter_group_new ();
+	  priv->desktops = mb_wm_util_list_append (priv->desktops, d);
+	  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), d);
+
+	  l = l->next;
+	}
+    }
+
+  return CLUTTER_ACTOR (l->data);
+}
+
+static void
+mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr, int desktop)
+{
+  MBWMCompMgrClutter * cmgr = MB_WM_COMP_MGR_CLUTTER (mgr);
+  ClutterActor       * d;
+  MBWMList           * l;
+
+  d = mb_wm_comp_mgr_clutter_get_nth_desktop (cmgr, desktop);
+
+  l = cmgr->priv->desktops;
+
+  while (l)
+    {
+      ClutterActor * a = l->data;
+
+      if (a == d)
+	clutter_actor_show (a);
+      else
+	clutter_actor_hide (a);
+
+      l = l->next;
+    }
 }
 
 static void
@@ -897,6 +947,26 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   ClutterColor                shadow_cclr;
   MBWMCompMgrShadowType       shadow_type;
   MBWMClientType              ctype = MB_WM_CLIENT_CLIENT_TYPE (c);
+
+  if (mb_wm_client_is_hiding_from_desktop (c))
+    {
+      /*
+       * We already have the resources, except we have to get a new
+       * backing pixmap
+       */
+      Window xwin = c->xwin_frame ? c->xwin_frame : c->window->xwindow;
+
+      /*
+       * FIXME -- Must rebind the pixmap to the texture -- this is not ideal
+       * since our texture already contains the correct data, but without
+       * this it will not update. Perhaps we some extension to the clutter
+       * API is needed here.
+       */
+      mb_wm_comp_mgr_clutter_fetch_texture (client);
+
+      clutter_actor_show (cclient->actor);
+      return;
+    }
 
   /*
    * We get called for windows as well as their children, so once we are
@@ -999,7 +1069,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
   clutter_actor_set_position (actor, geom.x, geom.y);
 
-  mb_wm_comp_mgr_clutter_add_actor (cmgr, actor);
+  mb_wm_comp_mgr_clutter_add_actor (cmgr, cclient);
 }
 
 struct _fade_cb_data
@@ -1299,22 +1369,29 @@ mb_wm_comp_mgr_is_my_window_real (MBWMCompMgr * mgr, Window xwin)
 }
 
 static void
-mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter * cmgr,
-				     ClutterActor * a)
+mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter       * cmgr,
+				     MBWMCompMgrClutterClient * client)
 {
-  clutter_container_remove_actor (CLUTTER_CONTAINER (cmgr->priv->desktop), a);
+  MBWindowManagerClient * c = MB_WM_COMP_MGR_CLIENT (client)->wm_client;
+  ClutterActor          * d;
+
+  d = mb_wm_comp_mgr_clutter_get_nth_desktop (cmgr,
+					      mb_wm_client_get_desktop (c));
+
+  clutter_container_remove_actor (CLUTTER_CONTAINER (d), client->actor);
 }
 
 static void
-mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter * cmgr, ClutterActor * a)
+mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter       * cmgr,
+				  MBWMCompMgrClutterClient * client)
 {
-  clutter_container_add_actor (CLUTTER_CONTAINER (cmgr->priv->desktop), a);
-}
+  MBWindowManagerClient * c = MB_WM_COMP_MGR_CLIENT (client)->wm_client;
+  ClutterActor          * d;
 
-ClutterActor *
-mb_wm_comp_mgr_clutter_get_desktop (MBWMCompMgrClutter * cmgr)
-{
-  return cmgr->priv->desktop;
+  d = mb_wm_comp_mgr_clutter_get_nth_desktop (cmgr,
+					      mb_wm_client_get_desktop (c));
+
+  clutter_container_add_actor (CLUTTER_CONTAINER (d), client->actor);
 }
 
 MBWMCompMgr *

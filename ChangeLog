@@ -1,5 +1,50 @@
 2008-03-07  Tomas Frydrych  <tf@o-hand.com>
 
+	Further work on multiple desktop support:
+
+	* matchbox/core/mb-wm-client.c:
+	* matchbox/core/mb-wm-client.h:
+	(mb_wm_client_desktop_change):
+	Do not reset the hiding_from_desktop flag when showing a client
+
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_client_reset_hiding_from_desktop):
+	Public API so that the WM can reset the flag when window maps.
+
+	(mb_wm_handle_map_notify):
+	Do not pass notification for our frame decors, etc, to the CM.
+
+	(mb_wm_select_desktop):
+	Set MBWindowManager::active_desktop when destkop changes; hook
+	into CM API.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	(mb_wm_comp_mgr_client_init):
+	(mb_wm_comp_mgr_client_destroy):
+	Take/release reference to MBWindowClient object to avoid it
+	disappearing on us during effect animations.
+
+	(mb_wm_comp_mgr_render):
+	Make class implementation of the render method optional to avoid
+	unnecessary function calls.
+
+	(mb_wm_comp_mgr_map_notify):
+	(mb_wm_comp_mgr_unmap_notify):
+	Do not trigger map application map animation when switching
+	desktops.
+
+	(mb_wm_comp_mgr_select_desktop):
+	CM API for WM to hook into for desktop switching.
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.h:
+	(mb_wm_comp_mgr_clutter_select_desktop):
+	(mb_wm_comp_mgr_clutter_map_notify_real):
+	CM desktop switching implementation.
+
+2008-03-07  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-util.c:
 	* matchbox/core/mb-wm-util.h:
 	(mb_wm_util_pixels_to_points):

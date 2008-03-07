@@ -49,9 +49,6 @@ mb_wm_comp_mgr_clutter_class_type ();
 MBWMCompMgr*
 mb_wm_comp_mgr_clutter_new (MBWindowManager *wm);
 
-ClutterActor *
-mb_wm_comp_mgr_clutter_get_desktop (MBWMCompMgrClutter * cmgr);
-
 struct MBWMCompMgrClutterClientClass
 {
   MBWMCompMgrClientClass parent;
