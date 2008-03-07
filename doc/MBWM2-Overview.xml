@@ -283,18 +283,10 @@
 
       <itemizedlist>
 	<listitem>
-	  <para>MBWMThemeCairo; this is the default engine that uses the <ulink
-	  url='http://cairographics.org/'>Cairo</ulink> graphics library to draw
-	  window decorations. It allows for simple effects, such as gradients on
-	  the decors.
-          </para>
-	</listitem>
-
-	<listitem>
-	  <para>MBWMThemeSimple; this is an alternative default engine that uses
-	  only basic Xlib API for drawing the window decors. It is build when
-	  the Cairo theme engine is disabled with --disable-cairo-theme
-	  configure option.
+	  <para>MBWMThemeSimple; this is the default engine that uses
+	  only basic Xlib API for drawing the window decors. It is built if
+	  the PNG theme engine is not enabled via the --enable-png-theme
+          configure option.
           </para>
 	</listitem>
 
@@ -425,13 +417,13 @@
     <title>Theming Matchbox Window Manager II</title>
 
     <para>The MBWM II theme consists of an XML description and, in case of a
-    PNG-based theme, the theme image. There are three distinct theme engines
-    provided: a simple engine, using back Xlib drawing primites, an engine
-    using cairo library, and PNG-based engine.
+    PNG-based theme, the theme image. There are two distinct theme engines
+    provided: a simple engine, using back Xlib drawing primites, and a PNG-based
+    engine.
     </para>
 
-    <para>The simple and cairo engines are suitable for simple themes with
-    minimal frills. The PNG engine, on the other hand, facilitates the creation
+    <para>The simple engine is suitable for simple themes with minimal frills.
+    The PNG engine, on the other hand, facilitates the creation
     of visually impressive and complex themes; it is based on single template
     image, which contains all the elements the theme consists of, with the
     location of each element is described in the xml description file.
@@ -646,9 +638,9 @@
 	    </listitem>
 
 	    <listitem>
-	      <para>clr-bg2: secondary background colour. This is used by the
-	      cairo-based theme engine to create gradiented background; ignored
-	      by other theme engines.
+	      <para>clr-bg2: secondary background colour. This could be used by
+              a theme engine to create gradiented background; ignored by current
+              theme engines.
               </para>
 	    </listitem>
 

@@ -32,10 +32,6 @@
 #define MB_WM_THEME_SIMPLE_CLASS(c) ((MBWMThemeSimpleClass*)(c))
 #define MB_WM_TYPE_THEME_SIMPLE (mb_wm_theme_simple_class_type ())
 
-#define MB_WM_THEME_CAIRO(c) ((MBWMThemeCairo*)(c))
-#define MB_WM_THEME_CAIRO_CLASS(c) ((MBWMThemeCairoClass*)(c))
-#define MB_WM_TYPE_THEME_CAIRO (mb_wm_theme_cairo_class_type ())
-
 #define MB_WM_THEME_PNG(c) ((MBWMThemePng*)(c))
 #define MB_WM_THEME_PNG_CLASS(c) ((MBWMThemePngClass*)(c))
 #define MB_WM_TYPE_THEME_PNG (mb_wm_theme_png_class_type ())

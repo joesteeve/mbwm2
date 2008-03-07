@@ -1,8 +1,35 @@
+2008-03-06  Robert Bragg  <bob@o-hand.com>
+
+	* configure.ac
+	* doc/MBWM2-Overview.xml
+	* matchbox/core/mb-wm-types.h
+	* matchbox/mb-wm-config.h.in
+	* matchbox/theme-engines/Makefile.am
+	* matchbox/theme-engines/mb-wm-theme-cairo.c
+	* matchbox/theme-engines/mb-wm-theme-cairo.h
+	* matchbox/theme-engines/mb-wm-theme.c
+	* matchbox/theme-engines/mb-wm-theme.h
+	Removes all references to the cairo theme engine
+
 2008-03-06  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/theme-engines/mb-wm-theme-png.c:
 	* matchbox/theme-engines/mb-wm-theme-png.h:
         Optionally, use Pango to render text.
+
+2008-03-06  Robert Bragg  <bob@o-hand.com>
+
+	* Changelog
+	Adds missing changelog entries
+
+2008-03-06  Robert Bragg  <bob@o-hand.com>
+
+	* configure.ac
+	makes a start on tidying up configure.ac:
+	- some bits disabled by default
+	- adds a new --enable-pango option that will be optionally used by the
+	png theme engine
+	- adds a new --enable-matchbox-remote option
 
 2008-03-05  Tomas Frydrych  <tf@o-hand.com>
 

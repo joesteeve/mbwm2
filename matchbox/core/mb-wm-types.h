@@ -91,8 +91,6 @@ typedef struct MBWMClientWindow            MBWMClientWindow;
 typedef struct MBWMClientWindowClass       MBWMClientWindowClass;
 typedef struct MBWMTheme                   MBWMTheme;
 typedef struct MBWMThemeClass              MBWMThemeClass;
-typedef struct MBWMThemeCairo              MBWMThemeCairo;
-typedef struct MBWMThemeCairoClass         MBWMThemeCairoClass;
 typedef struct MBWMThemePng                MBWMThemePng;
 typedef struct MBWMThemePngClass           MBWMThemePngClass;
 typedef struct MBWMThemeSimple             MBWMThemeSimple;

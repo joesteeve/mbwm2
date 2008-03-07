@@ -21,11 +21,7 @@
 #include "mb-wm-theme.h"
 #include "mb-wm-theme-xml.h"
 
-#if USE_CAIRO
-#include "mb-wm-theme-cairo.h"
-#else
 #include "mb-wm-theme-simple.h"
-#endif
 
 #include <sys/stat.h>
 #include <expat.h>
@@ -503,11 +499,7 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
   if (!theme)
     {
       theme = MB_WM_THEME (mb_wm_object_new (
-#if USE_CAIRO
-			MB_WM_TYPE_THEME_CAIRO,
-#else
 			MB_WM_TYPE_THEME_SIMPLE,
-#endif
 	                MBWMObjectPropWm,                  wm,
 			MBWMObjectPropThemeXmlClients,     xml_clients,
 			MBWMObjectPropThemeColorLowlight, &clr_lowlight,
@@ -824,11 +816,7 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	  else if (!strcmp (*p, "engine-type"))
 	    {
 	      if (!strcmp (*(p+1), "default"))
-#if USE_CAIRO
-		exd->theme_type = MB_WM_TYPE_THEME_CAIRO;
-#else
 		exd->theme_type = MB_WM_TYPE_THEME_SIMPLE;
-#endif
 #if THEME_PNG
 	      else if (!strcmp (*(p+1), "png"))
 		exd->theme_type = MB_WM_TYPE_THEME_PNG;

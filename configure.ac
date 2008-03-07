@@ -38,9 +38,6 @@ AC_CHECK_FUNCS([memset strdup strncasecmp])
 
 needed_pkgs="x11 "
 
-AC_ARG_ENABLE(cairo-theme,
-  [  --enable-cairo-theme    Disable Cairo graphics rendering support],
-  [use_cairo=$enableval], [use_cairo=no])
 
 AC_ARG_ENABLE(png-theme,
   [  --enable-png-theme      Enable PNG-based theme],
@@ -79,9 +76,6 @@ AC_ARG_ENABLE(matchbox-remote,
   [  --enable-matchbox-remote   Enable matchbox remote control utility],
   [matchbox_remote=$enableval], [matchbox_remote=no])
 
-if test "x$use_cairo" = "xyes"; then
-  needed_pkgs="$needed_pkgs pangocairo "
-fi
 
 if test "x$use_pango" = "xyes"; then
   needed_pkgs="$needed_pkgs pangoxft "
@@ -124,13 +118,6 @@ PKG_CHECK_MODULES(MBWM, $needed_pkgs)
 MBWM2_PKGREQUIRES="$needed_pkgs"
 AC_SUBST(MBWM2_PKGREQUIRES)
 
-USE_CAIRO=0
-AM_CONDITIONAL(THEME_CAIRO, [test "x$use_cairo" = "xyes"])
-if test "$use_cairo" = yes; then
-  USE_CAIRO=1
-fi
-AC_SUBST(USE_CAIRO)
-
 USE_PANGO=0
 if test "$use_pango" = yes; then
   USE_PANGO=1
@@ -145,10 +132,10 @@ if test "$png_theme" = yes; then
 fi
 AC_SUBST(THEME_PNG)
 
-# only build simple theme if cairo theme disabled
+# only build simple theme if png theme disabled
 THEME_SIMPLE=0
-AM_CONDITIONAL(THEME_SIMPLE, [test "x$use_cairo" != "xyes"])
-if test "$use_cairo" != yes; then
+AM_CONDITIONAL(THEME_SIMPLE, [test "x$use_png" != "xyes"])
+if test "$use_png" != yes; then
   THEME_SIMPLE=1
 fi
 AC_SUBST(THEME_SIMPLE)
@@ -279,7 +266,6 @@ echo "
 	Xcursor               :   ${have_xcursor}
 
     Themes:
-	Cairo theme           :   ${use_cairo}
 	PNG theme             :   ${png_theme}
 	GTK integration       :   ${use_gtk}
 	Pango integration     :   ${use_pango}

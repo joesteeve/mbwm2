@@ -8,8 +8,8 @@
 /* Build PNG-image based theme engine */
 #define THEME_PNG @THEME_PNG@
 
-/* Use cairo for theme rendering */
-#define USE_CAIRO @USE_CAIRO@
+/* Use pango for text layout */
+#define USE_PANGO @USE_PANGO@
 
 /* Use pango for text layout */
 #define USE_PANGO @USE_PANGO@
