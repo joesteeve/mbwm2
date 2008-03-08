@@ -4,7 +4,7 @@
 #include "mb-wm-client-dialog.h"
 #include <signal.h>
 
-#if USE_CLUTTER
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER
 # include <clutter/clutter-x11.h>
 #endif
 
@@ -101,7 +101,7 @@ main(int argc, char **argv)
   dpy = GDK_DISPLAY();
 #endif
 
-#if USE_CLUTTER
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER
   /*
    * If using clutter, we share the display connection, and hook
    * our xevent handler into the clutter main loop.

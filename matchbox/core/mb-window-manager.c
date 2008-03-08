@@ -30,11 +30,11 @@
 
 #if ENABLE_COMPOSITE
 # include "mb-wm-comp-mgr.h"
-#  if USE_CLUTTER
+#  if ENABLE_CLUTTER_COMPOSITE_MANAGER
 #   include <clutter/clutter-x11.h>
 #   include "mb-wm-comp-mgr-clutter.h"
 #  else
-#   include "mb-wm-comp-mgr-default.h"
+#   include "mb-wm-comp-mgr-xrender.h"
 #  endif
 # include "../client-types/mb-wm-client-override.h"
 #endif
@@ -154,10 +154,10 @@ mb_wm_real_theme_new (MBWindowManager * wm, const char * path)
 static MBWMCompMgr *
 mb_wm_real_comp_mgr_new (MBWindowManager *wm)
 {
-#if USE_CLUTTER
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER
   return mb_wm_comp_mgr_clutter_new (wm);
 #else
-  return mb_wm_comp_mgr_default_new (wm);
+  return mb_wm_comp_mgr_xrender_new (wm);
 #endif
 }
 #endif
@@ -189,7 +189,7 @@ mb_wm_gdk_xevent_filter (GdkXEvent *xevent, GdkEvent *event, gpointer data)
 }
 #endif
 
-#if USE_CLUTTER
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER
 #if USE_GTK
 static GdkFilterReturn
 mb_wm_clutter_gdk_xevent_filter (GdkXEvent *xevent, GdkEvent *event,
@@ -224,14 +224,14 @@ mb_wm_clutter_xevent_filter (XEvent *xev, ClutterEvent *cev, gpointer data)
 #endif
 #endif
 
-#if USE_CLUTTER || USE_GTK
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER || USE_GTK
 static void
 mb_wm_main_real (MBWindowManager *wm)
 {
 
 #if USE_GTK
   gdk_window_add_filter (NULL, mb_wm_gdk_xevent_filter, wm);
-#if USE_CLUTTER
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER
   gdk_window_add_filter (NULL, mb_wm_clutter_gdk_xevent_filter, NULL);
 #endif
   gtk_main ();
@@ -257,7 +257,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->client_activate = mb_wm_activate_client_real;
   wm_class->layout_new      = mb_wm_layout_new_real;
 
-#if USE_CLUTTER
+#if ENABLE_CLUTTER_COMPOSITE_MANAGER
   wm_class->main            = mb_wm_main_real;
 #endif
 
@@ -1221,7 +1221,7 @@ mb_wm_main_loop(MBWindowManager *wm)
   MBWindowManagerClass * wm_class =
     MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
 
-#if !USE_CLUTTER
+#if !ENABLE_CLUTTER_COMPOSITE_MANAGER
   if (!wm_class->main)
     {
       GMainLoop * loop = g_main_loop_new (NULL, FALSE);

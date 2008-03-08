@@ -15,10 +15,10 @@
 #define USE_PANGO @USE_PANGO@
 
 /* Use clutter for compositing */
-#define USE_CLUTTER @USE_CLUTTER@
+#define ENABLE_CLUTTER_COMPOSITE_MANAGER @ENABLE_CLUTTER_COMPOSITE_MANAGER@
 
-/* Use default compositing manager backend */
-#define DEFAULT_COMP_MGR @DEFAULT_COMP_MGR@
+/* Use xrender compositing manager backend */
+#define ENABLE_XRENDER_COMPOSITE_MANAGER @ENABLE_XRENDER_COMPOSITE_MANAGER@
 
 /* Include at least one of the default compositing manager backends */
 #define COMP_MGR_BACKEND @COMP_MGR_BACKEND@

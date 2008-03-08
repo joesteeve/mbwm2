@@ -22,7 +22,7 @@
 #include "mb-wm.h"
 #include "mb-wm-client.h"
 #include "mb-wm-comp-mgr.h"
-#include "mb-wm-comp-mgr-default.h"
+#include "mb-wm-comp-mgr-xrender.h"
 
 #include <math.h>
 
@@ -51,26 +51,26 @@ struct MBWMCompMgrDefaultClient
 };
 
 static void
-mb_wm_comp_mgr_default_client_show_real (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_xrender_client_show_real (MBWMCompMgrClient * client);
 
 static void
-mb_wm_comp_mgr_default_client_hide_real (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_xrender_client_hide_real (MBWMCompMgrClient * client);
 
 static void
-mb_wm_comp_mgr_default_client_repair_real (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_xrender_client_repair_real (MBWMCompMgrClient * client);
 
 static void
-mb_wm_comp_mgr_default_client_configure_real (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client);
 
 static void
-mb_wm_comp_mgr_default_client_class_init (MBWMObjectClass *klass)
+mb_wm_comp_mgr_xrender_client_class_init (MBWMObjectClass *klass)
 {
   MBWMCompMgrClientClass *c_klass = MB_WM_COMP_MGR_CLIENT_CLASS (klass);
 
-  c_klass->show      = mb_wm_comp_mgr_default_client_show_real;
-  c_klass->hide      = mb_wm_comp_mgr_default_client_hide_real;
-  c_klass->repair    = mb_wm_comp_mgr_default_client_repair_real;
-  c_klass->configure = mb_wm_comp_mgr_default_client_configure_real;
+  c_klass->show      = mb_wm_comp_mgr_xrender_client_show_real;
+  c_klass->hide      = mb_wm_comp_mgr_xrender_client_hide_real;
+  c_klass->repair    = mb_wm_comp_mgr_xrender_client_repair_real;
+  c_klass->configure = mb_wm_comp_mgr_xrender_client_configure_real;
 
 #ifdef MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgrDefaultClient";
@@ -78,7 +78,7 @@ mb_wm_comp_mgr_default_client_class_init (MBWMObjectClass *klass)
 }
 
 static int
-mb_wm_comp_mgr_default_client_init (MBWMObject *obj, va_list vap)
+mb_wm_comp_mgr_xrender_client_init (MBWMObject *obj, va_list vap)
 {
   MBWMCompMgrClient         *client  = MB_WM_COMP_MGR_CLIENT (obj);
   MBWMCompMgrDefaultClient  *dclient = MB_WM_COMP_MGR_DEFAULT_CLIENT (obj);
@@ -94,7 +94,7 @@ mb_wm_comp_mgr_default_client_init (MBWMObject *obj, va_list vap)
 }
 
 static void
-mb_wm_comp_mgr_default_client_destroy (MBWMObject* obj)
+mb_wm_comp_mgr_xrender_client_destroy (MBWMObject* obj)
 {
   MBWMCompMgrClient        * c  = MB_WM_COMP_MGR_CLIENT (obj);
   MBWMCompMgrDefaultClient * dc = MB_WM_COMP_MGR_DEFAULT_CLIENT (obj);
@@ -116,7 +116,7 @@ mb_wm_comp_mgr_default_client_destroy (MBWMObject* obj)
 }
 
 int
-mb_wm_comp_mgr_default_client_class_type ()
+mb_wm_comp_mgr_xrender_client_class_type ()
 {
   static int type = 0;
 
@@ -125,9 +125,9 @@ mb_wm_comp_mgr_default_client_class_type ()
       static MBWMObjectClassInfo info = {
 	sizeof (MBWMCompMgrDefaultClientClass),
 	sizeof (MBWMCompMgrDefaultClient),
-	mb_wm_comp_mgr_default_client_init,
-	mb_wm_comp_mgr_default_client_destroy,
-	mb_wm_comp_mgr_default_client_class_init
+	mb_wm_comp_mgr_xrender_client_init,
+	mb_wm_comp_mgr_xrender_client_destroy,
+	mb_wm_comp_mgr_xrender_client_class_init
       };
 
       type =
@@ -141,7 +141,7 @@ mb_wm_comp_mgr_default_client_class_type ()
  * This is a private method, hence static
  */
 static MBWMCompMgrClient *
-mb_wm_comp_mgr_default_client_new (MBWindowManagerClient * client)
+mb_wm_comp_mgr_xrender_client_new (MBWindowManagerClient * client)
 {
   MBWMObject *c;
 
@@ -153,13 +153,13 @@ mb_wm_comp_mgr_default_client_new (MBWindowManagerClient * client)
 }
 
 static void
-mb_wm_comp_mgr_default_add_damage (MBWMCompMgr * mgr, XserverRegion damage);
+mb_wm_comp_mgr_xrender_add_damage (MBWMCompMgr * mgr, XserverRegion damage);
 
 static XserverRegion
-mb_wm_comp_mgr_default_client_extents (MBWMCompMgrClient *client);
+mb_wm_comp_mgr_xrender_client_extents (MBWMCompMgrClient *client);
 
 static void
-mb_wm_comp_mgr_default_client_hide_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_xrender_client_hide_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
@@ -178,9 +178,9 @@ mb_wm_comp_mgr_default_client_hide_real (MBWMCompMgrClient * client)
        * FIXME: keep an eye on this for future revisions of composite
        *        - there may be a better way.
        */
-      mb_wm_comp_mgr_default_client_repair_real (c->cm_client);
-      extents = mb_wm_comp_mgr_default_client_extents (c->cm_client);
-      mb_wm_comp_mgr_default_add_damage (mgr, extents);
+      mb_wm_comp_mgr_xrender_client_repair_real (c->cm_client);
+      extents = mb_wm_comp_mgr_xrender_client_extents (c->cm_client);
+      mb_wm_comp_mgr_xrender_add_damage (mgr, extents);
     }
 
   if (dclient->damage)
@@ -191,7 +191,7 @@ mb_wm_comp_mgr_default_client_hide_real (MBWMCompMgrClient * client)
 
   if (dclient->extents)
     {
-      mb_wm_comp_mgr_default_add_damage (mgr, dclient->extents);
+      mb_wm_comp_mgr_xrender_add_damage (mgr, dclient->extents);
       dclient->extents = None;
     }
 
@@ -203,7 +203,7 @@ mb_wm_comp_mgr_default_client_hide_real (MBWMCompMgrClient * client)
 }
 
 static void
-mb_wm_comp_mgr_default_client_show_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_xrender_client_show_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
@@ -246,9 +246,9 @@ mb_wm_comp_mgr_default_client_show_real (MBWMCompMgrClient * client)
 				   wm_client->window->xwindow,
 				   XDamageReportNonEmpty);
 
-  region = mb_wm_comp_mgr_default_client_extents (client);
+  region = mb_wm_comp_mgr_xrender_client_extents (client);
 
-  mb_wm_comp_mgr_default_add_damage (mgr, region);
+  mb_wm_comp_mgr_xrender_add_damage (mgr, region);
 
   /*
    * If the wm client is modal we have to add its parent to the damage
@@ -262,15 +262,15 @@ mb_wm_comp_mgr_default_client_show_real (MBWMCompMgrClient * client)
       if (parent && parent->cm_client)
 	{
 	  XserverRegion extents =
-	    mb_wm_comp_mgr_default_client_extents (parent->cm_client);
+	    mb_wm_comp_mgr_xrender_client_extents (parent->cm_client);
 
-	  mb_wm_comp_mgr_default_add_damage (mgr, extents);
+	  mb_wm_comp_mgr_xrender_add_damage (mgr, extents);
 	}
     }
 
   if (!dclient->extents)
     {
-      dclient->extents = mb_wm_comp_mgr_default_client_extents (client);
+      dclient->extents = mb_wm_comp_mgr_xrender_client_extents (client);
     }
 }
 
@@ -323,7 +323,7 @@ struct MBWMCompMgrDefaultPrivate
 };
 
 static void
-mb_wm_comp_mgr_default_private_free (MBWMCompMgrDefault *mgr)
+mb_wm_comp_mgr_xrender_private_free (MBWMCompMgrDefault *mgr)
 {
   MBWMCompMgrDefaultPrivate * priv = mgr->priv;
   Display                   * xdpy = MB_WM_COMP_MGR (mgr)->wm->xdpy;
@@ -360,7 +360,7 @@ mb_wm_comp_mgr_default_private_free (MBWMCompMgrDefault *mgr)
 }
 
 static void
-mb_wm_comp_mgr_default_register_client_real (MBWMCompMgr           * mgr,
+mb_wm_comp_mgr_xrender_register_client_real (MBWMCompMgr           * mgr,
 					     MBWindowManagerClient * c)
 {
   MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
@@ -371,23 +371,23 @@ mb_wm_comp_mgr_default_register_client_real (MBWMCompMgr           * mgr,
   if (c->cm_client)
     return;
 
-  c->cm_client = mb_wm_comp_mgr_default_client_new (c);
+  c->cm_client = mb_wm_comp_mgr_xrender_client_new (c);
 }
 
 static void
-mb_wm_comp_mgr_default_turn_on_real (MBWMCompMgr *mgr);
+mb_wm_comp_mgr_xrender_turn_on_real (MBWMCompMgr *mgr);
 
 static void
-mb_wm_comp_mgr_default_turn_off_real (MBWMCompMgr *mgr);
+mb_wm_comp_mgr_xrender_turn_off_real (MBWMCompMgr *mgr);
 
 static void
-mb_wm_comp_mgr_default_render_real (MBWMCompMgr *mgr);
+mb_wm_comp_mgr_xrender_render_real (MBWMCompMgr *mgr);
 
 static Bool
-mb_wm_comp_mgr_default_handle_events_real (MBWMCompMgr * mgr, XEvent *ev);
+mb_wm_comp_mgr_xrender_handle_events_real (MBWMCompMgr * mgr, XEvent *ev);
 
 static void
-mb_wm_comp_mgr_default_class_init (MBWMObjectClass *klass)
+mb_wm_comp_mgr_xrender_class_init (MBWMObjectClass *klass)
 {
   MBWMCompMgrClass *cm_klass = MB_WM_COMP_MGR_CLASS (klass);
 
@@ -395,21 +395,21 @@ mb_wm_comp_mgr_default_class_init (MBWMObjectClass *klass)
   klass->klass_name = "MBWMCompMgrDefault";
 #endif
 
-  cm_klass->register_client   = mb_wm_comp_mgr_default_register_client_real;
-  cm_klass->turn_on           = mb_wm_comp_mgr_default_turn_on_real;
-  cm_klass->turn_off          = mb_wm_comp_mgr_default_turn_off_real;
-  cm_klass->render            = mb_wm_comp_mgr_default_render_real;
-  cm_klass->handle_events     = mb_wm_comp_mgr_default_handle_events_real;
+  cm_klass->register_client   = mb_wm_comp_mgr_xrender_register_client_real;
+  cm_klass->turn_on           = mb_wm_comp_mgr_xrender_turn_on_real;
+  cm_klass->turn_off          = mb_wm_comp_mgr_xrender_turn_off_real;
+  cm_klass->render            = mb_wm_comp_mgr_xrender_render_real;
+  cm_klass->handle_events     = mb_wm_comp_mgr_xrender_handle_events_real;
 }
 
 static void
-mb_wm_comp_mgr_default_init_pictures (MBWMCompMgr *mgr);
+mb_wm_comp_mgr_xrender_init_pictures (MBWMCompMgr *mgr);
 
 static Bool
-mb_wm_comp_mgr_default_init_extensions (MBWMCompMgr *mgr);
+mb_wm_comp_mgr_xrender_init_extensions (MBWMCompMgr *mgr);
 
 static int
-mb_wm_comp_mgr_default_init (MBWMObject *obj, va_list vap)
+mb_wm_comp_mgr_xrender_init (MBWMObject *obj, va_list vap)
 {
   MBWMCompMgr                * mgr  = MB_WM_COMP_MGR (obj);
   MBWMCompMgrDefault         * dmgr = MB_WM_COMP_MGR_DEFAULT (obj);
@@ -431,7 +431,7 @@ mb_wm_comp_mgr_default_init (MBWMObject *obj, va_list vap)
 
   mgr->disabled = True;
 
-  if (!mb_wm_comp_mgr_default_init_extensions (mgr))
+  if (!mb_wm_comp_mgr_xrender_init_extensions (mgr))
     return 0;
 
   mb_wm_theme_get_shadow_color (wm->theme,
@@ -448,23 +448,23 @@ mb_wm_comp_mgr_default_init (MBWMObject *obj, va_list vap)
 
   priv->shadow_style = mb_wm_theme_get_shadow_type (wm->theme);
 
-  mb_wm_comp_mgr_default_init_pictures (mgr);
+  mb_wm_comp_mgr_xrender_init_pictures (mgr);
 
   return 1;
 }
 
 static void
-mb_wm_comp_mgr_default_destroy (MBWMObject * obj)
+mb_wm_comp_mgr_xrender_destroy (MBWMObject * obj)
 {
   MBWMCompMgr        * mgr  = MB_WM_COMP_MGR (obj);
   MBWMCompMgrDefault * dmgr = MB_WM_COMP_MGR_DEFAULT (obj);
 
   mb_wm_comp_mgr_turn_off (mgr);
-  mb_wm_comp_mgr_default_private_free (dmgr);
+  mb_wm_comp_mgr_xrender_private_free (dmgr);
 }
 
 int
-mb_wm_comp_mgr_default_class_type ()
+mb_wm_comp_mgr_xrender_class_type ()
 {
   static int type = 0;
 
@@ -473,9 +473,9 @@ mb_wm_comp_mgr_default_class_type ()
       static MBWMObjectClassInfo info = {
 	sizeof (MBWMCompMgrDefaultClass),
 	sizeof (MBWMCompMgrDefault),
-	mb_wm_comp_mgr_default_init,
-	mb_wm_comp_mgr_default_destroy,
-	mb_wm_comp_mgr_default_class_init
+	mb_wm_comp_mgr_xrender_init,
+	mb_wm_comp_mgr_xrender_destroy,
+	mb_wm_comp_mgr_xrender_class_init
       };
 
       type = mb_wm_object_register_class (&info, MB_WM_TYPE_COMP_MGR, 0);
@@ -494,7 +494,7 @@ gaussian (double r, double x, double y)
 
 
 static MBGaussianMap *
-mb_wm_comp_mgr_default_make_gaussian_map (double r)
+mb_wm_comp_mgr_xrender_make_gaussian_map (double r)
 {
   MBGaussianMap  *c;
   int	          size = ((int) ceil ((r * 3)) + 1) & ~1;
@@ -524,7 +524,7 @@ mb_wm_comp_mgr_default_make_gaussian_map (double r)
 }
 
 static unsigned char
-mb_wm_comp_mgr_default_sum_gaussian (MBWMCompMgr * mgr, double opacity,
+mb_wm_comp_mgr_xrender_sum_gaussian (MBWMCompMgr * mgr, double opacity,
 				     int x, int y, int width, int height)
 {
   MBGaussianMap  * map = MB_WM_COMP_MGR_DEFAULT (mgr)->priv->gaussian_map;
@@ -583,7 +583,7 @@ mb_wm_comp_mgr_default_sum_gaussian (MBWMCompMgr * mgr, double opacity,
 #define HEIGHT 320
 
 static void
-mb_wm_comp_mgr_default_shadow_setup_part (MBWMCompMgr  * mgr,
+mb_wm_comp_mgr_xrender_shadow_setup_part (MBWMCompMgr  * mgr,
 					  XImage      ** ximage,
 					  Picture      * pic,
 					  Pixmap       * pxm,
@@ -608,7 +608,7 @@ mb_wm_comp_mgr_default_shadow_setup_part (MBWMCompMgr  * mgr,
 }
 
 static void
-mb_wm_comp_mgr_default_shadow_finalise_part (MBWMCompMgr  * mgr,
+mb_wm_comp_mgr_xrender_shadow_finalise_part (MBWMCompMgr  * mgr,
 					     XImage       * ximage,
 					     Picture        pic,
 					     Pixmap         pxm,
@@ -625,7 +625,7 @@ mb_wm_comp_mgr_default_shadow_finalise_part (MBWMCompMgr  * mgr,
 }
 
 static void
-mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
+mb_wm_comp_mgr_xrender_shadow_setup (MBWMCompMgr * mgr)
 {
   MBWindowManager            * wm = mgr->wm;
   MBWMCompMgrDefaultPrivate  * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
@@ -651,7 +651,7 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
 
   /* SHADOW_STYLE_GAUSSIAN */
   priv->gaussian_map =
-    mb_wm_comp_mgr_default_make_gaussian_map (SHADOW_RADIUS);
+    mb_wm_comp_mgr_xrender_make_gaussian_map (SHADOW_RADIUS);
 
   priv->shadow_padding_width  = priv->gaussian_map->size;
   priv->shadow_padding_height = priv->gaussian_map->size;
@@ -662,7 +662,7 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
   /* Top & bottom */
   pwidth  = MAX_TILE_SZ;
   pheight = size/2;
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr,
 					    &ximage, &priv->shadow_n_pic, &pxm,
 					    pwidth, pheight);
 
@@ -670,77 +670,77 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
 
   for (y = 0; y < pheight; y++)
     {
-      d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+      d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 					       center, y - center,
 					       WIDTH, HEIGHT);
       for (x = 0; x < pwidth; x++)
 	data[y * pwidth + x] = d;
     }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage, priv->shadow_n_pic,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage, priv->shadow_n_pic,
 					       pxm, pwidth, pheight);
 
   pwidth = MAX_TILE_SZ;
   pheight = MAX_TILE_SZ;
 
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_s_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_s_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
 
   for (y = 0; y < pheight; y++)
     {
-      d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+      d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 					       center, y - center,
 					       WIDTH, HEIGHT);
       for (x = 0; x < pwidth; x++)
 	data[(pheight - y - 1) * pwidth + x] = d;
     }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage, priv->shadow_s_pic,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage, priv->shadow_s_pic,
 					       pxm, pwidth, pheight);
 
   /* Sides */
   pwidth = MAX_TILE_SZ;
   pheight = MAX_TILE_SZ;
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_w_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_w_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
 
   for (x = 0; x < pwidth; x++)
     {
-      d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+      d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 					       x - center, center,
 					       WIDTH, HEIGHT);
       for (y = 0; y < pheight; y++)
 	data[y * pwidth + (pwidth - x - 1)] = d;
     }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage, priv->shadow_w_pic,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage, priv->shadow_w_pic,
 					       pxm, pwidth, pheight);
 
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_e_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_e_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
 
   for (x = 0; x < pwidth; x++)
     {
-      d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+      d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 					       x - center, center,
 					       WIDTH, HEIGHT);
       for (y = 0; y < pheight; y++)
 	data[y * pwidth + x] = d;
     }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage, priv->shadow_e_pic,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage, priv->shadow_e_pic,
 					       pxm, pwidth, pheight);
 
   /* Corners */
   pwidth = MAX_TILE_SZ;
   pheight = MAX_TILE_SZ;
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_nw_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_nw_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
@@ -748,18 +748,18 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
   for (x = 0; x < pwidth; x++)
     for (y = 0; y < pheight; y++)
       {
-	d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+	d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 						 x-center, y-center,
 						 WIDTH, HEIGHT);
 
 	data[y * pwidth + x] = d;
       }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage,
 					       priv->shadow_nw_pic,
 					       pxm, pwidth, pheight);
 
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_sw_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_sw_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
@@ -767,18 +767,18 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
   for (x = 0; x < pwidth; x++)
     for (y = 0; y < pheight; y++)
       {
-	d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+	d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 						 x-center, y-center,
 						 WIDTH, HEIGHT);
 
 	data[(pheight - y - 1) * pwidth + x] = d;
       }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage,
 					       priv->shadow_sw_pic,
 					       pxm, pwidth, pheight);
 
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_se_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_se_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
@@ -786,18 +786,18 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
   for (x = 0; x < pwidth; x++)
     for (y = 0; y < pheight; y++)
       {
-	d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+	d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 						 x-center, y-center,
 						 WIDTH, HEIGHT);
 
 	data[(pheight - y - 1) * pwidth + (pwidth - x -1)] = d;
       }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage,
 					       priv->shadow_se_pic,
 					       pxm, pwidth, pheight);
 
-  mb_wm_comp_mgr_default_shadow_setup_part(mgr, &ximage, &priv->shadow_ne_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part(mgr, &ximage, &priv->shadow_ne_pic,
 					   &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
@@ -805,38 +805,38 @@ mb_wm_comp_mgr_default_shadow_setup (MBWMCompMgr * mgr)
   for (x = 0; x < pwidth; x++)
     for (y = 0; y < pheight; y++)
       {
-	d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+	d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 					 x-center, y-center, WIDTH, HEIGHT);
 
 	data[y * pwidth + (pwidth - x -1)] = d;
       }
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage,
 					       priv->shadow_ne_pic,
 					       pxm, pwidth, pheight);
 
   /* Finally center */
   pwidth = MAX_TILE_SZ;
   pheight = MAX_TILE_SZ;
-  mb_wm_comp_mgr_default_shadow_setup_part (mgr, &ximage, &priv->shadow_pic,
+  mb_wm_comp_mgr_xrender_shadow_setup_part (mgr, &ximage, &priv->shadow_pic,
 					    &pxm, pwidth, pheight);
 
   data = (unsigned char*)ximage->data;
 
-  d = mb_wm_comp_mgr_default_sum_gaussian (mgr, opacity,
+  d = mb_wm_comp_mgr_xrender_sum_gaussian (mgr, opacity,
 					   center, center, WIDTH, HEIGHT);
 
   for (x = 0; x < pwidth; x++)
     for (y = 0; y < pheight; y++)
       data[y * pwidth + x] = d;
 
-  mb_wm_comp_mgr_default_shadow_finalise_part (mgr, ximage, priv->shadow_pic,
+  mb_wm_comp_mgr_xrender_shadow_finalise_part (mgr, ximage, priv->shadow_pic,
 					       pxm, pwidth, pheight);
 
 }
 
 static Picture
-mb_wm_comp_mgr_default_shadow_gaussian_make_picture (MBWMCompMgr * mgr,
+mb_wm_comp_mgr_xrender_shadow_gaussian_make_picture (MBWMCompMgr * mgr,
 						     int width, int height)
 {
   MBWindowManager            * wm   = mgr->wm;
@@ -935,7 +935,7 @@ mb_wm_comp_mgr_default_shadow_gaussian_make_picture (MBWMCompMgr * mgr,
 }
 
 static XserverRegion
-mb_wm_comp_mgr_default_client_extents (MBWMCompMgrClient *client)
+mb_wm_comp_mgr_xrender_client_extents (MBWMCompMgrClient *client)
 {
   MBWindowManagerClient     *wm_client = client->wm_client;
   MBWindowManager           *wm = wm_client->wmref;
@@ -980,7 +980,7 @@ mb_wm_comp_mgr_default_client_extents (MBWMCompMgrClient *client)
 }
 
 static XserverRegion
-mb_wm_comp_mgr_default_client_border_size (MBWMCompMgrClient  * client,
+mb_wm_comp_mgr_xrender_client_border_size (MBWMCompMgrClient  * client,
 					   int x, int y)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
@@ -998,7 +998,7 @@ mb_wm_comp_mgr_default_client_border_size (MBWMCompMgrClient  * client,
 }
 
 static XserverRegion
-mb_wm_comp_mgr_default_client_window_region (MBWMCompMgrClient  *client,
+mb_wm_comp_mgr_xrender_client_window_region (MBWMCompMgrClient  *client,
 					     Window xwin, int x, int y)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
@@ -1015,7 +1015,7 @@ mb_wm_comp_mgr_default_client_window_region (MBWMCompMgrClient  *client,
 }
 
 static Visual*
-mb_wm_comp_mgr_default_get_argb32_visual (MBWMCompMgr * mgr)
+mb_wm_comp_mgr_xrender_get_argb32_visual (MBWMCompMgr * mgr)
 {
   MBWindowManager     * wm = mgr->wm;
   XVisualInfo	      * xvi;
@@ -1050,7 +1050,7 @@ mb_wm_comp_mgr_default_get_argb32_visual (MBWMCompMgr * mgr)
 }
 
 static void
-mb_wm_comp_mgr_default_init_pictures (MBWMCompMgr *mgr)
+mb_wm_comp_mgr_xrender_init_pictures (MBWMCompMgr *mgr)
 {
   MBWindowManager             * wm;
   Window                        rwin;
@@ -1088,7 +1088,7 @@ mb_wm_comp_mgr_default_init_pictures (MBWMCompMgr *mgr)
   }
 
   if (priv->shadow_style == MBWM_COMP_MGR_SHADOW_GAUSSIAN)
-    mb_wm_comp_mgr_default_shadow_setup (mgr);
+    mb_wm_comp_mgr_xrender_shadow_setup (mgr);
 
   pa.subwindow_mode = IncludeInferiors;
   pa.repeat         = True;
@@ -1163,7 +1163,7 @@ mb_wm_comp_mgr_default_init_pictures (MBWMCompMgr *mgr)
 }
 
 Bool
-mb_wm_comp_mgr_default_init_extensions (MBWMCompMgr *mgr)
+mb_wm_comp_mgr_xrender_init_extensions (MBWMCompMgr *mgr)
 {
   MBWindowManager             * wm = mgr->wm;
   MBWMCompMgrDefaultPrivate   * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
@@ -1206,7 +1206,7 @@ mb_wm_comp_mgr_default_init_extensions (MBWMCompMgr *mgr)
 
 /* Shuts the compositing down */
 static void
-mb_wm_comp_mgr_default_turn_off_real (MBWMCompMgr *mgr)
+mb_wm_comp_mgr_xrender_turn_off_real (MBWMCompMgr *mgr)
 {
   MBWindowManager            * wm;
   Window                       rwin;
@@ -1268,10 +1268,10 @@ mb_wm_comp_mgr_default_turn_off_real (MBWMCompMgr *mgr)
 }
 
 static void
-mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region);
+mb_wm_comp_mgr_xrender_render_region (MBWMCompMgr *mgr, XserverRegion region);
 
 static void
-mb_wm_comp_mgr_default_turn_on_real (MBWMCompMgr *mgr)
+mb_wm_comp_mgr_xrender_turn_on_real (MBWMCompMgr *mgr)
 {
   MBWindowManager            * wm;
   Window                       rwin;
@@ -1289,10 +1289,10 @@ mb_wm_comp_mgr_default_turn_on_real (MBWMCompMgr *mgr)
   wm   = mgr->wm;
   rwin = wm->root_win->xwindow;
 
-  if (!mb_wm_comp_mgr_default_init_extensions (mgr))
+  if (!mb_wm_comp_mgr_xrender_init_extensions (mgr))
     return;
 
-  mb_wm_comp_mgr_default_init_pictures (mgr);
+  mb_wm_comp_mgr_xrender_init_pictures (mgr);
 
   XSync (wm->xdpy, False);
 
@@ -1304,16 +1304,16 @@ mb_wm_comp_mgr_default_turn_on_real (MBWMCompMgr *mgr)
 
       mb_wm_stack_enumerate (wm, c)
 	{
-	  mb_wm_comp_mgr_default_register_client_real (mgr, c);
-	  mb_wm_comp_mgr_default_client_show_real (c->cm_client);
+	  mb_wm_comp_mgr_xrender_register_client_real (mgr, c);
+	  mb_wm_comp_mgr_xrender_client_show_real (c->cm_client);
 	}
 
-      mb_wm_comp_mgr_default_render_region (mgr, None);
+      mb_wm_comp_mgr_xrender_render_region (mgr, None);
     }
 }
 
 static int
-mb_wm_comp_mgr_default_client_get_translucency (MBWMCompMgrClient *client)
+mb_wm_comp_mgr_xrender_client_get_translucency (MBWMCompMgrClient *client)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
 
@@ -1321,7 +1321,7 @@ mb_wm_comp_mgr_default_client_get_translucency (MBWMCompMgrClient *client)
 }
 
 static void
-mb_wm_comp_mgr_default_add_damage (MBWMCompMgr * mgr, XserverRegion damage)
+mb_wm_comp_mgr_xrender_add_damage (MBWMCompMgr * mgr, XserverRegion damage)
 {
   MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
   MBWindowManager    * wm = mgr->wm;
@@ -1340,7 +1340,7 @@ mb_wm_comp_mgr_default_add_damage (MBWMCompMgr * mgr, XserverRegion damage)
 }
 
 static void
-mb_wm_comp_mgr_default_client_repair_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_xrender_client_repair_real (MBWMCompMgrClient * client)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
   MBWindowManager       * wm        = wm_client->wmref;
@@ -1357,11 +1357,11 @@ mb_wm_comp_mgr_default_client_repair_real (MBWMCompMgrClient * client)
   mb_wm_client_get_coverage (wm_client, &geom);
 
   XFixesTranslateRegion (wm->xdpy, parts, geom.x, geom.y);
-  mb_wm_comp_mgr_default_add_damage (mgr, parts);
+  mb_wm_comp_mgr_xrender_add_damage (mgr, parts);
 }
 
 static void
-mb_wm_comp_mgr_default_client_configure_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
@@ -1370,7 +1370,7 @@ mb_wm_comp_mgr_default_client_configure_real (MBWMCompMgrClient * client)
   XserverRegion              damage    = None;
   XserverRegion              extents;
 
-  extents = mb_wm_comp_mgr_default_client_extents (client);
+  extents = mb_wm_comp_mgr_xrender_client_extents (client);
 
   if (dclient->picture)
     {
@@ -1390,11 +1390,11 @@ mb_wm_comp_mgr_default_client_configure_real (MBWMCompMgrClient * client)
 
   dclient->extents = extents;
 
-  mb_wm_comp_mgr_default_add_damage (mgr, damage);
+  mb_wm_comp_mgr_xrender_add_damage (mgr, damage);
 }
 
 static Bool
-mb_wm_comp_mgr_default_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
+mb_wm_comp_mgr_xrender_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 {
   MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
   MBWindowManager           * wm   = mgr->wm;
@@ -1422,7 +1422,7 @@ mb_wm_comp_mgr_default_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
 		     de->geometry.width,
 		     de->geometry.height);
 
-	  mb_wm_comp_mgr_default_client_repair_real (c->cm_client);
+	  mb_wm_comp_mgr_xrender_client_repair_real (c->cm_client);
 	}
       else
 	{
@@ -1458,11 +1458,11 @@ _render_a_client (MBWMCompMgrClient * client,
 	ctype == MBWMClientTypeDesktop ||
 	ctype == MBWMClientTypeInput   ||
 	ctype == MBWMClientTypePanel   ||
-	mb_wm_comp_mgr_default_client_get_translucency (client) == -1))
+	mb_wm_comp_mgr_xrender_client_get_translucency (client) == -1))
     {
       XserverRegion winborder;
 
-      winborder = mb_wm_comp_mgr_default_client_border_size (client,
+      winborder = mb_wm_comp_mgr_xrender_client_border_size (client,
 							     geom.x, geom.y);
 
       XFixesSetPictureClipRegion (wm->xdpy, priv->root_buffer, 0, 0, region);
@@ -1478,7 +1478,7 @@ _render_a_client (MBWMCompMgrClient * client,
       XFixesDestroyRegion (wm->xdpy, winborder);
     }
   else if (client->is_argb32 ||
-	   mb_wm_comp_mgr_default_client_get_translucency (client) != -1)
+	   mb_wm_comp_mgr_xrender_client_get_translucency (client) != -1)
     {
       /*
        * If the client is translucent, paint the decors only (solid).
@@ -1491,7 +1491,7 @@ _render_a_client (MBWMCompMgrClient * client,
 	  MBGeometry    * g = & d->geom;
 	  XserverRegion   r;
 
-	  r = mb_wm_comp_mgr_default_client_window_region (client, d->xwin,
+	  r = mb_wm_comp_mgr_xrender_client_window_region (client, d->xwin,
 							   g->x, g->y);
 
 	  XFixesSetPictureClipRegion (wm->xdpy, priv->root_buffer, 0, 0, r);
@@ -1545,11 +1545,11 @@ _render_a_client (MBWMCompMgrClient * client,
 }
 
 static void
-mb_wm_comp_mgr_default_render_real (MBWMCompMgr *mgr)
+mb_wm_comp_mgr_xrender_render_real (MBWMCompMgr *mgr)
 {
   MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
 
-  mb_wm_comp_mgr_default_render_region (mgr, priv->all_damage);
+  mb_wm_comp_mgr_xrender_render_region (mgr, priv->all_damage);
 
   if (priv->all_damage)
     {
@@ -1559,7 +1559,7 @@ mb_wm_comp_mgr_default_render_real (MBWMCompMgr *mgr)
 }
 
 static void
-mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
+mb_wm_comp_mgr_xrender_render_region (MBWMCompMgr *mgr, XserverRegion region)
 {
   MBWindowManager            * wm   = mgr->wm;
   MBWMCompMgrDefaultPrivate  * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
@@ -1592,7 +1592,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 
   if (wmc_top)
     top_translucent =
-      (mb_wm_comp_mgr_default_client_get_translucency(wmc_top->cm_client) == -1);
+      (mb_wm_comp_mgr_xrender_client_get_translucency(wmc_top->cm_client) == -1);
 
   if (!priv->root_buffer)
     {
@@ -1668,7 +1668,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 	  (MB_WM_CLIENT_CLIENT_TYPE (wmc_temp) &
 	   (MBWMClientTypeApp | MBWMClientTypeDesktop)) &&
 	 !wmc_temp->cm_client->is_argb32 &&
-	  mb_wm_comp_mgr_default_client_get_translucency (wmc_temp->cm_client)
+	  mb_wm_comp_mgr_xrender_client_get_translucency (wmc_temp->cm_client)
 	  == -1)
 	{
 	  wmc_solid = wmc_temp;
@@ -1716,7 +1716,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
        * any translucent windows as well.
        */
       is_translucent = (c->is_argb32 ||
-			mb_wm_comp_mgr_default_client_get_translucency (c)
+			mb_wm_comp_mgr_xrender_client_get_translucency (c)
 			!= -1);
 
       if (mb_wm_client_is_mapped (wmc_temp) &&
@@ -1738,7 +1738,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 
 		  /* Grab 'shape' region of window */
 		  shadow_region =
-		    mb_wm_comp_mgr_default_client_border_size (c,
+		    mb_wm_comp_mgr_xrender_client_border_size (c,
 							       geom.x, geom.y);
 
 		  /* Offset it. */
@@ -1794,7 +1794,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 		      XFixesDestroyRegion (wm->xdpy, shadow_region);
 
 		      shadow_region =
-			mb_wm_comp_mgr_default_client_border_size (c,
+			mb_wm_comp_mgr_xrender_client_border_size (c,
 								   geom.x, geom.y);
 
 		      XFixesIntersectRegion (wm->xdpy, shadow_region,
@@ -1845,7 +1845,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 		    {
 		      /* Combine pregenerated shadow tiles */
 		      shadow_pic =
-			mb_wm_comp_mgr_default_shadow_gaussian_make_picture (mgr,
+			mb_wm_comp_mgr_xrender_shadow_gaussian_make_picture (mgr,
 				geom.width + priv->shadow_padding_width,
 				geom.height + priv->shadow_padding_height);
 
@@ -1879,7 +1879,7 @@ mb_wm_comp_mgr_default_render_region (MBWMCompMgr *mgr, XserverRegion region)
 }
 
 MBWMCompMgr *
-mb_wm_comp_mgr_default_new (MBWindowManager *wm)
+mb_wm_comp_mgr_xrender_new (MBWindowManager *wm)
 {
   MBWMObject *mgr;
 

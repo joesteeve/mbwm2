@@ -26,11 +26,11 @@
 
 #define MB_WM_COMP_MGR_DEFAULT(c) ((MBWMCompMgrDefault*)(c))
 #define MB_WM_COMP_MGR_DEFAULT_CLASS(c) ((MBWMCompMgrDefaultClass*)(c))
-#define MB_WM_TYPE_COMP_MGR_DEFAULT (mb_wm_comp_mgr_default_class_type ())
+#define MB_WM_TYPE_COMP_MGR_DEFAULT (mb_wm_comp_mgr_xrender_class_type ())
 
 #define MB_WM_COMP_MGR_DEFAULT_CLIENT(c) ((MBWMCompMgrDefaultClient*)(c))
 #define MB_WM_COMP_MGR_DEFAULT_CLIENT_CLASS(c) ((MBWMCompMgrDefaultClientClass*)(c))
-#define MB_WM_TYPE_COMP_MGR_DEFAULT_CLIENT (mb_wm_comp_mgr_default_client_class_type ())
+#define MB_WM_TYPE_COMP_MGR_DEFAULT_CLIENT (mb_wm_comp_mgr_xrender_client_class_type ())
 
 struct MBWMCompMgrDefault
 {
@@ -44,10 +44,10 @@ struct MBWMCompMgrDefaultClass
 };
 
 int
-mb_wm_comp_mgr_default_class_type ();
+mb_wm_comp_mgr_xrender_class_type ();
 
 MBWMCompMgr*
-mb_wm_comp_mgr_default_new (MBWindowManager *wm);
+mb_wm_comp_mgr_xrender_new (MBWindowManager *wm);
 
 struct MBWMCompMgrDefaultClientClass
 {
@@ -55,6 +55,6 @@ struct MBWMCompMgrDefaultClientClass
 };
 
 int
-mb_wm_comp_mgr_default_client_class_type ();
+mb_wm_comp_mgr_xrender_client_class_type ();
 
 #endif

@@ -1,3 +1,16 @@
+2008-03-08  Robert Bragg  <bob@o-hand.com>
+
+	* configure.ac
+	* matchbox/comp-mgr/Makefile.am
+	* matchbox/comp-mgr/mb-wm-comp-mgr-xrender.c
+	* matchbox/comp-mgr/mb-wm-comp-mgr-xrender.h
+	* matchbox/core/mb-window-manager.c
+	* matchbox/managers/simple/Makefile.am
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c
+	* matchbox/mb-wm-config.h.in
+	Adds an --enable-composite-managers=A,B,C.. config option
+	and renames the "default" composite manager to "xrender"
+
 2008-03-07  Tomas Frydrych  <tf@o-hand.com>
 
 	Further work on multiple desktop support:
