@@ -1706,16 +1706,16 @@ xft_load_font (MBWMDecor * decor, MBWMXmlDecor *d)
   int       xscreen = decor->parent_client->wmref->xscreen;
   int       font_size;
 
-  font_size = d->font_size ? d->font_size : SIMPLE_FRAME_TITLEBAR_HEIGHT / 2;
+  font_size = d && d->font_size ? d->font_size : SIMPLE_FRAME_TITLEBAR_HEIGHT / 2;
 
-  if (d->font_units == MBWMXmlFontUnitsPixels)
+  if (!d || d->font_units == MBWMXmlFontUnitsPixels)
     {
       font_size = mb_wm_util_pixels_to_points (decor->parent_client->wmref,
 					       font_size);
     }
 
   snprintf (desc, sizeof (desc), "%s-%i",
-	    d->font_family ? d->font_family : "Sans",
+	    d && d->font_family ? d->font_family : "Sans",
 	    font_size);
 
   font = XftFontOpenName (xdpy, xscreen, desc);

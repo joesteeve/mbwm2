@@ -1,3 +1,9 @@
+2008-03-09  Robert Bragg  <bob@o-hand.com>
+
+	* matchbox/theme-engines/mb-wm-theme.c
+	base class theme: xft_load_font: don't dereference MBWMXmlDecor
+	if NULL.
+
 2008-03-08  Robert Bragg  <bob@o-hand.com>
 
 	* configure.ac
