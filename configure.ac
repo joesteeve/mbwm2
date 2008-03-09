@@ -131,6 +131,7 @@ for composite_manager in $included_composite_managers; do
         ;;
       clutter )
         needed_pkgs="$needed_pkgs clutter-0.7 xcomposite xdamage "
+        gmloop="yes"
         ;;
  esac
 

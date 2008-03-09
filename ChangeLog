@@ -1,5 +1,11 @@
 2008-03-09  Robert Bragg  <bob@o-hand.com>
 
+	* configure.ac
+	fix for clutter composite manager: glib main loop had accidentally
+	been disabled
+
+2008-03-09  Robert Bragg  <bob@o-hand.com>
+
 	* matchbox/theme-engines/mb-wm-theme.c
 	base class theme: xft_load_font: don't dereference MBWMXmlDecor
 	if NULL.
