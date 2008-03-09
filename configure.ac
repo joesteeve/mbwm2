@@ -289,6 +289,7 @@ matchbox/theme-engines/Makefile
 data/Makefile
 data/themes/Makefile
 data/themes/Default/Makefile
+data/themes/PngSample/Makefile
 data/libmatchbox2.pc
 doc/Makefile
 util/Makefile

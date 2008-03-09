@@ -863,7 +863,7 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	      if (!strcmp (*(p+1), "yes") || !strcmp (*(p+1), "1"))
 		exd->shaped = 1;
 	    }
-	  else if (!strcmp (*p, "clr-shadow"))
+	  else if (!strcmp (*p, "color-shadow"))
 	    {
 	      mb_wm_xml_clr_from_string (&clr, *(p+1));
 
@@ -876,7 +876,7 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		  exd->color_shadow.set = True;
 		}
 	    }
-	  else if (!strcmp (*p, "clr-lowlight"))
+	  else if (!strcmp (*p, "color-lowlight"))
 	    {
 	      mb_wm_xml_clr_from_string (&clr, *(p+1));
 
@@ -1073,13 +1073,13 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
       while (*p)
 	{
-	  if (!strcmp (*p, "clr-fg"))
+	  if (!strcmp (*p, "color-fg"))
 	    mb_wm_xml_clr_from_string (&d->clr_fg, *(p+1));
-	  else if (!strcmp (*p, "clr-bg"))
+	  else if (!strcmp (*p, "color-bg"))
 	    mb_wm_xml_clr_from_string (&d->clr_bg, *(p+1));
-	  else if (!strcmp (*p, "clr-bg2"))
+	  else if (!strcmp (*p, "color-bg2"))
 	    mb_wm_xml_clr_from_string (&d->clr_bg2, *(p+1));
-	  else if (!strcmp (*p, "clr-frame"))
+	  else if (!strcmp (*p, "color-frame"))
 	    mb_wm_xml_clr_from_string (&d->clr_frame, *(p+1));
 	  else if (!strcmp (*p, "type"))
 	    {
@@ -1092,19 +1092,19 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	      else if (!strcmp (*(p+1), "west"))
 		d->type = MBWMDecorTypeWest;
 	    }
-	  else if (!strcmp (*p, "width"))
+	  else if (!strcmp (*p, "template-width"))
 	    {
 	      d->width = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "height"))
+	  else if (!strcmp (*p, "template-height"))
 	    {
 	      d->height = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "x"))
+	  else if (!strcmp (*p, "template-x"))
 	    {
 	      d->x = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "y"))
+	  else if (!strcmp (*p, "template-y"))
 	    {
 	      d->y = atoi (*(p+1));
 	    }
@@ -1172,9 +1172,9 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 
       while (*p)
 	{
-	  if (!strcmp (*p, "clr-fg"))
+	  if (!strcmp (*p, "color-fg"))
 	    mb_wm_xml_clr_from_string (&b->clr_fg, *(p+1));
-	  else if (!strcmp (*p, "clr-bg"))
+	  else if (!strcmp (*p, "color-bg"))
 	    mb_wm_xml_clr_from_string (&b->clr_bg, *(p+1));
 	  else if (!strcmp (*p, "type"))
 	    {
@@ -1198,11 +1198,11 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	      else if (!strcmp (*(p+1), "start"))
 		b->packing = MBWMDecorButtonPackStart;
 	    }
-	  else if (!strcmp (*p, "x"))
+	  else if (!strcmp (*p, "template-x"))
 	    {
 	      b->x = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "y"))
+	  else if (!strcmp (*p, "template-y"))
 	    {
 	      b->y = atoi (*(p+1));
 	    }
@@ -1214,19 +1214,19 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    {
 	      b->height = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "active-x"))
+	  else if (!strcmp (*p, "template-active-x"))
 	    {
 	      b->active_x = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "active-y"))
+	  else if (!strcmp (*p, "template-active-y"))
 	    {
 	      b->active_y = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "inactive-x"))
+	  else if (!strcmp (*p, "template-inactive-x"))
 	    {
 	      b->inactive_x = atoi (*(p+1));
 	    }
-	  else if (!strcmp (*p, "inactive-y"))
+	  else if (!strcmp (*p, "template-inactive-y"))
 	    {
 	      b->inactive_y = atoi (*(p+1));
 	    }

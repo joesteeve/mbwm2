@@ -581,19 +581,19 @@
 	    </listitem>
 
 	    <listitem>
-	      <para>x: for PNG-based themes this is the the x coordinates of the
+	      <para>template-x: for PNG-based themes this is the the x coordinates of the
 	      decor in the image; ignored for other theme engines.
               </para>
 	    </listitem>
 
 	    <listitem>
-	      <para>y: for PNG-based themes this is the the y coordinates of the
+	      <para>template-y: for PNG-based themes this is the the y coordinates of the
 	      decor in the image; ignored for other theme engines.
               </para>
 	    </listitem>
 
 	    <listitem>
-	      <para>width: width of the decor. For PNG themes this value has to
+	      <para>template-width: width of the decor. For PNG themes this value has to
 	      be given explicitly, and is the width of the decor in the image
 	      (if actual decor is wider than this value, the image will be
 	      expanded by tiling the middle section); for other themes, it has
@@ -603,7 +603,7 @@
 	    </listitem>
 
 	    <listitem>
-	      <para>height: height of the decor. For PNG themes this value has
+	      <para>template-height: height of the decor. For PNG themes this value has
 	      to be given explicitly, and is the height of the decor in the
 	      image (if actual decor is taller than this value, the image will
 	      be expanded by tiling the middle section); for other themes, it
@@ -623,12 +623,12 @@
 	    </listitem>
 
 	    <listitem>
-	      <para>clr-fg: the foreground colour to use.
+	      <para>color-fg: the foreground colour to use.
               </para>
 	    </listitem>
 
 	    <listitem>
-	      <para>clr-bg: the basic background colour. If a background color
+	      <para>color-bg: the basic background colour. If a background color
 	      is specfied for a PNG based theme, the decor will be first filled
 	      with this color, and then the PNG image will be composited over
 	      it; in this case, the images for any buttons must be located of
@@ -638,14 +638,14 @@
 	    </listitem>
 
 	    <listitem>
-	      <para>clr-bg2: secondary background colour. This could be used by
+	      <para>color-bg2: secondary background colour. This could be used by
               a theme engine to create gradiented background; ignored by current
               theme engines.
               </para>
 	    </listitem>
 
 	    <listitem>
-	      <para>clr-frame: colour to use for drawing a frame around the
+	      <para>color-frame: colour to use for drawing a frame around the
 	      client window (non-PNG engines only).
               </para>
 	    </listitem>
@@ -676,14 +676,14 @@
 	      </listitem>
 
 	      <listitem>
-		<para>x: for PNG-based themes this is the the x coordinates of
+		<para>template-x: for PNG-based themes this is the the x coordinates of
 	        the button in the image; the button must be located directly on
 	        the parent decor. Ignored for other theme engines.
                 </para>
 	      </listitem>
 
 	      <listitem>
-		<para>y: for PNG-based themes this is the the y coordinates of
+		<para>template-y: for PNG-based themes this is the the y coordinates of
 	        the button in the image; the button must be located directly on
 	        the parent decor. Ignored for other theme engines.
                 </para>
@@ -700,7 +700,7 @@
 	      </listitem>
 
 	      <listitem>
-		<para>inactive-x: for PNG-based themes this is the the x
+		<para>template-inactive-x: for PNG-based themes this is the the x
 	        coordinates of the button in inactive state in the image;
 	        ignored for other theme engines. (The inactive image can be
 	        located directly on the decor image, in which case, this
@@ -709,7 +709,7 @@
 	      </listitem>
 
 	      <listitem>
-		<para>inactive-y: for PNG-based themes this is the the y
+		<para>template-inactive-y: for PNG-based themes this is the the y
 	        coordinates of the button in inactive state in the image;
 	        ignored for other theme engines. (The inactive image can be
 	        located directly on the decor image, in which case, this
@@ -718,14 +718,14 @@
 	      </listitem>
 
 	      <listitem>
-		<para>active-x: for PNG-based themes this is the the x
+		<para>template-active-x: for PNG-based themes this is the the x
 	        coordinates of the button in active state in the image; ignored
 	        for other theme engines.
                 </para>
 	      </listitem>
 
 	      <listitem>
-		<para>active-y: for PNG-based themes this is the the y
+		<para>template-active-y: for PNG-based themes this is the the y
 	        coordinates of the button in active state in the image; ignored
 	        for other theme engines.
                 </para>

@@ -1,5 +1,29 @@
 2008-03-09  Robert Bragg  <bob@o-hand.com>
 
+	* matchbox/theme-engines/mb-wm-theme.c
+	Some theme.xml schema changes. clr-* now color-*
+	All x/y width/height attributes related to specifying regions within
+	a template image are now prefixed template-*
+
+	* doc/MBWM2-Overview.xml
+	Documentation updated in lines with schema changes
+
+	* matchbox/managers/maemo/theme/theme.xml
+	* matchbox/managers/maemo/theme/background.png
+	* matchbox/managers/maemo/theme/Makefile.am
+	* data/themes/Default/theme.xml
+	* data/themes/PngSample/theme.xml
+	* data/themes/PngSample/background.png
+	* data/themes/PngSample/Makefile.am
+	Existing themes updated to use the new attribute names and
+	background.png images have been renamed to template.png
+
+	* configure.ac
+	* data/themes/Makefile.am
+	Install the PngSample theme by default if PNG theme engine enabled
+
+2008-03-09  Robert Bragg  <bob@o-hand.com>
+
 	* configure.ac
 	fix for clutter composite manager: glib main loop had accidentally
 	been disabled

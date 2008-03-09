@@ -1,37 +1,57 @@
 <?xml version="1.0"?>
 <theme name="Mockup Maemo theme" author="Tomas Frydrych, tf@o-hand.com"
        desc="" version="1.0" engine-version="2" engine-type="png" shaped="yes">
-<img src="background.png" />
+<img src="template.png" />
 <client type="app">
- <decor type="north" show-title="yes"
-        clr-fg="#ffffff" clr-frame="#000000"
-        x="0" y="0" width="720" height="60"
+ <decor type="north" show-title="yes" color-fg="#ffffff" color-frame="#000000"
+        template-x="0" template-y="0"
+        template-width="720" template-height="60"
         font-family="Sans" font-size="20">
-  <button type="close"    width="26" height="26"  x="680" y="17"
-          active-x="680"  active-y="64"/>
-  <button type="minimize" width="26" height="26"  x="650" y="17"
-          active-x="650"  active-y="64"/>
-  <button type="menu"     width="20" height="20"  x="9"   y="17"
-          active-x="628"  active-y="64"
+  <button type="close"
+          template-x="680" template-y="17"
+          width="26" height="26"
+          template-active-x="680" template-active-y="64"/>
+  <button type="minimize"
+          template-x="650" template-y="17"
+          template-active-x="650" template-active-y="64"
+          width="26" height="26"/>
+  <button type="menu"
+          template-x="9" template-y="17"
+          template-active-x="628" template-active-y="64"
+          width="20" height="20"
           press-activated="yes"/>
-
  </decor>
 </client>
 
 <client type="dialog" shaped="yes">
  <decor type="north" show-title="yes"
-        x="4"  y="66"  width="207" height="43"  />
- <decor type="south" x="4"  y="119" width="207" height="5"   />
- <decor type="west"  x="4"  y="109" width="6"   height="9" />
- <decor type="east"  x="205" y="109" width="6"  height="9" />
+        template-x="4" template-y="66"
+        template-width="207" template-height="43"/>
+ <decor type="south"
+        template-x="4" template-y="119"
+        template-width="207" template-height="5"/>
+ <decor type="west"
+        template-x="4" template-y="109"
+        template-width="6" template-height="9"/>
+ <decor type="east"
+        template-x="205" template-y="109"
+        template-width="6" template-height="9"/>
 </client>
 
 <client type="notification" shaped="yes">
  <decor type="north"
-        x="215"  y="104"  width="207" height="5"  />
- <decor type="south" x="215" y="119" width="207" height="5"   />
- <decor type="west"  x="215" y="109" width="6"   height="9" />
- <decor type="east"  x="416" y="109" width="6"  height="9" />
+        template-x="215" template-y="104"
+        template-width="207" template-height="5"/>
+ <decor type="south"
+        template-x="215" template-y="119"
+        template-width="207" template-height="5"/>
+ <decor type="west"
+        template-x="215" template-y="109"
+        template-width="6" template-height="9"/>
+ <decor type="east"
+        template-x="416" template-y="109"
+        template-width="6" template-height="9"/>
 </client>
 
 </theme>
+

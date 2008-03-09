@@ -1,22 +1,33 @@
 <?xml version="1.0"?>
 <theme name="Default" author="Tomas Frydrych, tf@o-hand.com"
        desc="" version="1.0" engine-version="2" engine-type="default"
-       shadow-type="gaussian" clr-shadow="#44444444">
+       shadow-type="gaussian" color-shadow="#44444444">
 <img src="test.png" />
 <client type="app">
  <transition type="fade" duration="200" />
- <effect event="minimize" duration="300" gravity="ne" type="scale-down" />
- <effect event="map"   duration="100" gravity="e"     type="slide-in" />
- <effect event="unmap" duration="100" gravity="none"  type="fade" />
- <decor type="north" clr-bg="#ff0000" clr-bg2="#ffffff" clr-fg="#ffffff"
-height="22" font-family="Sans" font-size="18" clr-frame="#000000">
-  <button type="close"    packing="end"   clr-fg="#ffffff" clr-bg="#59595f"
-  width="18" height="18" x="2" y="2"/>
-  <button type="minimize" packing="end"   clr-fg="#ffffff" clr-bg="#59595f"
-  width="18" height="18"  x="2" y="2"/>
-  <button type="menu"     packing="start" clr-fg="#ffffff" clr-bg="#59595f"
-  width="18" height="18"  x="2" y="2"/>
+
+ <effect event="minimize" duration="300" gravity="ne"   type="scale-down" />
+ <effect event="map"      duration="100" gravity="e"    type="slide-in" />
+ <effect event="unmap"    duration="100" gravity="none" type="fade" />
+
+ <decor type="north"
+        color-bg="#ff0000" color-bg2="#ffffff" color-fg="#ffffff"
+        template-height="22"
+        font-family="Sans" font-size="18" color-frame="#000000">
+  <button type="close" packing="end"
+          color-fg="#ffffff" color-bg="#59595f"
+          template-x="2" template-y="2"
+          width="18" height="18"/>
+  <button type="minimize" packing="end"
+          color-fg="#ffffff" color-bg="#59595f"
+          template-x="2" template-y="2"
+          width="18" height="18"/>
+  <button type="menu" packing="start"
+          color-fg="#ffffff" color-bg="#59595f"
+          template-x="2" template-y="2"
+          width="18" height="18"/>
  </decor>
 </client>
 
 </theme>
+
