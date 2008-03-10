@@ -345,7 +345,18 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 	  mb_wm_decor_button_set_theme_data (button, bdata, buttondata_free);
 	}
 
+      /* Here we automagically determine if the button should be left or
+       * right aligned in the case that a decor is expanded wider than
+       * the template image. If the coordinate comes before the point
+       * where decor padding is added, it's left aligned else it's
+       * right aligned. If no padding hints were given in the theme.xml,
+       * then we assume padding happens in the center.
+       * Note: we look at pad_length because pad_offset could be 0
+       */
       x = b->x - d->x;
+      if (x > (d->pad_length ? d->pad_offset : d->width/2) )
+        x = decor->geom.width - (d->x + d->width - b->x);
+      
       y = b->y - d->y;
 
       XRenderComposite (xdpy, PictOpSrc,
@@ -563,13 +574,16 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      /* The decor is bigger than the template, draw extra bit from
 	       * the middle
 	       */
-	      int width1 = d->width / 2;
-	      int width3 = d->width - width1;
-	      int width2 = decor->geom.width - (width1 + width3);
-	      int x3     = d->x + width1;
-	      int strip  = d->width < 30 ? d->width / 4 : 10;
-	      int width2i= d->width - 2 * strip;
-	      int x2i    = d->x + strip;
+              int pad_offset = d->pad_offset;
+              int pad_length = d->pad_length;
+              int gap_length = decor->geom.width - d->width;
+
+              if (!pad_length)
+                {
+                  pad_length =
+                    decor->geom.width > 30 ? 10 : decor->geom.width / 4 + 1;
+                  pad_offset = (d->width / 2) - (pad_length / 2);
+                }
 
 	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
@@ -577,45 +591,48 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 			       XftDrawPicture (data->xftdraw),
 			       d->x, d->y, 0, 0,
 			       0, 0,
-			       width1, d->height);
+			       pad_offset, d->height);
 
-	      for (x = width1; x < width1 + width2; x += width2i)
+              /* TODO: can we do this as one scaled operation? */
+	      for (x = pad_offset; x < pad_offset + gap_length; x += pad_length)
 		XRenderComposite(xdpy, operator,
 				 p_theme->xpic,
 				 None,
 				 XftDrawPicture (data->xftdraw),
-				 x2i, d->y, 0, 0,
+				 d->x + pad_offset, d->y, 0, 0,
 				 x, 0,
-				 (width1 + width2) - x >= width2i ?
-				 width2i : width1 + width2 - x,
+				 pad_length,
 				 d->height);
-
+              
 	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
-			       x3 , d->y, 0, 0,
-			       width1 + width2, 0,
-			       width3, d->height);
+			       d->x + pad_offset, d->y, 0, 0,
+			       pad_offset + gap_length, 0,
+			       d->width - pad_offset, d->height);
 
 #ifdef HAVE_XEXT
 	      if (shaped)
 		{
 		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
 			     data->gc_mask,
-			     d->x, d->y, width1, d->height, 0, 0);
+			     d->x, d->y,
+                             pad_offset, d->height,
+                             0, 0);
 
-		  for (x = width1; x < width1 + width2; x += width2i)
+		  for (x = pad_offset; x < pad_offset + gap_length; x += pad_length)
 		    XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
 			       data->gc_mask,
-			       x2i, d->y,
-			       (width1 + width2) - x >= width2i ?
-				 width2i : width1 + width2 - x,
-			       d->height, x, 0);
+			       d->x + pad_offset, d->y,
+			       d->width - pad_offset, d->height,
+                               x, 0);
 
 		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
 			     data->gc_mask,
-			     x3, d->y, width3, d->height, width1 + width2, 0);
+			     d->x + pad_offset, d->y,
+                             d->width - pad_offset, d->height,
+                             pad_offset + gap_length, 0);
 		}
 #endif
 	    }
@@ -684,55 +701,63 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	      /* The decor is bigger than the template, draw extra bit from
 	       * the middle
 	       */
-	      int height1 = d->height / 2;
-	      int height3 = d->height - height1;
-	      int height2 = decor->geom.height - (height1 + height3);
-	      int y3     = d->y + height1;
-	      int strip  = d->height < 30 ? d->height / 4 : 10;
-	      int height2i= d->height - 2 * strip;
-	      int y2i    = d->y + strip;
+              int pad_offset = d->pad_offset;
+              int pad_length = d->pad_length;
+              int gap_length = decor->geom.height - d->height;
+
+              if (!pad_length)
+                {
+                  pad_length =
+                    decor->geom.height > 30 ? 10 : decor->geom.height / 4 + 1;
+                  pad_offset = (d->height / 2) - (pad_length / 2);
+                }
 
 	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
 			       d->x, d->y, 0, 0, 0, 0,
-			       d->width, height1);
+			       d->width, pad_offset);
 
-	      for (y = height1; y < height1 + height2; y += height2i)
+              /* TODO: can we do this as one scaled operation? */
+	      for (y = pad_offset; y < pad_offset + gap_length; y += pad_length)
 		XRenderComposite(xdpy, operator,
 				 p_theme->xpic,
 				 None,
 				 XftDrawPicture (data->xftdraw),
-				 d->x, y2i, 0, 0, 0, y,
+				 d->x, d->y + pad_offset, 0, 0, 0, y,
 				 d->width,
-				 (height1 + height2) - y >= height2i ?
-				 height2i : height1 + height2 - y);
+				 pad_length);
 
 	      XRenderComposite(xdpy, operator,
 			       p_theme->xpic,
 			       None,
 			       XftDrawPicture (data->xftdraw),
-			       d->x , y3, 0, 0, 0, height1 + height2,
-			       d->width, height3);
+			       d->x , d->y + pad_offset, 0, 0, 
+                               0, pad_offset + gap_length,
+			       d->width, d->height - pad_offset);
 
 #ifdef HAVE_XEXT
 	      if (shaped)
 		{
 		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
 			     data->gc_mask,
-			     d->x, d->y, d->width, height1, 0, 0);
+			     d->x, d->y,
+                             d->width, pad_offset,
+                             0, 0);
 
-		  for (y = height1; y < height1 + height2; y += height2i)
+		  for (y = pad_offset; y < pad_offset + gap_length; y += pad_length)
 		    XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
 			       data->gc_mask,
-			       d->x, y2i, d->width,
-			       (height1 + height2) - y >= height2i ?
-				 height2i : height1 + height2 - y, 0, y);
+			       d->x, d->y + pad_offset,
+                               d->width, pad_length,
+                               0, y);
 
 		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
 			     data->gc_mask,
-			     d->x, y3, d->width, height3,0, height1 + height2);
+			     d->x, d->y + pad_offset,
+                             d->width, d->height - pad_offset,
+                             0, pad_offset + gap_length);
 		}
 #endif
 	    }

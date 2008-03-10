@@ -48,6 +48,8 @@ typedef struct Decor
   int y;
   int width;
   int height;
+  int pad_offset;
+  int pad_length;
   int show_title;
 
   int                font_size;

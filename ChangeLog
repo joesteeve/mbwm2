@@ -1,3 +1,14 @@
+2008-03-10  Robert Bragg  <bob@o-hand.com>
+
+	* doc/MBWM2-Overview.xml
+	* matchbox/theme-engines/mb-wm-theme.c
+	* matchbox/theme-engines/mb-wm-theme-png.c
+	* matchbox/theme-engines/mb-wm-theme-xml.h
+	Fixes png theme engine's rendering of decors that are wider than the
+	underlying template PNG image. This adds two new decor tag attributes
+	template-pad-offset and template-pad-length, which have been described
+	in MBWM2-Overview.xml
+
 2008-03-09  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox/theme-engines/mb-wm-theme.c

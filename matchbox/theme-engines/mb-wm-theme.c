@@ -1108,6 +1108,14 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    {
 	      d->y = atoi (*(p+1));
 	    }
+	  else if (!strcmp (*p, "template-pad-offet"))
+	    {
+	      d->pad_offset = atoi (*(p+1));
+	    }
+	  else if (!strcmp (*p, "template-pad-length"))
+	    {
+	      d->pad_length = atoi (*(p+1));
+	    }
 	  else if (!strcmp (*p, "font-size"))
 	    {
 	      char * end_size = NULL;

@@ -613,6 +613,24 @@
 	    </listitem>
 
 	    <listitem>
+	      <para>template-pad-offset: for PNG-based themes this is an offset
+              (from template-x for "north"/"south" decors or template-y "east"/"west"
+              decors) to a segment in your template image that can be used to pad the decor
+              when it is wider/taller than the underlying template image. As well as
+              locating the template data to copy for padding it also specifies the position
+              at which padding is inserted.
+              </para>
+	    </listitem>
+
+	    <listitem>
+	      <para>template-pad-length: for PNG-based themes, used in conjunction with
+              the template-pad-offset attribute, this specifies the length of the segment in
+              your template image that is used for padding decors that are wider/taller than
+              your template image.
+              </para>
+	    </listitem>
+
+	    <listitem>
 	      <para>font-family: the font to be used for any text display on the decor.
               </para>
 	    </listitem>
