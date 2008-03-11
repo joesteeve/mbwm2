@@ -91,6 +91,10 @@ if test "x$use_gtk" = "xyes"; then
   needed_pkgs="$needed_pkgs gtk+-2.0 "
 fi
 
+if test "x$png_theme" = "xyes"; then
+  needed_pkgs="$needed_pkgs libpng12 "
+fi
+
 if test "x$composite_managers" != xno -a \
         "x$composite_managers" != "xframework-only"; then
   needed_pkgs="$needed_pkgs xcomposite xdamage "
@@ -156,10 +160,6 @@ if test "x$gmloop" = "xyes"; then
 fi
 AC_SUBST(USE_GLIB_MAINLOOP)
 
-PKG_CHECK_MODULES(MBWM, $needed_pkgs)
-MBWM2_PKGREQUIRES="$needed_pkgs"
-AC_SUBST(MBWM2_PKGREQUIRES)
-
 USE_PANGO=0
 if test "$use_pango" = yes; then
   USE_PANGO=1
@@ -170,7 +170,6 @@ THEME_PNG=0
 AM_CONDITIONAL(THEME_PNG, [test "x$png_theme" = "xyes"])
 if test "$png_theme" = yes; then
   THEME_PNG=1
-  PKG_CHECK_MODULES(THEME_PNG, xft libpng12)
 fi
 AC_SUBST(THEME_PNG)
 
@@ -188,6 +187,10 @@ if test "$use_gtk" = yes; then
   USE_GTK=1
 fi
 AC_SUBST(USE_GTK)
+
+PKG_CHECK_MODULES(MBWM, $needed_pkgs)
+MBWM2_PKGREQUIRES="$needed_pkgs"
+AC_SUBST(MBWM2_PKGREQUIRES)
 
 COMP_MGR_BACKEND=0
 ENABLE_COMPOSITE=0
@@ -261,8 +264,8 @@ MBWM_CORE_LIB='$(top_builddir)/matchbox/core/libmatchbox-window-manager-2-core.a
 MBWM_CLIENT_BUILDDIR='$(top_builddir)/matchbox/client-types'
 MBWM_THEME_BUILDDIR='$(top_builddir)/matchbox/theme-engines'
 MBWM_COMPMGR_BUILDDIR='$(top_builddir)/matchbox/comp-mgr'
-MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $THEME_PNG_CFLAGS $XFIXES_CFLAGS $XEXT_CFLAGS $XCURSOR_CFLAGS"
-MBWM_LIBS="$MBWM_LIBS $THEME_PNG_LIBS $XFIXES_LIBS $XEXT_LIBS $XCURSOR_LIBS $MBWM_EXTRA_LIBS"
+MBWM_CFLAGS="$MBWM_CFLAGS $MBWM_DEBUG_CFLAGS $XFIXES_CFLAGS $XEXT_CFLAGS $XCURSOR_CFLAGS"
+MBWM_LIBS="$MBWM_LIBS $XFIXES_LIBS $XEXT_LIBS $XCURSOR_LIBS $MBWM_EXTRA_LIBS"
 
 AC_SUBST([MBWM_CFLAGS])
 AC_SUBST([MBWM_LIBS])
