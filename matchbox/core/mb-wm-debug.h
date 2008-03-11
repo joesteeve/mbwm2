@@ -21,7 +21,7 @@
 #ifndef _HAVE_MB_DEBUG_H
 #define _HAVE_MB_DEBUG_H
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 
 typedef enum {
   MBWM_DEBUG_MISC            = 1 << 0,

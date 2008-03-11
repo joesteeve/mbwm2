@@ -72,7 +72,7 @@ mb_wm_comp_mgr_xrender_client_class_init (MBWMObjectClass *klass)
   c_klass->repair    = mb_wm_comp_mgr_xrender_client_repair_real;
   c_klass->configure = mb_wm_comp_mgr_xrender_client_configure_real;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgrDefaultClient";
 #endif
 }
@@ -391,7 +391,7 @@ mb_wm_comp_mgr_xrender_class_init (MBWMObjectClass *klass)
 {
   MBWMCompMgrClass *cm_klass = MB_WM_COMP_MGR_CLASS (klass);
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgrDefault";
 #endif
 

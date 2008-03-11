@@ -28,7 +28,7 @@ mb_wm_client_panel_class_init (MBWMObjectClass *klass)
   client->stacking_layer = mb_wm_client_panel_stacking_layer;
   client->stack          = mb_wm_client_panel_stack;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientPanel";
 #endif
 }

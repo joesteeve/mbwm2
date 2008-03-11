@@ -20,7 +20,7 @@
 
 #include "mb-wm.h"
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 #include <execinfo.h>
 #endif
 
@@ -29,7 +29,7 @@ static MBWMObjectClass     **ObjectClasses  = NULL;
 static int                   ObjectClassesAllocated = 0;
 static int                   NObjectClasses = 0;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 #define MBWM_OBJECT_TRACE_DEPTH 3
 /*
  * Increased for each ref call and decreased for each unref call
@@ -210,7 +210,7 @@ mb_wm_object_unref (MBWMObject *this)
 
       free (this);
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
       alloc_objects = mb_wm_util_list_remove (alloc_objects, this);
 #endif
     }
@@ -284,7 +284,7 @@ mb_wm_object_new (int type, ...)
 
   va_end(vap);
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
  {
    void * trace[MBWM_OBJECT_TRACE_DEPTH];
 

@@ -36,7 +36,7 @@ mb_wm_client_input_class_init (MBWMObjectClass *klass)
   client->realize      = mb_wm_client_input_realize;
   client->detransitise = mb_wm_client_input_detransitise;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientInput";
 #endif
 }

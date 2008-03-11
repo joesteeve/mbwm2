@@ -35,7 +35,7 @@ mb_wm_root_window_class_init (MBWMObjectClass *klass)
 
   rw_class = (MBWMRootWindowClass *)klass;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMRootWindow";
 #endif
 }

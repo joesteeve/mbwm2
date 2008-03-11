@@ -44,7 +44,7 @@ maemo_toolbar_class_init (MBWMObjectClass *klass)
   client->stack = maemo_toolbar_stack;
   client->stacking_layer = maemo_toolbar_stacking_layer;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MaemoToolbar";
 #endif
 }

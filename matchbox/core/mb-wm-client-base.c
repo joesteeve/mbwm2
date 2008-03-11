@@ -71,7 +71,7 @@ mb_wm_client_base_class_init (MBWMObjectClass *klass)
   client->sync     = mb_wm_client_base_display_sync;
   client->focus    = mb_wm_client_base_focus;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientBase";
 #endif
 }

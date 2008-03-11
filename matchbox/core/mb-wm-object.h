@@ -65,7 +65,7 @@ struct MBWMObjectClass
   MBWMObjFunc      destroy;
   MBWMClassFunc    class_init;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   const char         *klass_name;
 #endif
 };
@@ -77,7 +77,7 @@ struct MBWMObject
 
   MBWMList        *callbacks;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   char           **trace_strings;
   int              trace_depth;
 #endif
@@ -122,7 +122,7 @@ mb_wm_object_signal_disconnect (MBWMObject    *obj,
 void
 mb_wm_object_signal_emit (MBWMObject *obj, unsigned long signal);
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 void
 mb_wm_object_dump ();
 #endif

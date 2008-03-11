@@ -30,7 +30,7 @@ mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
   client->stacking_layer = mb_wm_client_desktop_stacking_layer;
   client->theme_change   = mb_wm_client_desktop_theme_change;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientDesktop";
 #endif
 }

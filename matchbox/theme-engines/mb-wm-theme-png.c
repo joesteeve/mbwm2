@@ -55,7 +55,7 @@ mb_wm_theme_png_class_init (MBWMObjectClass *klass)
   t_class->create_decor          = mb_wm_theme_png_create_decor;
   t_class->resize_decor          = mb_wm_theme_png_resize_decor;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMThemePng";
 #endif
 }

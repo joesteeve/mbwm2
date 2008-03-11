@@ -1,6 +1,53 @@
 2008-03-11  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:
+	* matchbox/mb-wm-config.h.in:
+	Added missing MBWM_WANT_DEBUG to mb-wm-config.h.
+
+	* matchbox/core/mb-wm.h:
+	Ensure mb-wm-config.h is included before all other mbwm includes.
+
+	* matchbox/client-types/mb-wm-client-app.c:
+	* matchbox/client-types/mb-wm-client-desktop.c:
+	* matchbox/client-types/mb-wm-client-dialog.c:
+	* matchbox/client-types/mb-wm-client-input.c:
+	* matchbox/client-types/mb-wm-client-menu.c:
+	* matchbox/client-types/mb-wm-client-note.c:
+	* matchbox/client-types/mb-wm-client-override.c:
+	* matchbox/client-types/mb-wm-client-panel.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-xrender.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-wm-client-base.c:
+	* matchbox/core/mb-wm-debug.c:
+	* matchbox/core/mb-wm-debug.h:
+	* matchbox/core/mb-wm-decor.c:
+	* matchbox/core/mb-wm-layout.c:
+	* matchbox/core/mb-wm-macros.h:
+	* matchbox/core/mb-wm-main-context.c:
+	* matchbox/core/mb-wm-object.c:
+	* matchbox/core/mb-wm-object.h:
+	* matchbox/core/mb-wm-root-window.c:
+	* matchbox/core/xas.c:
+	* matchbox/managers/maemo/Makefile.am:
+	* matchbox/managers/maemo/maemo-input.c:
+	* matchbox/managers/maemo/maemo-window-manager.c:
+	* matchbox/managers/maemo/maemo-toolbar.c:
+	* matchbox/managers/maemo/maemo-window-manager.h:
+	* matchbox/managers/maemo/matchbox-window-manager-2-maemo.c:
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	* matchbox/theme-engines/mb-wm-theme-png.c:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	Replaced #ifdef MBWM_WANT_DEBUG with #if MBWM_WANT_DEBUG.
+
+	* matchbox/managers/maemo/maemo-window-manager.c:
+	(maemo_window_manager_class_type):
+	Fixed incorrect object initialization.
+
+2008-03-11  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
 	Added libpng to the required packages for libmatchbox2 when
 	building png theme.
 

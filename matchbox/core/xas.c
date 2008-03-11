@@ -31,7 +31,7 @@
 
 #include "xas.h"
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 #include "mb-wm-debug.h"
 #include <stdio.h>
 #define XAS_DBG(x, a...) \

@@ -22,7 +22,7 @@
 
 #include "mb-wm-debug.h"
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 int mbwm_debug_flags = 0;
 
 static const struct { const char *key; MBWMDebugFlag flag; } debug_keys[] = {
@@ -43,7 +43,7 @@ static const struct { const char *key; MBWMDebugFlag flag; } debug_keys[] = {
 void
 mb_wm_debug_init (const char *debug_string)
 {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   char       *end;
   int         len, n, i;
 

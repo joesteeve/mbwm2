@@ -7,7 +7,7 @@
 
 #define MBWM_CTX_MAX_TIMEOUT 100
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 
 static const char *MBWMDEBUGEvents[] = {
     "error",
@@ -79,7 +79,7 @@ struct MBWMFdWatchInfo{
 static void
 mb_wm_main_context_class_init (MBWMObjectClass *klass)
 {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMMainContext";
 #endif
 }

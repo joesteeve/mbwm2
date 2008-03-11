@@ -15,7 +15,7 @@ maemo_input_class_init (MBWMObjectClass *klass)
 
   client->client_type = MBWMClientTypeInput;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MaemoInput";
 #endif
 }

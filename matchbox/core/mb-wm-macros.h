@@ -21,7 +21,7 @@
 #ifndef _HAVE_MB_MACROS_H
 #define _HAVE_MB_MACROS_H
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 #define MBWM_NOTE(type,x,a...)  do {                                  \
         if (mbwm_debug_flags & MBWM_DEBUG_##type)                     \
           { fprintf (stderr, "[" #type "] " __FILE__ ":%d,%s() " ": " x "\n", __LINE__, __func__, ##a); } \

@@ -30,7 +30,7 @@ mb_wm_decor_button_sync_window (MBWMDecorButton *button);
 static void
 mb_wm_decor_class_init (MBWMObjectClass *klass)
 {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMDecor";
 #endif
 }
@@ -777,7 +777,7 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 static void
 mb_wm_decor_button_class_init (MBWMObjectClass *klass)
 {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMDecorButton";
 #endif
 }

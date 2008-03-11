@@ -29,4 +29,7 @@
 /* GTK Integration */
 #define USE_GTK @USE_GTK@
 
+/* Debugging stuff */
+#define MBWM_WANT_DEBUG @MBWM_WANT_DEBUG@
+
 #endif

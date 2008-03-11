@@ -76,7 +76,7 @@ mb_wm_client_dialog_class_init (MBWMObjectClass *klass)
   client->show         = mb_wm_client_dialog_show;
   client->theme_change = mb_wm_client_dialog_theme_change;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientDialog";
 #endif
 }

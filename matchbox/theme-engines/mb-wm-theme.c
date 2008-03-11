@@ -66,7 +66,7 @@ mb_wm_theme_class_init (MBWMObjectClass *klass)
   t_class->button_position  = mb_wm_theme_simple_get_button_position;
   t_class->create_decor     = mb_wm_theme_simple_create_decor;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMTheme";
 #endif
 }

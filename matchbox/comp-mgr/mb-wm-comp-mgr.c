@@ -33,7 +33,7 @@ mb_wm_comp_mgr_client_class_init (MBWMObjectClass *klass)
 {
   MBWMCompMgrClientClass *c_klass = MB_WM_COMP_MGR_CLIENT_CLASS (klass);
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgrClient";
 #endif
 }
@@ -166,7 +166,7 @@ mb_wm_comp_mgr_client_repair (MBWMCompMgrClient * client)
 static void
 mb_wm_comp_mgr_class_init (MBWMObjectClass *klass)
 {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgr";
 #endif
 }

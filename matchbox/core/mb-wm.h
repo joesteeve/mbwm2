@@ -31,6 +31,7 @@
 #include <X11/Xatom.h>          /* for XA_ATOM etc */
 #include <X11/keysym.h>         /* key mask defines */
 
+#include <matchbox/mb-wm-config.h>
 #include <matchbox/core/xas.h>    		/* async stuff not needed for xlib on xcb */
 
 #ifndef TRUE

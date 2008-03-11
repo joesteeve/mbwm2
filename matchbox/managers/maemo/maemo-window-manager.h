@@ -23,6 +23,7 @@
 
 #include <matchbox/core/mb-wm.h>
 
+typedef struct MaemoWindowManager        MaemoWindowManager;
 typedef struct MaemoWindowManagerClass   MaemoWindowManagerClass;
 typedef struct MaemoWindowManagerPriv    MaemoWindowManagerPriv;
 

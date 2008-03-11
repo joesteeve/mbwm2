@@ -130,7 +130,7 @@ mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
     }
   else
     {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
       char * name = XGetAtomName (wm->xdpy, win->net_type);
       printf("### unhandled window type %s (%x) ###\n", name, win->xwindow);
       XFree (name);
@@ -265,7 +265,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->comp_mgr_new    = mb_wm_real_comp_mgr_new;
 #endif
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWindowManager";
 #endif
 }

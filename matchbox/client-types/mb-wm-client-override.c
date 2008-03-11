@@ -48,7 +48,7 @@ mb_wm_client_override_class_init (MBWMObjectClass *klass)
   client->client_type  = MBWMClientTypeOverride;
   client->stack        = mb_wm_client_override_stack;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientOverride";
 #endif
 }

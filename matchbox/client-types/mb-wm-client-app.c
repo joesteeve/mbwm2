@@ -31,7 +31,7 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
   client->theme_change = mb_wm_client_app_theme_change;
   client->stacking_layer = mb_wm_client_app_stacking_layer;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientApp";
 #endif
 }

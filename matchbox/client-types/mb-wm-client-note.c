@@ -33,7 +33,7 @@ mb_wm_client_note_class_init (MBWMObjectClass *klass)
 
   client->client_type  = MBWMClientTypeNote;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientNote";
 #endif
 }

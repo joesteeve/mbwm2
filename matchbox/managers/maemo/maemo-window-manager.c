@@ -28,10 +28,14 @@
 #include "mb-wm-client-input.h"
 #include "mb-window-manager.h"
 
+#if ENABLE_COMPOSITE
+#include "mb-wm-client-override.h"
+#endif
+
 #include <stdarg.h>
 
 static void
-maemo_window_manager_process_cmdline (MBWindowManager *);
+maemo_window_manager_process_cmdline (MBWindowManager *, int, char **);
 
 static Bool
 maemo_window_manager_client_activate (MBWindowManager * wm,
@@ -119,7 +123,7 @@ maemo_window_manager_class_init (MBWMObjectClass *klass)
   wm_class->client_new      = maemo_window_manager_client_new_func;
   wm_class->client_activate = maemo_window_manager_client_activate;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MaemoWindowManager";
 #endif
 }
@@ -146,8 +150,8 @@ maemo_window_manager_class_type ()
   if (UNLIKELY(type == 0))
     {
       static MBWMObjectClassInfo info = {
-	sizeof (MBWindowManagerClass),
-	sizeof (MBWindowManager),
+	sizeof (MaemoWindowManagerClass),
+	sizeof (MaemoWindowManager),
 	maemo_window_manager_init,
 	maemo_window_manager_destroy,
 	maemo_window_manager_class_init

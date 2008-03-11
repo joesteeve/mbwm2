@@ -30,7 +30,7 @@ enum {
 
 static MBWindowManager *wm = NULL;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
 /*
  * The Idea behind this is quite simple: when all managed windows are closed
  * and the WM exits, there should have been an unref call for each ref call. To
@@ -128,7 +128,7 @@ main(int argc, char **argv)
 
   mb_wm_object_unref (MB_WM_OBJECT (wm));
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   mb_wm_object_dump ();
 #endif
 

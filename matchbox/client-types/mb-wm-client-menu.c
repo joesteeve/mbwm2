@@ -31,7 +31,7 @@ mb_wm_client_menu_class_init (MBWMObjectClass *klass)
   client->geometry     = mb_wm_client_menu_request_geometry;
   client->realize      = mb_wm_client_menu_realize;
 
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMClientMenu";
 #endif
 }
