@@ -1,5 +1,10 @@
 2008-03-11  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/client-types/mb-wm-client-dialog.h:
+	Fixed broken include.
+
+2008-03-11  Tomas Frydrych  <tf@o-hand.com>
+
 	* configure.ac:
 	* matchbox/mb-wm-config.h.in:
 	Added missing MBWM_WANT_DEBUG to mb-wm-config.h.

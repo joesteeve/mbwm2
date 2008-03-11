@@ -21,7 +21,7 @@
 #ifndef _HAVE_MB_CLIENT_DIALOG_H
 #define _HAVE_MB_CLIENT_DIALOG_H
 
-#include "mb-wm.h"
+#include <matchbox/core/mb-wm.h>
 
 typedef struct MBWMClientDialog      MBWMClientDialog;
 typedef struct MBWMClientDialogClass MBWMClientDialogClass;
