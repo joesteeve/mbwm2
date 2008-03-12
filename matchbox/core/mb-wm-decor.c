@@ -197,6 +197,127 @@ static Bool
 mb_wm_decor_reparent (MBWMDecor *decor);
 
 static Bool
+mb_wm_decor_release_handler (XButtonEvent    *xev,
+			     void            *userdata)
+{
+  MBWMDecor       *decor  = userdata;
+  MBWindowManager *wm = decor->parent_client->wmref;
+
+  mb_wm_main_context_x_event_handler_remove (wm->main_ctx, ButtonRelease,
+					     decor->release_cb_id);
+
+  decor->release_cb_id = 0;
+
+  XUngrabPointer (wm->xdpy, CurrentTime);
+
+  return False;
+}
+
+static Bool
+mb_wm_decor_press_handler (XButtonEvent    *xev,
+			   void            *userdata)
+{
+  MBWMDecor       *decor  = userdata;
+  MBWindowManager *wm = decor->parent_client->wmref;
+  Bool             retval = True;
+
+  if (xev->window == decor->xwin)
+    {
+      XEvent     ev;
+      MBGeometry geom;
+      int        orig_x, orig_y;
+      int        orig_p_x, orig_p_y;
+
+      mb_wm_client_get_coverage (decor->parent_client, &geom);
+
+      orig_x   = geom.x;
+      orig_y   = geom.y;
+      orig_p_x = xev->x_root;
+      orig_p_y = xev->y_root;
+
+      /*
+       * This is bit tricky: we do a normal pointer drag and pull out any
+       * pointer events out of the queue; when we get a MotionEvent, we
+       * move the client window. However, for the move to propagete on screen
+       * (particularly with a compositor) we need to spin the main loop so
+       * that any queued up ConfigureNotify events get processed;
+       * unfortunately, this invariably results in the ButtonRelease event
+       * landing in the main loop and not in our sub-loop here. So, on the
+       * ButtonPress we install a ButtonRelease callback into the main loop
+       * and use that to release the grab.
+       */
+      if (XGrabPointer(wm->xdpy, xev->subwindow, False,
+		       ButtonPressMask|ButtonReleaseMask|
+		       PointerMotionMask|EnterWindowMask|LeaveWindowMask,
+		       GrabModeAsync,
+		       GrabModeAsync,
+		       None, None, CurrentTime) == GrabSuccess)
+	{
+
+	  decor->release_cb_id = mb_wm_main_context_x_event_handler_add (
+				 wm->main_ctx,
+			         decor->xwin,
+			         ButtonRelease,
+			         (MBWMXEventFunc)mb_wm_decor_release_handler,
+			         decor);
+
+	  for (;;)
+	    {
+	      /*
+	       * If we have no release_cb installed, i.e., the ButtonRelease
+	       * has already happened, quit this loop.
+	       */
+	      if (!decor->release_cb_id)
+		break;
+
+	      XMaskEvent(wm->xdpy,
+			 ButtonPressMask|ButtonReleaseMask|
+			 PointerMotionMask|EnterWindowMask|
+			 LeaveWindowMask,
+			 &ev);
+
+	      switch (ev.type)
+		{
+		case MotionNotify:
+		  {
+		    Bool events_pending;
+		    int  event_count = 5; /*Limit how much we spin the loop*/
+		    XMotionEvent *pev = (XMotionEvent*)&ev;
+		    int diff_x = pev->x_root - orig_p_x;
+		    int diff_y = pev->y_root - orig_p_y;
+
+		    geom.x = orig_x + diff_x;
+		    geom.y = orig_y + diff_y;
+
+		    mb_wm_client_request_geometry (decor->parent_client,
+					   &geom,
+					   MBWMClientReqGeomIsViaUserAction);
+
+		    do
+		      {
+			events_pending =
+			  mb_wm_main_context_spin_loop (wm->main_ctx);
+
+			--event_count;
+		      } while (events_pending && event_count);
+		  }
+		  break;
+		case ButtonRelease:
+		  {
+		    XUngrabPointer (wm->xdpy, CurrentTime);
+		    return False;
+		  }
+		default:
+		  ;
+		}
+	    }
+	}
+    }
+
+  return retval;
+}
+
+static Bool
 mb_wm_decor_sync_window (MBWMDecor *decor)
 {
   MBWindowManager     *wm;
@@ -241,9 +362,24 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 
       mb_wm_decor_resize(decor);
 
+      /*
+       * If this is a decor with buttons, then we install button press handler
+       * so we can drag the window, if it is movable.
+       */
+      if (decor->type == MBWMDecorTypeNorth &&
+	  decor->parent_client->layout_hints & LayoutPrefMovable)
+	{
+	  decor->press_cb_id =
+	    mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			        decor->xwin,
+			        ButtonPress,
+			        (MBWMXEventFunc)mb_wm_decor_press_handler,
+			        decor);
+	}
+
       mb_wm_util_list_foreach(decor->buttons,
-		             (MBWMListForEachCB)mb_wm_decor_button_sync_window,
-			      NULL);
+		            (MBWMListForEachCB)mb_wm_decor_button_sync_window,
+			    NULL);
 
       return mb_wm_decor_reparent (decor);
     }
@@ -504,8 +640,9 @@ mb_wm_decor_detach (MBWMDecor *decor)
 static void
 mb_wm_decor_destroy (MBWMObject* obj)
 {
-  MBWMDecor *decor = MB_WM_DECOR(obj);
-  MBWMList * l = decor->buttons;
+  MBWMDecor       * decor = MB_WM_DECOR(obj);
+  MBWMList        * l     = decor->buttons;
+  MBWMMainContext * ctx   = decor->parent_client->wmref->main_ctx;
 
   if (decor->themedata && decor->destroy_themedata)
     {
@@ -524,6 +661,9 @@ mb_wm_decor_destroy (MBWMObject* obj)
       free (old);
     }
 
+  if (decor->press_cb_id)
+    mb_wm_main_context_x_event_handler_remove (ctx, ButtonPress,
+					       decor->press_cb_id);
 }
 
 void

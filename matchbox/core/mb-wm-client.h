@@ -67,6 +67,8 @@ typedef enum MBWMClientLayoutHints
     LayoutPrefFixedX           = (1<<12), /* X and width are fixed*/
     LayoutPrefFixedY           = (1<<13),
     LayoutPrefOverlaps         = (1<<14), /* stacked over other windows */
+    LayoutPrefMovable          = (1<<15),
+    LayoutPrefResizable        = (1<<16),
   }
 MBWMClientLayoutHints;
 

@@ -376,7 +376,10 @@ test_button_press (XButtonEvent *xev, void *userdata)
   if (!client)
     return True;
 
-  mb_wm_focus_client (wm, client);
+  if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypeApp)
+    mb_wm_activate_client (wm, client);
+  else
+    mb_wm_focus_client (wm, client);
 
   XAllowEvents (wm->xdpy, ReplayPointer, CurrentTime);
 
@@ -542,7 +545,19 @@ static  Bool
 mb_wm_handle_config_notify (XConfigureEvent *xev,
 			    void            *userdata)
 {
-  /* FIXME */
+#if ENABLE_COMPOSITE
+  MBWindowManager * wm = (MBWindowManager*)userdata;
+
+  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+    {
+      MBWindowManagerClient *client;
+
+      client = mb_wm_managed_client_from_frame (wm, xev->window);
+
+      if (client)
+	mb_wm_comp_mgr_client_configure (client->cm_client);
+    }
+#endif
 }
 
 static  Bool

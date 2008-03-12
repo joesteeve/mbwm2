@@ -525,6 +525,18 @@ mb_wm_main_context_loop (MBWMMainContext *ctx)
 #endif
 }
 
+Bool
+mb_wm_main_context_spin_loop (MBWMMainContext *ctx)
+{
+#if USE_GLIB_MAINLOOP
+  g_main_context_iteration (NULL, FALSE);
+  return g_main_context_pending (NULL);
+#else
+  return mb_wm_main_context_spin_xevent (ctx);
+#endif
+}
+
+
 unsigned long
 mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
 					Window           xwin,

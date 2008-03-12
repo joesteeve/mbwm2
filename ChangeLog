@@ -1,3 +1,28 @@
+2008-03-12  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-wm-client.h:
+	Added layout hints for user resizable and movable windows.
+
+	* matchbox/client-types/mb-wm-client-dialog.c:
+	Hint dialogs as user-movable.
+
+	* matchbox/core/mb-window-manager.c:
+	(test_button_press):
+	Ensure that application-type clients are not only focused, but
+	also activated.
+
+	* matchbox/core/mb-wm-decor.c:
+	* matchbox/core/mb-wm-decor.h:
+	Implemented window dragging via north decor.
+
+	* matchbox/core/mb-wm-main-context.c:
+	* matchbox/core/mb-wm-main-context.h:
+	(mb_wm_main_context_spin_loop):
+	API to allow manual spining of the main loop.
+
+	* matchbox/theme-engines/mb-wm-theme.c:
+	Make dialogs decorated by default when using fallback theme.
+
 2008-03-11  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/client-types/mb-wm-client-dialog.h:

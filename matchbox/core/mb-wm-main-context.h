@@ -130,4 +130,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 void
 mb_wm_main_context_loop (MBWMMainContext *ctx);
 
+Bool
+mb_wm_main_context_spin_loop (MBWMMainContext *ctx);
+
 #endif

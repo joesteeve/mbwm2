@@ -64,6 +64,9 @@ struct MBWMDecor
   int                       pack_start_x;
   int                       pack_end_x;
 
+  unsigned long             press_cb_id;
+  unsigned long             release_cb_id;
+
   void                     *themedata;
   MBWMDecorDestroyUserData  destroy_themedata;
 };

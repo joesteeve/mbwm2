@@ -1508,6 +1508,10 @@ mb_wm_theme_simple_create_decor (MBWMTheme             *theme,
       break;
 
     case MBWMClientTypeDialog:
+      decor = mb_wm_decor_new (wm, type);
+      mb_wm_decor_attach (decor, client);
+      break;
+
     case MBWMClientTypePanel:
     case MBWMClientTypeDesktop:
     case MBWMClientTypeInput:
@@ -1657,6 +1661,7 @@ mb_wm_theme_simple_get_decor_dimensions (MBWMTheme             *theme,
    */
   switch (c_type)
     {
+    case MBWMClientTypeDialog:
     case MBWMClientTypeApp:
       if (north)
 	*north = SIMPLE_FRAME_TITLEBAR_HEIGHT;
@@ -1671,7 +1676,6 @@ mb_wm_theme_simple_get_decor_dimensions (MBWMTheme             *theme,
 	*east = SIMPLE_FRAME_EDGE_SIZE;
       break;
 
-    case MBWMClientTypeDialog:
     case MBWMClientTypePanel:
     case MBWMClientTypeDesktop:
     case MBWMClientTypeInput:
