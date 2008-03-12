@@ -1,5 +1,11 @@
 2008-03-12  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-client-app.c:
+	(mb_wm_client_app_request_geometry):
+	Added MBWMClientReqGeomIsViaUserAction to allowed flags.
+
+2008-03-12  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-client.h:
 	Added layout hints for user resizable and movable windows.
 

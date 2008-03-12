@@ -135,7 +135,9 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 				   MBGeometry            *new_geometry,
 				   MBWMClientReqGeomType  flags)
 {
-  if (flags & (MBWMClientReqGeomIsViaLayoutManager|MBWMClientReqGeomForced))
+  if (flags & (MBWMClientReqGeomIsViaLayoutManager |
+	       MBWMClientReqGeomForced             |
+	       MBWMClientReqGeomIsViaUserAction))
     {
       int north, south, west, east;
       MBWindowManager *wm = client->wmref;
