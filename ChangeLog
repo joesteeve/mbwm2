@@ -1,5 +1,12 @@
 2008-03-13  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-decor.c:
+	(mb_wm_decor_sync_window):
+	Fixed order of press handlers so that decor buttons get called
+	before the drag handler.
+
+2008-03-13  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-window-manager.c:
 	* matchbox/core/mb-window-manager.h:
 	* matchbox/managers/maemo/matchbox-window-manager-2-maemo.c:
@@ -8,7 +15,7 @@
 	process_cmd_line) from the object constructor to a public
 	mb_wm_init() method that must be called before the newly
 	constructed object can be used.
-	
+
 2008-03-13  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-window-manager.c:
@@ -20,12 +27,12 @@
 	* matchbox/core/mb-wm-main-context.h:
 	Handle DamageNotify the same way as other standard events to avoid
 	unnecessary calls to the CM event callbacks.
-	
+
 	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
 	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	* matchbox/comp-mgr/mb-wm-comp-mgr-xrender.c:
-	Replaced MBWMCompMgr::handle_event with more specific 
+	Replaced MBWMCompMgr::handle_event with more specific
 	::handle_damage().
 
 2008-03-13  Robert Bragg  <bob@o-hand.com>

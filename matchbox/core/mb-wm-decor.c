@@ -362,6 +362,10 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 
       mb_wm_decor_resize(decor);
 
+      mb_wm_util_list_foreach(decor->buttons,
+		            (MBWMListForEachCB)mb_wm_decor_button_sync_window,
+			    NULL);
+
       /*
        * If this is a decor with buttons, then we install button press handler
        * so we can drag the window, if it is movable.
@@ -376,10 +380,6 @@ mb_wm_decor_sync_window (MBWMDecor *decor)
 			        (MBWMXEventFunc)mb_wm_decor_press_handler,
 			        decor);
 	}
-
-      mb_wm_util_list_foreach(decor->buttons,
-		            (MBWMListForEachCB)mb_wm_decor_button_sync_window,
-			    NULL);
 
       return mb_wm_decor_reparent (decor);
     }
