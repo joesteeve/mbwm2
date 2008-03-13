@@ -1,3 +1,9 @@
+2008-03-13  Robert Bragg  <bob@o-hand.com>
+
+	* matchbox/core/mb-wm-main-context.c
+	incorrect dereferencing of xev->xconfigure union member in the
+	wrong context.
+
 2008-03-12  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-wm-client-app.c:

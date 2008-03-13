@@ -384,7 +384,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 	 XFree (prop);
      }
 #endif
-      xwin = xev->xconfigure.window;
+      xwin = xev->xproperty.window;
       iter = ctx->event_funcs.property_notify;
 
       while (iter)
