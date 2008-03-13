@@ -2,6 +2,17 @@
 
 	* matchbox/core/mb-window-manager.c:
 	* matchbox/core/mb-window-manager.h:
+	* matchbox/managers/maemo/matchbox-window-manager-2-maemo.c:
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	Moved calls to MBWindowManager virtuals (with the exception of
+	process_cmd_line) from the object constructor to a public
+	mb_wm_init() method that must be called before the newly
+	constructed object can be used.
+	
+2008-03-13  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-window-manager.h:
 	Initialize XComposite, XDamage and XFixes in the WM init method
 	when building a compositor (avoids duplication of code in the CMs).
 

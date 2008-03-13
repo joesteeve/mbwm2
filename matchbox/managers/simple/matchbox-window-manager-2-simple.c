@@ -124,7 +124,8 @@ main(int argc, char **argv)
 #endif
 
   wm = mb_wm_new_with_dpy (argc, argv, dpy);
-
+  mb_wm_init (wm);
+  
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");
 

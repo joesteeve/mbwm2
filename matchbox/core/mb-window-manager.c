@@ -296,7 +296,7 @@ mb_wm_destroy (MBWMObject *this)
 }
 
 static int
-mb_wm_init (MBWMObject *this, va_list vap);
+mb_window_manager_init (MBWMObject *this, va_list vap);
 
 int
 mb_wm_class_type ()
@@ -308,7 +308,7 @@ mb_wm_class_type ()
       static MBWMObjectClassInfo info = {
 	sizeof (MBWindowManagerClass),
 	sizeof (MBWindowManager),
-	mb_wm_init,
+	mb_window_manager_init,
 	mb_wm_destroy,
 	mb_wm_class_init
       };
@@ -1486,8 +1486,34 @@ mb_wm_init_comp_extensions (MBWindowManager *wm)
 }
 #endif
 
+/*
+ * This function must be called before the MBWindowManager object can be
+ * used.
+ */
+void
+mb_wm_init (MBWindowManager * wm)
+{
+  MBWindowManagerClass *wm_class;
+
+  wm_class = (MBWindowManagerClass *) MB_WM_OBJECT_GET_CLASS (wm);
+
+  mb_wm_set_theme_from_path (wm, wm->theme_path);
+
+  MBWM_ASSERT (wm_class->layout_new);
+
+  mb_wm_set_layout (wm, wm_class->layout_new (wm));
+
+#if ENABLE_COMPOSITE
+  if (wm_class->comp_mgr_new && mb_wm_theme_use_compositing_mgr (wm->theme))
+    mb_wm_compositing_on (wm);
+#endif
+
+  mb_wm_manage_preexistsing_wins (wm);
+}
+
+
 static int
-mb_wm_init (MBWMObject *this, va_list vap)
+mb_window_manager_init (MBWMObject *this, va_list vap)
 {
   MBWindowManager      *wm = MB_WINDOW_MANAGER (this);
   MBWindowManagerClass *wm_class;
@@ -1542,9 +1568,6 @@ mb_wm_init (MBWMObject *this, va_list vap)
   if (!mb_wm_init_comp_extensions (wm))
     return 0;
 #endif
-
-  if (!wm->theme)
-    mb_wm_set_theme_from_path (wm, NULL);
 
   wm->root_win = mb_wm_root_window_get (wm);
 
@@ -1614,17 +1637,6 @@ mb_wm_init (MBWMObject *this, va_list vap)
 
   base_foo ();
 
-  MBWM_ASSERT (wm_class->layout_new);
-
-  mb_wm_set_layout (wm, wm_class->layout_new (wm));
-
-#if ENABLE_COMPOSITE
-  if (wm_class->comp_mgr_new && mb_wm_theme_use_compositing_mgr (wm->theme))
-    mb_wm_compositing_on (wm);
-#endif
-
-  mb_wm_manage_preexistsing_wins (wm);
-
   return 1;
 }
 
@@ -1660,7 +1672,6 @@ static void
 mb_wm_process_cmdline (MBWindowManager *wm)
 {
   int i;
-  const char * theme_path = NULL;
   char ** argv = wm->argv;
   int     argc = wm->argc;
 
@@ -1687,7 +1698,7 @@ mb_wm_process_cmdline (MBWindowManager *wm)
 	    }
 	  else if (!strcmp ("-theme", argv[i]))
 	    {
-	      theme_path = argv[++i];
+	      wm->theme_path = argv[++i];
 	    }
 	}
     }
@@ -1697,16 +1708,6 @@ mb_wm_process_cmdline (MBWindowManager *wm)
    */
   if (!wm->xdpy && !mb_wm_init_xdpy (wm, NULL))
     return;
-
-  if (theme_path)
-    {
-
-      MBWindowManagerClass *wm_class;
-      wm_class =
-	MB_WINDOW_MANAGER_CLASS (MB_WM_OBJECT_GET_CLASS (wm));
-
-      wm->theme = wm_class->theme_new (wm, theme_path);
-    }
 }
 
 void

@@ -102,6 +102,7 @@ main(int argc, char **argv)
   mb_wm_object_init();
 
   wm = maemo_window_manager_new(argc, argv);
+  mb_wm_init (wm);
 
   if (wm == NULL)
     mb_wm_util_fatal_error("OOM?");

@@ -132,6 +132,9 @@ MBWindowManager *
 mb_wm_new_with_dpy (int argc, char **argv, Display * dpy);
 
 void
+mb_wm_init (MBWindowManager * wm);
+
+void
 mb_wm_set_layout (MBWindowManager *wm, MBWMLayout *layout);
 
 int
