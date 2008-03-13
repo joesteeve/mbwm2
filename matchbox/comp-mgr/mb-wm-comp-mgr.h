@@ -37,6 +37,7 @@ struct MBWMCompMgr
 
   MBWindowManager     *wm;
   Bool                 disabled;
+  unsigned long        damage_cb_id;
 };
 
 struct MBWMCompMgrClass
@@ -51,7 +52,7 @@ struct MBWMCompMgrClass
   void   (*restack)           (MBWMCompMgr * mgr);
   void   (*map_notify)        (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   void   (*unmap_notify)      (MBWMCompMgr * mgr, MBWindowManagerClient *c);
-  Bool   (*handle_events)     (MBWMCompMgr * mgr, XEvent *ev);
+  Bool   (*handle_damage)     (XDamageNotifyEvent * xev, MBWMCompMgr * mgr);
   Bool   (*my_window)         (MBWMCompMgr * mgr, Window xwin);
   void   (*effect)            (MBWMCompMgr * mgr,
 			       MBWindowManagerClient *c1,

@@ -86,6 +86,7 @@ struct MBWindowManager
   MBWindowManagerFlag          flags;
 #if ENABLE_COMPOSITE
   MBWMCompMgr                 *comp_mgr;
+  int                          damage_event_base;
 #endif
 
   MBWindowManagerCursor        cursor;

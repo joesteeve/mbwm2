@@ -30,10 +30,8 @@
 #include <clutter/clutter-glx-texture-pixmap.h>
 
 #include <X11/Xresource.h>
-#include <X11/extensions/Xdamage.h>
-#include <X11/extensions/Xrender.h>
-#include <X11/extensions/Xcomposite.h>
 #include <X11/extensions/shape.h>
+#include <X11/extensions/Xcomposite.h>
 
 #include <math.h>
 
@@ -456,7 +454,6 @@ struct MBWMCompMgrClutterPrivate
   ClutterActor * shadow;
 
   Window         overlay_window;
-  int            damage_event;
 };
 
 static void
@@ -509,13 +506,14 @@ static void
 mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr);
 
 static Bool
-mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev);
-
-static Bool
 mb_wm_comp_mgr_is_my_window_real (MBWMCompMgr * mgr, Window xwin);
 
 static void
 mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr, int desktop);
+
+static Bool
+mb_wm_comp_mgr_clutter_handle_damage (XDamageNotifyEvent * de,
+				      MBWMCompMgr        * mgr);
 
 static void
 mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
@@ -534,48 +532,12 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
   cm_klass->turn_on           = mb_wm_comp_mgr_clutter_turn_on_real;
   cm_klass->turn_off          = mb_wm_comp_mgr_clutter_turn_off_real;
   cm_klass->map_notify        = mb_wm_comp_mgr_clutter_map_notify_real;
-  cm_klass->handle_events     = mb_wm_comp_mgr_clutter_handle_events_real;
   cm_klass->my_window         = mb_wm_comp_mgr_is_my_window_real;
   cm_klass->transition        = mb_wm_comp_mgr_clutter_transition_real;
   cm_klass->effect            = mb_wm_comp_mgr_clutter_effect_real;
   cm_klass->restack           = mb_wm_comp_mgr_clutter_restack_real;
   cm_klass->select_desktop    = mb_wm_comp_mgr_clutter_select_desktop;
-}
-
-/*
- * Initializes the extension require by the manager
- */
-static Bool
-mb_wm_comp_mgr_clutter_init_extensions (MBWMCompMgr *mgr)
-{
-  MBWindowManager             * wm = mgr->wm;
-  MBWMCompMgrClutterPrivate   * priv = MB_WM_COMP_MGR_CLUTTER (mgr)->priv;
-  int		                event_base, error_base;
-  int		                damage_error;
-  int		                xfixes_event, xfixes_error;
-
-  if (!XCompositeQueryExtension (wm->xdpy, &event_base, &error_base))
-    {
-      fprintf (stderr, "matchbox: No composite extension\n");
-      return False;
-    }
-
-  if (!XDamageQueryExtension (wm->xdpy, &priv->damage_event, &damage_error))
-    {
-      fprintf (stderr, "matchbox: No damage extension\n");
-      return False;
-    }
-
-  if (!XFixesQueryExtension (wm->xdpy, &xfixes_event, &xfixes_error))
-    {
-      fprintf (stderr, "matchbox: No XFixes extension\n");
-      return False;
-    }
-
-  XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
-				CompositeRedirectManual);
-
-  return True;
+  cm_klass->handle_damage     = mb_wm_comp_mgr_clutter_handle_damage;
 }
 
 static int
@@ -584,12 +546,13 @@ mb_wm_comp_mgr_clutter_init (MBWMObject *obj, va_list vap)
   MBWMCompMgr                * mgr  = MB_WM_COMP_MGR (obj);
   MBWMCompMgrClutter         * cmgr = MB_WM_COMP_MGR_CLUTTER (obj);
   MBWMCompMgrClutterPrivate  * priv;
+  MBWindowManager            * wm = mgr->wm;
   ClutterActor               * desktop;
   priv = mb_wm_util_malloc0 (sizeof (MBWMCompMgrClutterPrivate));
   cmgr->priv = priv;
 
-  if (!mb_wm_comp_mgr_clutter_init_extensions (mgr))
-    return 0;
+  XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
+				CompositeRedirectManual);
 
   priv->stage = clutter_stage_get_default ();
   desktop = clutter_group_new ();
@@ -804,43 +767,39 @@ mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client)
 }
 
 static Bool
-mb_wm_comp_mgr_clutter_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
+mb_wm_comp_mgr_clutter_handle_damage (XDamageNotifyEvent * de,
+				      MBWMCompMgr        * mgr)
 {
   MBWMCompMgrClutterPrivate * priv = MB_WM_COMP_MGR_CLUTTER (mgr)->priv;
   MBWindowManager           * wm   = mgr->wm;
+  MBWindowManagerClient     * c;
 
-  if (ev->type == priv->damage_event + XDamageNotify)
+  c = mb_wm_managed_client_from_frame (wm, de->drawable);
+
+  if (c && c->cm_client)
     {
-      XDamageNotifyEvent    * de = (XDamageNotifyEvent*) ev;
-      MBWindowManagerClient * c;
+      MBWMCompMgrClutterClient *cclient =
+	MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
 
-      c = mb_wm_managed_client_from_frame (wm, de->drawable);
+      if (!cclient->actor ||
+	  (cclient->flags & MBWMCompMgrClutterClientDontUpdate))
+	return False;
 
-      if (c && c->cm_client)
-	{
-	  MBWMCompMgrClutterClient *cclient =
-	    MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
+      MBWM_NOTE (COMPOSITOR,
+		 "Reparing window %x, geometry %d,%d;%dx%d; more %d\n",
+		 de->drawable,
+		 de->geometry.x,
+		 de->geometry.y,
+		 de->geometry.width,
+		 de->geometry.height,
+		 de->more);
 
-	  if (!cclient->actor ||
-	      (cclient->flags & MBWMCompMgrClutterClientDontUpdate))
-	    return False;
-
-	  MBWM_NOTE (COMPOSITOR,
-		     "Reparing window %x, geometry %d,%d;%dx%d; more %d\n",
-		     de->drawable,
-		     de->geometry.x,
-		     de->geometry.y,
-		     de->geometry.width,
-		     de->geometry.height,
-		     de->more);
-
-	  mb_wm_comp_mgr_clutter_client_repair_real (c->cm_client);
-	}
-      else
-	{
-	  MBWM_NOTE (COMPOSITOR, "Failed to find client for window %x\n",
-		     de->drawable);
-	}
+      mb_wm_comp_mgr_clutter_client_repair_real (c->cm_client);
+    }
+  else
+    {
+      MBWM_NOTE (COMPOSITOR, "Failed to find client for window %x\n",
+		 de->drawable);
     }
 
   return False;
@@ -872,7 +831,6 @@ mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
 	  prev = a;
 	}
     }
-
 }
 
 /*

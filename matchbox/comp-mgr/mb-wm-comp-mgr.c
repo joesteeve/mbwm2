@@ -413,35 +413,36 @@ mb_wm_comp_mgr_select_desktop (MBWMCompMgr * mgr, int desktop)
 void
 mb_wm_comp_mgr_turn_on (MBWMCompMgr *mgr)
 {
+  MBWindowManager  *wm = mgr->wm;
   MBWMCompMgrClass *klass
     = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   MBWM_ASSERT (klass->turn_on != NULL);
   klass->turn_on (mgr);
+
+  mgr->damage_cb_id =
+    mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+					None,
+					wm->damage_event_base + XDamageNotify,
+					klass->handle_damage,
+					mgr);
 }
 
 void
 mb_wm_comp_mgr_turn_off (MBWMCompMgr *mgr)
 {
+  MBWindowManager  *wm = mgr->wm;
   MBWMCompMgrClass *klass
     = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   MBWM_ASSERT (klass->turn_off != NULL);
   klass->turn_off (mgr);
-}
 
-/*
- * Carries out any processing of X events that is specific to the
- * compositing manager (such as XDamage events).
- */
-Bool
-mb_wm_comp_mgr_handle_events (MBWMCompMgr * mgr, XEvent *ev)
-{
-  MBWMCompMgrClass *klass
-    = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+  mb_wm_main_context_x_event_handler_remove (wm->main_ctx,
+					wm->damage_event_base + XDamageNotify,
+					mgr->damage_cb_id);
 
-  MBWM_ASSERT (klass->handle_events != NULL);
-  return klass->handle_events (mgr, ev);
+  mgr->damage_cb_id = 0;
 }
 
 /*

@@ -319,7 +319,6 @@ struct MBWMCompMgrDefaultPrivate
 
   XserverRegion    all_damage;
   Bool             dialog_shade;
-  int              damage_event;
 };
 
 static void
@@ -384,7 +383,8 @@ static void
 mb_wm_comp_mgr_xrender_render_real (MBWMCompMgr *mgr);
 
 static Bool
-mb_wm_comp_mgr_xrender_handle_events_real (MBWMCompMgr * mgr, XEvent *ev);
+mb_wm_comp_mgr_xrender_handle_damage (XDamageNotifyEvent * de,
+				      MBWMCompMgr        * mgr);
 
 static void
 mb_wm_comp_mgr_xrender_class_init (MBWMObjectClass *klass)
@@ -399,14 +399,11 @@ mb_wm_comp_mgr_xrender_class_init (MBWMObjectClass *klass)
   cm_klass->turn_on           = mb_wm_comp_mgr_xrender_turn_on_real;
   cm_klass->turn_off          = mb_wm_comp_mgr_xrender_turn_off_real;
   cm_klass->render            = mb_wm_comp_mgr_xrender_render_real;
-  cm_klass->handle_events     = mb_wm_comp_mgr_xrender_handle_events_real;
+  cm_klass->handle_damage     = mb_wm_comp_mgr_xrender_handle_damage;
 }
 
 static void
 mb_wm_comp_mgr_xrender_init_pictures (MBWMCompMgr *mgr);
-
-static Bool
-mb_wm_comp_mgr_xrender_init_extensions (MBWMCompMgr *mgr);
 
 static int
 mb_wm_comp_mgr_xrender_init (MBWMObject *obj, va_list vap)
@@ -431,8 +428,8 @@ mb_wm_comp_mgr_xrender_init (MBWMObject *obj, va_list vap)
 
   mgr->disabled = True;
 
-  if (!mb_wm_comp_mgr_xrender_init_extensions (mgr))
-    return 0;
+  XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
+				CompositeRedirectManual);
 
   mb_wm_theme_get_shadow_color (wm->theme,
 				&priv->shadow_color[0],
@@ -1162,48 +1159,6 @@ mb_wm_comp_mgr_xrender_init_pictures (MBWMCompMgr *mgr)
   priv->all_damage = None;
 }
 
-Bool
-mb_wm_comp_mgr_xrender_init_extensions (MBWMCompMgr *mgr)
-{
-  MBWindowManager             * wm = mgr->wm;
-  MBWMCompMgrDefaultPrivate   * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
-  int		                event_base, error_base;
-  int		                damage_error;
-  int		                xfixes_event, xfixes_error;
-  int		                render_event, render_error;
-  XRenderPictureAttributes	pa;
-  Pixmap                        tmp_pxm;
-
-  if (!XRenderQueryExtension (wm->xdpy, &render_event, &render_error))
-    {
-      fprintf (stderr, "matchbox: No render extension\n");
-      return False;
-    }
-
-  if (!XCompositeQueryExtension (wm->xdpy, &event_base, &error_base))
-    {
-      fprintf (stderr, "matchbox: No composite extension\n");
-      return False;
-    }
-
-  if (!XDamageQueryExtension (wm->xdpy, &priv->damage_event, &damage_error))
-    {
-      fprintf (stderr, "matchbox: No damage extension\n");
-      return False;
-    }
-
-  if (!XFixesQueryExtension (wm->xdpy, &xfixes_event, &xfixes_error))
-    {
-      fprintf (stderr, "matchbox: No XFixes extension\n");
-      return False;
-    }
-
-  XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
-				CompositeRedirectManual);
-
-  return True;
-}
-
 /* Shuts the compositing down */
 static void
 mb_wm_comp_mgr_xrender_turn_off_real (MBWMCompMgr *mgr)
@@ -1289,8 +1244,8 @@ mb_wm_comp_mgr_xrender_turn_on_real (MBWMCompMgr *mgr)
   wm   = mgr->wm;
   rwin = wm->root_win->xwindow;
 
-  if (!mb_wm_comp_mgr_xrender_init_extensions (mgr))
-    return;
+  XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
+				CompositeRedirectManual);
 
   mb_wm_comp_mgr_xrender_init_pictures (mgr);
 
@@ -1394,41 +1349,35 @@ mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client)
 }
 
 static Bool
-mb_wm_comp_mgr_xrender_handle_events_real (MBWMCompMgr * mgr, XEvent *ev)
+mb_wm_comp_mgr_xrender_handle_damage (XDamageNotifyEvent * de,
+				      MBWMCompMgr        * mgr)
 {
   MBWMCompMgrDefaultPrivate * priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
   MBWindowManager           * wm   = mgr->wm;
+  MBWindowManagerClient     * c;
 
-  printf ("### got event %d ###\n", ev->type);
+  c = mb_wm_managed_client_from_frame (wm, de->drawable);
 
-  if (ev->type == priv->damage_event + XDamageNotify)
+  if (c && c->cm_client)
     {
-      XDamageNotifyEvent    * de = (XDamageNotifyEvent*) ev;
-      MBWindowManagerClient * c;
+      MBWM_NOTE (COMPOSITOR,
+		 "Reparing window %x, a %d,%d;%dx%d, g %d,%d;%dx%d\n",
+		 de->drawable,
+		 de->area.x,
+		 de->area.y,
+		 de->area.width,
+		 de->area.height,
+		 de->geometry.x,
+		 de->geometry.y,
+		 de->geometry.width,
+		 de->geometry.height);
 
-      c = mb_wm_managed_client_from_frame (wm, de->drawable);
-
-      if (c && c->cm_client)
-	{
-	  MBWM_NOTE (COMPOSITOR,
-		     "Reparing window %x, a %d,%d;%dx%d, g %d,%d;%dx%d\n",
-		     de->drawable,
-		     de->area.x,
-		     de->area.y,
-		     de->area.width,
-		     de->area.height,
-		     de->geometry.x,
-		     de->geometry.y,
-		     de->geometry.width,
-		     de->geometry.height);
-
-	  mb_wm_comp_mgr_xrender_client_repair_real (c->cm_client);
-	}
-      else
-	{
-	  MBWM_NOTE (COMPOSITOR, "Failed to find client for window %x\n",
-		     de->drawable);
-	}
+      mb_wm_comp_mgr_xrender_client_repair_real (c->cm_client);
+    }
+  else
+    {
+      MBWM_NOTE (COMPOSITOR, "Failed to find client for window %x\n",
+		 de->drawable);
     }
 
   return False;

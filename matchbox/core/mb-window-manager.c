@@ -37,6 +37,9 @@
 #   include "mb-wm-comp-mgr-xrender.h"
 #  endif
 # include "../client-types/mb-wm-client-override.h"
+# include <X11/extensions/Xdamage.h>
+# include <X11/extensions/Xrender.h>
+# include <X11/extensions/Xcomposite.h>
 #endif
 
 #if USE_GTK
@@ -1452,6 +1455,37 @@ mb_wm_init_cursors (MBWindowManager * wm)
     mb_wm_set_cursor (wm, MBWindowManagerCursorLeftPtr);
 }
 
+#if ENABLE_COMPOSITE
+static Bool
+mb_wm_init_comp_extensions (MBWindowManager *wm)
+{
+  int		                event_base, error_base;
+  int		                damage_error;
+  int		                xfixes_event, xfixes_error;
+
+  if (!XCompositeQueryExtension (wm->xdpy, &event_base, &error_base))
+    {
+      fprintf (stderr, "matchbox: No composite extension\n");
+      return False;
+    }
+
+  if (!XDamageQueryExtension (wm->xdpy,
+			      &wm->damage_event_base, &damage_error))
+    {
+      fprintf (stderr, "matchbox: No damage extension\n");
+      return False;
+    }
+
+  if (!XFixesQueryExtension (wm->xdpy, &xfixes_event, &xfixes_error))
+    {
+      fprintf (stderr, "matchbox: No XFixes extension\n");
+      return False;
+    }
+
+  return True;
+}
+#endif
+
 static int
 mb_wm_init (MBWMObject *this, va_list vap)
 {
@@ -1503,6 +1537,11 @@ mb_wm_init (MBWMObject *this, va_list vap)
   wm->xas_context = xas_context_new(wm->xdpy);
 
   mb_wm_atoms_init(wm);
+
+#if ENABLE_COMPOSITE
+  if (!mb_wm_init_comp_extensions (wm))
+    return 0;
+#endif
 
   if (!wm->theme)
     mb_wm_set_theme_from_path (wm, NULL);

@@ -1,3 +1,22 @@
+2008-03-13  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-window-manager.h:
+	Initialize XComposite, XDamage and XFixes in the WM init method
+	when building a compositor (avoids duplication of code in the CMs).
+
+	* matchbox/core/mb-wm-main-context.c:
+	* matchbox/core/mb-wm-main-context.h:
+	Handle DamageNotify the same way as other standard events to avoid
+	unnecessary calls to the CM event callbacks.
+	
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-xrender.c:
+	Replaced MBWMCompMgr::handle_event with more specific 
+	::handle_damage().
+
 2008-03-13  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox/core/mb-wm-main-context.c

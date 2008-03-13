@@ -5,6 +5,10 @@
 #include <limits.h>
 #include <fcntl.h>
 
+#if ENABLE_COMPOSITE
+#include <X11/extensions/Xdamage.h>
+#endif
+
 #define MBWM_CTX_MAX_TIMEOUT 100
 
 #if MBWM_WANT_DEBUG
@@ -173,7 +177,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
   Window           xwin = xev->xany.window;
 
 #if (MBWM_WANT_DEBUG)
- {
+  {
    if (mbwm_debug_flags & MBWM_DEBUG_EVENT)
      {
        MBWindowManagerClient *ev_client;
@@ -181,7 +185,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
        ev_client = mb_wm_managed_client_from_xwindow(wm, xev->xany.window);
 
        printf ("  @ XEvent: '%s:%i' for %lx %s%s\n",
-	       xev->type < sizeof (MBWMDEBUGEvents)/sizeof (MBWMDEBUGEvents[0])
+	       xev->type < sizeof (MBWMDEBUGEvents)/sizeof(MBWMDEBUGEvents[0])
 	       ? MBWMDEBUGEvents[xev->type] : "unknown",
 	       xev->type,
 	       xev->xany.window,
@@ -189,13 +193,33 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 	       ev_client ? ev_client->name : ""
 	       );
      }
- }
+  }
 #endif
 
 #define XE_ITER_GET_FUNC(i) (((MBWMXEventFuncInfo *)((i)->data))->func)
 #define XE_ITER_GET_DATA(i) ((MBWMXEventFuncInfo *)((i)->data))->userdata
 #define XE_ITER_GET_XWIN(i) ((MBWMXEventFuncInfo *)((i)->data))->xwindow
 
+#if ENABLE_COMPOSITE
+  if (xev->type == wm->damage_event_base + XDamageNotify)
+    {
+      iter = ctx->event_funcs.damage_notify;
+
+      while (iter)
+	{
+	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  if (msg_xwin == None || msg_xwin == xwin)
+	    {
+	      if (!(MBWMXEventFunc)XE_ITER_GET_FUNC(iter)
+		  (xev, XE_ITER_GET_DATA(iter)))
+		break;
+	    }
+
+	  iter = iter->next;
+	}
+    }
+  else
+#endif
   switch (xev->type)
     {
     case ClientMessage:
@@ -454,12 +478,6 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       break;
     }
 
-#if ENABLE_COMPOSITE
-  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
-    if (mb_wm_comp_mgr_handle_events (wm->comp_mgr, xev))
-      return True;
-#endif
-
   return False;
 }
 
@@ -544,8 +562,9 @@ mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
 					MBWMXEventFunc   func,
 					void            *userdata)
 {
-  static unsigned long ids = 0;
-  MBWMXEventFuncInfo *func_info;
+  static unsigned long    ids = 0;
+  MBWMXEventFuncInfo    * func_info;
+  MBWindowManager       * wm = ctx->wm;
 
   ++ids;
 
@@ -555,6 +574,14 @@ mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
   func_info->userdata = userdata;
   func_info->id       = ids;
 
+#if ENABLE_COMPOSITE
+  if (type == wm->damage_event_base + XDamageNotify)
+    {
+      ctx->event_funcs.damage_notify =
+	mb_wm_util_list_append (ctx->event_funcs.damage_notify, func_info);
+    }
+  else
+#endif
   switch (type)
     {
     case Expose:
@@ -616,9 +643,17 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
 					   int              type,
 					   unsigned long    id)
 {
-  MBWMList *l = NULL;
-  MBWMList **l_start;
+  MBWMList        * l = NULL;
+  MBWMList        **l_start;
+  MBWindowManager * wm = ctx->wm;
 
+#if ENABLE_COMPOSITE
+  if (type == wm->damage_event_base + XDamageNotify)
+    {
+      l_start = &ctx->event_funcs.damage_notify;
+    }
+  else
+#endif
   switch (type)
     {
     case Expose:
