@@ -970,7 +970,7 @@ mb_wm_client_iconize (MBWindowManagerClient *client)
   if (mb_wm_compositing_enabled (client->wmref))
     {
       mb_wm_comp_mgr_do_effect (client->wmref->comp_mgr, client,
-				MBWMCompMgrEffectEventMinimize);
+				MBWMCompMgrClientEventMinimize);
     }
 #endif
 

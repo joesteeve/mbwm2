@@ -32,13 +32,22 @@
 #define MB_WM_COMP_MGR_CLUTTER_CLIENT_CLASS(c) ((MBWMCompMgrClutterClientClass*)(c))
 #define MB_WM_TYPE_COMP_MGR_CLUTTER_CLIENT (mb_wm_comp_mgr_clutter_client_class_type ())
 
-struct MBWMCompMgrClutter
+typedef struct _MBWMCompMgrClutter MBWMCompMgrClutter;
+typedef struct _MBWMCompMgrClutterClass MBWMCompMgrClutterClass;
+typedef struct _MBWMCompMgrClutterPrivate MBWMCompMgrClutterPrivate;
+
+typedef struct _MBWMCompMgrClutterClient MBWMCompMgrClutterClient;
+typedef struct _MBWMCompMgrClutterClientClass MBWMCompMgrClutterClientClass;
+typedef struct _MBWMCompMgrClutterClientPrivate MBWMCompMgrClutterClientPrivate;
+
+
+struct _MBWMCompMgrClutter
 {
   MBWMCompMgr                 parent;
   MBWMCompMgrClutterPrivate  *priv;
 };
 
-struct MBWMCompMgrClutterClass
+struct _MBWMCompMgrClutterClass
 {
   MBWMCompMgrClass  parent;
 };
@@ -49,7 +58,14 @@ mb_wm_comp_mgr_clutter_class_type ();
 MBWMCompMgr*
 mb_wm_comp_mgr_clutter_new (MBWindowManager *wm);
 
-struct MBWMCompMgrClutterClientClass
+struct _MBWMCompMgrClutterClient
+{
+  MBWMCompMgrClient               parent;
+
+  MBWMCompMgrClutterClientPrivate *priv;
+};
+
+struct _MBWMCompMgrClutterClientClass
 {
   MBWMCompMgrClientClass parent;
 };

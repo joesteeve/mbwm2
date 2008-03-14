@@ -112,12 +112,6 @@ typedef struct MBWMCompMgrClientClass      MBWMCompMgrClientClass;
 typedef struct MBWMCompMgrDefaultClient    MBWMCompMgrDefaultClient;
 typedef struct MBWMCompMgrDefaultClientClass MBWMCompMgrDefaultClientClass;
 typedef struct MBWMCompMgrDefaultClentPrivate MBWMCompMgrDefaultClientPrivate;
-typedef struct MBWMCompMgrClutter          MBWMCompMgrClutter;
-typedef struct MBWMCompMgrClutterPrivate   MBWMCompMgrClutterPrivate;
-typedef struct MBWMCompMgrClutterClass     MBWMCompMgrClutterClass;
-typedef struct MBWMCompMgrClutterClient    MBWMCompMgrClutterClient;
-typedef struct MBWMCompMgrClutterClientClass MBWMCompMgrClutterClientClass;
-typedef struct MBWMCompMgrClutterClentPrivate MBWMCompMgrClutterClientPrivate;
 
 typedef enum MBWMClientType
 {
@@ -133,15 +127,15 @@ typedef enum MBWMClientType
   MBWMClientTypeLast    = MBWMClientTypeOverride,
 } MBWMClientType;
 
-typedef enum _MBWMCompMgrEffectEvent
+typedef enum _MBWMCompMgrClientEvent
 {
-  MBWMCompMgrEffectEventNone     = 0,
-  MBWMCompMgrEffectEventMinimize,
-  MBWMCompMgrEffectEventMap,
-  MBWMCompMgrEffectEventUnmap,
+  MBWMCompMgrClientEventNone     = 0,
+  MBWMCompMgrClientEventMinimize,
+  MBWMCompMgrClientEventMap,
+  MBWMCompMgrClientEventUnmap,
 
-  _MBWMCompMgrEffectEventLast,
-} MBWMCompMgrEffectEvent;
+  _MBWMCompMgrClientEventLast,
+} MBWMCompMgrClientEvent;
 
 typedef enum _MBWMGravity
 {

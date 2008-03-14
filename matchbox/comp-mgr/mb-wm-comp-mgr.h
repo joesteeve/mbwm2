@@ -54,10 +54,10 @@ struct MBWMCompMgrClass
   void   (*unmap_notify)      (MBWMCompMgr * mgr, MBWindowManagerClient *c);
   Bool   (*handle_damage)     (XDamageNotifyEvent * xev, MBWMCompMgr * mgr);
   Bool   (*my_window)         (MBWMCompMgr * mgr, Window xwin);
-  void   (*effect)            (MBWMCompMgr * mgr,
+  void   (*client_event)      (MBWMCompMgr * mgr,
 			       MBWindowManagerClient *c1,
-			       MBWMCompMgrEffectEvent event);
-  void   (*transition)        (MBWMCompMgr * mgr,
+			       MBWMCompMgrClientEvent event);
+  void   (*client_transition) (MBWMCompMgr * mgr,
 			       MBWindowManagerClient *c1,
 			       MBWindowManagerClient *c2,
 			       Bool reverse);
@@ -111,7 +111,7 @@ mb_wm_comp_mgr_do_transition (MBWMCompMgr           * mgr,
 void
 mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
 			  MBWindowManagerClient  * client,
-			  MBWMCompMgrEffectEvent   event);
+			  MBWMCompMgrClientEvent   event);
 
 void
 mb_wm_comp_mgr_select_desktop (MBWMCompMgr * mgr, int desktop);

@@ -325,7 +325,7 @@ mb_wm_comp_mgr_map_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
    * called by mb_wm_comp_mgr_map_notify()).
    */
   if (!mb_wm_client_is_hiding_from_desktop (c))
-    mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventMap);
+    mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrClientEventMap);
 
   if (c->cm_client)
     mb_wm_comp_mgr_client_show (c->cm_client);
@@ -342,7 +342,7 @@ mb_wm_comp_mgr_unmap_notify (MBWMCompMgr *mgr, MBWindowManagerClient *c)
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   if (!mb_wm_client_is_hiding_from_desktop (c))
-    mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrEffectEventUnmap);
+    mb_wm_comp_mgr_do_effect (mgr, c, MBWMCompMgrClientEventUnmap);
 
   if (klass->unmap_notify)
     klass->unmap_notify (mgr, c);
@@ -376,14 +376,14 @@ mb_wm_comp_mgr_do_transition (MBWMCompMgr * mgr,
 
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
-  if (klass->transition)
-    klass->transition (mgr, c1, c2, reverse);
+  if (klass->client_transition)
+    klass->client_transition (mgr, c1, c2, reverse);
 }
 
 void
 mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
 			  MBWindowManagerClient  * client,
-			  MBWMCompMgrEffectEvent   event)
+			  MBWMCompMgrClientEvent   event)
 {
   MBWMCompMgrClass *klass;
 
@@ -396,8 +396,8 @@ mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
 
   klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
-  if (klass->effect)
-    klass->effect (mgr, client, event);
+  if (klass->client_event)
+    klass->client_event (mgr, client, event);
 }
 
 void
