@@ -1,3 +1,11 @@
+2008-03-14  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/core/mb-window-manager.c:
+	(test_key_press):
+	(test_button_press):
+	(test_destroy_notify):
+	Renamed to match the usual mb_wm_ namespace.
+
 2008-03-13  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-wm-decor.c:

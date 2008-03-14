@@ -352,9 +352,9 @@ mb_wm_new_with_dpy (int argc, char **argv, Display * dpy)
   return wm;
 }
 
-Bool
-test_key_press (XKeyEvent       *xev,
-		void            *userdata)
+static Bool
+mb_wm_handle_key_press (XKeyEvent       *xev,
+			void            *userdata)
 {
   MBWindowManager *wm = (MBWindowManager*)userdata;
 
@@ -365,8 +365,8 @@ test_key_press (XKeyEvent       *xev,
   return True;
 }
 
-Bool
-test_button_press (XButtonEvent *xev, void *userdata)
+static Bool
+mb_wm_handle_button_press (XButtonEvent *xev, void *userdata)
 {
   MBWindowManager *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client = NULL;
@@ -389,9 +389,9 @@ test_button_press (XButtonEvent *xev, void *userdata)
   return True;
 }
 
-Bool
-test_destroy_notify (XDestroyWindowEvent  *xev,
-		     void                 *userdata)
+static Bool
+mb_wm_handle_destroy_notify (XDestroyWindowEvent  *xev,
+			     void                 *userdata)
 {
   MBWindowManager       *wm = (MBWindowManager*)userdata;
   MBWindowManagerClient *client = NULL;
@@ -1610,7 +1610,7 @@ mb_window_manager_init (MBWMObject *this, va_list vap)
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     DestroyNotify,
-			     (MBWMXEventFunc)test_destroy_notify,
+			     (MBWMXEventFunc)mb_wm_handle_destroy_notify,
 			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
@@ -1622,13 +1622,13 @@ mb_window_manager_init (MBWMObject *this, va_list vap)
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     KeyPress,
-			     (MBWMXEventFunc)test_key_press,
+			     (MBWMXEventFunc)mb_wm_handle_key_press,
 			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     ButtonPress,
-			     (MBWMXEventFunc)test_button_press,
+			     (MBWMXEventFunc)mb_wm_handle_button_press,
 			     wm);
 
   mb_wm_keys_init(wm);
