@@ -379,10 +379,24 @@ mb_wm_handle_button_press (XButtonEvent *xev, void *userdata)
   if (!client)
     return True;
 
+  /*
+   * If the client is not application, we make sure it has focus.
+   * If the client is an application, we top it if it is currently not the top
+   * application; otherwise, we ensure it has focus.
+   */
   if (MB_WM_CLIENT_CLIENT_TYPE (client) == MBWMClientTypeApp)
-    mb_wm_activate_client (wm, client);
+    {
+      MBWindowManagerClient * top = mb_wm_get_visible_main_client(wm);
+
+      if (top == client)
+	mb_wm_focus_client (wm, client);
+      else
+	mb_wm_activate_client (wm, client);
+    }
   else
-    mb_wm_focus_client (wm, client);
+    {
+      mb_wm_focus_client (wm, client);
+    }
 
   XAllowEvents (wm->xdpy, ReplayPointer, CurrentTime);
 
