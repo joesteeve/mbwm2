@@ -1,6 +1,20 @@
 2008-03-17  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-xrender.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	Added MBWindowManager reference to MBWMCompMgr needed during
+	MBWMCompMgr destruction; broke reference cycle between
+	MBWindowManager and MBWMCompMgr client.
+
+	* matchbox/core/mb-window-manager.c:
+	(mb_wm_handle_destroy_notify):
+	Fixed memory leak.
+
+2008-03-17  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	(mb_wm_comp_mgr_clutter_client_repair_real):
 	(mb_wm_comp_mgr_clutter_client_init):
 	Shrink to 80 columns.

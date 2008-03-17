@@ -120,6 +120,7 @@ struct MBWMCompMgrClient
 {
   MBWMObject              parent;
 
+  MBWindowManager       * wm;
   MBWindowManagerClient * wm_client;
 
   /* Make private ? */

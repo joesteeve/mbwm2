@@ -64,16 +64,11 @@ mb_wm_comp_mgr_client_init (MBWMObject *obj, va_list vap)
   if (!wm_client)
     return 0;
 
-  /*
-   * FIXME -- this is not ideal, but we need the wm_client to be guaranteed
-   * to exist for the entire lifetime of this object (we need access to
-   * the wm in the destructor; really the wm should be a singleton, and we
-   * should have a global accessor, so that all the wmrefs could be removed
-   */
-  client->wm_client = mb_wm_object_ref (MB_WM_OBJECT (wm_client));
+  client->wm_client = wm_client;
+  client->wm = wm_client->wmref;
 
   /* Check visual */
-  format = XRenderFindVisualFormat (wm_client->wmref->xdpy,
+  format = XRenderFindVisualFormat (client->wm->xdpy,
 				    wm_client->window->visual);
 
   if (format && format->type == PictTypeDirect && format->direct.alphaMask)
@@ -87,8 +82,6 @@ mb_wm_comp_mgr_client_destroy (MBWMObject* obj)
 {
   MBWMCompMgrClient     *client    = MB_WM_COMP_MGR_CLIENT (obj);
   MBWindowManagerClient *wm_client = client->wm_client;
-
-  mb_wm_object_unref (MB_WM_OBJECT (wm_client));
 }
 
 int
@@ -264,6 +257,9 @@ mb_wm_comp_mgr_unregister_client (MBWMCompMgr           * mgr,
 {
   MBWMCompMgrClass *klass
     = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+
+  if (!client->cm_client)
+    return;
 
   if (klass->unregister_client)
     klass->unregister_client (mgr, client);

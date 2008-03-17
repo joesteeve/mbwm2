@@ -88,8 +88,6 @@ mb_wm_comp_mgr_xrender_client_init (MBWMObject *obj, va_list vap)
   if (!wm_client || !wm_client->wmref)
     return 0;
 
-  wm = wm_client->wmref;
-
   return 1;
 }
 
@@ -98,7 +96,7 @@ mb_wm_comp_mgr_xrender_client_destroy (MBWMObject* obj)
 {
   MBWMCompMgrClient        * c  = MB_WM_COMP_MGR_CLIENT (obj);
   MBWMCompMgrDefaultClient * dc = MB_WM_COMP_MGR_DEFAULT_CLIENT (obj);
-  MBWindowManager          * wm = c->wm_client->wmref;
+  MBWindowManager          * wm = c->wm;
 
   mb_wm_comp_mgr_client_hide (c);
 
@@ -163,7 +161,7 @@ mb_wm_comp_mgr_xrender_client_hide_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
-  MBWindowManager          * wm        = wm_client->wmref;
+  MBWindowManager          * wm        = client->wm;
   MBWMCompMgr              * mgr       = wm->comp_mgr;
   MBWindowManagerClient    * c;
   Bool                       is_modal  = mb_wm_client_is_modal (wm_client);
@@ -207,7 +205,7 @@ mb_wm_comp_mgr_xrender_client_show_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
-  MBWindowManager          * wm        = wm_client->wmref;
+  MBWindowManager          * wm        = client->wm;
   MBWMCompMgr              * mgr       = wm->comp_mgr;
   XserverRegion              region;
   XRenderPictureAttributes   pa;
@@ -935,7 +933,7 @@ static XserverRegion
 mb_wm_comp_mgr_xrender_client_extents (MBWMCompMgrClient *client)
 {
   MBWindowManagerClient     *wm_client = client->wm_client;
-  MBWindowManager           *wm = wm_client->wmref;
+  MBWindowManager           *wm = client->wm;
   MBWMCompMgr               *mgr = wm->comp_mgr;
   MBWMCompMgrDefaultPrivate *priv = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
   MBGeometry                 geom;
@@ -981,7 +979,7 @@ mb_wm_comp_mgr_xrender_client_border_size (MBWMCompMgrClient  * client,
 					   int x, int y)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
-  MBWindowManager       * wm        = wm_client->wmref;
+  MBWindowManager       * wm        = client->wm;
   XserverRegion           border;
 
   border = XFixesCreateRegionFromWindow (wm->xdpy,
@@ -999,7 +997,7 @@ mb_wm_comp_mgr_xrender_client_window_region (MBWMCompMgrClient  *client,
 					     Window xwin, int x, int y)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
-  MBWindowManager       * wm        = wm_client->wmref;
+  MBWindowManager       * wm        = client->wm;
   XserverRegion           region;
 
   region =
@@ -1298,7 +1296,7 @@ static void
 mb_wm_comp_mgr_xrender_client_repair_real (MBWMCompMgrClient * client)
 {
   MBWindowManagerClient * wm_client = client->wm_client;
-  MBWindowManager       * wm        = wm_client->wmref;
+  MBWindowManager       * wm        = client->wm;
   MBWMCompMgr           * mgr       = wm->comp_mgr;
   XserverRegion           parts;
   MBGeometry              geom;
@@ -1320,7 +1318,7 @@ mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
-  MBWindowManager          * wm        = wm_client->wmref;
+  MBWindowManager          * wm        = client->wm;
   MBWMCompMgr              * mgr       = wm->comp_mgr;
   XserverRegion              damage    = None;
   XserverRegion              extents;
@@ -1390,7 +1388,7 @@ _render_a_client (MBWMCompMgrClient * client,
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient     * wm_client = client->wm_client;
-  MBWindowManager           * wm        = wm_client->wmref;
+  MBWindowManager           * wm        = client->wm;
   MBWMCompMgr               * mgr       = wm->comp_mgr;
   MBWMCompMgrDefaultPrivate * priv      = MB_WM_COMP_MGR_DEFAULT (mgr)->priv;
   MBWMClientType              ctype     = MB_WM_CLIENT_CLIENT_TYPE (wm_client);

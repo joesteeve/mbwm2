@@ -116,7 +116,7 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
 {
   MBWMCompMgrClutterClient  *cclient  = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
   MBWindowManagerClient     *wm_client = client->wm_client;
-  MBWindowManager           *wm        = wm_client->wmref;
+  MBWindowManager           *wm        = client->wm;
   MBGeometry                 geom;
   Window                     xwin;
   Window root;
@@ -267,7 +267,7 @@ mb_wm_comp_mgr_clutter_client_destroy (MBWMObject* obj)
 {
   MBWMCompMgrClient        * c   = MB_WM_COMP_MGR_CLIENT (obj);
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (obj);
-  MBWindowManager          * wm  = c->wm_client->wmref;
+  MBWindowManager          * wm  = c->wm;
   MBWMCompMgrClutter       * mgr = MB_WM_COMP_MGR_CLUTTER (wm->comp_mgr);
 
   mb_wm_comp_mgr_clutter_remove_actor (mgr, cclient);
@@ -399,16 +399,15 @@ mb_wm_comp_mgr_clutter_client_get_timeline (MBWMCompMgrClient      *client,
 
 static MBWMCompMgrClutterClientEventEffect *
 mb_wm_comp_mgr_clutter_client_event_new (MBWMCompMgrClient     *client,
-                                                MBWMCompMgrClientEvent event,
-                                                unsigned long          duration)
+					 MBWMCompMgrClientEvent event,
+					 unsigned long          duration)
 {
   MBWMCompMgrClutterClientEventEffect * eff;
   ClutterTimeline          * timeline;
   ClutterBehaviour         * behaviour;
   ClutterAlpha             * alpha;
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
-  MBWindowManagerClient    * wm_client = client->wm_client;
-  MBWindowManager          * wm = wm_client->wmref;
+  MBWindowManager          * wm = client->wm;
   ClutterKnot                knots[2];
   MBGeometry                 geom;
 
@@ -424,7 +423,7 @@ mb_wm_comp_mgr_clutter_client_event_new (MBWMCompMgrClient     *client,
   alpha = clutter_alpha_new_full (timeline,
 				  CLUTTER_ALPHA_RAMP_INC, NULL, NULL);
 
-  mb_wm_client_get_coverage (wm_client, &geom);
+  mb_wm_client_get_coverage (client->wm_client, &geom);
 
   switch (event)
     {
@@ -698,7 +697,7 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
 {
   MBWindowManagerClient    * wm_client = client->wm_client;
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
-  MBWindowManager          * wm   = wm_client->wmref;
+  MBWindowManager          * wm   = client->wm;
   XserverRegion              parts;
   int                        i, r_count;
   XRectangle               * r_damage;
@@ -770,7 +769,7 @@ mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client)
    */
   if (cclient->priv->pixmap)
     {
-      XFreePixmap (wm_client->wmref->xdpy, cclient->priv->pixmap);
+      XFreePixmap (client->wm->xdpy, cclient->priv->pixmap);
       cclient->priv->pixmap = None;
     }
 }
@@ -921,7 +920,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   MBWMCompMgrClutter        * cmgr    = MB_WM_COMP_MGR_CLUTTER (mgr);
   MBWMCompMgrClient         * client  = c->cm_client;
   MBWMCompMgrClutterClient  * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT(client);
-  MBWindowManager           * wm      = c->wmref;
+  MBWindowManager           * wm      = client->wm;
   ClutterActor              * actor;
   ClutterActor              * texture;
   ClutterActor              * rect;

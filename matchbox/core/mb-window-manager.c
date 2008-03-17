@@ -419,20 +419,28 @@ mb_wm_handle_destroy_notify (XDestroyWindowEvent  *xev,
       if (mb_wm_client_window_is_state_set (client->window,
 					    MBWMClientWindowEWMHStateHidden))
 	{
-	  wm->clients = mb_wm_util_list_remove (wm->clients, client);
-	  mb_wm_object_unref (MB_WM_OBJECT (client));
+	  if (mb_wm_client_is_hiding_from_desktop (client))
+	    {
+	      /*
+	       * If the destroyed hidden window is hidden because it was
+	       * on a different desktop than current, we have to unmanage
+	       * it, as it is still considered managed.
+	       */
+	      mb_wm_unmanage_client (wm, client, True);
+	    }
+	  else
+	    {
+	      /*
+	       * Otherwise, this is regular minimized window, in which case
+	       * the window is no longer managed, only the resources are
+	       * kept in the clients list; so we only remove it and free.
+	       */
+	      wm->clients = mb_wm_util_list_remove (wm->clients, client);
+	      mb_wm_object_unref (MB_WM_OBJECT (client));
+	    }
 	}
-#if 0
-      /*
-       * Do not unamage the client here -- we get a unmap notification before
-       * the window is destroyed, and if the compositor has an effect hooked
-       * into it, this messes about with it.
-       */
       else
-	{
-	  mb_wm_unmanage_client (wm, client, True);
-	}
-#endif
+	mb_wm_unmanage_client (wm, client, True);
     }
 
   return True;
