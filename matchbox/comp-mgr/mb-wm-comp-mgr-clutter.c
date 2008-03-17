@@ -256,8 +256,9 @@ mb_wm_comp_mgr_clutter_client_init (MBWMObject *obj, va_list vap)
 {
   MBWMCompMgrClutterClient *cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (obj);
 
-  cclient->priv = mb_wm_util_malloc0 (sizeof (MBWMCompMgrClutterClientPrivate));
-  
+  cclient->priv =
+    mb_wm_util_malloc0 (sizeof (MBWMCompMgrClutterClientPrivate));
+
   return 1;
 }
 
@@ -410,6 +411,9 @@ mb_wm_comp_mgr_clutter_client_event_new (MBWMCompMgrClient     *client,
   MBWindowManager          * wm = wm_client->wmref;
   ClutterKnot                knots[2];
   MBGeometry                 geom;
+
+  if (!cclient->priv->actor)
+    return NULL;
 
   timeline =
     mb_wm_comp_mgr_clutter_client_get_timeline (client, event, duration);
@@ -739,11 +743,11 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
 		     r_damage[i].height);
 
 	  clutter_x11_texture_pixmap_update_area (
-				CLUTTER_X11_TEXTURE_PIXMAP (cclient->priv->texture),
-				r_damage[i].x,
-				r_damage[i].y,
-				r_damage[i].width,
-				r_damage[i].height);
+			CLUTTER_X11_TEXTURE_PIXMAP (cclient->priv->texture),
+			r_damage[i].x,
+			r_damage[i].y,
+			r_damage[i].width,
+			r_damage[i].height);
 	}
 
       XFree (r_damage);
@@ -813,27 +817,44 @@ mb_wm_comp_mgr_clutter_handle_damage (XDamageNotifyEvent * de,
 static void
 mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
 {
-  MBWindowManager *wm = mgr->wm;
+  MBWindowManager    * wm = mgr->wm;
+  MBWMCompMgrClutter * cmgr = MB_WM_COMP_MGR_CLUTTER (mgr);
+  MBWMList           * l;
+  int                  desktop_count;
+  int                  i;
+
+  l = cmgr->priv->desktops;
+
+  desktop_count = mb_wm_util_list_length (l);
+
 
   if (!mb_wm_stack_empty (wm))
     {
       MBWindowManagerClient * c;
-      ClutterActor * prev = NULL;
 
-      mb_wm_stack_enumerate (wm, c)
+      for (i = 0; i < desktop_count; ++i)
 	{
-	  MBWMCompMgrClutterClient * cclient =
-	    MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
+	  ClutterActor * prev = NULL;
 
-	  ClutterActor * a = cclient->priv->actor;
+	  mb_wm_stack_enumerate (wm, c)
+	    {
+	      MBWMCompMgrClutterClient * cc;
+	      ClutterActor             * a;
 
-	  if (!a)
-	    continue;
+	      if (mb_wm_client_get_desktop (c) != i)
+		continue;
 
-	  /* FIXME -- handle multiple desktops */
-	  clutter_actor_raise (a, prev);
+	      cc = MB_WM_COMP_MGR_CLUTTER_CLIENT (c->cm_client);
 
-	  prev = a;
+	      a = cc->priv->actor;
+
+	      if (!a)
+		continue;
+
+	      clutter_actor_raise (a, prev);
+
+	      prev = a;
+	    }
 	}
     }
 }
@@ -1215,6 +1236,9 @@ mb_wm_comp_mgr_clutter_client_event_real (MBWMCompMgr            * mgr,
     default:
       ;
     }
+
+  if (!eff)
+    return;
 
   /*
    * Don't attempt to start the timeline if it is already playing
