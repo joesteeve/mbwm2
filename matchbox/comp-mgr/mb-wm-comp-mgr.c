@@ -397,13 +397,15 @@ mb_wm_comp_mgr_do_effect (MBWMCompMgr            * mgr,
 }
 
 void
-mb_wm_comp_mgr_select_desktop (MBWMCompMgr * mgr, int desktop)
+mb_wm_comp_mgr_select_desktop (MBWMCompMgr * mgr,
+			       int           desktop,
+			       int           old_desktop)
 {
   MBWMCompMgrClass *klass
     = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   if (klass->select_desktop)
-    klass->select_desktop (mgr, desktop);
+    klass->select_desktop (mgr, desktop, old_desktop);
 }
 
 void

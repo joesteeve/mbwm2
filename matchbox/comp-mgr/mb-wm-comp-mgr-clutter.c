@@ -517,7 +517,8 @@ static Bool
 mb_wm_comp_mgr_is_my_window_real (MBWMCompMgr * mgr, Window xwin);
 
 static void
-mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr, int desktop);
+mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr,
+				       int desktop, int old_desktop);
 
 static Bool
 mb_wm_comp_mgr_clutter_handle_damage (XDamageNotifyEvent * de,
@@ -890,7 +891,9 @@ mb_wm_comp_mgr_clutter_get_nth_desktop (MBWMCompMgrClutter * cmgr, int desktop)
 }
 
 static void
-mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr, int desktop)
+mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr,
+				       int           desktop,
+				       int           old_desktop)
 {
   MBWMCompMgrClutter * cmgr = MB_WM_COMP_MGR_CLUTTER (mgr);
   ClutterActor       * d;

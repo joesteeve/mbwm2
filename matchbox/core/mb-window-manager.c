@@ -2203,9 +2203,12 @@ mb_wm_select_desktop (MBWindowManager *wm, int desktop)
 {
   CARD32                 card32 = desktop;
   MBWindowManagerClient *c;
+  int                    old_desktop;
 
   if (desktop == wm->active_desktop)
     return;
+
+  old_desktop = wm->active_desktop;
 
   wm->active_desktop = desktop;
 
@@ -2224,7 +2227,7 @@ mb_wm_select_desktop (MBWindowManager *wm, int desktop)
 
 #if ENABLE_COMPOSITE
   if (mb_wm_compositing_enabled (wm))
-    mb_wm_comp_mgr_select_desktop (wm->comp_mgr, desktop);
+    mb_wm_comp_mgr_select_desktop (wm->comp_mgr, desktop, old_desktop);
 #endif
 }
 

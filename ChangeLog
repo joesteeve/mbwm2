@@ -1,3 +1,12 @@
+2008-03-18  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr.h:
+	* matchbox/core/mb-window-manager.c:
+	Added old_desktop parameter to MBWMCompMgr::select_desktop() to
+	simplify implementation of desktop switching effects.
+
 2008-03-17  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
