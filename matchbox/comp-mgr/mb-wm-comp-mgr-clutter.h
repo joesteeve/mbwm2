@@ -73,4 +73,11 @@ struct _MBWMCompMgrClutterClientClass
 int
 mb_wm_comp_mgr_clutter_client_class_type ();
 
+ClutterActor *
+mb_wm_comp_mgr_clutter_client_get_actor (MBWMCompMgrClutterClient *cclient);
+MBWMList *
+mb_wm_comp_mgr_clutter_get_desktops (MBWMCompMgrClutter *cmgr);
+ClutterActor *
+mb_wm_comp_mgr_clutter_get_nth_desktop (MBWMCompMgrClutter *cmgr, int desktop);
+
 #endif

@@ -397,6 +397,12 @@ mb_wm_comp_mgr_clutter_client_get_timeline (MBWMCompMgrClient      *client,
   return cclient->priv->timelines[event-1];
 }
 
+ClutterActor *
+mb_wm_comp_mgr_clutter_client_get_actor (MBWMCompMgrClutterClient *cclient)
+{
+  return mb_wm_object_ref(cclient->priv->actor);
+}
+
 static MBWMCompMgrClutterClientEventEffect *
 mb_wm_comp_mgr_clutter_client_event_new (MBWMCompMgrClient     *client,
 					 MBWMCompMgrClientEvent event,
@@ -859,11 +865,17 @@ mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
     }
 }
 
+MBWMList *
+mb_wm_comp_mgr_clutter_get_desktops (MBWMCompMgrClutter *cmgr)
+{
+  return cmgr->priv->desktops;
+}
+
 /*
  * Gets the n-th desktop from our desktop list; if we do not have that many
  * desktops, just append new ones.
  */
-static ClutterActor *
+ClutterActor *
 mb_wm_comp_mgr_clutter_get_nth_desktop (MBWMCompMgrClutter * cmgr, int desktop)
 {
   MBWMCompMgrClutterPrivate * priv = cmgr->priv;
@@ -1054,6 +1066,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   g_object_set_data (G_OBJECT (actor), "MBWMCompMgrClutterClient", cclient);
 
   clutter_actor_set_position (actor, geom.x, geom.y);
+  clutter_actor_set_size (texture, geom.width, geom.height);
 
   mb_wm_comp_mgr_clutter_add_actor (cmgr, cclient);
 }
