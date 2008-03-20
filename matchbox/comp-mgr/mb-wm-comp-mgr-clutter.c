@@ -76,9 +76,6 @@ struct _MBWMCompMgrClutterClientPrivate
   int                     pxm_depth;
   unsigned int            flags;
   Damage                  damage;
-
-  /* 1-based array holding timelines for effect events */
-  ClutterTimeline       * timelines[_MBWMCompMgrClientEventLast-1];
 };
 
 static void
@@ -269,6 +266,7 @@ mb_wm_comp_mgr_clutter_client_destroy (MBWMObject* obj)
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (obj);
   MBWindowManager          * wm  = c->wm;
   MBWMCompMgrClutter       * mgr = MB_WM_COMP_MGR_CLUTTER (wm->comp_mgr);
+  int                        i;
 
   mb_wm_comp_mgr_clutter_remove_actor (mgr, cclient);
 
@@ -367,35 +365,22 @@ typedef struct MBWMCompMgrClutterClientEventEffect
   ClutterBehaviour       *behaviour; /* can be either behaviour or effect */
 } MBWMCompMgrClutterClientEventEffect;
 
+static void
+mb_wm_comp_mgr_clutter_client_event_free (MBWMCompMgrClutterClientEventEffect * effect)
+{
+  g_object_unref (effect->timeline);
+  g_object_unref (effect->behaviour);
+
+  free (effect);
+}
+
 struct completed_cb_data
 {
-  gulong                      my_id;
-  MBWMCompMgrClutterClient  * cclient;
-  MBWMCompMgrClientEvent      event;
+  gulong                                my_id;
+  MBWMCompMgrClutterClient            * cclient;
+  MBWMCompMgrClientEvent                event;
+  MBWMCompMgrClutterClientEventEffect * effect;
 };
-
-/*
- * Helper method to get a timeline for given event (all effects associated
- * with the same event share a single timeline.
- */
-static ClutterTimeline *
-mb_wm_comp_mgr_clutter_client_get_timeline (MBWMCompMgrClient      *client,
-					    MBWMCompMgrClientEvent  event,
-					    unsigned long           duration)
-{
-  MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
-
-  if (!client || event >= _MBWMCompMgrClientEventLast)
-    return NULL;
-
-  if (!cclient->priv->timelines[event-1])
-    {
-      cclient->priv->timelines[event-1] =
-	clutter_timeline_new_for_duration (duration);
-    }
-
-  return cclient->priv->timelines[event-1];
-}
 
 ClutterActor *
 mb_wm_comp_mgr_clutter_client_get_actor (MBWMCompMgrClutterClient *cclient)
@@ -420,8 +405,7 @@ mb_wm_comp_mgr_clutter_client_event_new (MBWMCompMgrClient     *client,
   if (!cclient->priv->actor)
     return NULL;
 
-  timeline =
-    mb_wm_comp_mgr_clutter_client_get_timeline (client, event, duration);
+  timeline = clutter_timeline_new_for_duration (duration);
 
   if (!timeline)
     return NULL;
@@ -1208,66 +1192,34 @@ mb_wm_comp_mgr_clutter_client_event_completed_cb (ClutterTimeline * t, void * da
    */
   mb_wm_object_unref (MB_WM_OBJECT (d->cclient));
 
+  mb_wm_comp_mgr_clutter_client_event_free (d->effect);
+
   free (d);
 }
 
 static void
 mb_wm_comp_mgr_clutter_client_event_real (MBWMCompMgr            * mgr,
-				    MBWindowManagerClient  * client,
-				    MBWMCompMgrClientEvent   event)
+					  MBWindowManagerClient  * client,
+					  MBWMCompMgrClientEvent   event)
 {
-  static MBWMCompMgrClutterClientEventEffect * eff_map      = NULL;
-  static MBWMCompMgrClutterClientEventEffect * eff_unmap    = NULL;
-  static MBWMCompMgrClutterClientEventEffect * eff_minimize = NULL;
-
   MBWMCompMgrClutterClientEventEffect * eff;
-  MBWMCompMgrClutterClient * cclient =
+  MBWMCompMgrClutterClient            * cclient =
     MB_WM_COMP_MGR_CLUTTER_CLIENT (client->cm_client);
 
   if (MB_WM_CLIENT_CLIENT_TYPE (client) != MBWMClientTypeApp)
     return;
 
-  switch (event)
-    {
-    case MBWMCompMgrClientEventMap:
-      if (!eff_map)
-	eff_map = mb_wm_comp_mgr_clutter_client_event_new (client->cm_client,
-						     event,
-						     200);
-      eff = eff_map;
-      break;
-    case MBWMCompMgrClientEventUnmap:
-      if (!eff_unmap)
-	eff_unmap = mb_wm_comp_mgr_clutter_client_event_new (client->cm_client,
-						       event, 200);
-      eff = eff_unmap;
-      break;
-    case MBWMCompMgrClientEventMinimize:
-      if (!eff_minimize)
-	eff_minimize = mb_wm_comp_mgr_clutter_client_event_new (client->cm_client,
-							  event, 200);
-      eff = eff_minimize;
-      break;
-    default:
-      ;
-    }
+  eff = mb_wm_comp_mgr_clutter_client_event_new (client->cm_client,
+						 event, 600);
 
-  if (!eff)
-    return;
-
-  /*
-   * Don't attempt to start the timeline if it is already playing
-   */
-  if (eff->timeline &&
-      !clutter_timeline_is_playing (eff->timeline))
+  if (eff)
     {
       ClutterActor *a;
       Bool dont_run = False;
 
       a = cclient->priv->actor;
 
-      if (CLUTTER_IS_BEHAVIOUR_PATH (eff->behaviour) &&
-	  !CLUTTER_ACTOR_IS_VISIBLE (a))
+      if (CLUTTER_IS_BEHAVIOUR_PATH (eff->behaviour))
 	{
 	  /*
 	   * At this stage, if the actor is not yet visible, move it to
@@ -1328,6 +1280,7 @@ mb_wm_comp_mgr_clutter_client_event_real (MBWMCompMgr            * mgr,
 
 	  d->cclient = mb_wm_object_ref (MB_WM_OBJECT (cclient));
 	  d->event   = event;
+	  d->effect  = eff;
 
 	  d->my_id = g_signal_connect (eff->timeline, "completed",
 		  G_CALLBACK (mb_wm_comp_mgr_clutter_client_event_completed_cb),
@@ -1337,6 +1290,8 @@ mb_wm_comp_mgr_clutter_client_event_real (MBWMCompMgr            * mgr,
 	  clutter_actor_show (a);
 	  clutter_timeline_start (eff->timeline);
 	}
+      else
+	mb_wm_comp_mgr_clutter_client_event_free (eff);
     }
 }
 
