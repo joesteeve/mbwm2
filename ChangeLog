@@ -1,3 +1,10 @@
+2008-03-20  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_client_event_real):
+	Reorganized to avoid leaking the CM client; removed unnecessary
+	call to  clutter_behaviour_get_actors().
+
 2008-03-18  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c

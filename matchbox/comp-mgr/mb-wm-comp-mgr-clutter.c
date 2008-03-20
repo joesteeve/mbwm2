@@ -400,7 +400,7 @@ mb_wm_comp_mgr_clutter_client_get_timeline (MBWMCompMgrClient      *client,
 ClutterActor *
 mb_wm_comp_mgr_clutter_client_get_actor (MBWMCompMgrClutterClient *cclient)
 {
-  return mb_wm_object_ref(cclient->priv->actor);
+  return mb_wm_object_ref(MB_WM_OBJECT (cclient->priv->actor));
 }
 
 static MBWMCompMgrClutterClientEventEffect *
@@ -1261,29 +1261,10 @@ mb_wm_comp_mgr_clutter_client_event_real (MBWMCompMgr            * mgr,
   if (eff->timeline &&
       !clutter_timeline_is_playing (eff->timeline))
     {
-      GSList * actors;
       ClutterActor *a;
       Bool dont_run = False;
 
-      struct completed_cb_data * d;
-
-      d = mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
-
-      d->cclient = mb_wm_object_ref (MB_WM_OBJECT (cclient));
-      d->event   = event;
-
-      d->my_id = g_signal_connect (eff->timeline, "completed",
-		    G_CALLBACK (mb_wm_comp_mgr_clutter_client_event_completed_cb),
-		    d);
-
-      /*
-       * This is bit of a pain; we know that our actor is attached to
-       * a single actor, but the current API only provides us with a copy
-       * of the actor list; ideally, we would like to be able to access
-       * the first actor directly.
-       */
-      actors = clutter_behaviour_get_actors (eff->behaviour);
-      a = actors->data;
+      a = cclient->priv->actor;
 
       if (CLUTTER_IS_BEHAVIOUR_PATH (eff->behaviour) &&
 	  !CLUTTER_ACTOR_IS_VISIBLE (a))
@@ -1341,13 +1322,21 @@ mb_wm_comp_mgr_clutter_client_event_real (MBWMCompMgr            * mgr,
        */
       if (!dont_run)
 	{
+	  struct completed_cb_data * d;
+
+	  d = mb_wm_util_malloc0 (sizeof (struct completed_cb_data));
+
+	  d->cclient = mb_wm_object_ref (MB_WM_OBJECT (cclient));
+	  d->event   = event;
+
+	  d->my_id = g_signal_connect (eff->timeline, "completed",
+		  G_CALLBACK (mb_wm_comp_mgr_clutter_client_event_completed_cb),
+		  d);
+
 	  cclient->priv->flags |= MBWMCompMgrClutterClientEffectRunning;
 	  clutter_actor_show (a);
 	  clutter_timeline_start (eff->timeline);
 	}
-
-      g_slist_free (actors);
-
     }
 }
 
