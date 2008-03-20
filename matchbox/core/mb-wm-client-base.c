@@ -479,15 +479,31 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       /* FIXME: need flags to handle other stuff like configure events etc */
 
-      if (mb_wm_client_needs_synthetic_config_event (client))
-	; /* TODO: send fake config event */
-
       /* Resize any decor */
       mb_wm_util_list_foreach(client->decor,
 			      (MBWMListForEachCB)mb_wm_decor_handle_resize,
 			      NULL);
 
       mb_wm_util_untrap_x_errors();
+    }
+
+  if (mb_wm_client_needs_synthetic_config_event (client))
+    {
+      XConfigureEvent ce;
+       
+      ce.type = ConfigureNotify;
+      ce.event = MB_WM_CLIENT_XWIN(client);
+      ce.window = MB_WM_CLIENT_XWIN(client);
+      ce.x = client->window->geometry.x;
+      ce.y = client->window->geometry.y;
+      ce.width = client->window->geometry.width;
+      ce.height = client->window->geometry.height;
+      ce.border_width = 0;
+      ce.above = None;
+      ce.override_redirect = 0;
+       
+      XSendEvent(wm->xdpy, MB_WM_CLIENT_XWIN(client), False,
+                 StructureNotifyMask, (XEvent *)&ce);
     }
 
   /* Handle any mapping - should be visible state ? */

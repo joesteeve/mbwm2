@@ -655,18 +655,16 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
   no_size_change = (req_geom.width  == win_geom->width &&
 		    req_geom.height == win_geom->height);
 
-  if (mb_wm_client_request_geometry (client,
-				     &req_geom,
-				     MBWMClientReqGeomIsViaConfigureReq))
+  if (no_size_change
+      || !mb_wm_client_request_geometry (client,
+                                         &req_geom,
+                                         MBWMClientReqGeomIsViaConfigureReq))
     {
-      if (no_size_change)
-	{
-	  /* ICCCM says if window only moved - not size change,
-	   * then we send a fake one too.
-	   */
-	  mb_wm_client_synthetic_config_event_queue (client);
-	}
-
+      /* ICCCM says if you ignore a configure request or you respond
+       * by only moving/re-stacking the window - without a size change,
+       * then the WM must send a synthetic ConfigureNotify.
+       */
+      mb_wm_client_synthetic_config_event_queue (client);
     }
 
 #if ENABLE_COMPOSITE

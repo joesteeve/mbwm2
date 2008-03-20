@@ -180,6 +180,8 @@ mb_wm_client_app_request_geometry (MBWindowManagerClient *client,
 
       return True; /* Geometry accepted */
     }
+  
+  return False;
 }
 
 static void

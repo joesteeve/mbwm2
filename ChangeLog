@@ -1,3 +1,13 @@
+2008-03-20  Robert Bragg  <bob@o-hand.com>
+
+	* matchbox/client-types/mb-wm-client-app.c
+	* matchbox/core/mb-wm-client-base.c
+	* matchbox/core/mb-window-manager.c
+
+	Ensure we send a synthetic ConfigureNotify event in responce to a
+	ConfigureRequest when we decide not to accept the request or
+	when we only move a window. (Fixes gnome-terminal)
+
 2008-03-20  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
