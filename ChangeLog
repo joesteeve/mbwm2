@@ -1,3 +1,10 @@
+2008-03-25  Robert Bragg  <bob@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c
+
+	Replace incorrect use of mb_wm_object_ref with
+	g_object_ref (in mb_wm_comp_mgr_clutter_client_get_actor)
+
 2008-03-20  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox/client-types/mb-wm-client-app.c

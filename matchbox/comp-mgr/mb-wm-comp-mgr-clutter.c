@@ -385,7 +385,7 @@ struct completed_cb_data
 ClutterActor *
 mb_wm_comp_mgr_clutter_client_get_actor (MBWMCompMgrClutterClient *cclient)
 {
-  return mb_wm_object_ref(MB_WM_OBJECT (cclient->priv->actor));
+  return g_object_ref(MB_WM_OBJECT (cclient->priv->actor));
 }
 
 static MBWMCompMgrClutterClientEventEffect *
