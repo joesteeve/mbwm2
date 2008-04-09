@@ -1,3 +1,8 @@
+2008-04-09  Ross Burton  <ross@openedhand.com>
+
+	* matchbox/managers/maemo/matchbox-window-manager-2-maemo.c:
+	Fix debug check so it actually works.
+
 2008-04-09  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

@@ -92,7 +92,7 @@ key_binding_func (MBWindowManager   *wm,
 int
 main(int argc, char **argv)
 {
-#ifdef MBWM_WANT_DEBUG
+#if MBWM_WANT_DEBUG
   struct sigaction sa;
   sigfillset(&sa.sa_mask);
   sa.sa_handler = signal_handler;
