@@ -73,7 +73,7 @@ do                                                                \
 
 #endif /* MBWM_ENABLE_DEBUG */
 
-#define MBWM_WANT_ASSERT 0
+#define MBWM_WANT_ASSERT 1
 
 #if (MBWM_WANT_ASSERT)
 #include <assert.h>
