@@ -1,4 +1,5 @@
 #include "mb-wm-client-panel.h"
+#include "mb-wm-theme.h"
 
 static void
 mb_wm_client_panel_realize (MBWindowManagerClient *client);

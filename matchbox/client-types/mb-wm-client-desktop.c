@@ -1,4 +1,5 @@
 #include "mb-wm-client-desktop.h"
+#include "mb-wm-theme.h"
 
 #define FRAME_TITLEBAR_HEIGHT 20
 #define FRAME_EDGE_SIZE 3
