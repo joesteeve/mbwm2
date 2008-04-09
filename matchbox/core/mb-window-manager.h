@@ -22,6 +22,9 @@
 #define _HAVE_MB_WM_WINDOW_MANAGER_H
 
 #include <matchbox/mb-wm-config.h>
+#include <matchbox/core/mb-wm-object.h>
+#include <matchbox/core/mb-wm-root-window.h>
+#include <matchbox/core/xas.h>
 
 typedef struct MBWindowManagerClass   MBWindowManagerClass;
 typedef struct MBWindowManagerPriv    MBWindowManagerPriv;
