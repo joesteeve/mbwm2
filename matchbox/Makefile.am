@@ -1,6 +1,8 @@
 if ENABLE_COMPOSITE
 comp=comp-mgr
-complib=$(comp)/libmatchbox-window-manager-2-compmgr.la
+complib= \
+	client-types/libmb-wm-client-override.la \
+	$(comp)/libmatchbox-window-manager-2-compmgr.la
 endif
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -21,7 +23,6 @@ libmatchbox2_@MBWM2_API_VERSION@_la_LIBADD = \
 			client-types/libmb-wm-client-input.la \
 			client-types/libmb-wm-client-menu.la \
 			client-types/libmb-wm-client-note.la \
-			client-types/libmb-wm-client-override.la \
 			client-types/libmb-wm-client-panel.la \
 			theme-engines/libmb-theme.la \
 			$(complib)

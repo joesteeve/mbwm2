@@ -1,3 +1,9 @@
+2008-04-09  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/Makefile.am:
+	Fix to enable building libmatchbox without CM (patch from Ross
+	Burton).
+
 2008-03-25  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c
