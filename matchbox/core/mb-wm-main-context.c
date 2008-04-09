@@ -956,6 +956,7 @@ mb_wm_main_context_io_channel_new (int fd)
 #if ! USE_GLIB_MAINLOOP
   MBWMIOChannel * c = mb_wm_util_malloc0 (sizeof (MBWMIOChannel));
   *c = fd;
+  return c;
 #else
   return g_io_channel_unix_new (fd);
 #endif

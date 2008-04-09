@@ -55,12 +55,6 @@ enum {
 #define MWM_DECOR_MINIMIZE            (1L << 5)
 #define MWM_DECOR_MAXIMIZE            (1L << 6)
 
-static Bool
-validate_reply(void)
-{
-  ;
-}
-
 static void
 mb_wm_client_window_class_init (MBWMObjectClass *klass)
 {

@@ -863,7 +863,7 @@ mb_wm_client_set_state (MBWindowManagerClient *client,
       new_state = True;
       break;
     case MBWMClientWindowStateChangeToggle:
-      new_state != old_state;
+      new_state = !old_state;
       break;
     }
 

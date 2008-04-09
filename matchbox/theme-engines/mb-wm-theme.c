@@ -335,7 +335,7 @@ mb_wm_theme_supports (MBWMTheme *theme, MBWMThemeCaps capability)
   if (theme)
     return False;
 
-  return ((capability & theme->caps != False));
+  return ((capability & theme->caps) != False);
 }
 
 typedef enum
@@ -574,6 +574,8 @@ mb_wm_theme_create_decor (MBWMTheme             *theme,
 
   if (klass->create_decor)
     return klass->create_decor (theme, client, type);
+
+  return NULL;
 }
 
 void
@@ -1455,12 +1457,6 @@ decordata_free (MBWMDecor * decor, void *data)
     XftFontClose (xdpy, dd->font);
 
   free (dd);
-}
-
-static struct DecorData *
-decordata_new ()
-{
-  return mb_wm_util_malloc0 (sizeof (struct DecorData));
 }
 
 static MBWMDecor *

@@ -1,6 +1,19 @@
 2008-04-09  Ross Burton  <ross@openedhand.com>
 
 	* matchbox/client-types/mb-wm-client-desktop.c:
+	* matchbox/client-types/mb-wm-client-input.c:
+	* matchbox/core/mb-wm-client-window.c:
+	* matchbox/core/mb-wm-stack.c:
+	* matchbox/core/mb-wm-main-context.c:
+	* matchbox/core/mb-wm-decor.c:
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-wm-client.c:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	More cleanups to fix warnings from -Wall.
+
+2008-04-09  Ross Burton  <ross@openedhand.com>
+
+	* matchbox/client-types/mb-wm-client-desktop.c:
 	* matchbox/client-types/mb-wm-client-app.c:
 	* matchbox/client-types/mb-wm-client-dialog.c:
 	* matchbox/client-types/mb-wm-client-input.c:

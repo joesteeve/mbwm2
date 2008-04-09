@@ -583,6 +583,7 @@ mb_wm_handle_config_notify (XConfigureEvent *xev,
 	mb_wm_comp_mgr_client_configure (client->cm_client);
     }
 #endif
+  return True;
 }
 
 static  Bool
@@ -1750,7 +1751,7 @@ mb_wm_activate_client_real (MBWindowManager * wm, MBWindowManagerClient *c)
   MBWindowManagerClient * trans;
 
   if (c == NULL)
-    False;
+    return False;
 
   c_type = MB_WM_CLIENT_CLIENT_TYPE (c);
 

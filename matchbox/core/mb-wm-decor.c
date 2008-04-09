@@ -1047,7 +1047,7 @@ mb_wm_decor_button_destroy (MBWMObject* obj)
 					     button->press_cb_id);
 }
 
-static Bool
+static void
 mb_wm_decor_button_realize (MBWMDecorButton *button)
 {
   MBWMDecor           *decor = button->decor;

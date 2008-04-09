@@ -49,7 +49,7 @@ mb_wm_stack_dump (MBWindowManager *wm)
       int                    i = 0, j = 0;
       char                   prefix[128] = {0};
 
-      while (trans_client = mb_wm_client_get_transient_for(trans_client))
+      while ((trans_client = mb_wm_client_get_transient_for(trans_client)))
 	i++;
 
       if (i)
