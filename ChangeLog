@@ -1,5 +1,22 @@
 2008-04-09  Ross Burton  <ross@openedhand.com>
 
+	* matchbox/client-types/mb-wm-client-desktop.c:
+	* matchbox/client-types/mb-wm-client-app.c:
+	* matchbox/client-types/mb-wm-client-dialog.c:
+	* matchbox/client-types/mb-wm-client-input.c:
+	* matchbox/client-types/mb-wm-client-menu.c:
+	* matchbox/core/mb-wm-client-window.c:
+	* matchbox/core/mb-wm-root-window.c:
+	* matchbox/core/mb-wm-main-context.c:
+	* matchbox/core/mb-wm-layout.c:
+	* matchbox/core/mb-wm-debug.c:
+	* matchbox/core/mb-wm-decor.c:
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-wm-client.c:
+	Remove unused variables and functions.
+
+2008-04-09  Ross Burton  <ross@openedhand.com>
+
 	* matchbox/core/mb-window-manager.h:
 	Add missing includes.
 

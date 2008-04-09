@@ -38,17 +38,12 @@ mb_wm_client_desktop_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_client_desktop_destroy (MBWMObject *this)
 {
-  MBWMClientDesktop * app = MB_WM_CLIENT_DESKTOP (this);
-
 }
 
 static int
 mb_wm_client_desktop_init (MBWMObject *this, va_list vap)
 {
-  MBWMClientDesktop        *client_desktop = MB_WM_CLIENT_DESKTOP (this);
   MBWindowManagerClient    *client         = MB_WM_CLIENT (this);
-  MBWMDecor                *decor;
-  MBWMDecorButton          *button;
   MBWindowManager          *wm = NULL;
   MBWMClientDesktopClass   *inp_class;
   MBGeometry                geom;

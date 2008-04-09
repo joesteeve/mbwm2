@@ -203,48 +203,12 @@ mb_wm_layout_maximise_geometry (MBGeometry *geom,
   return changed;
 }
 
-static int /* FIXME: work for multiple edges */
-mb_wm_layout_get_edge_offset (MBWindowManager *wm,
-			      int              edge)
-{
-  MBGeometry             coverage;
-  MBWindowManagerClient *client = NULL;
-  int                    offset = 0;
-
-  mb_wm_stack_enumerate(wm, client)
-    if (mb_wm_client_get_layout_hints (client) == (edge|LayoutPrefVisible))
-      {
-	mb_wm_client_get_coverage (client, &coverage);
-
-	switch (edge)
-	  {
-	  case LayoutPrefReserveEdgeNorth:
-	  case LayoutPrefReserveEdgeSouth:
-	  case LayoutPrefReserveSouth:
-	  case LayoutPrefReserveNorth:
-	    offset += coverage.height;
-	    break;
-	  case LayoutPrefReserveEdgeEast:
-	  case LayoutPrefReserveEdgeWest:
-	  case LayoutPrefReserveEast:
-	  case LayoutPrefReserveWest:
-	    offset += coverage.width;
-	    break;
-	  default:
-	    break;
-	  }
-      }
-
-  return offset;
-}
-
 static void
 mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 {
   MBWindowManagerClient *client;
   MBGeometry             coverage;
   Bool                   need_change;
-  int                    min_x, max_x, min_y, max_y;
 
   /* FIXME: need to enumerate by *age* in case multiple panels ? */
   mb_wm_stack_enumerate(wm, client)
@@ -391,7 +355,6 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
   MBWindowManagerClient *client;
   MBGeometry             coverage;
   Bool                   need_change;
-  int                    min_x, max_x, min_y, max_y;
 
   mb_wm_stack_enumerate(wm, client)
     if (mb_wm_client_get_layout_hints (client) ==
@@ -623,8 +586,6 @@ mb_wm_layout_fullscreen (MBWindowManager * wm, MBGeometry * avail_geom)
 {
   MBWindowManagerClient *client;
   MBGeometry             coverage;
-  Bool                   need_change;
-  int                    min_x, max_x, min_y, max_y;
 
   mb_wm_stack_enumerate(wm, client)
     if (mb_wm_client_get_layout_hints (client) ==
@@ -714,8 +675,7 @@ static void
 mb_wm_layout_real_update (MBWMLayout * layout)
 {
   MBWindowManager       *wm = layout->wm;
-  MBGeometry             coverage, avail_geom;
-  MBWindowManagerClient *client = NULL;
+  MBGeometry             avail_geom;
 
   mb_wm_get_display_geometry (wm, &avail_geom);
 

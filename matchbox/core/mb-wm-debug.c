@@ -45,7 +45,7 @@ mb_wm_debug_init (const char *debug_string)
 {
 #if MBWM_WANT_DEBUG
   char       *end;
-  int         len, n, i;
+  int         n, i;
 
   if (debug_string == NULL)
     return;

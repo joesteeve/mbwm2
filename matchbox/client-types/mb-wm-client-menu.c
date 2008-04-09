@@ -45,7 +45,6 @@ static int
 mb_wm_client_menu_init (MBWMObject *this, va_list vap)
 {
   MBWindowManagerClient *client      = MB_WM_CLIENT (this);
-  MBWMClientMenu        *client_menu = MB_WM_CLIENT_MENU (this);
   MBWindowManager       *wm          = client->wmref;
   MBWMClientWindow      *win         = client->window;
   Atom actions[] = {
@@ -128,8 +127,6 @@ mb_wm_client_menu_request_geometry (MBWindowManagerClient *client,
       || client->window->geometry.width  != new_geometry->width
       || client->window->geometry.height != new_geometry->height)
     {
-      MBWindowManager *wm = client->wmref;
-
       client->window->geometry.x      = new_geometry->x;
       client->window->geometry.y      = new_geometry->y;
       client->window->geometry.width  = new_geometry->width;

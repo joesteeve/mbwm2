@@ -172,7 +172,6 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 				   MBWMMainContext *ctx)
 {
   MBWindowManager *wm = ctx->wm;
-  MBWMEventFuncs  *xev_funcs = &ctx->event_funcs;
   MBWMList        *iter;
   Window           xwin = xev->xany.window;
 
@@ -486,7 +485,6 @@ mb_wm_main_context_spin_xevent (MBWMMainContext *ctx)
 {
   MBWindowManager * wm = ctx->wm;
   XEvent xev;
-  clock_t ct = clock ();
 
   if (!XEventsQueued (wm->xdpy, QueuedAfterFlush))
     return False;
@@ -564,7 +562,6 @@ mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
 {
   static unsigned long    ids = 0;
   MBWMXEventFuncInfo    * func_info;
-  MBWindowManager       * wm = ctx->wm;
 
   ++ids;
 
@@ -645,7 +642,6 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
 {
   MBWMList        * l = NULL;
   MBWMList        **l_start;
-  MBWindowManager * wm = ctx->wm;
 
 #if ENABLE_COMPOSITE
   if (type == wm->damage_event_base + XDamageNotify)

@@ -219,7 +219,6 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
   int              changes = 0;
 
   MBWMClientWindowAttributes *xwin_attr = NULL;
-  XWMHints             *hints     = NULL;
 
   xwin = win->xwindow;
 

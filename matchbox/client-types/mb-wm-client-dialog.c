@@ -90,10 +90,8 @@ static int
 mb_wm_client_dialog_init (MBWMObject *this, va_list vap)
 {
   MBWindowManagerClient *client = MB_WM_CLIENT (this);
-  MBWMClientDialog      *client_dialog = MB_WM_CLIENT_DIALOG (this);
   MBWindowManager       *wm = client->wmref;
   MBWMClientWindow      *win = client->window;
-  MBWMList              *l;
   MBGeometry             geom;
   int                    n, s, w, e;
   Atom actions[] = {

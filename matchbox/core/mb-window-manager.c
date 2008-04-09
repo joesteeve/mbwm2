@@ -838,7 +838,6 @@ stack_get_window_list (MBWindowManager *wm, Window * win_list, int * count)
 {
   MBWindowManagerClient *client;
   int                    i = 0;
-  MBWMList              *l;
 
   if (!wm->stack_n_clients)
     return;
@@ -1361,7 +1360,6 @@ static void
 mb_wm_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
 {
   MBWindowManagerClient *c;
-  int     x, y, width, height, result = 0;
   MBGeometry p_geom;
   MBWMClientLayoutHints hints;
 
@@ -1980,7 +1978,6 @@ void
 mb_wm_unfocus_client (MBWindowManager *wm, MBWindowManagerClient *client)
 {
   MBWindowManagerClient *next = NULL;
-  MBWindowManagerClient *c;
 
   if (client != wm->focused_client)
     return;

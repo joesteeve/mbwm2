@@ -42,7 +42,6 @@ mb_wm_decor_init (MBWMObject *obj, va_list vap)
   MBWindowManager       *wm = NULL;
   MBWMDecorType          type = 0;
   MBWMObjectProp         prop;
-  int                    i = 0;
   int                    abs_packing = 0;
 
   prop = va_arg(vap, MBWMObjectProp);

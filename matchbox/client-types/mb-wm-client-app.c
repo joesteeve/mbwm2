@@ -39,18 +39,13 @@ mb_wm_client_app_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_client_app_destroy (MBWMObject *this)
 {
-  MBWMClientApp * app = MB_WM_CLIENT_APP (this);
-
 }
 
 
 static int
 mb_wm_client_app_init (MBWMObject *this, va_list vap)
 {
-  MBWMClientApp            *client_app = MB_WM_CLIENT_APP (this);
   MBWindowManagerClient    *client     = MB_WM_CLIENT (this);
-  MBWMDecor                *decor;
-  MBWMDecorButton          *button;
   MBWindowManager          *wm = NULL;
   MBWMClientAppClass       *app_class;
 

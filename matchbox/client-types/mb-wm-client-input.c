@@ -44,8 +44,6 @@ mb_wm_client_input_class_init (MBWMObjectClass *klass)
 static void
 mb_wm_client_input_destroy (MBWMObject *this)
 {
-  MBWMClientInput * app = MB_WM_CLIENT_INPUT (this);
-
 }
 
 static int

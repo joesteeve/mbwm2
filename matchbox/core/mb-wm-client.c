@@ -41,7 +41,6 @@ static void
 mb_wm_client_destroy (MBWMObject *obj)
 {
   MBWindowManagerClient * client = MB_WM_CLIENT(obj);
-  MBWindowManagerClient * c;
   MBWindowManager       * wm = client->wmref;
   MBWMList              * l = client->decor;
 
@@ -804,7 +803,6 @@ void
 mb_wm_client_deliver_delete (MBWindowManagerClient *client)
 {
   MBWindowManager        *wm     = client->wmref;
-  Window                  xwin   = client->window->xwindow;
   MBWMClientWindowProtos  protos = client->window->protos;
 
   if ((protos & MBWMClientWindowProtosDelete))
