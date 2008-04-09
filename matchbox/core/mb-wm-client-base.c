@@ -19,6 +19,7 @@
  */
 
 #include "mb-wm.h"
+#include "mb-wm-theme.h"
 
 #include <X11/Xmd.h>
 

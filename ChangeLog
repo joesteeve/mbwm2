@@ -2,6 +2,7 @@
 
 	* matchbox/client-types/mb-wm-client-desktop.c:
 	* matchbox/client-types/mb-wm-client-panel.c:
+	* matchbox/core/mb-wm-client-base.c:
 	Add missing include.
 
 2008-04-09  Ross Burton  <ross@openedhand.com>
