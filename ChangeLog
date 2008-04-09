@@ -1,5 +1,11 @@
 2008-04-09  Tomas Frydrych  <tf@o-hand.com>
 
+	* configure.ac:
+	When using xfixes and xext, make sure they make it into the .pc
+	file.
+
+2008-04-09  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/Makefile.am:
 	Fix to enable building libmatchbox without CM (patch from Ross
 	Burton).

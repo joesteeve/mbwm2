@@ -192,7 +192,7 @@ fi
 AC_SUBST(USE_GTK)
 
 PKG_CHECK_MODULES(MBWM, $needed_pkgs)
-MBWM2_PKGREQUIRES="$needed_pkgs"
+MBWM2_PKGREQUIRES="$MBWM2_PKGREQUIRES $needed_pkgs"
 AC_SUBST(MBWM2_PKGREQUIRES)
 
 COMP_MGR_BACKEND=0
@@ -248,12 +248,14 @@ PKG_CHECK_MODULES(XFIXES, xfixes >= 4.0, have_xfixes=yes, have_xfixes=no)
 
 if test x$have_xfixes = xyes; then
   AC_DEFINE(HAVE_XFIXES, [1], [Use XFixes ext to really hide cursor])
+  MBWM2_PKGREQUIRES="$MBWM2_PKGREQUIRES xfixes >= 0.4"
 fi
 
 PKG_CHECK_MODULES(XEXT, xext, have_xext=yes, have_xext=no)
 
 if test x$have_xext = xyes; then
   AC_DEFINE(HAVE_XEXT, [1], [Use Xext ext])
+  MBWM2_PKGREQUIRES="$MBWM2_PKGREQUIRES xext"
 fi
 
 PKG_CHECK_MODULES(XCURSOR, xcursor, have_xcursor=yes, have_xcursor=no)
