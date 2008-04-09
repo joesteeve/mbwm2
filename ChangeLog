@@ -1,5 +1,10 @@
 2008-04-09  Ross Burton  <ross@openedhand.com>
 
+	* matchbox/core/mb-wm-atoms.c:
+	Instead of printing a sanity check to the console, assert it.
+
+2008-04-09  Ross Burton  <ross@openedhand.com>
+
 	* matchbox/client-types/mb-wm-client-desktop.c:
 	* matchbox/client-types/mb-wm-client-panel.c:
 	* matchbox/core/mb-wm-client-base.c:

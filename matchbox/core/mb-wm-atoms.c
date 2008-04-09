@@ -104,8 +104,8 @@ mb_wm_atoms_init(MBWindowManager *wm)
   };
 
   /* FIXME: Error Traps */
-
-  printf("%i vs %i\n", MBWM_ATOM_COUNT, sizeof (atom_names) / sizeof (char*));
+  
+  MBWM_ASSERT (MBWM_ATOM_COUNT == sizeof (atom_names) / sizeof (char*));
 
   XInternAtoms (wm->xdpy,
 		atom_names,
