@@ -562,6 +562,9 @@ mb_wm_main_context_x_event_handler_add (MBWMMainContext *ctx,
 {
   static unsigned long    ids = 0;
   MBWMXEventFuncInfo    * func_info;
+#if ENABLE_COMPOSITE
+  MBWindowManager       * wm = ctx->wm;
+#endif
 
   ++ids;
 
@@ -644,6 +647,8 @@ mb_wm_main_context_x_event_handler_remove (MBWMMainContext *ctx,
   MBWMList        **l_start;
 
 #if ENABLE_COMPOSITE
+  MBWindowManager * wm = ctx->wm;
+
   if (type == wm->damage_event_base + XDamageNotify)
     {
       l_start = &ctx->event_funcs.damage_notify;
