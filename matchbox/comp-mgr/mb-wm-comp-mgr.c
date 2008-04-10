@@ -422,7 +422,7 @@ mb_wm_comp_mgr_turn_on (MBWMCompMgr *mgr)
     mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 					None,
 					wm->damage_event_base + XDamageNotify,
-					klass->handle_damage,
+					(MBWMXEventFunc)klass->handle_damage,
 					mgr);
 }
 

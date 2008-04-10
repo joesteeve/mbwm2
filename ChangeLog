@@ -1,5 +1,11 @@
 2008-04-10  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_turn_on):
+	Fixed warning.
+
+2008-04-10  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-main-context.c:
 	(mb_wm_main_context_x_event_handler_remove):
 	(mb_wm_main_context_x_event_handler_add):
