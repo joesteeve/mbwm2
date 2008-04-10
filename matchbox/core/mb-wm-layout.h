@@ -39,6 +39,11 @@ struct MBWMLayoutClass
   MBWMObjectClass parent;
 
   void (*update) (MBWMLayout *layout);
+
+  void (*layout_panels) (MBWMLayout *layout, MBGeometry *avail_geom);
+  void (*layout_input) (MBWMLayout *layout, MBGeometry *avail_geom);
+  void (*layout_free) (MBWMLayout *layout, MBGeometry *avail_geom);
+  void (*layout_fullscreen) (MBWMLayout *layout, MBGeometry *avail_geom);
 };
 
 int

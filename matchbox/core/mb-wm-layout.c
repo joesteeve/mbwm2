@@ -9,6 +9,14 @@
 
 static void
 mb_wm_layout_real_update (MBWMLayout * layout);
+static void
+mb_wm_layout_real_layout_panels (MBWMLayout *layout, MBGeometry * avail_geom);
+static void
+mb_wm_layout_real_layout_input (MBWMLayout *layout, MBGeometry * avail_geom);
+static void
+mb_wm_layout_real_layout_free (MBWMLayout *layout, MBGeometry * avail_geom);
+static void
+mb_wm_layout_real_layout_fullscreen (MBWMLayout *layout, MBGeometry * avail_geom);
 
 static void
 mb_wm_layout_class_init (MBWMObjectClass *klass)
@@ -16,6 +24,10 @@ mb_wm_layout_class_init (MBWMObjectClass *klass)
   MBWMLayoutClass * layout_class = MB_WM_LAYOUT_CLASS (klass);
 
   layout_class->update = mb_wm_layout_real_update;
+  layout_class->layout_panels = mb_wm_layout_real_layout_panels;
+  layout_class->layout_input = mb_wm_layout_real_layout_input;
+  layout_class->layout_free = mb_wm_layout_real_layout_free;
+  layout_class->layout_fullscreen = mb_wm_layout_real_layout_fullscreen;
 
 #if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMLayout";
@@ -204,8 +216,9 @@ mb_wm_layout_maximise_geometry (MBGeometry *geom,
 }
 
 static void
-mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
+mb_wm_layout_real_layout_panels (MBWMLayout *layout, MBGeometry * avail_geom)
 {
+  MBWindowManager       *wm = layout->wm;
   MBWindowManagerClient *client;
   MBGeometry             coverage;
   Bool                   need_change;
@@ -350,8 +363,9 @@ mb_wm_layout_panels (MBWindowManager * wm, MBGeometry * avail_geom)
 }
 
 static void
-mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
+mb_wm_layout_real_layout_input (MBWMLayout *layout, MBGeometry * avail_geom)
 {
+  MBWindowManager       *wm = layout->wm;
   MBWindowManagerClient *client;
   MBGeometry             coverage;
   Bool                   need_change;
@@ -525,8 +539,9 @@ mb_wm_layout_input (MBWindowManager * wm, MBGeometry * avail_geom)
 }
 
 static void
-mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
+mb_wm_layout_real_layout_free (MBWMLayout *layout, MBGeometry * avail_geom)
 {
+  MBWindowManager       *wm = layout->wm;
   MBWindowManagerClient *client;
   MBGeometry             coverage;
   Bool                   need_change;
@@ -582,8 +597,9 @@ mb_wm_layout_free (MBWindowManager * wm, MBGeometry * avail_geom)
 }
 
 static void
-mb_wm_layout_fullscreen (MBWindowManager * wm, MBGeometry * avail_geom)
+mb_wm_layout_real_layout_fullscreen (MBWMLayout *layout, MBGeometry * avail_geom)
 {
+  MBWindowManager       *wm = layout->wm;
   MBWindowManagerClient *client;
   MBGeometry             coverage;
 
@@ -674,8 +690,16 @@ mb_wm_layout_fullscreen (MBWindowManager * wm, MBGeometry * avail_geom)
 static void
 mb_wm_layout_real_update (MBWMLayout * layout)
 {
+  MBWMLayoutClass       *klass;
   MBWindowManager       *wm = layout->wm;
   MBGeometry             avail_geom;
+
+  klass = MB_WM_LAYOUT_CLASS (MB_WM_OBJECT_GET_CLASS (layout));
+
+  MBWM_ASSERT (klass->layout_panels);
+  MBWM_ASSERT (klass->layout_input);
+  MBWM_ASSERT (klass->layout_free);
+  MBWM_ASSERT (klass->layout_fullscreen);
 
   mb_wm_get_display_geometry (wm, &avail_geom);
 
@@ -714,12 +738,12 @@ mb_wm_layout_real_update (MBWMLayout * layout)
 
  */
 
-  mb_wm_layout_panels (wm, &avail_geom);
-  mb_wm_layout_input  (wm, &avail_geom);
-  mb_wm_layout_free   (wm, &avail_geom);
+  klass->layout_panels (layout, &avail_geom);
+  klass->layout_input  (layout, &avail_geom);
+  klass->layout_free   (layout, &avail_geom);
 
   mb_wm_get_display_geometry (wm, &avail_geom);
-  mb_wm_layout_fullscreen (wm, &avail_geom);
+  klass->layout_fullscreen (layout, &avail_geom);
 }
 
 void
