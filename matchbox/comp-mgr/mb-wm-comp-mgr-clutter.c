@@ -35,14 +35,21 @@
 
 #include <math.h>
 
-#define SHADOW_RADIUS 6
+#define SHADOW_RADIUS 4
 #define SHADOW_OPACITY	0.9
 #define SHADOW_OFFSET_X	(-SHADOW_RADIUS)
 #define SHADOW_OFFSET_Y	(-SHADOW_RADIUS)
 
-#define MAX_TILE_SZ 128 	/* make sure size/2 < MAX_TILE_SZ */
+#define MAX_TILE_SZ 16 	/* make sure size/2 < MAX_TILE_SZ */
 #define WIDTH  (3*MAX_TILE_SZ)
 #define HEIGHT (3*MAX_TILE_SZ)
+
+static ClutterActor *
+tidy_texture_frame_new (ClutterTexture *texture,
+			gint            left,
+			gint            top,
+			gint            right,
+			gint            bottom);
 
 static unsigned char *
 mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ();
@@ -1026,8 +1033,11 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 		  cmgr->priv->shadow = txt;
 		}
 
-	      rect = clutter_clone_texture_new (CLUTTER_TEXTURE (txt));
-
+	      rect = tidy_texture_frame_new (CLUTTER_TEXTURE (txt),
+					     MAX_TILE_SZ,
+					     MAX_TILE_SZ,
+					     MAX_TILE_SZ,
+					     MAX_TILE_SZ);
 	      clutter_actor_set_position (rect,
 					  2*SHADOW_RADIUS, 2*SHADOW_RADIUS);
 	    }
@@ -1647,3 +1657,304 @@ mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ()
   return data;
 }
 
+/*
+ * TidyTextureFrame copied from tidy
+ */
+#include <clutter/cogl.h>
+
+#define TIDY_PARAM_READWRITE    \
+        (G_PARAM_READABLE | G_PARAM_WRITABLE | \
+         G_PARAM_STATIC_NICK | G_PARAM_STATIC_NAME | G_PARAM_STATIC_BLURB)
+
+#define TIDY_TYPE_TEXTURE_FRAME (tidy_texture_frame_get_type ())
+
+#define TIDY_TEXTURE_FRAME(obj) \
+  (G_TYPE_CHECK_INSTANCE_CAST ((obj), \
+  TIDY_TYPE_TEXTURE_FRAME, TidyTextureFrame))
+
+#define TIDY_TEXTURE_FRAME_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_CAST ((klass), \
+  TIDY_TYPE_TEXTURE_FRAME, TidyTextureFrameClass))
+
+#define TIDY_IS_TEXTURE_FRAME(obj) \
+  (G_TYPE_CHECK_INSTANCE_TYPE ((obj), \
+  TIDY_TYPE_TEXTURE_FRAME))
+
+#define TIDY_IS_TEXTURE_FRAME_CLASS(klass) \
+  (G_TYPE_CHECK_CLASS_TYPE ((klass), \
+  TIDY_TYPE_TEXTURE_FRAME))
+
+#define TIDY_TEXTURE_FRAME_GET_CLASS(obj) \
+  (G_TYPE_INSTANCE_GET_CLASS ((obj), \
+  TIDY_TYPE_TEXTURE_FRAME, TidyTextureFrameClass))
+
+typedef struct _TidyTextureFrame        TidyTextureFrame;
+typedef struct _TidyTextureFramePrivate TidyTextureFramePrivate;
+typedef struct _TidyTextureFrameClass   TidyTextureFrameClass;
+
+struct _TidyTextureFrame
+{
+  ClutterCloneTexture              parent;
+
+  /*< priv >*/
+  TidyTextureFramePrivate    *priv;
+};
+
+struct _TidyTextureFrameClass
+{
+  ClutterCloneTextureClass parent_class;
+};
+
+enum
+  {
+    PROP_0,
+    PROP_LEFT,
+    PROP_TOP,
+    PROP_RIGHT,
+    PROP_BOTTOM
+  };
+
+G_DEFINE_TYPE (TidyTextureFrame,
+	       tidy_texture_frame,
+	       CLUTTER_TYPE_CLONE_TEXTURE);
+
+#define TIDY_TEXTURE_FRAME_GET_PRIVATE(obj)				\
+  (G_TYPE_INSTANCE_GET_PRIVATE ((obj), TIDY_TYPE_TEXTURE_FRAME, TidyTextureFramePrivate))
+
+struct _TidyTextureFramePrivate
+{
+  gint left, top, right, bottom;
+};
+
+static void
+tidy_texture_frame_paint (ClutterActor *self)
+{
+  TidyTextureFramePrivate *priv = TIDY_TEXTURE_FRAME (self)->priv;
+  ClutterCloneTexture     *clone_texture = CLUTTER_CLONE_TEXTURE (self);
+  ClutterTexture          *parent_texture;
+  guint                    width, height;
+  gint                     pwidth, pheight, ex, ey;
+  ClutterFixed             tx1, ty1, tx2, ty2, tw, th;
+  GLenum                   target_type;
+  ClutterColor             col = { 0xff, 0xff, 0xff, 0xff };
+
+  priv = TIDY_TEXTURE_FRAME (self)->priv;
+
+  /* no need to paint stuff if we don't have a texture to reflect */
+  parent_texture = clutter_clone_texture_get_parent_texture (clone_texture);
+  if (!parent_texture)
+    return;
+
+  /* parent texture may have been hidden, there for need to make sure its
+   * realised with resources available.
+   */
+  if (!CLUTTER_ACTOR_IS_REALIZED (parent_texture))
+    clutter_actor_realize (CLUTTER_ACTOR (parent_texture));
+
+  if (clutter_texture_is_tiled (parent_texture))
+    {
+      g_warning("tiled textures not yet supported...");
+      return;
+    }
+
+  cogl_push_matrix ();
+
+#define FX(x) CLUTTER_INT_TO_FIXED(x)
+
+  clutter_texture_get_base_size (parent_texture, &pwidth, &pheight);
+  clutter_actor_get_size (self, &width, &height);
+
+  tx1 = FX (priv->left);
+  tx2 = FX (pwidth - priv->right);
+  ty1 = FX (priv->top);
+  ty2 = FX (pheight - priv->bottom);
+  tw = FX (pwidth);
+  th = FX (pheight);
+
+  if (clutter_feature_available (CLUTTER_FEATURE_TEXTURE_RECTANGLE))
+    {
+      target_type = CGL_TEXTURE_RECTANGLE_ARB;
+      cogl_enable (CGL_ENABLE_TEXTURE_RECT|CGL_ENABLE_BLEND);
+    }
+  else
+    {
+      target_type = CGL_TEXTURE_2D;
+      cogl_enable (CGL_ENABLE_TEXTURE_2D|CGL_ENABLE_BLEND);
+
+      tw = clutter_util_next_p2 (pwidth);
+      th = clutter_util_next_p2 (pheight);
+
+      tx1 = tx1/tw;
+      tx2 = tx2/tw;
+      ty1 = ty1/th;
+      ty2 = ty2/th;
+      tw = FX(pwidth)/tw;
+      th = FX(pheight)/th;
+    }
+
+  col.alpha = clutter_actor_get_opacity (self);
+  cogl_color (&col);
+
+  clutter_texture_bind_tile (parent_texture, 0);
+
+  ex = width - priv->right;
+  if (ex < 0)
+    ex = priv->right; 		/* FIXME */
+
+  ey = height - priv->bottom;
+  if (ey < 0)
+    ey = priv->bottom; 		/* FIXME */
+
+  cogl_texture_quad (0, priv->left, 0, priv->top, 0, 0, tx1, ty1);
+  cogl_texture_quad (priv->left, ex, 0, priv->top, tx1, 0, tx2, ty1);
+  cogl_texture_quad (ex, width, 0, priv->top, tx2, 0, tw, ty1);
+  cogl_texture_quad (0, priv->left, priv->top, ey, 0, ty1, tx1, ty2);
+  cogl_texture_quad (priv->left, ex, priv->top, ey, tx1, ty1, tx2, ty2);
+  cogl_texture_quad (ex, width, priv->top, ey, tx2, ty1, tw, ty2);
+  cogl_texture_quad (0, priv->left, ey, height, 0, ty2, tx1, th);
+  cogl_texture_quad (priv->left, ex, ey, height, tx1, ty2, tx2, th);
+  cogl_texture_quad (ex, width, ey, height, tx2, ty2, tw, th);
+
+  cogl_pop_matrix ();
+
+#undef FX
+}
+
+
+static void
+tidy_texture_frame_set_property (GObject      *object,
+				 guint         prop_id,
+				 const GValue *value,
+				 GParamSpec   *pspec)
+{
+  TidyTextureFrame         *ctexture = TIDY_TEXTURE_FRAME (object);
+  TidyTextureFramePrivate  *priv = ctexture->priv;
+
+  switch (prop_id)
+    {
+    case PROP_LEFT:
+      priv->left = g_value_get_int (value);
+      break;
+    case PROP_TOP:
+      priv->top = g_value_get_int (value);
+      break;
+    case PROP_RIGHT:
+      priv->right = g_value_get_int (value);
+      break;
+    case PROP_BOTTOM:
+      priv->bottom = g_value_get_int (value);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+tidy_texture_frame_get_property (GObject    *object,
+				 guint       prop_id,
+				 GValue     *value,
+				 GParamSpec *pspec)
+{
+  TidyTextureFrame *ctexture = TIDY_TEXTURE_FRAME (object);
+  TidyTextureFramePrivate  *priv = ctexture->priv;
+
+  switch (prop_id)
+    {
+    case PROP_LEFT:
+      g_value_set_int (value, priv->left);
+      break;
+    case PROP_TOP:
+      g_value_set_int (value, priv->top);
+      break;
+    case PROP_RIGHT:
+      g_value_set_int (value, priv->right);
+      break;
+    case PROP_BOTTOM:
+      g_value_set_int (value, priv->bottom);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+      break;
+    }
+}
+
+static void
+tidy_texture_frame_class_init (TidyTextureFrameClass *klass)
+{
+  GObjectClass      *gobject_class = G_OBJECT_CLASS (klass);
+  ClutterActorClass *actor_class = CLUTTER_ACTOR_CLASS (klass);
+
+  actor_class->paint = tidy_texture_frame_paint;
+
+  gobject_class->set_property = tidy_texture_frame_set_property;
+  gobject_class->get_property = tidy_texture_frame_get_property;
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_LEFT,
+     g_param_spec_int ("left",
+		       "left",
+		       "",
+		       0, G_MAXINT,
+		       0,
+		       TIDY_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_TOP,
+     g_param_spec_int ("top",
+		       "top",
+		       "",
+		       0, G_MAXINT,
+		       0,
+		       TIDY_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_BOTTOM,
+     g_param_spec_int ("bottom",
+		       "bottom",
+		       "",
+		       0, G_MAXINT,
+		       0,
+		       TIDY_PARAM_READWRITE));
+
+  g_object_class_install_property
+    (gobject_class,
+     PROP_RIGHT,
+     g_param_spec_int ("right",
+		       "right",
+		       "",
+		       0, G_MAXINT,
+		       0,
+		       TIDY_PARAM_READWRITE));
+
+  g_type_class_add_private (gobject_class, sizeof (TidyTextureFramePrivate));
+}
+
+static void
+tidy_texture_frame_init (TidyTextureFrame *self)
+{
+  TidyTextureFramePrivate *priv;
+
+  self->priv = priv = TIDY_TEXTURE_FRAME_GET_PRIVATE (self);
+}
+
+static ClutterActor*
+tidy_texture_frame_new (ClutterTexture *texture,
+			gint            left,
+			gint            top,
+			gint            right,
+			gint            bottom)
+{
+  g_return_val_if_fail (texture == NULL || CLUTTER_IS_TEXTURE (texture), NULL);
+
+  return g_object_new (TIDY_TYPE_TEXTURE_FRAME,
+		       "parent-texture", texture,
+		       "left", left,
+		       "top", top,
+		       "right", right,
+		       "bottom", bottom,
+		       NULL);
+}

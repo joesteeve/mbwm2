@@ -1,5 +1,10 @@
 2008-04-10  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	Fixed gaussian shadows with TidyTextureFrame.
+
+2008-04-10  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/comp-mgr/mb-wm-comp-mgr.c:
 	(mb_wm_comp_mgr_turn_on):
 	Fixed warning.
