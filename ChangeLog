@@ -1,5 +1,10 @@
 2008-04-11  Ross Burton  <ross@openedhand.com>
 
+	* data/themes/Default/theme.xml:
+	Make the default theme slightly more pretty.
+
+2008-04-11  Ross Burton  <ross@openedhand.com>
+
 	* data/themes/README:
 	Update documentation to match reality.
 

@@ -11,22 +11,37 @@
  <effect event="unmap"    duration="100" gravity="none" type="fade" />
 
  <decor type="north"
-        color-bg="#ff0000" color-fg="#ffffff"
+        color-bg="#6699CF" color-fg="#FFFFFF"
         template-height="22"
-        font-family="Sans" font-size="18">
+        font-family="Sans" font-size="17">
   <button type="close" packing="end"
-          color-fg="#ffffff" color-bg="#59595f"
+          color-fg="#ffffff" color-bg="#446C96"
           template-x="2" template-y="2"
-          width="18" height="18"/>
-  <button type="minimize" packing="end"
-          color-fg="#ffffff" color-bg="#59595f"
-          template-x="2" template-y="2"
-          width="18" height="18"/>
-  <button type="menu" packing="start"
-          color-fg="#ffffff" color-bg="#59595f"
-          template-x="2" template-y="2"
-          width="18" height="18"/>
+          width="17" height="17"/>
  </decor>
+
+ <decor type="east" template-width="0"/>
+ <decor type="south" template-height="0"/>
+ <decor type="west" template-width="0"/>
+
+</client>
+
+
+<client type="dialog">
+  <decor type="north"
+	 color-bg="#618BB8" color-fg="#FFFFFF"
+	 template-height="22"
+	 font-family="Sans" font-size="17">
+    <button type="close" packing="end"
+	    color-fg="#ffffff" color-bg="#446C96"
+	    template-x="2" template-y="2"
+	    width="17" height="17"/>
+  </decor>
+  
+  <decor type="east" color-bg="#618BB8" template-width="2"/>
+  <decor type="south" color-bg="#618BB8" template-height="2"/>
+  <decor type="west" color-bg="#618BB8" template-width="2"/>
+
 </client>
 
 </theme>
