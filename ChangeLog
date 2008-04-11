@@ -1,3 +1,8 @@
+2008-04-11  Ross Burton  <ross@openedhand.com>
+
+	* matchbox/theme-engines/mb-wm-theme.c:
+	Fix typo in "template-pad-offset" parsing.
+
 2008-04-11  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/theme-engines/mb-wm-theme-xml.h:
