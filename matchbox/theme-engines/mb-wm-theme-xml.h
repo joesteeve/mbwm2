@@ -41,8 +41,6 @@ typedef struct Decor
 
   MBWMColor clr_fg;
   MBWMColor clr_bg;
-  MBWMColor clr_bg2;
-  MBWMColor clr_frame;
 
   int x;
   int y;

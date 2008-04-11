@@ -1,3 +1,13 @@
+2008-04-11  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/theme-engines/mb-wm-theme-xml.h:
+	* matchbox/theme-engines/mb-wm-theme.c:
+	* data/themes/Default/theme.xml:
+	* data/themes/PngSample/theme.xml:
+	* doc/MBWM2-Overview.xml:
+	* matchbox/managers/maemo/theme/theme.xml:
+	Removed unused color-bg2 and color-frame attributes from themes.
+
 2008-04-11  Ross Burton  <ross@openedhand.com>
 
 	* matchbox/theme-engines/mb-wm-theme.c:

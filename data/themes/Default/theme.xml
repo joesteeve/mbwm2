@@ -11,9 +11,9 @@
  <effect event="unmap"    duration="100" gravity="none" type="fade" />
 
  <decor type="north"
-        color-bg="#ff0000" color-bg2="#ffffff" color-fg="#ffffff"
+        color-bg="#ff0000" color-fg="#ffffff"
         template-height="22"
-        font-family="Sans" font-size="18" color-frame="#000000">
+        font-family="Sans" font-size="18">
   <button type="close" packing="end"
           color-fg="#ffffff" color-bg="#59595f"
           template-x="2" template-y="2"

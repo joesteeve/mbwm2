@@ -1079,10 +1079,6 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 	    mb_wm_xml_clr_from_string (&d->clr_fg, *(p+1));
 	  else if (!strcmp (*p, "color-bg"))
 	    mb_wm_xml_clr_from_string (&d->clr_bg, *(p+1));
-	  else if (!strcmp (*p, "color-bg2"))
-	    mb_wm_xml_clr_from_string (&d->clr_bg2, *(p+1));
-	  else if (!strcmp (*p, "color-frame"))
-	    mb_wm_xml_clr_from_string (&d->clr_frame, *(p+1));
 	  else if (!strcmp (*p, "type"))
 	    {
 	      if (!strcmp (*(p+1), "north"))
@@ -1739,9 +1735,8 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   MBWindowManagerClient *client;
   Window                 xwin;
   MBWindowManager       *wm = theme->wm;
-  MBWMColor             clr_bg;
-  MBWMColor             clr_fg;
-  MBWMColor             clr_frame;
+  MBWMColor              clr_bg;
+  MBWMColor              clr_fg;
   MBWMClientType         c_type;
   MBWMXmlClient         *c = NULL;
   MBWMXmlDecor          *d = NULL;
@@ -1759,10 +1754,6 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   clr_bg.r = 0.5;
   clr_bg.g = 0.5;
   clr_bg.b = 0.5;
-
-  clr_frame.r = 0.0;
-  clr_frame.g = 0.0;
-  clr_frame.b = 0.0;
 
   client = mb_wm_decor_get_parent (decor);
   xwin = mb_wm_decor_get_x_window (decor);
@@ -1791,13 +1782,6 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 	  clr_bg.r = d->clr_bg.r;
 	  clr_bg.g = d->clr_bg.g;
 	  clr_bg.b = d->clr_bg.b;
-	}
-
-      if (d->clr_frame.set)
-	{
-	  clr_frame.r = d->clr_frame.r;
-	  clr_frame.g = d->clr_frame.g;
-	  clr_frame.b = d->clr_frame.b;
 	}
     }
 
@@ -1833,14 +1817,11 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   gc = XCreateGC (xdpy, dd->xpix, 0, NULL);
 
   XSetLineAttributes (xdpy, gc, 1, LineSolid, CapProjecting, JoinMiter);
-  XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_frame));
   XSetBackground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
+  XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
 
   w = geom->width; h = geom->height; x = geom->x; y = geom->y;
 
-  XFillRectangle (xdpy, dd->xpix, gc, 0, 0, w, h);
-
-  XSetForeground (xdpy, gc, pixel_from_clr (xdpy, xscreen, &clr_bg));
   XFillRectangle (xdpy, dd->xpix, gc, 0, 0, w, h);
 
   if (mb_wm_decor_get_type(decor) == MBWMDecorTypeNorth &&

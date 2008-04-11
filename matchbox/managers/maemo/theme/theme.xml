@@ -3,7 +3,7 @@
        desc="" version="1.0" engine-version="2" engine-type="png" shaped="yes">
 <img src="template.png" />
 <client type="app">
- <decor type="north" show-title="yes" color-fg="#ffffff" color-frame="#000000"
+ <decor type="north" show-title="yes" color-fg="#ffffff"
         template-x="0" template-y="0"
         template-width="720" template-height="60"
         font-family="Sans" font-size="20">

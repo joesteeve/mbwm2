@@ -655,19 +655,6 @@
               </para>
 	    </listitem>
 
-	    <listitem>
-	      <para>color-bg2: secondary background colour. This could be used by
-              a theme engine to create gradiented background; ignored by current
-              theme engines.
-              </para>
-	    </listitem>
-
-	    <listitem>
-	      <para>color-frame: colour to use for drawing a frame around the
-	      client window (non-PNG engines only).
-              </para>
-	    </listitem>
-
 	  </itemizedlist>
 
 	  <section id="element-button">
