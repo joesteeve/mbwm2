@@ -1,3 +1,9 @@
+2008-04-11  Ross Burton  <ross@openedhand.com>
+
+	* matchbox/theme-engines/mb-wm-theme.c:
+	Fix a typo which meant the blue channel was used for the blue
+	channel when painting the decorations.
+
 2008-04-10  Ross Burton  <ross@openedhand.com>
 
 	* matchbox/core/mb-wm-layout.[ch]:

@@ -1696,7 +1696,7 @@ pixel_from_clr (Display * dpy, int screen, MBWMColor * clr)
   XColor xcol;
 
   xcol.red   = (int)(clr->r * (double)0xffff);
-  xcol.green = (int)(clr->b * (double)0xffff);
+  xcol.green = (int)(clr->g * (double)0xffff);
   xcol.blue  = (int)(clr->b * (double)0xffff);
   xcol.flags = DoRed|DoGreen|DoBlue;
 
