@@ -1,5 +1,11 @@
 2008-04-11  Ross Burton  <ross@openedhand.com>
 
+	* matchbox/theme-engines/mb-wm-theme.c:
+	Instead of a fixed 2px padding before the text, use a fifth of the
+	decoration height.
+
+2008-04-11  Ross Burton  <ross@openedhand.com>
+
 	* data/themes/Default/theme.xml:
 	Make the default theme slightly more pretty.
 

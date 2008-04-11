@@ -1846,7 +1846,7 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
       XftDrawStringUtf8(dd->xftdraw,
 			&dd->clr,
 			dd->font,
-			west_width + pack_start_x + 2, y,
+			west_width + pack_start_x + (h / 5), y,
 			title, strlen (title));
     }
 
