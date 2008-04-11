@@ -32,5 +32,6 @@ theme children:
 			<button>
 			Properties:
 				type=close|minimize|fullscreen|menu|custom
-				x,y,width,height: gometry relative to parent
+				template-x, template-y, template-width, template-height:
+				  geometry relative to parent
 
