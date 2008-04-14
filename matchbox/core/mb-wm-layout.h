@@ -55,4 +55,22 @@ mb_wm_layout_new (MBWindowManager *wm);
 void
 mb_wm_layout_update (MBWMLayout *layout);
 
+/* These are intended for use by subclasses of MBWMLayout */
+
+#define SET_X      (1<<1)
+#define SET_Y      (1<<2)
+#define SET_WIDTH  (1<<3)
+#define SET_HEIGHT (1<<4)
+#define SET_ALL    (SET_X|SET_Y|SET_WIDTH|SET_HEIGHT)
+
+Bool
+mb_wm_layout_maximise_geometry (MBGeometry *geom,
+				MBGeometry *max,
+				int         flags);
+
+Bool
+mb_wm_layout_clip_geometry (MBGeometry *geom,
+			    MBGeometry *min,
+			    int         flags);
+
 #endif

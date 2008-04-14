@@ -1,12 +1,6 @@
 #include "mb-wm.h"
 #include "mb-wm-client-input.h"
 
-#define SET_X      (1<<1)
-#define SET_Y      (1<<2)
-#define SET_WIDTH  (1<<3)
-#define SET_HEIGHT (1<<4)
-#define SET_ALL    (SET_X|SET_Y|SET_WIDTH|SET_HEIGHT)
-
 static void
 mb_wm_layout_real_update (MBWMLayout * layout);
 static void
@@ -100,7 +94,7 @@ mb_wm_layout_new (MBWindowManager *wm)
   return layout;
 }
 
-static Bool
+Bool
 mb_wm_layout_clip_geometry (MBGeometry *geom,
 			    MBGeometry *min,
 			    int         flags)
@@ -181,7 +175,7 @@ mb_wm_layout_clip_geometry (MBGeometry *geom,
   return changed;
 }
 
-static Bool
+Bool
 mb_wm_layout_maximise_geometry (MBGeometry *geom,
 				MBGeometry *max,
 				int         flags)
