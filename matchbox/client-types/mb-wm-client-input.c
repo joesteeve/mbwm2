@@ -1,8 +1,5 @@
 #include "mb-wm-client-input.h"
 
-#define FRAME_TITLEBAR_HEIGHT 20
-#define FRAME_EDGE_SIZE 3
-
 static void
 mb_wm_client_input_detransitise (MBWindowManagerClient *client);
 

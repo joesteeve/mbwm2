@@ -1,5 +1,12 @@
 2008-04-14  Ross Burton  <ross@openedhand.com>
 
+	* matchbox/client-types/mb-wm-client-desktop.c:
+	* matchbox/client-types/mb-wm-client-input.c:
+	* matchbox/client-types/mb-wm-client-dialog.c:
+	Remove unused defines.
+
+2008-04-14  Ross Burton  <ross@openedhand.com>
+
 	* matchbox/core/mb-wm-layout.[ch]:
 	Expose mb_wm_layout_maximise_geometry and
 	mb_wm_layout_clip_geometry for subclasses to use.

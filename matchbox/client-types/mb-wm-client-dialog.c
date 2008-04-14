@@ -2,9 +2,6 @@
 
 #include "mb-wm-theme.h"
 
-#define FRAME_TITLEBAR_HEIGHT 20
-#define FRAME_EDGE_SIZE 3
-
 static Bool
 mb_wm_client_dialog_request_geometry (MBWindowManagerClient *client,
 				      MBGeometry            *new_geometry,
