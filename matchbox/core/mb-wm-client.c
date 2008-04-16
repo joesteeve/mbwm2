@@ -256,19 +256,19 @@ mb_wm_client_visibility_mark_dirty (MBWindowManagerClient *client)
 }
 
 void
-mb_wm_client_synthetic_config_event_queue (MBWindowManagerClient *client)
+mb_wm_client_configure_request_ack_queue (MBWindowManagerClient *client)
 {
-  mb_wm_display_sync_queue (client->wmref, MBWMSyncSyntheticConfigEv);
+  mb_wm_display_sync_queue (client->wmref, MBWMSyncConfigRequestAck);
 
-  client->priv->sync_state |= MBWMSyncSyntheticConfigEv;
+  client->priv->sync_state |= MBWMSyncConfigRequestAck;
 
   MBWM_DBG(" sync state: %i", client->priv->sync_state);
 }
 
 Bool
-mb_wm_client_needs_synthetic_config_event (MBWindowManagerClient *client)
+mb_wm_client_needs_configure_request_ack (MBWindowManagerClient *client)
 {
-  return (client->priv->sync_state & MBWMSyncSyntheticConfigEv);
+  return (client->priv->sync_state & MBWMSyncConfigRequestAck);
 }
 
 void

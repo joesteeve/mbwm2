@@ -631,49 +631,21 @@ mb_wm_handle_config_request (XConfigureRequestEvent *xev,
   req_geom.width  = (value_mask & CWWidth)  ? req_w : win_geom->width;
   req_geom.height = (value_mask & CWHeight) ? req_h : win_geom->height;
 
-
-#if 0  /* stacking to sort */
-  if (value_mask & (CWSibling|CWStackMode))
-    {
-
-    }
-#endif
-
-  if (mb_geometry_compare (&req_geom, win_geom))
-    {
-      /* No change in window geometry, but needs configure request
-       * per ICCCM.
-       */
-      mb_wm_client_synthetic_config_event_queue (client);
-      return True;
-    }
-
-  /*
-   * Check for position-only change (needs to be done before we
-   * request new geometry as that call changes the win_geom values if
-   * successful.
+  /* We can't determine at this point what the right response
+   * to this configure request is since layout management might
+   * also want to tweak the window geometry.
+   *
+   * We make a note that the configure request needs a response
+   * and when we reach mb_wm_sync - but after all layout decisions
+   * have been made - then we can determine if the request
+   * has been accepted or not and send any synthetic events as
+   * needed.
    */
-  no_size_change = (req_geom.width  == win_geom->width &&
-		    req_geom.height == win_geom->height);
+  mb_wm_client_configure_request_ack_queue (client);
 
-  if (no_size_change
-      || !mb_wm_client_request_geometry (client,
-                                         &req_geom,
-                                         MBWMClientReqGeomIsViaConfigureReq))
-    {
-      /* ICCCM says if you ignore a configure request or you respond
-       * by only moving/re-stacking the window - without a size change,
-       * then the WM must send a synthetic ConfigureNotify.
-       */
-      mb_wm_client_synthetic_config_event_queue (client);
-    }
-
-#if ENABLE_COMPOSITE
-  if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
-    {
-      mb_wm_comp_mgr_client_configure (client->cm_client);
-    }
-#endif
+  mb_wm_client_request_geometry (client,
+				 &req_geom,
+				 MBWMClientReqGeomIsViaConfigureReq);
 
   return True;
 }

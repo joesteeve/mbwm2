@@ -354,6 +354,72 @@ mb_wm_client_base_set_state_props (MBWindowManagerClient *c)
 }
 
 static void
+send_synthetic_configure_notify (MBWindowManagerClient *client)
+{
+  MBWindowManager *wm = client->wmref;
+  XConfigureEvent ce;
+
+  ce.type = ConfigureNotify;
+  ce.event = MB_WM_CLIENT_XWIN(client);
+  ce.window = MB_WM_CLIENT_XWIN(client);
+  ce.x = client->window->geometry.x;
+  ce.y = client->window->geometry.y;
+  ce.width = client->window->geometry.width;
+  ce.height = client->window->geometry.height;
+  ce.border_width = 0;
+  ce.above = None;
+  ce.override_redirect = 0;
+
+  XSendEvent(wm->xdpy, MB_WM_CLIENT_XWIN(client), False,
+	     StructureNotifyMask, (XEvent *)&ce);
+}
+
+static void
+move_resize_client_xwin (MBWindowManagerClient *client, int x, int y, int w, int h)
+{
+  MBWindowManager *wm = client->wmref;
+
+  /* ICCCM says if you ignore a configure request or you respond
+   * by only moving/re-stacking the window - without a size change,
+   * then the WM must send a synthetic ConfigureNotify.
+   *
+   * NB: the above description assumes that a move/re-stack may be
+   * done by the WM by moving the frame (whereby a regular
+   * ConfigureNotify wouldn't be sent in direct response to the
+   * request which I think is the real point)
+   *
+   * NB: It's assumed that no cleverness is going elsewhere
+   * to optimise out calls to this function when the move/resize
+   * is obviously not needed (e.g. when just moving the frame
+   * of a client)
+   */
+  if (mb_wm_client_needs_configure_request_ack (client)
+      && x == client->window->x_geometry.x
+      && y == client->window->x_geometry.y
+      && w == client->window->x_geometry.width
+      && h == client->window->x_geometry.height)
+    {
+      send_synthetic_configure_notify (client);
+    }
+  else
+    {
+      XMoveResizeWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
+			x, y, w, h);
+      client->window->x_geometry.x = x;
+      client->window->x_geometry.y = y;
+      client->window->x_geometry.width = w;
+      client->window->x_geometry.height = h;
+
+#if ENABLE_COMPOSITE
+      if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
+	{
+	  mb_wm_comp_mgr_client_configure (client->cm_client);
+	}
+#endif
+    }
+}
+
+static void
 mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
@@ -433,17 +499,18 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       if (fullscreen || !client->xwin_frame)
 	{
-	      x = client->window->geometry.x;
-	      y = client->window->geometry.y;
-	      w = client->window->geometry.width;
-	      h = client->window->geometry.height;
 
-	      XMoveResizeWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
-				x, y, w, h);
-	      wgeom[0] = 0;
-	      wgeom[1] = 0;
-	      wgeom[2] = 0;
-	      wgeom[3] = 0;
+	  x = client->window->geometry.x;
+	  y = client->window->geometry.y;
+	  w = client->window->geometry.width;
+	  h = client->window->geometry.height;
+
+	  move_resize_client_xwin (client, x, y, w, h);
+
+	  wgeom[0] = 0;
+	  wgeom[1] = 0;
+	  wgeom[2] = 0;
+	  wgeom[3] = 0;
 	}
       else
 	{
@@ -463,8 +530,7 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 	  w = client->window->geometry.width;
 	  h = client->window->geometry.height;
 
-	  XMoveResizeWindow(wm->xdpy, MB_WM_CLIENT_XWIN(client),
-			    x, y, w, h);
+	  move_resize_client_xwin (client, x, y, w, h);
 
 	  wgeom[0] = x;
 	  wgeom[1] = client->frame_geometry.width - w - x;
@@ -487,25 +553,9 @@ mb_wm_client_base_display_sync (MBWindowManagerClient *client)
 
       mb_wm_util_untrap_x_errors();
     }
+  else if (mb_wm_client_needs_configure_request_ack (client))
+    send_synthetic_configure_notify (client);
 
-  if (mb_wm_client_needs_synthetic_config_event (client))
-    {
-      XConfigureEvent ce;
-       
-      ce.type = ConfigureNotify;
-      ce.event = MB_WM_CLIENT_XWIN(client);
-      ce.window = MB_WM_CLIENT_XWIN(client);
-      ce.x = client->window->geometry.x;
-      ce.y = client->window->geometry.y;
-      ce.width = client->window->geometry.width;
-      ce.height = client->window->geometry.height;
-      ce.border_width = 0;
-      ce.above = None;
-      ce.override_redirect = 0;
-       
-      XSendEvent(wm->xdpy, MB_WM_CLIENT_XWIN(client), False,
-                 StructureNotifyMask, (XEvent *)&ce);
-    }
 
   /* Handle any mapping - should be visible state ? */
 

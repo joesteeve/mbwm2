@@ -451,7 +451,7 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
     {
       if (!mb_wm_xwin_get_geometry_reply (wm,
 					  cookies[COOKIE_WIN_GEOM],
-					  &win->geometry,
+					  &win->x_geometry,
 					  &foo,
 					  &win->depth,
 					  &x_error_code))
@@ -467,11 +467,16 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
       MBWM_DBG("Win:  %lx", win->xwindow);
       MBWM_DBG("Type: %lx",win->net_type);
       MBWM_DBG("Geom: +%i+%i,%ix%i",
-	       win->geometry.x,
-	       win->geometry.y,
-	       win->geometry.width,
-	       win->geometry.height);
-  }
+	       win->x_geometry.x,
+	       win->x_geometry.y,
+	       win->x_geometry.width,
+	       win->x_geometry.height);
+      
+      /* FIXME is it right that we directly/immeditaly update
+       * win->geometry here, perhaps that should be left as a
+       * responsability for a signal handler? */
+      win->geometry = win->x_geometry;
+    }
 
   if (props_req & MBWM_WINDOW_PROP_ATTR)
     {

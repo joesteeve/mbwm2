@@ -244,10 +244,10 @@ Bool
 mb_wm_client_needs_decor_sync (MBWindowManagerClient *client);
 
 Bool
-mb_wm_client_needs_synthetic_config_event (MBWindowManagerClient *client);
+mb_wm_client_needs_configure_request_ack (MBWindowManagerClient *client);
 
-void 				/* FIXME: rename */
-mb_wm_client_synthetic_config_event_queue (MBWindowManagerClient *client);
+void
+mb_wm_client_configure_request_ack_queue (MBWindowManagerClient *client);
 
 Bool
 mb_wm_client_needs_sync (MBWindowManagerClient *client);

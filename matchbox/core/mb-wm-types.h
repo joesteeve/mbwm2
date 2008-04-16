@@ -396,7 +396,7 @@ typedef enum MBWMSyncType
   MBWMSyncGeometry          = (1<<2),
   MBWMSyncVisibility        = (1<<3),
   MBWMSyncDecor             = (1<<4),
-  MBWMSyncSyntheticConfigEv = (1<<5),
+  MBWMSyncConfigRequestAck  = (1<<5),
   MBWMSyncFullscreen        = (1<<6),
 } MBWMSyncType;
 

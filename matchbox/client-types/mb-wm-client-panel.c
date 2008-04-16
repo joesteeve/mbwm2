@@ -84,8 +84,8 @@ mb_wm_client_panel_init (MBWMObject *this, va_list vap)
       win->geometry.y = y;
       win->geometry.width  = w;
       win->geometry.height = h;
-
-      XMoveResizeWindow (wm->xdpy, win->xwindow, x, y, w, h);
+      
+      mb_wm_client_geometry_mark_dirty (client);
     }
 
   if (!client->layout_hints)

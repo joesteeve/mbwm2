@@ -115,6 +115,7 @@ struct MBWMClientWindow
   MBWMObject    parent;
 
   MBGeometry                     geometry;
+  MBGeometry                     x_geometry;
   unsigned int                   depth;
   char                          *name;
   Window                         xwindow;

@@ -1,3 +1,22 @@
+2008-04-16  Robert Bragg  <bob@o-hand.com>
+
+	* matchbox-window-manager-2/matchbox/client-types/mb-wm-client-panel.c
+	* matchbox-window-manager-2/matchbox/core/mb-wm-client-window.c
+	* matchbox-window-manager-2/matchbox/core/mb-wm-client.h
+	* matchbox-window-manager-2/matchbox/core/mb-wm-client-window.h
+	* matchbox-window-manager-2/matchbox/core/mb-wm-types.h
+	* matchbox-window-manager-2/matchbox/core/mb-wm-client-base.c
+	* matchbox-window-manager-2/matchbox/core/mb-window-manager.c
+	* matchbox-window-manager-2/matchbox/core/mb-wm-client.c
+	* matchbox-window-manager-2/matchbox/managers/maemo/maemo-toolbar.c:
+
+	Changes how we respond to configure notifications. We now defer the
+	response until after all layout decisions so we know for sure when we
+	need to send a synthetic event. Note this adds a new
+	client->window->x_geometry member that is meant to always be a pristine
+	copy of the X dimensions for the client xwindow.
+	client->window->geometry continues to be used for layout purposes.
+
 2008-04-14  Ross Burton  <ross@openedhand.com>
 
 	* matchbox/client-types/mb-wm-client-desktop.c:
