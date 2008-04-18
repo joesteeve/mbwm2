@@ -566,11 +566,11 @@ mb_wm_handle_property_notify (XPropertyEvent          *xev,
   return True;
 }
 
+#if ENABLE_COMPOSITE
 static  Bool
-mb_wm_handle_config_notify (XConfigureEvent *xev,
+mb_wm_handle_composite_config_notify (XConfigureEvent *xev,
 			    void            *userdata)
 {
-#if ENABLE_COMPOSITE
   MBWindowManager * wm = (MBWindowManager*)userdata;
 
   if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
@@ -582,9 +582,9 @@ mb_wm_handle_config_notify (XConfigureEvent *xev,
       if (client)
 	mb_wm_comp_mgr_client_configure (client->cm_client);
     }
-#endif
   return True;
 }
+#endif
 
 static  Bool
 mb_wm_handle_config_request (XConfigureRequestEvent *xev,
@@ -1578,18 +1578,18 @@ mb_window_manager_init (MBWMObject *this, va_list vap)
 			     MapNotify,
 			     (MBWMXEventFunc)mb_wm_handle_map_notify,
 			     wm);
+
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     None,
+			     ConfigureNotify,
+			     (MBWMXEventFunc)mb_wm_handle_composite_config_notify,
+			     wm);
 #endif
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
 			     ConfigureRequest,
 			     (MBWMXEventFunc)mb_wm_handle_config_request,
-			     wm);
-
-  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
-			     None,
-			     ConfigureNotify,
-			     (MBWMXEventFunc)mb_wm_handle_config_notify,
 			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,

@@ -1,3 +1,9 @@
+2008-04-18  Ross Burton  <ross@openedhand.com>
+
+	* matchbox/core/mb-window-manager.c:
+	Only register a configure notify handler for all windows if
+	compositing is enabled.
+
 2008-04-16  Robert Bragg  <bob@o-hand.com>
 
 	* matchbox-window-manager-2/matchbox/client-types/mb-wm-client-panel.c
