@@ -586,6 +586,22 @@ mb_wm_handle_composite_config_notify (XConfigureEvent *xev,
 }
 #endif
 
+/*
+ * This is called if the root window resizes itself, which happens when RANDR is
+ * used to resize or rotate the display.
+ */
+static  Bool
+mb_wm_handle_root_config_notify (XConfigureEvent *xev,
+			    void            *userdata)
+{
+  MBWindowManager * wm = (MBWindowManager*)userdata;
+  
+  wm->xdpy_width = xev->width;
+  wm->xdpy_height = xev->height;
+  
+  mb_wm_display_sync_queue (wm, MBWMSyncGeometry);
+}
+
 static  Bool
 mb_wm_handle_config_request (XConfigureRequestEvent *xev,
 			     void                   *userdata)
@@ -1585,6 +1601,12 @@ mb_window_manager_init (MBWMObject *this, va_list vap)
 			     (MBWMXEventFunc)mb_wm_handle_composite_config_notify,
 			     wm);
 #endif
+
+  mb_wm_main_context_x_event_handler_add (wm->main_ctx,
+			     wm->root_win->xwindow,
+			     ConfigureNotify,
+			     (MBWMXEventFunc)mb_wm_handle_root_config_notify,
+			     wm);
 
   mb_wm_main_context_x_event_handler_add (wm->main_ctx,
 			     None,
