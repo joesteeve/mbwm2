@@ -1,3 +1,9 @@
+2008-05-16  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c
+	* matchbox/core/mb-window-manager.c:
+	Sync up with changes to clutter API.
+
 2008-04-18  Ross Burton  <ross@openedhand.com>
 
 	* matchbox/core/mb-window-manager.c:

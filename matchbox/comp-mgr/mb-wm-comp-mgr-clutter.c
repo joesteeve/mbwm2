@@ -25,9 +25,8 @@
 #include "mb-wm-theme.h"
 
 #include <clutter/clutter.h>
-#include <clutter/clutter-x11.h>
-#include <clutter/clutter-x11-texture-pixmap.h>
-#include <clutter/clutter-glx-texture-pixmap.h>
+#include <clutter/x11/clutter-x11.h>
+#include <clutter/glx/clutter-glx-texture-pixmap.h>
 
 #include <X11/Xresource.h>
 #include <X11/extensions/shape.h>
@@ -179,8 +178,7 @@ mb_wm_comp_mgr_clutter_fetch_texture (MBWMCompMgrClient *client)
 
   clutter_x11_texture_pixmap_set_pixmap (
 				CLUTTER_X11_TEXTURE_PIXMAP (cclient->priv->texture),
-				cclient->priv->pixmap,
-				w, h, depth);
+				cclient->priv->pixmap);
 
 #ifdef HAVE_XEXT
   /*
@@ -1660,7 +1658,7 @@ mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ()
 /*
  * TidyTextureFrame copied from tidy
  */
-#include <clutter/cogl.h>
+#include <cogl/cogl.h>
 
 #define TIDY_PARAM_READWRITE    \
         (G_PARAM_READABLE | G_PARAM_WRITABLE | \
@@ -1774,12 +1772,10 @@ tidy_texture_frame_paint (ClutterActor *self)
   if (clutter_feature_available (CLUTTER_FEATURE_TEXTURE_RECTANGLE))
     {
       target_type = CGL_TEXTURE_RECTANGLE_ARB;
-      cogl_enable (CGL_ENABLE_TEXTURE_RECT|CGL_ENABLE_BLEND);
     }
   else
     {
       target_type = CGL_TEXTURE_2D;
-      cogl_enable (CGL_ENABLE_TEXTURE_2D|CGL_ENABLE_BLEND);
 
       tw = clutter_util_next_p2 (pwidth);
       th = clutter_util_next_p2 (pheight);

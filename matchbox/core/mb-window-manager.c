@@ -31,7 +31,7 @@
 #if ENABLE_COMPOSITE
 # include "mb-wm-comp-mgr.h"
 #  if ENABLE_CLUTTER_COMPOSITE_MANAGER
-#   include <clutter/clutter-x11.h>
+#   include <clutter/x11/clutter-x11.h>
 #   include "mb-wm-comp-mgr-clutter.h"
 #  else
 #   include "mb-wm-comp-mgr-xrender.h"
@@ -595,10 +595,10 @@ mb_wm_handle_root_config_notify (XConfigureEvent *xev,
 			    void            *userdata)
 {
   MBWindowManager * wm = (MBWindowManager*)userdata;
-  
+
   wm->xdpy_width = xev->width;
   wm->xdpy_height = xev->height;
-  
+
   mb_wm_display_sync_queue (wm, MBWMSyncGeometry);
 }
 
