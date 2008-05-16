@@ -1,6 +1,15 @@
 2008-05-16  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.h:
+	(mb_wm_comp_mgr_clutter_get_arena):
+	Added an intermediate ClutterGroup to sit between stage and the CM
+	actors to provide a greater flexibility for any derived
+	compositing managers.
+
+2008-05-16  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
 	Further changes to sync up with clutter.
 

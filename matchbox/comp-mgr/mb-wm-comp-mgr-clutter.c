@@ -452,7 +452,7 @@ mb_wm_comp_mgr_clutter_client_event_new (MBWMCompMgrClient     *client,
  */
 struct _MBWMCompMgrClutterPrivate
 {
-  ClutterActor * stage;
+  ClutterActor * arena;
   MBWMList     * desktops;
   ClutterActor * shadow;
 
@@ -551,17 +551,22 @@ mb_wm_comp_mgr_clutter_init (MBWMObject *obj, va_list vap)
   MBWMCompMgrClutter         * cmgr = MB_WM_COMP_MGR_CLUTTER (obj);
   MBWMCompMgrClutterPrivate  * priv;
   MBWindowManager            * wm = mgr->wm;
-  ClutterActor               * desktop;
+  ClutterActor               * desktop, * arena;
+
   priv = mb_wm_util_malloc0 (sizeof (MBWMCompMgrClutterPrivate));
   cmgr->priv = priv;
 
   XCompositeRedirectSubwindows (wm->xdpy, wm->root_win->xwindow,
 				CompositeRedirectManual);
 
-  priv->stage = clutter_stage_get_default ();
+  priv->arena = arena = clutter_group_new ();
+  clutter_container_add_actor (CLUTTER_CONTAINER (clutter_stage_get_default()),
+			       arena);
+  clutter_actor_show (arena);
+
   desktop = clutter_group_new ();
   clutter_actor_show (desktop);
-  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), desktop);
+  clutter_container_add_actor (CLUTTER_CONTAINER (arena), desktop);
   priv->desktops = mb_wm_util_list_append (priv->desktops, desktop);
 
   return 1;
@@ -645,7 +650,7 @@ mb_wm_comp_mgr_clutter_turn_on_real (MBWMCompMgr *mgr)
 
   if (priv->overlay_window == None)
     {
-      ClutterActor    * stage = priv->stage;
+      ClutterActor    * stage = clutter_stage_get_default ();
       ClutterColor      clr = {0, 0, 0, 0xff };
       Window            xwin;
       XserverRegion     region;
@@ -882,7 +887,7 @@ mb_wm_comp_mgr_clutter_get_nth_desktop (MBWMCompMgrClutter * cmgr, int desktop)
 	  /* End of the line -- append new desktop */
 	  ClutterActor * d = clutter_group_new ();
 	  priv->desktops = mb_wm_util_list_append (priv->desktops, d);
-	  clutter_container_add_actor (CLUTTER_CONTAINER (priv->stage), d);
+	  clutter_container_add_actor (CLUTTER_CONTAINER (priv->arena), d);
 
 	  l = l->next;
 	}
@@ -890,6 +895,20 @@ mb_wm_comp_mgr_clutter_get_nth_desktop (MBWMCompMgrClutter * cmgr, int desktop)
 
   return CLUTTER_ACTOR (l->data);
 }
+
+/*
+ * Returns the arena; this is an intermediate group which contains all the
+ * other actors the CM uses. The caller of this function holds a reference
+ * to the returned ClutterActor and must release it once no longer needed.
+ */
+ClutterActor *
+mb_wm_comp_mgr_clutter_get_arena (MBWMCompMgrClutter *cmgr)
+{
+  MBWMCompMgrClutterPrivate * priv = cmgr->priv;
+
+  return g_object_ref (priv->arena);
+}
+
 
 static void
 mb_wm_comp_mgr_clutter_select_desktop (MBWMCompMgr * mgr,
@@ -1310,12 +1329,14 @@ static Bool
 mb_wm_comp_mgr_is_my_window_real (MBWMCompMgr * mgr, Window xwin)
 {
   MBWMCompMgrClutterPrivate * priv = MB_WM_COMP_MGR_CLUTTER (mgr)->priv;
+  ClutterActor              * stage;
 
   if (priv->overlay_window == xwin)
     return True;
 
-  if (priv->stage &&
-      (xwin == clutter_x11_get_stage_window (CLUTTER_STAGE (priv->stage))))
+  stage = clutter_stage_get_default ();
+
+  if (xwin == clutter_x11_get_stage_window (CLUTTER_STAGE (stage)))
     return True;
 
   return False;
