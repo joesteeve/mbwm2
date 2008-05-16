@@ -5,7 +5,7 @@
 #include <signal.h>
 
 #if ENABLE_CLUTTER_COMPOSITE_MANAGER
-# include <clutter/clutter-x11.h>
+# include <clutter/x11/clutter-x11.h>
 #endif
 
 #if USE_GTK

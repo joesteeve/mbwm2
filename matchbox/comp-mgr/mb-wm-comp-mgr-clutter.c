@@ -1014,8 +1014,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
 		  data = mb_wm_comp_mgr_clutter_shadow_gaussian_make_tile ();
 
-		  txt = g_object_new (CLUTTER_TYPE_TEXTURE, "tiled",
-				      FALSE, NULL);
+		  txt = g_object_new (CLUTTER_TYPE_TEXTURE, NULL);
 
 		  clutter_texture_set_from_rgb_data (CLUTTER_TEXTURE (txt),
 						     data,
@@ -1731,88 +1730,155 @@ tidy_texture_frame_paint (ClutterActor *self)
   ClutterCloneTexture     *clone_texture = CLUTTER_CLONE_TEXTURE (self);
   ClutterTexture          *parent_texture;
   guint                    width, height;
-  gint                     pwidth, pheight, ex, ey;
-  ClutterFixed             tx1, ty1, tx2, ty2, tw, th;
-  GLenum                   target_type;
+  guint                    tex_width, tex_height;
+  guint                    ex, ey;
+  ClutterFixed             tx1, ty1, tx2, ty2;
   ClutterColor             col = { 0xff, 0xff, 0xff, 0xff };
+  CoglHandle               cogl_texture;
 
   priv = TIDY_TEXTURE_FRAME (self)->priv;
 
-  /* no need to paint stuff if we don't have a texture to reflect */
+  /* no need to paint stuff if we don't have a texture */
   parent_texture = clutter_clone_texture_get_parent_texture (clone_texture);
   if (!parent_texture)
     return;
 
-  /* parent texture may have been hidden, there for need to make sure its
-   * realised with resources available.
+  /* parent texture may have been hidden, so need to make sure it gets
+   * realized
    */
   if (!CLUTTER_ACTOR_IS_REALIZED (parent_texture))
     clutter_actor_realize (CLUTTER_ACTOR (parent_texture));
 
-  if (clutter_texture_is_tiled (parent_texture))
-    {
-      g_warning("tiled textures not yet supported...");
-      return;
-    }
+  cogl_texture = clutter_texture_get_cogl_texture (parent_texture);
+  if (cogl_texture == COGL_INVALID_HANDLE)
+    return;
 
   cogl_push_matrix ();
 
-#define FX(x) CLUTTER_INT_TO_FIXED(x)
+  tex_width  = cogl_texture_get_width (cogl_texture);
+  tex_height = cogl_texture_get_height (cogl_texture);
 
-  clutter_texture_get_base_size (parent_texture, &pwidth, &pheight);
   clutter_actor_get_size (self, &width, &height);
 
-  tx1 = FX (priv->left);
-  tx2 = FX (pwidth - priv->right);
-  ty1 = FX (priv->top);
-  ty2 = FX (pheight - priv->bottom);
-  tw = FX (pwidth);
-  th = FX (pheight);
+  tx1 = CLUTTER_INT_TO_FIXED (priv->left) / tex_width;
+  tx2 = CLUTTER_INT_TO_FIXED (tex_width - priv->right) / tex_width;
+  ty1 = CLUTTER_INT_TO_FIXED (priv->top) / tex_height;
+  ty2 = CLUTTER_INT_TO_FIXED (tex_height - priv->bottom) / tex_height;
 
-  if (clutter_feature_available (CLUTTER_FEATURE_TEXTURE_RECTANGLE))
-    {
-      target_type = CGL_TEXTURE_RECTANGLE_ARB;
-    }
-  else
-    {
-      target_type = CGL_TEXTURE_2D;
-
-      tw = clutter_util_next_p2 (pwidth);
-      th = clutter_util_next_p2 (pheight);
-
-      tx1 = tx1/tw;
-      tx2 = tx2/tw;
-      ty1 = ty1/th;
-      ty2 = ty2/th;
-      tw = FX(pwidth)/tw;
-      th = FX(pheight)/th;
-    }
-
-  col.alpha = clutter_actor_get_opacity (self);
+  col.alpha = clutter_actor_get_abs_opacity (self);
   cogl_color (&col);
-
-  clutter_texture_bind_tile (parent_texture, 0);
 
   ex = width - priv->right;
   if (ex < 0)
-    ex = priv->right; 		/* FIXME */
+    ex = priv->right; 		/* FIXME ? */
 
   ey = height - priv->bottom;
   if (ey < 0)
-    ey = priv->bottom; 		/* FIXME */
+    ey = priv->bottom; 		/* FIXME ? */
 
-  cogl_texture_quad (0, priv->left, 0, priv->top, 0, 0, tx1, ty1);
-  cogl_texture_quad (priv->left, ex, 0, priv->top, tx1, 0, tx2, ty1);
-  cogl_texture_quad (ex, width, 0, priv->top, tx2, 0, tw, ty1);
-  cogl_texture_quad (0, priv->left, priv->top, ey, 0, ty1, tx1, ty2);
-  cogl_texture_quad (priv->left, ex, priv->top, ey, tx1, ty1, tx2, ty2);
-  cogl_texture_quad (ex, width, priv->top, ey, tx2, ty1, tw, ty2);
-  cogl_texture_quad (0, priv->left, ey, height, 0, ty2, tx1, th);
-  cogl_texture_quad (priv->left, ex, ey, height, tx1, ty2, tx2, th);
-  cogl_texture_quad (ex, width, ey, height, tx2, ty2, tw, th);
+#define FX(x) CLUTTER_INT_TO_FIXED(x)
+
+  /* top left corner */
+  cogl_texture_rectangle (cogl_texture,
+                          0,
+                          0,
+                          FX(priv->left), /* FIXME: clip if smaller */
+                          FX(priv->top),
+                          0,
+                          0,
+                          tx1,
+                          ty1);
+
+  /* top middle */
+  cogl_texture_rectangle (cogl_texture,
+                          FX(priv->left),
+                          FX(priv->top),
+                          FX(ex),
+                          0,
+                          tx1,
+                          0,
+                          tx2,
+                          ty1);
+
+  /* top right */
+  cogl_texture_rectangle (cogl_texture,
+                          FX(ex),
+                          0,
+                          FX(width),
+                          FX(priv->top),
+                          tx2,
+                          0,
+                          CFX_ONE,
+                          ty1);
+
+  /* mid left */
+  cogl_texture_rectangle (cogl_texture,
+                          0,
+                          FX(priv->top),
+                          FX(priv->left),
+                          FX(ey),
+                          0,
+                          ty1,
+                          tx1,
+                          ty2);
+
+  /* center */
+  cogl_texture_rectangle (cogl_texture,
+                          FX(priv->left),
+                          FX(priv->top),
+                          FX(ex),
+                          FX(ey),
+                          tx1,
+                          ty1,
+                          tx2,
+                          ty2);
+
+  /* mid right */
+  cogl_texture_rectangle (cogl_texture,
+                          FX(ex),
+                          FX(priv->top),
+                          FX(width),
+                          FX(ey),
+                          tx2,
+                          ty1,
+                          CFX_ONE,
+                          ty2);
+
+  /* bottom left */
+  cogl_texture_rectangle (cogl_texture,
+                          0,
+                          FX(ey),
+                          FX(priv->left),
+                          FX(height),
+                          0,
+                          ty2,
+                          tx1,
+                          CFX_ONE);
+
+  /* bottom center */
+  cogl_texture_rectangle (cogl_texture,
+                          FX(priv->left),
+                          FX(ey),
+                          FX(ex),
+                          FX(height),
+                          tx1,
+                          ty2,
+                          tx2,
+                          CFX_ONE);
+
+  /* bottom right */
+  cogl_texture_rectangle (cogl_texture,
+                          FX(ex),
+                          FX(ey),
+                          FX(width),
+                          FX(height),
+                          tx2,
+                          ty2,
+                          CFX_ONE,
+                          CFX_ONE);
+
 
   cogl_pop_matrix ();
-
 #undef FX
 }
 

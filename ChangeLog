@@ -1,5 +1,11 @@
 2008-05-16  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/managers/simple/matchbox-window-manager-2-simple.c:
+	Further changes to sync up with clutter.
+
+2008-05-16  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c
 	* matchbox/core/mb-window-manager.c:
 	Sync up with changes to clutter API.
