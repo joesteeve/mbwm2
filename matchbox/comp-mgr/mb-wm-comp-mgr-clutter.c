@@ -57,10 +57,6 @@ static void
 mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter *,
 				  MBWMCompMgrClutterClient *);
 
-static void
-mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter *,
-				     MBWMCompMgrClutterClient *);
-
 enum
 {
   MBWMCompMgrClutterClientMapped        = (1<<0),
@@ -273,10 +269,8 @@ mb_wm_comp_mgr_clutter_client_destroy (MBWMObject* obj)
   MBWMCompMgrClutter       * mgr = MB_WM_COMP_MGR_CLUTTER (wm->comp_mgr);
   int                        i;
 
-  mb_wm_comp_mgr_clutter_remove_actor (mgr, cclient);
-
   if (cclient->priv->actor)
-    g_object_unref (cclient->priv->actor);
+    clutter_actor_destroy (cclient->priv->actor);
 
   if (cclient->priv->pixmap)
     XFreePixmap (wm->xdpy, cclient->priv->pixmap);
@@ -465,7 +459,7 @@ mb_wm_comp_mgr_clutter_private_free (MBWMCompMgrClutter *mgr)
   MBWMCompMgrClutterPrivate * priv = mgr->priv;
 
   if (priv->shadow)
-    g_object_unref (priv->shadow);
+    clutter_actor_destroy (priv->shadow);
 
   free (priv);
 }
@@ -1340,19 +1334,6 @@ mb_wm_comp_mgr_is_my_window_real (MBWMCompMgr * mgr, Window xwin)
     return True;
 
   return False;
-}
-
-static void
-mb_wm_comp_mgr_clutter_remove_actor (MBWMCompMgrClutter       * cmgr,
-				     MBWMCompMgrClutterClient * cclient)
-{
-  MBWindowManagerClient * c = MB_WM_COMP_MGR_CLIENT (cclient)->wm_client;
-  ClutterActor          * d;
-
-  d = mb_wm_comp_mgr_clutter_get_nth_desktop (cmgr,
-					      mb_wm_client_get_desktop (c));
-
-  clutter_container_remove_actor (CLUTTER_CONTAINER (d), cclient->priv->actor);
 }
 
 static void
