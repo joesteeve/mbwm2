@@ -40,6 +40,13 @@ typedef struct _MBWMCompMgrClutterClient MBWMCompMgrClutterClient;
 typedef struct _MBWMCompMgrClutterClientClass MBWMCompMgrClutterClientClass;
 typedef struct _MBWMCompMgrClutterClientPrivate MBWMCompMgrClutterClientPrivate;
 
+typedef enum
+{
+  MBWMCompMgrClutterClientMapped        = (1<<0),
+  MBWMCompMgrClutterClientDontUpdate    = (1<<1),
+  MBWMCompMgrClutterClientDone          = (1<<2),
+  MBWMCompMgrClutterClientEffectRunning = (1<<3),
+} MBWMCompMgrClutterClientFlags;
 
 struct _MBWMCompMgrClutter
 {
@@ -75,6 +82,14 @@ mb_wm_comp_mgr_clutter_client_class_type ();
 
 ClutterActor *
 mb_wm_comp_mgr_clutter_client_get_actor (MBWMCompMgrClutterClient *cclient);
+
+void
+mb_wm_comp_mgr_clutter_client_set_flags (MBWMCompMgrClutterClient     *cclient,
+					 MBWMCompMgrClutterClientFlags flags);
+
+void
+mb_wm_comp_mgr_clutter_client_unset_flags (MBWMCompMgrClutterClient  *cclient,
+					   MBWMCompMgrClutterClientFlags flags);
 
 MBWMList *
 mb_wm_comp_mgr_clutter_get_desktops (MBWMCompMgrClutter *cmgr);

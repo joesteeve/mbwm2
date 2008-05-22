@@ -1,5 +1,12 @@
 2008-05-22  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.h:
+	Added public API for setting client flags to allow subclasses of
+	MBWMCompMgrClutter to efficiently implement effects.
+
+2008-05-22  Tomas Frydrych  <tf@o-hand.com>
+
 	* /matchbox/core/mb-wm-client.c:
 	(mb_wm_client_shutdown):
 	Fixed for clients that do not have _NET_WM_PID set.

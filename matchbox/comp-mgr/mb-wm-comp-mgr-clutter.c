@@ -57,14 +57,6 @@ static void
 mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter *,
 				  MBWMCompMgrClutterClient *);
 
-enum
-{
-  MBWMCompMgrClutterClientMapped        = (1<<0),
-  MBWMCompMgrClutterClientDontUpdate    = (1<<1),
-  MBWMCompMgrClutterClientDone          = (1<<2),
-  MBWMCompMgrClutterClientEffectRunning = (1<<3),
-};
-
 /*
  * A helper object to store manager's per-client data
  */
@@ -354,6 +346,22 @@ mb_wm_comp_mgr_clutter_client_show_real (MBWMCompMgrClient * client)
   cclient->priv->flags &= ~MBWMCompMgrClutterClientDontUpdate;
   clutter_actor_show_all (cclient->priv->actor);
 }
+
+void
+mb_wm_comp_mgr_clutter_client_set_flags (MBWMCompMgrClutterClient     *cclient,
+					 MBWMCompMgrClutterClientFlags flags)
+{
+  cclient->priv->flags |= flags;
+}
+
+
+void
+mb_wm_comp_mgr_clutter_client_unset_flags (MBWMCompMgrClutterClient  *cclient,
+					   MBWMCompMgrClutterClientFlags flags)
+{
+  cclient->priv->flags &= ~flags;
+}
+
 
 /*
  * MBWMCompMgrClutterClientEventEffect
