@@ -784,10 +784,7 @@ mb_wm_client_shutdown (MBWindowManagerClient *client)
   const char        *machine = win->machine;
   pid_t              pid     = win->pid;
 
-  if (!machine || !pid)
-    return;
-
-  if (gethostname (buf, sizeof(buf)-1) == 0)
+  if (machine && pid && (gethostname (buf, sizeof(buf)-1) == 0))
     {
       if (!strcmp (buf, machine))
 	{
