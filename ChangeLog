@@ -1,3 +1,9 @@
+2008-05-23  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.h:
+	Added getter for client flags.
+	
 2008-05-22  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:

@@ -362,6 +362,12 @@ mb_wm_comp_mgr_clutter_client_unset_flags (MBWMCompMgrClutterClient  *cclient,
   cclient->priv->flags &= ~flags;
 }
 
+MBWMCompMgrClutterClientFlags
+mb_wm_comp_mgr_clutter_client_get_flags (MBWMCompMgrClutterClient  *cclient)
+{
+  return (MBWMCompMgrClutterClientFlags) cclient->priv->flags;
+}
+
 
 /*
  * MBWMCompMgrClutterClientEventEffect

@@ -91,6 +91,9 @@ void
 mb_wm_comp_mgr_clutter_client_unset_flags (MBWMCompMgrClutterClient  *cclient,
 					   MBWMCompMgrClutterClientFlags flags);
 
+MBWMCompMgrClutterClientFlags
+mb_wm_comp_mgr_clutter_client_get_flags (MBWMCompMgrClutterClient  *cclient);
+
 MBWMList *
 mb_wm_comp_mgr_clutter_get_desktops (MBWMCompMgrClutter *cmgr);
 
