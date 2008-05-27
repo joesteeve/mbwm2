@@ -482,13 +482,15 @@ static void
 mb_wm_comp_mgr_clutter_register_client_real (MBWMCompMgr           * mgr,
 					     MBWindowManagerClient * c)
 {
-  MBWMCompMgrClient  *cclient;
-  MBWMCompMgrClutter *cmgr = MB_WM_COMP_MGR_CLUTTER (mgr);
+  MBWMCompMgrClient       *cclient;
+  MBWMCompMgrClutter      *cmgr = MB_WM_COMP_MGR_CLUTTER (mgr);
+  MBWMCompMgrClutterClass *klass
+    = MB_WM_COMP_MGR_CLUTTER_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   if (c->cm_client)
     return;
 
-  cclient = mb_wm_comp_mgr_clutter_client_new (c);
+  cclient = klass->client_new (c);
   c->cm_client = cclient;
 }
 
@@ -530,7 +532,9 @@ mb_wm_comp_mgr_clutter_handle_damage (XDamageNotifyEvent * de,
 static void
 mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
 {
-  MBWMCompMgrClass *cm_klass = MB_WM_COMP_MGR_CLASS (klass);
+  MBWMCompMgrClass        *cm_klass = MB_WM_COMP_MGR_CLASS (klass);
+  MBWMCompMgrClutterClass *clutter_klass =
+    MB_WM_COMP_MGR_CLUTTER_CLASS (klass);
 
 #if MBWM_WANT_DEBUG
   klass->klass_name = "MBWMCompMgrClutter";
@@ -550,6 +554,8 @@ mb_wm_comp_mgr_clutter_class_init (MBWMObjectClass *klass)
   cm_klass->restack           = mb_wm_comp_mgr_clutter_restack_real;
   cm_klass->select_desktop    = mb_wm_comp_mgr_clutter_select_desktop;
   cm_klass->handle_damage     = mb_wm_comp_mgr_clutter_handle_damage;
+
+  clutter_klass->client_new   = mb_wm_comp_mgr_clutter_client_new;
 }
 
 static int

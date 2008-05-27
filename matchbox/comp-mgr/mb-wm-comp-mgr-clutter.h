@@ -57,6 +57,8 @@ struct _MBWMCompMgrClutter
 struct _MBWMCompMgrClutterClass
 {
   MBWMCompMgrClass  parent;
+
+  MBWMCompMgrClient * (*client_new) (MBWindowManagerClient * client);
 };
 
 int
