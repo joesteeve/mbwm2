@@ -1516,6 +1516,15 @@ mb_wm_init (MBWindowManager * wm)
 #endif
 
   mb_wm_manage_preexistsing_wins (wm);
+
+  /*
+   * Force an initial stack sync even when there are no managed windows (when
+   * using compositor, this triggers call to MBWMCompMgr::restack(), allowing
+   * the CM to set its house into order (i.e., a clutter-based compositor
+   * might want to reorganize any auxiliar actors that it might have, depending
+   * on whether the initial stack is empty or not.
+   */
+  wm->sync_type |= MBWMSyncStacking;
 }
 
 
