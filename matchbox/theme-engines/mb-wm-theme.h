@@ -78,7 +78,6 @@ struct MBWMThemeClass
 
   void  (*resize_decor)         (MBWMTheme             *theme,
 			         MBWMDecor             *decor);
-
 };
 
 struct MBWMTheme
@@ -184,5 +183,12 @@ mb_wm_theme_get_shadow_type (MBWMTheme * theme);
 
 Bool
 mb_wm_theme_use_compositing_mgr (MBWMTheme * theme);
+
+typedef unsigned int (*MBWMThemeCustomTypeFunc) (const char *type_name,
+						 void       *user_data);
+
+void
+mb_wm_theme_set_custom_type_func (MBWMThemeCustomTypeFunc  func,
+				  void                    *user_data);
 
 #endif

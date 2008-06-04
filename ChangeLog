@@ -1,3 +1,10 @@
+2008-06-04  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/theme-engines/mb-wm-theme.c:
+	* matchbox/theme-engines/mb-wm-theme.h:
+	(mb_wm_theme_set_custom_type_func):
+	Added a hook to allow theming of custom client types.
+
 2008-06-02  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-window-manager.c:

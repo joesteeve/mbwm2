@@ -28,6 +28,9 @@
 #define SIMPLE_FRAME_TITLEBAR_HEIGHT 40
 #define SIMPLE_FRAME_EDGE_SIZE 3
 
+MBWMThemeCustomTypeFunc  custom_type_func      = NULL;
+void                    *custom_type_func_data = NULL;
+
 static void
 xml_element_start_cb (void *data, const char *tag, const char **expat_attr);
 
@@ -941,6 +944,8 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		c->type = MBWMClientTypeDesktop;
 	      else if (!strcmp (*(p+1), "notification"))
 		c->type = MBWMClientTypeNote;
+	      else if (custom_type_func)
+		c->type = custom_type_func (*(p+1), custom_type_func_data);
 	    }
 	  else if (!strcmp (*p, "shaped"))
 	    {
@@ -2004,3 +2009,18 @@ mb_wm_theme_simple_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
 
   XClearWindow (wm->xdpy, xwin);
 }
+
+/*
+ * Installs a global handler that can be used to translate custom client type
+ * names to their numerical values.
+ *
+ * NB: this is not an object function, since we need it before we allocate the
+ *     actual MBWMTheme object in the XML parser.
+ */
+void mb_wm_theme_set_custom_type_func (MBWMThemeCustomTypeFunc  func,
+				       void                    *user_data)
+{
+  custom_type_func = func;
+  custom_type_func_data = user_data;
+}
+
