@@ -1,5 +1,11 @@
 2008-06-04  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-main-context.c:
+	(mb_wm_main_context_handle_x_event):
+	Sanitized so we do not crash if a callback removes itself.
+
+2008-06-04  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/theme-engines/mb-wm-theme.c:
 	* matchbox/theme-engines/mb-wm-theme.h:
 	(mb_wm_theme_set_custom_type_func):

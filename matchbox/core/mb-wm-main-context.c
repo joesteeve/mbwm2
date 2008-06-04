@@ -207,6 +207,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWMXEventFunc)XE_ITER_GET_FUNC(iter)
@@ -214,7 +216,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
     }
   else
@@ -240,6 +242,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerMapRequestFunc)XE_ITER_GET_FUNC(iter)
@@ -248,7 +252,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case MapNotify:
@@ -257,6 +261,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerMapNotifyFunc)XE_ITER_GET_FUNC(iter)
@@ -265,7 +271,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case UnmapNotify:
@@ -285,6 +291,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerUnmapNotifyFunc)XE_ITER_GET_FUNC(iter)
@@ -293,7 +301,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case DestroyNotify:
@@ -302,6 +310,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerDestroyNotifyFunc)XE_ITER_GET_FUNC(iter)
@@ -310,7 +320,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case ConfigureNotify:
@@ -333,6 +343,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerConfigureNotifyFunc)XE_ITER_GET_FUNC(iter)
@@ -341,7 +353,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case ConfigureRequest:
@@ -364,6 +376,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerConfigureRequestFunc)XE_ITER_GET_FUNC(iter)
@@ -372,7 +386,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case KeyPress:
@@ -381,6 +395,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerKeyPressFunc)XE_ITER_GET_FUNC(iter)
@@ -389,7 +405,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case PropertyNotify:
@@ -413,6 +429,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerPropertyNotifyFunc)XE_ITER_GET_FUNC(iter)
@@ -421,7 +439,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case ButtonPress:
@@ -430,6 +448,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerButtonPressFunc)XE_ITER_GET_FUNC(iter)
@@ -438,7 +458,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case ButtonRelease:
@@ -447,6 +467,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerButtonReleaseFunc)XE_ITER_GET_FUNC(iter)
@@ -455,7 +477,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     case MotionNotify:
@@ -464,6 +486,8 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
       while (iter)
 	{
 	  Window msg_xwin = XE_ITER_GET_XWIN(iter);
+	  MBWMList * next = iter->next;
+
 	  if (msg_xwin == None || msg_xwin == xwin)
 	    {
 	      if (!(MBWindowManagerMotionNotifyFunc)XE_ITER_GET_FUNC(iter)
@@ -472,7 +496,7 @@ mb_wm_main_context_handle_x_event (XEvent          *xev,
 		break;
 	    }
 
-	  iter = iter->next;
+	  iter = next;
 	}
       break;
     }
