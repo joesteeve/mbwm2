@@ -45,6 +45,7 @@ typedef struct MBWMEventFuncs
   MBWMList *button_press;
   MBWMList *button_release;
   MBWMList *motion_notify;
+  MBWMList *client_message;
 
 #if ENABLE_COMPOSITE
   MBWMList *damage_notify;

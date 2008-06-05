@@ -307,6 +307,10 @@ typedef Bool (*MBWindowManagerMapNotifyFunc)
      (XMapEvent         *xev,
       void              *userdata);
 
+typedef Bool (*MBWindowManagerClientMessageFunc)
+     (XClientMessageEvent *xev,
+      void                *userdata);
+
 typedef Bool (*MBWindowManagerMapRequestFunc)
      (XMapRequestEvent  *xev,
       void              *userdata);
