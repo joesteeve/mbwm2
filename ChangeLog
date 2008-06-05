@@ -1,3 +1,13 @@
+2008-06-05  Tomas Frydrych  <tf@o-hand.com>
+
+	* /matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(mb_wm_comp_mgr_clutter_restack_real):
+	Do a parent check when restacking to avoid triggering clutter
+	warning.
+
+	(mb_wm_comp_mgr_clutter_add_actor):
+	Handle clients with desktop unset gracefully.
+
 2008-06-04  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-wm-main-context.c:

@@ -834,20 +834,17 @@ mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
   MBWindowManager    * wm = mgr->wm;
   MBWMCompMgrClutter * cmgr = MB_WM_COMP_MGR_CLUTTER (mgr);
   MBWMList           * l;
-  int                  desktop_count;
-  int                  i;
+  int                  i = 0;
 
   l = cmgr->priv->desktops;
-
-  desktop_count = mb_wm_util_list_length (l);
-
 
   if (!mb_wm_stack_empty (wm))
     {
       MBWindowManagerClient * c;
 
-      for (i = 0; i < desktop_count; ++i)
+      while (l)
 	{
+	  ClutterActor *desktop = l->data;
 	  ClutterActor * prev = NULL;
 
 	  mb_wm_stack_enumerate (wm, c)
@@ -862,13 +859,16 @@ mb_wm_comp_mgr_clutter_restack_real (MBWMCompMgr *mgr)
 
 	      a = cc->priv->actor;
 
-	      if (!a)
+	      if (!a || clutter_actor_get_parent (a) != desktop)
 		continue;
 
 	      clutter_actor_raise (a, prev);
 
 	      prev = a;
 	    }
+
+	  l = l->next;
+	  ++i;
 	}
     }
 }
@@ -1074,6 +1074,7 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
 
 	  clutter_actor_set_size (rect, geom.width, geom.height);
 	  clutter_actor_show (rect);
+
 	  clutter_container_add (CLUTTER_CONTAINER (actor),
 				 rect, texture, NULL);
 	}
@@ -1362,9 +1363,15 @@ mb_wm_comp_mgr_clutter_add_actor (MBWMCompMgrClutter       * cmgr,
 {
   MBWindowManagerClient * c = MB_WM_COMP_MGR_CLIENT (cclient)->wm_client;
   ClutterActor          * d;
+  int                     desktop = mb_wm_client_get_desktop (c);
 
-  d = mb_wm_comp_mgr_clutter_get_nth_desktop (cmgr,
-					      mb_wm_client_get_desktop (c));
+  /*
+   * Sanity check; if the desktop is unset, add to desktop 0.
+   */
+  if (desktop < 0)
+    desktop = 0;
+
+  d = mb_wm_comp_mgr_clutter_get_nth_desktop (cmgr, desktop);
 
   clutter_container_add_actor (CLUTTER_CONTAINER (d), cclient->priv->actor);
 }
