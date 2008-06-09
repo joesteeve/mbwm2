@@ -1,3 +1,13 @@
+2008-06-09  Tomas Frydrych  <tf@o-hand.com>
+
+	* /matchbox/comp-mgr/mb-wm-comp-mgr.c:
+	(mb_wm_comp_mgr_client_show):
+	(mb_wm_comp_mgr_client_configure):
+	(mb_wm_comp_mgr_client_repair):
+	(mb_wm_comp_mgr_register_client):
+	(mb_wm_comp_mgr_unregister_client):
+	NULL checks.
+
 2008-06-05  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-wm-main-context.c:

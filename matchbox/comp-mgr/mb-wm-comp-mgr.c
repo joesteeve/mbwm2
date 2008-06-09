@@ -122,8 +122,12 @@ mb_wm_comp_mgr_client_hide (MBWMCompMgrClient * client)
 void
 mb_wm_comp_mgr_client_show (MBWMCompMgrClient * client)
 {
-  MBWMCompMgrClientClass *klass
-    = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
+  MBWMCompMgrClientClass *klass;
+
+  if (!client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
 
   MBWM_ASSERT (klass->show != NULL);
   klass->show (client);
@@ -132,8 +136,12 @@ mb_wm_comp_mgr_client_show (MBWMCompMgrClient * client)
 void
 mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client)
 {
-  MBWMCompMgrClientClass *klass
-    = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
+  MBWMCompMgrClientClass *klass;
+
+  if (!client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
 
   MBWM_ASSERT (klass->configure != NULL);
   klass->configure (client);
@@ -142,8 +150,12 @@ mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client)
 void
 mb_wm_comp_mgr_client_repair (MBWMCompMgrClient * client)
 {
-  MBWMCompMgrClientClass *klass
-    = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
+  MBWMCompMgrClientClass *klass;
+
+  if (!client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
 
   MBWM_ASSERT (klass->repair != NULL);
   klass->repair (client);
@@ -241,8 +253,12 @@ void
 mb_wm_comp_mgr_register_client (MBWMCompMgr           * mgr,
 				MBWindowManagerClient * client)
 {
-  MBWMCompMgrClass *klass
-    = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+  MBWMCompMgrClass *klass;
+
+  if (!client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   MBWM_ASSERT (klass->register_client != NULL);
   klass->register_client (mgr, client);
@@ -255,8 +271,12 @@ void
 mb_wm_comp_mgr_unregister_client (MBWMCompMgr           * mgr,
 				  MBWindowManagerClient * client)
 {
-  MBWMCompMgrClass *klass
-    = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
+  MBWMCompMgrClass *klass;
+
+  if (!client)
+    return;
+
+  klass = MB_WM_COMP_MGR_CLASS (MB_WM_OBJECT_GET_CLASS (mgr));
 
   if (!client->cm_client)
     return;
