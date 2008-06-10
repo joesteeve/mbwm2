@@ -184,11 +184,18 @@ mb_wm_theme_get_shadow_type (MBWMTheme * theme);
 Bool
 mb_wm_theme_use_compositing_mgr (MBWMTheme * theme);
 
-typedef unsigned int (*MBWMThemeCustomTypeFunc) (const char *type_name,
-						 void       *user_data);
+typedef unsigned int (*MBWMThemeCustomClientTypeFunc) (const char *type_name,
+						       void       *user_data);
 
 void
-mb_wm_theme_set_custom_type_func (MBWMThemeCustomTypeFunc  func,
-				  void                    *user_data);
+mb_wm_theme_set_custom_client_type_func (MBWMThemeCustomClientTypeFunc  func,
+					 void                      *user_data);
+
+typedef unsigned int (*MBWMThemeCustomThemeTypeFunc) (const char *type_name,
+						      void       *user_data);
+
+void
+mb_wm_theme_set_custom_theme_type_func (MBWMThemeCustomThemeTypeFunc  func,
+					 void                      *user_data);
 
 #endif
