@@ -1211,6 +1211,9 @@ xml_element_start_cb (void *data, const char *tag, const char **expat_attr)
 		b->type = MBWMDecorButtonFullscreen;
 	      else if (!strcmp (*(p+1), "help"))
 		b->type = MBWMDecorButtonHelp;
+	      else if (custom_button_type_func)
+		b->type = custom_button_type_func (*(p+1),
+						custom_button_type_func_data);
 	    }
 	  else if (!strcmp (*p, "packing"))
 	    {

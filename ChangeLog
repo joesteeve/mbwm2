@@ -1,5 +1,11 @@
 2008-06-10  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/theme-engines/mb-wm-theme.c:
+	(xml_element_start_cb):
+	Hooked custom button type function in.
+
+2008-06-10  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/core/mb-wm-decor.c:
 	(mb_wm_decor_button_new):
 	Added missing type parameter.
