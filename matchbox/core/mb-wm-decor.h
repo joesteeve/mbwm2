@@ -208,12 +208,13 @@ void
 mb_wm_decor_button_handle_repaint (MBWMDecorButton *button);
 
 MBWMDecorButton*
-mb_wm_decor_button_new (MBWindowManager            *wm,
-			MBWMDecorButtonPack         pack,
-			MBWMDecor                  *decor,
-			MBWMDecorButtonPressedFunc  press,
-			MBWMDecorButtonReleasedFunc release,
-			MBWMDecorButtonFlags        flags);
+mb_wm_decor_button_new (MBWindowManager               *wm,
+			MBWMDecorButtonType            type,
+			MBWMDecorButtonPack            pack,
+			MBWMDecor                     *decor,
+			MBWMDecorButtonPressedFunc     press,
+			MBWMDecorButtonReleasedFunc    release,
+			MBWMDecorButtonFlags           flags);
 
 
 MBWMDecorButton*

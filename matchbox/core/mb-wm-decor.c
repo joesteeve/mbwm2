@@ -1095,17 +1095,19 @@ mb_wm_decor_button_move_to (MBWMDecorButton *button, int x, int y)
 }
 
 MBWMDecorButton*
-mb_wm_decor_button_new (MBWindowManager            *wm,
-			MBWMDecorButtonPack         pack,
-			MBWMDecor                  *decor,
-			MBWMDecorButtonPressedFunc  press,
-			MBWMDecorButtonReleasedFunc release,
-			MBWMDecorButtonFlags        flags)
+mb_wm_decor_button_new (MBWindowManager              *wm,
+			MBWMDecorButtonType           type,
+			MBWMDecorButtonPack           pack,
+			MBWMDecor                    *decor,
+			MBWMDecorButtonPressedFunc    press,
+			MBWMDecorButtonReleasedFunc   release,
+			MBWMDecorButtonFlags          flags)
 {
   MBWMObject  *button;
 
   button = mb_wm_object_new (MB_WM_TYPE_DECOR_BUTTON,
 			     MBWMObjectPropWm,                      wm,
+			     MBWMObjectPropDecorButtonType,         type,
 			     MBWMObjectPropDecorButtonPack,         pack,
 			     MBWMObjectPropDecor,                   decor,
 			     MBWMObjectPropDecorButtonPressedFunc,  press,
