@@ -51,4 +51,6 @@ struct MBWMThemePng
 #endif
 };
 
+int mb_wm_theme_png_class_type (void);
+
 #endif
