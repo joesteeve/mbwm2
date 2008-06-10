@@ -1,5 +1,12 @@
 2008-06-10  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/theme-engines/mb-wm-theme.c:
+	* matchbox/theme-engines/mb-wm-theme.h:
+	(mb_wm_theme_set_custom_button_type_func):
+	Added a hook to simplify subclassing of theme-engines.
+
+2008-06-10  Tomas Frydrych  <tf@o-hand.com>
+
 	* matchbox/theme-engines/mb-wm-theme-png.h:
 	Added mb_wm_theme_png_class_type() prototype.
 

@@ -31,6 +31,9 @@
 MBWMThemeCustomClientTypeFunc  custom_client_type_func      = NULL;
 void                          *custom_client_type_func_data = NULL;
 
+MBWMThemeCustomButtonTypeFunc  custom_button_type_func      = NULL;
+void                          *custom_button_type_func_data = NULL;
+
 MBWMThemeCustomThemeTypeFunc   custom_theme_type_func      = NULL;
 void                          *custom_theme_type_func_data = NULL;
 
@@ -2045,5 +2048,20 @@ mb_wm_theme_set_custom_theme_type_func (MBWMThemeCustomThemeTypeFunc  func,
 {
   custom_theme_type_func = func;
   custom_theme_type_func_data = user_data;
+}
+
+/*
+ * Installs a global handler that can be used to translate custom button names
+ * to their numerical values.
+ *
+ * NB: this is not an object function, since we need it before we allocate the
+ *     actual MBWMTheme object in the XML parser.
+ */
+void
+mb_wm_theme_set_custom_button_type_func (MBWMThemeCustomButtonTypeFunc  func,
+					 void                     *user_data)
+{
+  custom_button_type_func = func;
+  custom_button_type_func_data = user_data;
 }
 

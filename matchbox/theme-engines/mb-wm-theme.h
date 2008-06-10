@@ -191,6 +191,13 @@ void
 mb_wm_theme_set_custom_client_type_func (MBWMThemeCustomClientTypeFunc  func,
 					 void                      *user_data);
 
+typedef unsigned int (*MBWMThemeCustomButtonTypeFunc) (const char *type_name,
+						       void       *user_data);
+
+void
+mb_wm_theme_set_custom_button_type_func (MBWMThemeCustomButtonTypeFunc  func,
+					 void                      *user_data);
+
 typedef unsigned int (*MBWMThemeCustomThemeTypeFunc) (const char *type_name,
 						      void       *user_data);
 
