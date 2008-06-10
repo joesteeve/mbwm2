@@ -205,4 +205,10 @@ void
 mb_wm_theme_set_custom_theme_type_func (MBWMThemeCustomThemeTypeFunc  func,
 					 void                      *user_data);
 
+
+typedef MBWMTheme * (*MBWMThemeCustomThemeAllocFunc) (int theme_type, ...);
+
+void
+mb_wm_theme_set_custom_theme_alloc_func (MBWMThemeCustomThemeAllocFunc  func);
+
 #endif

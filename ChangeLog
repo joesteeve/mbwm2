@@ -1,6 +1,13 @@
 2008-06-10  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/theme-engines/mb-wm-theme.c:
+	* matchbox/theme-engines/mb-wm-theme.h:
+	(mb_wm_theme_set_custom_theme_alloc_func):
+	Added a hook to simplify subclassing of theme-engines.
+
+2008-06-10  Tomas Frydrych  <tf@o-hand.com>
+
+	* matchbox/theme-engines/mb-wm-theme.c:
 	(xml_element_start_cb):
 	Hooked custom button type function in.
 

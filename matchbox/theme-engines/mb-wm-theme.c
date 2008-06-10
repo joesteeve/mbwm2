@@ -37,6 +37,8 @@ void                          *custom_button_type_func_data = NULL;
 MBWMThemeCustomThemeTypeFunc   custom_theme_type_func      = NULL;
 void                          *custom_theme_type_func_data = NULL;
 
+MBWMThemeCustomThemeAllocFunc  custom_theme_alloc_func      = NULL;
+
 static void
 xml_element_start_cb (void *data, const char *tag, const char **expat_attr);
 
@@ -523,7 +525,22 @@ mb_wm_theme_new (MBWindowManager * wm, const char * theme_path)
       xml_stack_free (udata.stack);
     }
 
-  if (theme_type)
+  if (custom_theme_alloc_func)
+    {
+      theme =
+	custom_theme_alloc_func (theme_type,
+			MBWMObjectPropWm,                  wm,
+			MBWMObjectPropThemePath,           path,
+			MBWMObjectPropThemeImg,            img,
+			MBWMObjectPropThemeXmlClients,     xml_clients,
+			MBWMObjectPropThemeColorLowlight, &clr_lowlight,
+			MBWMObjectPropThemeColorShadow,   &clr_shadow,
+			MBWMObjectPropThemeShadowType,     shadow_type,
+			MBWMObjectPropThemeCompositing,    compositing,
+			MBWMObjectPropThemeShaped,         shaped,
+			NULL);
+    }
+  else if (theme_type)
     {
       theme =
 	MB_WM_THEME (mb_wm_object_new (theme_type,
@@ -2068,3 +2085,15 @@ mb_wm_theme_set_custom_button_type_func (MBWMThemeCustomButtonTypeFunc  func,
   custom_button_type_func_data = user_data;
 }
 
+/*
+ * Installs a global handler that can be used to allocate a custom
+ * MBWMThemeSubclass.
+ *
+ * NB: this is not an object function, since we need it before we allocate the
+ *     actual MBWMTheme object in the XML parser.
+ */
+void
+mb_wm_theme_set_custom_theme_alloc_func (MBWMThemeCustomThemeAllocFunc  func)
+{
+  custom_theme_alloc_func = func;
+}
