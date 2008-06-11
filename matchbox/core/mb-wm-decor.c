@@ -813,6 +813,12 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 	{
 	  XEvent ev;
 
+	  /*
+	   * First, call the custom function if any.
+	   */
+	  if (button->press)
+	    button->press(wm, button, button->userdata);
+
 	  if (XGrabPointer(wm->xdpy, xev->subwindow, False,
 			   ButtonPressMask|ButtonReleaseMask|
 			   PointerMotionMask|EnterWindowMask|LeaveWindowMask,
@@ -828,78 +834,97 @@ mb_wm_decor_button_press_handler (XButtonEvent    *xev,
 
 	      for (;;)
 		{
-		  XMaskEvent(wm->xdpy,
-			     ButtonPressMask|ButtonReleaseMask|
-			     PointerMotionMask|EnterWindowMask|
-			     LeaveWindowMask,
-			     &ev);
+		  /*
+		   * First of all, we make sure that all events are flushed
+		   * out (this is necessary to ensure that all the events we
+		   * are interested in are actually intercepted here).
+		   */
+		  XSync (wm->xdpy, False);
 
-		  switch (ev.type)
+		  if (XCheckMaskEvent(wm->xdpy,
+				      ButtonPressMask|ButtonReleaseMask|
+				      PointerMotionMask|EnterWindowMask|
+				      LeaveWindowMask,
+				      &ev))
 		    {
-		    case MotionNotify:
-		      {
-			XMotionEvent *pev = (XMotionEvent*)&ev;
-
-			if (pev->x < xmin || pev->x > xmax ||
-			    pev->y < ymin || pev->y > ymax)
+		      switch (ev.type)
+			{
+			case MotionNotify:
 			  {
-			    if (button->state == MBWMDecorButtonStatePressed)
+			    XMotionEvent *pev = (XMotionEvent*)&ev;
+
+			    if (pev->x < xmin || pev->x > xmax ||
+				pev->y < ymin || pev->y > ymax)
+			      {
+				if (button->state ==
+				    MBWMDecorButtonStatePressed)
+				  {
+				    button->state =
+				      MBWMDecorButtonStateInactive;
+				    mb_wm_theme_paint_button (wm->theme,button);
+				  }
+			      }
+			    else
+			      {
+				if (button->state !=
+				    MBWMDecorButtonStatePressed)
+				  {
+				    button->state = MBWMDecorButtonStatePressed;
+				    mb_wm_theme_paint_button (wm->theme,button);
+				  }
+			      }
+			  }
+			  break;
+			case EnterNotify:
+			  if (button->state == MBWMDecorButtonStateInactive)
+			    {
+			      button->state = MBWMDecorButtonStatePressed;
+			      mb_wm_theme_paint_button (wm->theme, button);
+			    }
+			  break;
+			case LeaveNotify:
+			  if (button->state != MBWMDecorButtonStateInactive)
+			    {
+			      button->state = MBWMDecorButtonStateInactive;
+			      mb_wm_theme_paint_button (wm->theme, button);
+			    }
+			  break;
+			case ButtonRelease:
+			  {
+			    XButtonEvent *pev = (XButtonEvent*)&ev;
+
+			    if (button->state != MBWMDecorButtonStateInactive)
 			      {
 				button->state = MBWMDecorButtonStateInactive;
 				mb_wm_theme_paint_button (wm->theme, button);
 			      }
-			  }
-			else
-			  {
-			    if (button->state != MBWMDecorButtonStatePressed)
+
+			    XUngrabPointer (wm->xdpy, CurrentTime);
+			    XSync (wm->xdpy, False); /* necessary */
+
+			    if (pev->x < xmin || pev->x > xmax ||
+				pev->y < ymin || pev->y > ymax)
 			      {
-				button->state = MBWMDecorButtonStatePressed;
-				mb_wm_theme_paint_button (wm->theme, button);
+				retval = False;
+				goto done;
 			      }
+
+			    if (button->release)
+			      button->release(wm, button, button->userdata);
+			    else
+			      mb_wm_decor_button_stock_button_action (button);
+
+			    return False;
 			  }
-		      }
-		      break;
-		    case EnterNotify:
-		      if (button->state == MBWMDecorButtonStateInactive)
-			{
-			  button->state = MBWMDecorButtonStatePressed;
-			  mb_wm_theme_paint_button (wm->theme, button);
 			}
-		      break;
-		    case LeaveNotify:
-		      if (button->state != MBWMDecorButtonStateInactive)
-			{
-			  button->state = MBWMDecorButtonStateInactive;
-			  mb_wm_theme_paint_button (wm->theme, button);
-			}
-		      break;
-		    case ButtonRelease:
-		      {
-			XButtonEvent *pev = (XButtonEvent*)&ev;
-
-			if (button->state != MBWMDecorButtonStateInactive)
-			  {
-			    button->state = MBWMDecorButtonStateInactive;
-			    mb_wm_theme_paint_button (wm->theme, button);
-			  }
-
-			XUngrabPointer (wm->xdpy, CurrentTime);
-			XSync (wm->xdpy, False); /* necessary */
-
-			if (pev->x < xmin || pev->x > xmax ||
-			    pev->y < ymin || pev->y > ymax)
-			  {
-			    retval = False;
-			    goto done;
-			  }
-
-			if (button->release)
-			  button->release(wm, button, button->userdata);
-			else
-			  mb_wm_decor_button_stock_button_action (button);
-
-			return False;
-		      }
+		    }
+		  else
+		    {
+		      /*
+		       * No pending X event, so spin the main loop (this allows
+		       * things like timers to work.
+		       */
+		      mb_wm_main_context_spin_loop (wm->main_ctx);
 		    }
 		}
 	    }

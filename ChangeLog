@@ -1,5 +1,13 @@
 2008-06-11  Tomas Frydrych  <tf@o-hand.com>
 
+	* matchbox/core/mb-wm-decor.c:
+	(mb_wm_decor_button_press_handler):
+	Ensure that if a custom press handler is installed, it gets called
+	even if the button is not press-activated; do not block rest of
+	main loop, so that timers and such work.
+
+2008-06-11  Tomas Frydrych  <tf@o-hand.com>
+
 	* /matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
 	(tidy_texture_frame_paint):
 	Updated to match upstream API change.
