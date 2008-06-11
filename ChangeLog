@@ -1,3 +1,9 @@
+2008-06-11  Tomas Frydrych  <tf@o-hand.com>
+
+	* /matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	(tidy_texture_frame_paint):
+	Updated to match upstream API change.
+
 2008-06-10  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/theme-engines/mb-wm-theme.c:
