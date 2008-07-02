@@ -1,3 +1,10 @@
+2008-07-02  Tomas Frydrych  <tf@o-hand.com>
+
+	* configure.ac:
+	* matchbox/comp-mgr/mb-wm-comp-mgr-clutter.c:
+	Use ClutterGLXTexturePixmap when building agains clutter GLX
+	backend.
+
 2008-06-11  Tomas Frydrych  <tf@o-hand.com>
 
 	* matchbox/core/mb-wm-decor.c:

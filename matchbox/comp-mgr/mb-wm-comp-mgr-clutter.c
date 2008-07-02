@@ -26,8 +26,9 @@
 
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
+#if HAVE_CLUTTER_GLX
 #include <clutter/glx/clutter-glx-texture-pixmap.h>
-
+#endif
 #include <X11/Xresource.h>
 #include <X11/extensions/shape.h>
 #include <X11/extensions/Xcomposite.h>
@@ -1006,7 +1007,11 @@ mb_wm_comp_mgr_clutter_map_notify_real (MBWMCompMgr *mgr,
   mb_wm_client_get_coverage (c, &geom);
 
   actor = g_object_ref (clutter_group_new ());
+#if HAVE_CLUTTER_GLX
+  texture = clutter_glx_texture_pixmap_new ();
+#else
   texture = clutter_x11_texture_pixmap_new ();
+#endif
   clutter_actor_show (texture);
 
   if (ctype == MBWMClientTypeDialog   ||

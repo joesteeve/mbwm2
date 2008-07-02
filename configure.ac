@@ -26,6 +26,8 @@ AC_SUBST(MBWM2_INCDIR)
 MBWM2_PKGINCDIR=matchbox-wm-2/$MBWM2_API_VERSION/
 AC_SUBST(MBWM2_PKGINCDIR)
 
+clutter_package=clutter-0.7
+
 AM_MAINTAINER_MODE
 
 AC_PROG_CC
@@ -134,7 +136,7 @@ for composite_manager in $included_composite_managers; do
 	MBWM_EXTRA_LIBS="$MBWM_EXTRA_LIBS -lm"
         ;;
       clutter )
-        needed_pkgs="$needed_pkgs clutter-0.7 xcomposite xdamage "
+        needed_pkgs="$needed_pkgs $clutter_package xcomposite xdamage "
         gmloop="yes"
         ;;
  esac
@@ -208,6 +210,13 @@ AM_CONDITIONAL(ENABLE_CLUTTER_COMPOSITE_MANAGER, [test x"$COMPOSITE_MANAGER_clut
 if test x"$COMPOSITE_MANAGER_clutter" = xyes; then
   ENABLE_CLUTTER_COMPOSITE_MANAGER=1
   COMP_MGR_BACKEND=1
+
+  clutter_backend=$($PKG_CONFIG $clutter_package --variable=backend)
+  if test x"$clutter_backend" = xglx; then
+    AC_DEFINE(HAVE_CLUTTER_GLX, [1], [Using clutter glx backend])
+  elif test x"$clutter_backend" = xeglx; then
+    AC_DEFINE(HAVE_CLUTTER_EGLX, [1], [Using clutter eglx backend])
+  fi
 fi
 AC_SUBST(ENABLE_CLUTTER_COMPOSITE_MANAGER)
 
