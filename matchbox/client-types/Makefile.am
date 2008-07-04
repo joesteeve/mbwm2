@@ -12,7 +12,14 @@ DEPENDENCIES = $(THEME_LIBS)
 pkgincludedir = $(includedir)/@MBWM2_INCDIR@/client-types
 
 if ENABLE_LIBMATCHBOX
-pkginclude_HEADERS = *.h
+pkginclude_HEADERS = mb-wm-client-app.h \
+		     mb-wm-client-dialog.h \
+		     mb-wm-client-menu.h \
+		     mb-wm-client-override.h \
+		     mb-wm-client-desktop.h \
+		     mb-wm-client-input.h \
+		     mb-wm-client-note.h \
+		     mb-wm-client-panel.h
 noinst_LTLIBRARIES = libmb-wm-client-app.la	\
 	             libmb-wm-client-panel.la	\
 	             libmb-wm-client-dialog.la	\

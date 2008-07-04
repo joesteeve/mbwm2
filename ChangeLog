@@ -1,3 +1,15 @@
+2008-07-04  Robert Bragg  <bob@o-hand.com>
+
+	* configure.ac:
+	Adds a -I$(top_builddir) to MBWM_INCS for finding mb-wm-config.h
+	when doing out of tree builds.
+
+	* matchbox/client-types/Makefile.am:
+	* matchbox/comp-mgr/Makefile.am:
+	* matchbox/theme-engines/Makefile.am:
+	Removes us of wildcards for setting pkginclude_HEADERS variables.
+	Automake doesn't support wildcards.
+
 2008-07-02  Tomas Frydrych  <tf@o-hand.com>
 
 	* configure.ac:

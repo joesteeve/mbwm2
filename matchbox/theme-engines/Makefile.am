@@ -8,7 +8,7 @@ COMMON_SRC = mb-wm-theme.h mb-wm-theme.c mb-wm-theme-xml.h mb-wm-theme-xml.c
 pkgincludedir = $(includedir)/@MBWM2_INCDIR@/theme-engines
 
 if ENABLE_LIBMATCHBOX
-pkginclude_HEADERS = *.h
+pkginclude_HEADERS = mb-wm-theme.h  mb-wm-theme-png.h  mb-wm-theme-xml.h
 noinst_LTLIBRARIES = libmb-theme.la
 libmb_theme_la_SOURCES = $(COMMON_SRC) $(PNG_SRC)
 libmb_theme_la_CFLAGS =

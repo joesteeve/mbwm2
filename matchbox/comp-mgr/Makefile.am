@@ -15,7 +15,7 @@ endif
 pkgincludedir = $(includedir)/@MBWM2_INCDIR@/comp-mgr
 
 if ENABLE_LIBMATCHBOX
-pkginclude_HEADERS = *.h
+pkginclude_HEADERS = mb-wm-comp-mgr-clutter.h  mb-wm-comp-mgr.h  mb-wm-comp-mgr-xrender.h
 noinst_LTLIBRARIES = libmatchbox-window-manager-2-compmgr.la
 libmatchbox_window_manager_2_compmgr_la_SOURCES = $(core_h) $(core_c) \
 						  $(xrender_h) $(xrender_c) \
