@@ -356,7 +356,7 @@ mb_wm_theme_png_paint_button (MBWMTheme *theme, MBWMDecorButton *button)
       x = b->x - d->x;
       if (x > (d->pad_length ? d->pad_offset : d->width/2) )
         x = decor->geom.width - (d->x + d->width - b->x);
-      
+
       y = b->y - d->y;
 
       XRenderComposite (xdpy, PictOpSrc,
@@ -389,486 +389,485 @@ mb_wm_theme_png_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
   MBWMClientType           c_type = MB_WM_CLIENT_CLIENT_TYPE (client);
   MBWMXmlClient          * c;
   MBWMXmlDecor           * d;
+  Display		 * xdpy    = theme->wm->xdpy;
+  int			   xscreen = theme->wm->xscreen;
+  struct DecorData	 * data = mb_wm_decor_get_theme_data (decor);
+  const char		 * title;
+  int			   x, y;
+  int			   operator = PictOpSrc;
+  Bool			   shaped;
 
-  if ((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
-      (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type)))
+  if (!((c = mb_wm_xml_client_find_by_type (theme->xml_clients, c_type)) &&
+        (d = mb_wm_xml_decor_find_by_type (c->decors, decor->type))))
+    return;
+
+#ifdef HAVE_XEXT
+  shaped = theme->shaped && c->shaped && !mb_wm_client_is_argb32 (client);
+#endif
+
+  if (data && (mb_wm_decor_get_dirty_state (decor) & MBWMDecorDirtyTitle))
     {
-      Display          * xdpy    = theme->wm->xdpy;
-      int                xscreen = theme->wm->xscreen;
-      struct DecorData * data = mb_wm_decor_get_theme_data (decor);
-      const char       * title;
-      int                x, y;
-      int                operator = PictOpSrc;
-      Bool               shaped;
-
-#ifdef HAVE_XEXT
-      shaped = theme->shaped && c->shaped && !mb_wm_client_is_argb32 (client);
-#endif
-
-      if (data && (mb_wm_decor_get_dirty_state (decor) & MBWMDecorDirtyTitle))
-	{
-	  /*
-	   * If the decor title is dirty, and we already have the data,
-	   * free it and recreate (since the old title is already composited
-	   * in the cached image).
-	   */
-	  mb_wm_decor_set_theme_data (decor, NULL, NULL);
-	  data = NULL;
-	}
-
-      if (!data)
-	{
-	  XRenderColor rclr;
-
-	  data = mb_wm_util_malloc0 (sizeof (struct DecorData));
-	  data->xpix = XCreatePixmap(xdpy, decor->xwin,
-				     decor->geom.width, decor->geom.height,
-				     DefaultDepth(xdpy, xscreen));
-
-
-#ifdef HAVE_XEXT
-	  if (shaped)
-	    {
-	      data->shape_mask =
-		XCreatePixmap(xdpy, decor->xwin,
-			      decor->geom.width, decor->geom.height, 1);
-
-	      data->gc_mask = XCreateGC (xdpy, data->shape_mask, 0, NULL);
-	    }
-#endif
-	  data->xftdraw = XftDrawCreate (xdpy, data->xpix,
-					 DefaultVisual (xdpy, xscreen),
-					 DefaultColormap (xdpy, xscreen));
-
-	  /*
-	   * If the background color is set, we fill the pixmaps with it,
-	   * and then overlay the the PNG image over (this allows a theme
-	   * to provide a monochromatic PNG that can be toned, e.g., Sato)
-	   */
-	  if (d->clr_bg.set)
-	    {
-	      XRenderColor rclr2;
-
-	      operator = PictOpOver;
-
-	      rclr2.red   = (int)(d->clr_bg.r * (double)0xffff);
-	      rclr2.green = (int)(d->clr_bg.g * (double)0xffff);
-	      rclr2.blue  = (int)(d->clr_bg.b * (double)0xffff);
-
-	      XRenderFillRectangle (xdpy, PictOpSrc,
-				    XftDrawPicture (data->xftdraw), &rclr2,
-				    0, 0,
-				    decor->geom.width, decor->geom.height);
-	    }
-
-	  rclr.red = 0;
-	  rclr.green = 0;
-	  rclr.blue  = 0;
-	  rclr.alpha = 0xffff;
-
-	  if (d->clr_fg.set)
-	    {
-	      rclr.red   = (int)(d->clr_fg.r * (double)0xffff);
-	      rclr.green = (int)(d->clr_fg.g * (double)0xffff);
-	      rclr.blue  = (int)(d->clr_fg.b * (double)0xffff);
-	    }
-
-	  XftColorAllocValue (xdpy, DefaultVisual (xdpy, xscreen),
-			      DefaultColormap (xdpy, xscreen),
-			      &rclr, &data->clr);
-
-#if USE_PANGO
-	  {
-	    PangoFontDescription * pdesc;
-	    char desc[512];
-
-	    snprintf (desc, sizeof (desc), "%s %i%s",
-		      d->font_family ? d->font_family : "Sans",
-		      d->font_size ? d->font_size : 18,
-		      d->font_units == MBWMXmlFontUnitsPoints ? "" : "px");
-
-	    pdesc = pango_font_description_from_string (desc);
-
-	    data->font = pango_font_map_load_font (p_theme->fontmap,
-						   p_theme->context,
-						   pdesc);
-
-	    pango_font_description_free (pdesc);
-	  }
-#else
-	  data->font = xft_load_font (decor, d);
-#endif
-	  XSetWindowBackgroundPixmap(xdpy, decor->xwin, data->xpix);
-
-	  mb_wm_decor_set_theme_data (decor, data, decordata_free);
-	}
-
       /*
-       * Since we want to support things like rounded corners, but still
-       * have the decor resizable, we need to paint it in stages
-       *
-       * We assume that the decor image is exact in it's major axis,
-       * i.e., North and South decors provide image of the exactly correct
-       * height, and West and East of width.
+       * If the decor title is dirty, and we already have the data,
+       * free it and recreate (since the old title is already composited
+       * in the cached image).
        */
-      if (decor->type == MBWMDecorTypeNorth ||
-	  decor->type == MBWMDecorTypeSouth)
-	{
-	  if (decor->geom.width < d->width)
-	    {
-	      /* The decor is smaller than the template, cut bit from the
-	       * midle
-	       */
-	      int width1 = decor->geom.width / 2;
-	      int width2 = decor->geom.width - width1;
-	      int x2     = d->x + d->width - width2;
+      mb_wm_decor_set_theme_data (decor, NULL, NULL);
+      data = NULL;
+    }
 
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x, d->y, 0, 0, 0, 0,
-			       width1, d->height);
+  if (!data)
+    {
+      XRenderColor rclr;
 
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       x2 , d->y, 0, 0,
-			       width1, 0,
-			       width2, d->height);
+      data = mb_wm_util_malloc0 (sizeof (struct DecorData));
+      data->xpix = XCreatePixmap(xdpy, decor->xwin,
+				 decor->geom.width, decor->geom.height,
+				 DefaultDepth(xdpy, xscreen));
 
-#ifdef HAVE_XEXT
-	      if (shaped)
-		{
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y, width1, d->height, 0, 0);
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     x2, d->y, width2, d->height, width1, 0);
-		}
-#endif
-	    }
-	  else if (decor->geom.width == d->width)
-	    {
-	      /* Exact match */
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x, d->y, 0, 0,
-			       0, 0, d->width, d->height);
-
-#ifdef HAVE_XEXT
-	      if (shaped)
-		{
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y, d->width, d->height, 0, 0);
-		}
-#endif
-	    }
-	  else
-	    {
-	      /* The decor is bigger than the template, draw extra bit from
-	       * the middle
-	       */
-              int pad_offset = d->pad_offset;
-              int pad_length = d->pad_length;
-              int gap_length = decor->geom.width - d->width;
-
-              if (!pad_length)
-                {
-                  pad_length =
-                    decor->geom.width > 30 ? 10 : decor->geom.width / 4 + 1;
-                  pad_offset = (d->width / 2) - (pad_length / 2);
-                }
-
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x, d->y, 0, 0,
-			       0, 0,
-			       pad_offset, d->height);
-
-              /* TODO: can we do this as one scaled operation? */
-	      for (x = pad_offset; x < pad_offset + gap_length; x += pad_length)
-		XRenderComposite(xdpy, operator,
-				 p_theme->xpic,
-				 None,
-				 XftDrawPicture (data->xftdraw),
-				 d->x + pad_offset, d->y, 0, 0,
-				 x, 0,
-				 pad_length,
-				 d->height);
-              
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x + pad_offset, d->y, 0, 0,
-			       pad_offset + gap_length, 0,
-			       d->width - pad_offset, d->height);
-
-#ifdef HAVE_XEXT
-	      if (shaped)
-		{
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y,
-                             pad_offset, d->height,
-                             0, 0);
-
-		  for (x = pad_offset; x < pad_offset + gap_length; x += pad_length)
-		    XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			       data->gc_mask,
-			       d->x + pad_offset, d->y,
-			       d->width - pad_offset, d->height,
-                               x, 0);
-
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x + pad_offset, d->y,
-                             d->width - pad_offset, d->height,
-                             pad_offset + gap_length, 0);
-		}
-#endif
-	    }
-	}
-      else
-	{
-	  if (decor->geom.height < d->height)
-	    {
-	      /* The decor is smaller than the template, cut bit from the
-	       * midle
-	       */
-	      int height1 = decor->geom.height / 2;
-	      int height2 = decor->geom.height - height1;
-	      int y2      = d->y + d->height - height2;
-
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x, d->y, 0, 0,
-			       0, 0,
-			       d->width, height1);
-
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x , y2, 0, 0,
-			       0, height1,
-			       d->width, height2);
-
-#ifdef HAVE_XEXT
-	      if (shaped)
-		{
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y, d->width, height1, 0, 0);
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, y2, d->width, height2, 0, height1);
-		}
-#endif
-	    }
-	  else if (decor->geom.height == d->height)
-	    {
-	      /* Exact match */
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x, d->y, 0, 0,
-			       0, 0,
-			       d->width, d->height);
-
-#ifdef HAVE_XEXT
-	      if (shaped)
-		{
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y, d->width, d->height, 0, 0);
-		}
-#endif
-	    }
-	  else
-	    {
-	      /* The decor is bigger than the template, draw extra bit from
-	       * the middle
-	       */
-              int pad_offset = d->pad_offset;
-              int pad_length = d->pad_length;
-              int gap_length = decor->geom.height - d->height;
-
-              if (!pad_length)
-                {
-                  pad_length =
-                    decor->geom.height > 30 ? 10 : decor->geom.height / 4 + 1;
-                  pad_offset = (d->height / 2) - (pad_length / 2);
-                }
-
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x, d->y, 0, 0, 0, 0,
-			       d->width, pad_offset);
-
-              /* TODO: can we do this as one scaled operation? */
-	      for (y = pad_offset; y < pad_offset + gap_length; y += pad_length)
-		XRenderComposite(xdpy, operator,
-				 p_theme->xpic,
-				 None,
-				 XftDrawPicture (data->xftdraw),
-				 d->x, d->y + pad_offset, 0, 0, 0, y,
-				 d->width,
-				 pad_length);
-
-	      XRenderComposite(xdpy, operator,
-			       p_theme->xpic,
-			       None,
-			       XftDrawPicture (data->xftdraw),
-			       d->x , d->y + pad_offset, 0, 0, 
-                               0, pad_offset + gap_length,
-			       d->width, d->height - pad_offset);
-
-#ifdef HAVE_XEXT
-	      if (shaped)
-		{
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y,
-                             d->width, pad_offset,
-                             0, 0);
-
-		  for (y = pad_offset; y < pad_offset + gap_length; y += pad_length)
-		    XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			       data->gc_mask,
-			       d->x, d->y + pad_offset,
-                               d->width, pad_length,
-                               0, y);
-
-		  XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
-			     data->gc_mask,
-			     d->x, d->y + pad_offset,
-                             d->width, d->height - pad_offset,
-                             0, pad_offset + gap_length);
-		}
-#endif
-	    }
-	}
-
-      if (d->show_title &&
-	  (title = mb_wm_client_get_name (client)) &&
-	  data->font)
-	{
-	  XRectangle rec;
-
-	  int pack_start_x = mb_wm_decor_get_pack_start_x (decor);
-	  int pack_end_x = mb_wm_decor_get_pack_end_x (decor);
-	  int west_width = mb_wm_client_frame_west_width (client);
-	  int y, ascent, descent;
-	  int len = strlen (title);
-
-#if USE_PANGO
-	  PangoFontMetrics * mtx;
-	  PangoGlyphString * glyphs;
-	  GList            * items, *l;
-	  PangoRectangle     rect;
-	  int                xoff = 0;
-
-	  mtx = pango_font_get_metrics (data->font, NULL);
-
-	  ascent  = PANGO_PIXELS (pango_font_metrics_get_ascent (mtx));
-	  descent = PANGO_PIXELS (pango_font_metrics_get_descent (mtx));
-
-	  pango_font_metrics_unref (mtx);
-#else
-	  ascent  = data->font->ascent;
-	  descent = data->font->descent;
-#endif
-
-	  y = (decor->geom.height - (ascent + descent)) / 2 + ascent;
-
-	  rec.x = 0;
-	  rec.y = 0;
-	  rec.width = pack_end_x - 2;
-	  rec.height = d->height;
-
-	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
-
-#if USE_PANGO
-	  glyphs = pango_glyph_string_new ();
-
-	  /*
-	   * Run the pango rendering pipeline on this text and draw with
-	   * the xft backend (why Pango does not provide a convenience
-	   * API for something as common as drawing a string escapes me).
-	   */
-	  items = pango_itemize (p_theme->context, title, 0, len, NULL, NULL);
-
-	  l = items;
-	  while (l)
-	    {
-	      PangoItem * item = l->data;
-
-	      item->analysis.font = data->font;
-
-	      pango_shape (title, len, &item->analysis, glyphs);
-
-	      pango_xft_render (data->xftdraw,
-				&data->clr,
-				data->font,
-				glyphs,
-				xoff + west_width + pack_start_x, y);
-
-	      /* Advance position */
-	      pango_glyph_string_extents (glyphs, data->font, NULL, &rect);
-	      xoff += PANGO_PIXELS (rect.width);
-
-	      l = l->next;
-	    }
-
-	  if (glyphs)
-	    pango_glyph_string_free (glyphs);
-
-	  g_list_free (items);
-#else
-	  XftDrawStringUtf8(data->xftdraw,
-			    &data->clr,
-			    data->font,
-			    west_width + pack_start_x, y,
-			    title, len);
-#endif
-
-	  /* Unset the clipping rectangle */
-	  rec.width = decor->geom.width;
-	  rec.height = decor->geom.height;
-
-	  XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
-	}
 
 #ifdef HAVE_XEXT
       if (shaped)
 	{
-	  XShapeCombineMask (xdpy, decor->xwin,
-			     ShapeBounding, 0, 0,
-			     data->shape_mask, ShapeSet);
+	  data->shape_mask =
+	    XCreatePixmap(xdpy, decor->xwin,
+			  decor->geom.width, decor->geom.height, 1);
 
-	  XShapeCombineShape (xdpy,
-			      client->xwin_frame,
-			      ShapeBounding, decor->geom.x, decor->geom.y,
-			      decor->xwin,
-			      ShapeBounding, ShapeUnion);
+	  data->gc_mask = XCreateGC (xdpy, data->shape_mask, 0, NULL);
 	}
 #endif
-      XClearWindow (xdpy, decor->xwin);
+      data->xftdraw = XftDrawCreate (xdpy, data->xpix,
+				     DefaultVisual (xdpy, xscreen),
+				     DefaultColormap (xdpy, xscreen));
+
+      /*
+       * If the background color is set, we fill the pixmaps with it,
+       * and then overlay the the PNG image over (this allows a theme
+       * to provide a monochromatic PNG that can be toned, e.g., Sato)
+       */
+      if (d->clr_bg.set)
+	{
+	  XRenderColor rclr2;
+
+	  operator = PictOpOver;
+
+	  rclr2.red   = (int)(d->clr_bg.r * (double)0xffff);
+	  rclr2.green = (int)(d->clr_bg.g * (double)0xffff);
+	  rclr2.blue  = (int)(d->clr_bg.b * (double)0xffff);
+
+	  XRenderFillRectangle (xdpy, PictOpSrc,
+				XftDrawPicture (data->xftdraw), &rclr2,
+				0, 0,
+				decor->geom.width, decor->geom.height);
+	}
+
+      rclr.red = 0;
+      rclr.green = 0;
+      rclr.blue  = 0;
+      rclr.alpha = 0xffff;
+
+      if (d->clr_fg.set)
+	{
+	  rclr.red   = (int)(d->clr_fg.r * (double)0xffff);
+	  rclr.green = (int)(d->clr_fg.g * (double)0xffff);
+	  rclr.blue  = (int)(d->clr_fg.b * (double)0xffff);
+	}
+
+      XftColorAllocValue (xdpy, DefaultVisual (xdpy, xscreen),
+			  DefaultColormap (xdpy, xscreen),
+			  &rclr, &data->clr);
+
+#if USE_PANGO
+      {
+	PangoFontDescription * pdesc;
+	char desc[512];
+
+	snprintf (desc, sizeof (desc), "%s %i%s",
+		  d->font_family ? d->font_family : "Sans",
+		  d->font_size ? d->font_size : 18,
+		  d->font_units == MBWMXmlFontUnitsPoints ? "" : "px");
+
+	pdesc = pango_font_description_from_string (desc);
+
+	data->font = pango_font_map_load_font (p_theme->fontmap,
+					       p_theme->context,
+					       pdesc);
+
+	pango_font_description_free (pdesc);
+      }
+#else
+      data->font = xft_load_font (decor, d);
+#endif
+      XSetWindowBackgroundPixmap(xdpy, decor->xwin, data->xpix);
+
+      mb_wm_decor_set_theme_data (decor, data, decordata_free);
     }
+
+  /*
+   * Since we want to support things like rounded corners, but still
+   * have the decor resizable, we need to paint it in stages
+   *
+   * We assume that the decor image is exact in it's major axis,
+   * i.e., North and South decors provide image of the exactly correct
+   * height, and West and East of width.
+   */
+  if (decor->type == MBWMDecorTypeNorth ||
+      decor->type == MBWMDecorTypeSouth)
+    {
+      if (decor->geom.width < d->width)
+	{
+	  /* The decor is smaller than the template, cut bit from the
+	   * midle
+	   */
+	  int width1 = decor->geom.width / 2;
+	  int width2 = decor->geom.width - width1;
+	  int x2     = d->x + d->width - width2;
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x, d->y, 0, 0, 0, 0,
+			   width1, d->height);
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   x2 , d->y, 0, 0,
+			   width1, 0,
+			   width2, d->height);
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y, width1, d->height, 0, 0);
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 x2, d->y, width2, d->height, width1, 0);
+	    }
+#endif
+	}
+      else if (decor->geom.width == d->width)
+	{
+	  /* Exact match */
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x, d->y, 0, 0,
+			   0, 0, d->width, d->height);
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y, d->width, d->height, 0, 0);
+	    }
+#endif
+	}
+      else
+	{
+	  /* The decor is bigger than the template, draw extra bit from
+	   * the middle
+	   */
+	  int pad_offset = d->pad_offset;
+	  int pad_length = d->pad_length;
+	  int gap_length = decor->geom.width - d->width;
+
+	  if (!pad_length)
+	    {
+	      pad_length =
+		decor->geom.width > 30 ? 10 : decor->geom.width / 4 + 1;
+	      pad_offset = (d->width / 2) - (pad_length / 2);
+	    }
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x, d->y, 0, 0,
+			   0, 0,
+			   pad_offset, d->height);
+
+	  /* TODO: can we do this as one scaled operation? */
+	  for (x = pad_offset; x < pad_offset + gap_length; x += pad_length)
+	    XRenderComposite(xdpy, operator,
+			     p_theme->xpic,
+			     None,
+			     XftDrawPicture (data->xftdraw),
+			     d->x + pad_offset, d->y, 0, 0,
+			     x, 0,
+			     pad_length,
+			     d->height);
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x + pad_offset, d->y, 0, 0,
+			   pad_offset + gap_length, 0,
+			   d->width - pad_offset, d->height);
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y,
+			 pad_offset, d->height,
+			 0, 0);
+
+	      for (x = pad_offset; x < pad_offset + gap_length; x += pad_length)
+		XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			   data->gc_mask,
+			   d->x + pad_offset, d->y,
+			   d->width - pad_offset, d->height,
+			   x, 0);
+
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x + pad_offset, d->y,
+			 d->width - pad_offset, d->height,
+			 pad_offset + gap_length, 0);
+	    }
+#endif
+	}
+    }
+  else
+    {
+      if (decor->geom.height < d->height)
+	{
+	  /* The decor is smaller than the template, cut bit from the
+	   * midle
+	   */
+	  int height1 = decor->geom.height / 2;
+	  int height2 = decor->geom.height - height1;
+	  int y2      = d->y + d->height - height2;
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x, d->y, 0, 0,
+			   0, 0,
+			   d->width, height1);
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x , y2, 0, 0,
+			   0, height1,
+			   d->width, height2);
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y, d->width, height1, 0, 0);
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, y2, d->width, height2, 0, height1);
+	    }
+#endif
+	}
+      else if (decor->geom.height == d->height)
+	{
+	  /* Exact match */
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x, d->y, 0, 0,
+			   0, 0,
+			   d->width, d->height);
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y, d->width, d->height, 0, 0);
+	    }
+#endif
+	}
+      else
+	{
+	  /* The decor is bigger than the template, draw extra bit from
+	   * the middle
+	   */
+	  int pad_offset = d->pad_offset;
+	  int pad_length = d->pad_length;
+	  int gap_length = decor->geom.height - d->height;
+
+	  if (!pad_length)
+	    {
+	      pad_length =
+		decor->geom.height > 30 ? 10 : decor->geom.height / 4 + 1;
+	      pad_offset = (d->height / 2) - (pad_length / 2);
+	    }
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x, d->y, 0, 0, 0, 0,
+			   d->width, pad_offset);
+
+	  /* TODO: can we do this as one scaled operation? */
+	  for (y = pad_offset; y < pad_offset + gap_length; y += pad_length)
+	    XRenderComposite(xdpy, operator,
+			     p_theme->xpic,
+			     None,
+			     XftDrawPicture (data->xftdraw),
+			     d->x, d->y + pad_offset, 0, 0, 0, y,
+			     d->width,
+			     pad_length);
+
+	  XRenderComposite(xdpy, operator,
+			   p_theme->xpic,
+			   None,
+			   XftDrawPicture (data->xftdraw),
+			   d->x , d->y + pad_offset, 0, 0,
+			   0, pad_offset + gap_length,
+			   d->width, d->height - pad_offset);
+
+#ifdef HAVE_XEXT
+	  if (shaped)
+	    {
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y,
+			 d->width, pad_offset,
+			 0, 0);
+
+	      for (y = pad_offset; y < pad_offset + gap_length; y += pad_length)
+		XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			   data->gc_mask,
+			   d->x, d->y + pad_offset,
+			   d->width, pad_length,
+			   0, y);
+
+	      XCopyArea (xdpy, p_theme->shape_mask, data->shape_mask,
+			 data->gc_mask,
+			 d->x, d->y + pad_offset,
+			 d->width, d->height - pad_offset,
+			 0, pad_offset + gap_length);
+	    }
+#endif
+	}
+    }
+
+  if (d->show_title &&
+      (title = mb_wm_client_get_name (client)) &&
+      data->font)
+    {
+      XRectangle rec;
+
+      int pack_start_x = mb_wm_decor_get_pack_start_x (decor);
+      int pack_end_x = mb_wm_decor_get_pack_end_x (decor);
+      int west_width = mb_wm_client_frame_west_width (client);
+      int y, ascent, descent;
+      int len = strlen (title);
+
+#if USE_PANGO
+      PangoFontMetrics * mtx;
+      PangoGlyphString * glyphs;
+      GList            * items, *l;
+      PangoRectangle     rect;
+      int                xoff = 0;
+
+      mtx = pango_font_get_metrics (data->font, NULL);
+
+      ascent  = PANGO_PIXELS (pango_font_metrics_get_ascent (mtx));
+      descent = PANGO_PIXELS (pango_font_metrics_get_descent (mtx));
+
+      pango_font_metrics_unref (mtx);
+#else
+      ascent  = data->font->ascent;
+      descent = data->font->descent;
+#endif
+
+      y = (decor->geom.height - (ascent + descent)) / 2 + ascent;
+
+      rec.x = 0;
+      rec.y = 0;
+      rec.width = pack_end_x - 2;
+      rec.height = d->height;
+
+      XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
+
+#if USE_PANGO
+      glyphs = pango_glyph_string_new ();
+
+      /*
+       * Run the pango rendering pipeline on this text and draw with
+       * the xft backend (why Pango does not provide a convenience
+       * API for something as common as drawing a string escapes me).
+       */
+      items = pango_itemize (p_theme->context, title, 0, len, NULL, NULL);
+
+      l = items;
+      while (l)
+	{
+	  PangoItem * item = l->data;
+
+	  item->analysis.font = data->font;
+
+	  pango_shape (title, len, &item->analysis, glyphs);
+
+	  pango_xft_render (data->xftdraw,
+			    &data->clr,
+			    data->font,
+			    glyphs,
+			    xoff + west_width + pack_start_x, y);
+
+	  /* Advance position */
+	  pango_glyph_string_extents (glyphs, data->font, NULL, &rect);
+	  xoff += PANGO_PIXELS (rect.width);
+
+	  l = l->next;
+	}
+
+      if (glyphs)
+	pango_glyph_string_free (glyphs);
+
+      g_list_free (items);
+#else
+      XftDrawStringUtf8(data->xftdraw,
+			&data->clr,
+			data->font,
+			west_width + pack_start_x, y,
+			title, len);
+#endif
+
+      /* Unset the clipping rectangle */
+      rec.width = decor->geom.width;
+      rec.height = decor->geom.height;
+
+      XftDrawSetClipRectangles (data->xftdraw, 0, 0, &rec, 1);
+    }
+
+#ifdef HAVE_XEXT
+  if (shaped)
+    {
+      XShapeCombineMask (xdpy, decor->xwin,
+			 ShapeBounding, 0, 0,
+			 data->shape_mask, ShapeSet);
+
+      XShapeCombineShape (xdpy,
+			  client->xwin_frame,
+			  ShapeBounding, decor->geom.x, decor->geom.y,
+			  decor->xwin,
+			  ShapeBounding, ShapeUnion);
+    }
+#endif
+  XClearWindow (xdpy, decor->xwin);
 }
 
 static void
@@ -987,7 +986,23 @@ mb_wm_theme_png_get_button_position (MBWMTheme             *theme,
       if (b)
 	{
 	  if (x)
-	    *x = b->x - d->x;
+	    {
+	      int button_x;
+
+	      /* Here we automagically determine if the button should be left or
+	       * right aligned in the case that a decor is expanded wider than
+	       * the template image. If the coordinate comes before the point
+	       * where decor padding is added, it's left aligned else it's
+	       * right aligned. If no padding hints were given in the theme.xml,
+	       * then we assume padding happens in the center.
+	       * Note: we look at pad_length because pad_offset could be 0
+	       */
+	      button_x = b->x - d->x;
+	      if (button_x > (d->pad_length ? d->pad_offset : d->width/2) )
+		button_x = decor->geom.width - (d->x + d->width - b->x);
+
+	      *x = button_x;
+	    }
 
 	  if (y)
 	    *y = b->y - d->y;
