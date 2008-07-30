@@ -1,3 +1,13 @@
+2008-07-30  Robert Bragg  <bob@o-hand.com>
+	
+	* matchbox/core/mb-wm-client.c:
+	Adds a check in mb_wm_client_ping_start that the client supports
+	the NET_WM_PING protocol.
+
+	Adds a verbose comment in mb_wm_client_deliver_delete about not being
+	able check for failures of WM_DELETE messages. (Since I recently had
+	a problem in a derivative WM that was attempting just that.)
+
 2008-07-29  Robert Bragg  <bob@o-hand.com>
 	
 	* matchbox/theme-engines/mb-wm-theme-png.c:

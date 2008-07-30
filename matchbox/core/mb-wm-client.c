@@ -740,6 +740,10 @@ mb_wm_client_ping_timeout_cb (void * userdata)
 {
   MBWindowManagerClient * client = userdata;
 
+  /* TODO - support displaying a dialog at this point, notifying the user of
+   * the unresponsive client so they have a chance to abort its shutdown.
+   */
+
   mb_wm_client_shutdown (client);
   return False;
 }
@@ -747,8 +751,12 @@ mb_wm_client_ping_timeout_cb (void * userdata)
 void
 mb_wm_client_ping_start (MBWindowManagerClient *client)
 {
-  MBWindowManager * wm = client->wmref;
-  MBWMMainContext * ctx = wm->main_ctx;
+  MBWindowManager	  * wm = client->wmref;
+  MBWMMainContext	  * ctx = wm->main_ctx;
+  MBWMClientWindowProtos    protos = client->window->protos;
+
+  if (!(protos & MBWMClientWindowProtosPing))
+    return;
 
   if (client->ping_cb_id)
     return;
@@ -806,6 +814,17 @@ mb_wm_client_deliver_delete (MBWindowManagerClient *client)
     {
       mb_wm_client_deliver_wm_protocol (client,
 				wm->atoms[MBWM_ATOM_WM_DELETE_WINDOW]);
+
+      /* NB: It is not appropriate (or even possible) to try and
+       * determine a failure to respond to a WM_DELETE, since it
+       * would be reasonable for a client to put up a confirmation
+       * dialog in response to a WM_DELETE and do nothing if the
+       * user cancels the operation (because it was an accident)
+       *
+       * The NET_WM_PING protocol is the right way to determine an
+       * unresponsive client and we always send a ping (if the
+       * client supports the protocol) when issuing a WM_DELETE.
+       */
 
       mb_wm_client_ping_start (client);
     }
