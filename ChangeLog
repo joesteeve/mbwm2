@@ -1,3 +1,11 @@
+2008-07-31  Robert Bragg  <bob@o-hand.com>
+	
+	* matchbox/core/mb-wm-client.c:
+	Plumbs in a call to mb_wm_handle_hang_client in
+	mb_wm_client_ping_timeout_cb, so that derivative managers can now just
+	implement wm_class->client_responding and wm_class->client_hang to
+	handle unresponsive clients.
+
 2008-07-30  Robert Bragg  <bob@o-hand.com>
 	
 	* matchbox/core/mb-wm-client.c:

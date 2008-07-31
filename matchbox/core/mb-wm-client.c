@@ -740,11 +740,9 @@ mb_wm_client_ping_timeout_cb (void * userdata)
 {
   MBWindowManagerClient * client = userdata;
 
-  /* TODO - support displaying a dialog at this point, notifying the user of
-   * the unresponsive client so they have a chance to abort its shutdown.
-   */
+  mb_wm_handle_hang_client (client->wmref, client);
 
-  mb_wm_client_shutdown (client);
+  mb_wm_client_ping_stop (client);
   return False;
 }
 
