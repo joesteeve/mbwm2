@@ -41,13 +41,9 @@ pkgincludedir = $(includedir)/@MBWM2_INCDIR@/core
 
 if ENABLE_LIBMATCHBOX
 pkginclude_HEADERS = $(core_h)
+endif
 noinst_LTLIBRARIES =  libmatchbox-window-manager-2-core.la
 libmatchbox_window_manager_2_core_la_SOURCES = $(core_h) $(core_c)
 libmatchbox_window_manager_2_core_la_CFLAGS =  @MBWM_INCS@ @MBWM_CFLAGS@
-else
-noinst_LIBRARIES = libmatchbox-window-manager-2-core.a
-libmatchbox_window_manager_2_core_a_SOURCES = $(core_h) $(core_c)
-libmatchbox_window_manager_2_core_a_CFLAGS =  @MBWM_INCS@ @MBWM_CFLAGS@
-endif
 
 MAINTAINERCLEANFILES = Makefile.in

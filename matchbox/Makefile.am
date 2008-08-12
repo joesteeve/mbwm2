@@ -9,9 +9,9 @@ MAINTAINERCLEANFILES = Makefile.in
 
 pkgincludedir = $(includedir)/@MBWM2_INCDIR@
 
-if ENABLE_LIBMATCHBOX
-SUBDIRS = core client-types theme-engines $(comp)
+SUBDIRS = core client-types theme-engines $(comp) managers
 
+if ENABLE_LIBMATCHBOX
 lib_LTLIBRARIES = libmatchbox2-@MBWM2_API_VERSION@.la
 
 
@@ -32,6 +32,5 @@ libmatchbox2_@MBWM2_API_VERSION@_la_SOURCES =
 pkginclude_HEADERS = *.h
 
 else
-SUBDIRS = core client-types theme-engines $(comp) managers
 endif
 

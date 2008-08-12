@@ -2,21 +2,21 @@ INCLUDES = 					       \
 	@MBWM_INCS@				       \
 	@MBWM_CFLAGS@
 
-CLIENT_LIBS =						\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-panel.a	\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-dialog.a	\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-note.a	\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-app.a	\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-input.a	\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-desktop.a	\
-        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-menu.a
+CLIENT_LIBS = \
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-panel.la	\
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-dialog.la \
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-note.la \
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-app.la \
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-input.la	\
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-desktop.la \
+        @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-menu.la
 
 if ENABLE_COMPOSITE
-COMPMGR_LIBS=@MBWM_COMPMGR_BUILDDIR@/libmatchbox-window-manager-2-compmgr.a \
-             @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-override.a
+COMPMGR_LIBS=@MBWM_COMPMGR_BUILDDIR@/libmatchbox-window-manager-2-compmgr.la \
+             @MBWM_CLIENT_BUILDDIR@/libmb-wm-client-override.la
 endif
 
-THEME_LIBS = @MBWM_THEME_BUILDDIR@/libmb-theme.a
+THEME_LIBS = @MBWM_THEME_BUILDDIR@/libmb-theme.la
 
 bin_PROGRAMS = matchbox-window-manager-2-simple
 

@@ -274,7 +274,7 @@ if test x$have_xcursor = xyes; then
 fi
 
 MBWM_INCS='-I$(top_srcdir) -I$(top_srcdir)/matchbox/core -I$(top_srcdir)/matchbox/client-types -I$(top_srcdir)/matchbox/theme-engines -I$(top_srcdir)/matchbox/comp-mgr -I$(top_builddir)'
-MBWM_CORE_LIB='$(top_builddir)/matchbox/core/libmatchbox-window-manager-2-core.a'
+MBWM_CORE_LIB='$(top_builddir)/matchbox/core/libmatchbox-window-manager-2-core.la'
 MBWM_CLIENT_BUILDDIR='$(top_builddir)/matchbox/client-types'
 MBWM_THEME_BUILDDIR='$(top_builddir)/matchbox/theme-engines'
 MBWM_COMPMGR_BUILDDIR='$(top_builddir)/matchbox/comp-mgr'

@@ -1,3 +1,20 @@
+2008-08-12  Robert Bragg  <bob@o-hand.com>
+
+	* configure.ac
+	* matchbox/client-types/Makefile.am
+	* matchbox/comp-mgr/Makefile.am
+	* matchbox/core/Makefile.am
+	* matchbox/theme-engines/Makefile.am
+	* matchbox/Makefile.am
+	* matchbox/managers/simple/Makefile.am:
+	Allows building managers and libmatchbox at the same time. By default
+	managers remain disabled if libmatchbox is enabled, but you can now
+	enable managers explicitly to get both. This also removes lots of
+	Makefile.am ifdef checks where we were toggling between
+	noinst_LIBRARIES ending in .a vs .la. All CLIENT_LIBS are listed as
+	.la now and all noinst libs are build as .la. Libtool then figures
+	out the right thing to do.
+
 2008-07-31  Robert Bragg  <bob@o-hand.com>
 	
 	* matchbox/core/mb-wm-client.c:
