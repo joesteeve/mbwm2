@@ -237,7 +237,13 @@ AM_CONDITIONAL(ENABLE_MATCHBOX_REMOTE, [test "x$matchbox_remote" = "xyes"])
 
 AC_ARG_ENABLE(simple-manager,
   [  --disable-simple-manager   Do not build simple window manager],
-  [simple_manager=$enableval], [simple_manager=yes])
+  [simple_manager=$enableval],
+  [
+    if test "x$libmatchbox" = "xyes"; then
+        simple_manager=no
+    else
+        simple_manager=yes
+    fi])
 
 AC_ARG_ENABLE(maemo-manager,
   [  --enable-maemo-manager     Build maemo window manager],
