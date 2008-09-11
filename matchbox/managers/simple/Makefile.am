@@ -28,11 +28,12 @@ matchbox_window_manager_2_simple_LDFLAGS =		\
 	$(LDFLAGS)
 
 matchbox_window_manager_2_simple_LDADD =		\
-	@MBWM_LIBS@					\
         @MBWM_CORE_LIB@					\
 	$(THEME_LIBS)					\
 	$(CLIENT_LIBS)					\
-	$(COMPMGR_LIBS)
+	$(COMPMGR_LIBS)					\
+	@MBWM_LIBS@
+
 
 matchbox_window_manager_2_simple_DEPENDENCIES =		\
         @MBWM_CORE_LIB@					\

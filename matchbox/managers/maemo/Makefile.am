@@ -33,11 +33,11 @@ matchbox_window_manager_2_maemo_LDFLAGS =		\
 	$(LDFLAGS)
 
 matchbox_window_manager_2_maemo_LDADD =			\
-	@MBWM_LIBS@					\
         @MBWM_CORE_LIB@					\
 	$(THEME_LIBS)					\
 	$(CLIENT_LIBS)					\
-	$(COMPMGR_LIBS)
+	$(COMPMGR_LIBS)					\
+	@MBWM_LIBS@
 
 matchbox_window_manager_2_maemo_DEPENDENCIES =		\
         @MBWM_CORE_LIB@					\

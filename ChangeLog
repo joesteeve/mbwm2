@@ -1,3 +1,11 @@
+2008-09-12  Tomas Frydrych  <tf@linux.intel.com>
+
+	* matchbox/managers/simple/Makefile.am:
+	* matchbox/managers/maemo/Makefile.am:
+
+	Fixed order of libraries for the linker so we can build
+	with --as-needed.
+
 2008-08-12  Robert Bragg  <bob@o-hand.com>
 
 	* configure.ac
@@ -16,7 +24,7 @@
 	out the right thing to do.
 
 2008-07-31  Robert Bragg  <bob@o-hand.com>
-	
+
 	* matchbox/core/mb-wm-client.c:
 	Plumbs in a call to mb_wm_handle_hang_client in
 	mb_wm_client_ping_timeout_cb, so that derivative managers can now just
@@ -24,7 +32,7 @@
 	handle unresponsive clients.
 
 2008-07-30  Robert Bragg  <bob@o-hand.com>
-	
+
 	* matchbox/core/mb-wm-client.c:
 	Adds a check in mb_wm_client_ping_start that the client supports
 	the NET_WM_PING protocol.
@@ -34,7 +42,7 @@
 	a problem in a derivative WM that was attempting just that.)
 
 2008-07-29  Robert Bragg  <bob@o-hand.com>
-	
+
 	* matchbox/theme-engines/mb-wm-theme-png.c:
 	mb_wm_theme_png_get_button_position now propery determines the button
 	positions in the case that the decor has been expanded larger than the
