@@ -125,6 +125,8 @@ struct MBWindowManagerClass
   MBWMCompMgr * (*comp_mgr_new) (MBWindowManager *wm);
 #endif
 
+  void (*get_desktop_geometry) (MBWindowManager *wm, MBGeometry *geom);
+
   void (*main) (MBWindowManager *wm);
 };
 

@@ -76,6 +76,9 @@ static Bool
 mb_wm_is_my_window (MBWindowManager *wm, Window xwin,
 		    MBWindowManagerClient **client);
 
+static void
+mb_wm_real_get_desktop_geometry (MBWindowManager *wm, MBGeometry *geom);
+
 static MBWindowManagerClient*
 mb_wm_client_new_func (MBWindowManager *wm, MBWMClientWindow *win)
 {
@@ -259,6 +262,7 @@ mb_wm_class_init (MBWMObjectClass *klass)
   wm_class->theme_new       = mb_wm_real_theme_new;
   wm_class->client_activate = mb_wm_activate_client_real;
   wm_class->layout_new      = mb_wm_layout_new_real;
+  wm_class->get_desktop_geometry = mb_wm_real_get_desktop_geometry;
 
 #if ENABLE_CLUTTER_COMPOSITE_MANAGER
   wm_class->main            = mb_wm_main_real;
@@ -1346,7 +1350,7 @@ mb_wm_manage_preexistsing_wins (MBWindowManager* wm)
 }
 
 static void
-mb_wm_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
+mb_wm_real_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
 {
   MBWindowManagerClient *c;
   MBGeometry p_geom;
@@ -1380,6 +1384,18 @@ mb_wm_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
        if (LayoutPrefReserveEdgeEast & hints)
 	 geom->width -= p_geom.width;
      }
+}
+
+static void
+mb_wm_get_desktop_geometry (MBWindowManager *wm, MBGeometry * geom)
+{
+  MBWindowManagerClass *wm_class;
+  
+  wm_class = (MBWindowManagerClass *) MB_WM_OBJECT_GET_CLASS (wm);
+
+  MBWM_ASSERT (wm_class->get_desktop_geometry);
+
+  wm_class->get_desktop_geometry (wm, geom);
 }
 
 static void
