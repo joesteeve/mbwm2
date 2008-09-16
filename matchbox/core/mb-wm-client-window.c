@@ -22,6 +22,7 @@
 
 /* Via Xatomtype.h */
 #define NumPropWMHintsElements 9 /* number of elements in this structure */
+#define NumPropWMSizeHintsElements 18
 
 enum {
   COOKIE_WIN_TYPE = 0,
@@ -29,8 +30,8 @@ enum {
   COOKIE_WIN_GEOM,
   COOKIE_WIN_NAME,
   COOKIE_WIN_NAME_UTF8,
-  COOKIE_WIN_SIZE_HINTS,
   COOKIE_WIN_WM_HINTS,
+  COOKIE_WIN_WM_NORMAL_HINTS,
   COOKIE_WIN_TRANSIENCY,
   COOKIE_WIN_PROTOS,
   COOKIE_WIN_MACHINE,
@@ -262,6 +263,18 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 			      XA_WM_HINTS);
     }
 
+  if (props_req & MBWM_WINDOW_PROP_WM_NORMAL_HINTS)
+    {
+      cookies[COOKIE_WIN_WM_NORMAL_HINTS]
+	= mb_wm_property_req (wm,
+			      xwin,
+			      wm->atoms[MBWM_ATOM_WM_NORMAL_HINTS],
+			      0,
+			      1024L,
+			      False,
+			      XA_WM_SIZE_HINTS);
+    }
+
   if (props_req & MBWM_WINDOW_PROP_MWM_HINTS)
     {
       cookies[COOKIE_WIN_MWM_HINTS]
@@ -471,7 +484,7 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 	       win->x_geometry.y,
 	       win->x_geometry.width,
 	       win->x_geometry.height);
-      
+
       /* FIXME is it right that we directly/immeditaly update
        * win->geometry here, perhaps that should be left as a
        * responsability for a signal handler? */
@@ -492,7 +505,12 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 
       win->visual            = xwin_attr->visual;
       win->colormap          = xwin_attr->colormap;
-      win->gravity           = xwin_attr->win_gravity;
+
+      /* Window gravity should not be set from the window attribute
+       * but using the WM_NORMAL_HINTS atom
+       */
+
+      /* win->gravity           = xwin_attr->win_gravity;*/
       win->override_redirect = xwin_attr->override_redirect;
       win->window_class      = xwin_attr->class;
     }
@@ -589,6 +607,38 @@ mb_wm_client_window_sync_properties ( MBWMClientWindow *win,
 	  /* FIXME: should track better if thus has changed or not */
 	  changes |= MBWM_WINDOW_PROP_WM_HINTS;
 	}
+    }
+  if (props_req & MBWM_WINDOW_PROP_WM_NORMAL_HINTS)
+    {
+      XSizeHints *sizehints = NULL;
+
+      sizehints = mb_wm_property_get_reply_and_validate (wm,
+						       cookies[COOKIE_WIN_WM_NORMAL_HINTS],
+						       XA_WM_SIZE_HINTS,
+						       32,
+						       NumPropWMSizeHintsElements,
+						       NULL,
+						       &x_error_code);
+      if (sizehints)
+        {
+	  MBWM_DBG("@@@ New Window WM Normal Hints @@@");
+
+          if (sizehints->flags & PWinGravity)
+	    {
+	      win->gravity = sizehints->win_gravity;
+	      MBWM_DBG("Window Gravity : %i", sizehints->win_gravity);
+	    }
+
+	  win->user_pos = (sizehints->flags & USPosition) ? True : False;
+	  MBWM_DBG ("User positioning : %s", win->user_pos ? "yes" : "no");
+
+	  /* May be used to recover other information */
+
+          XFree (sizehints);
+
+	  changes |= MBWM_WINDOW_PROP_WM_NORMAL_HINTS;
+        }
+
     }
 
   if (props_req & MBWM_WINDOW_PROP_MWM_HINTS)

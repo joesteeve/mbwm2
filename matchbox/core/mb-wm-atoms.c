@@ -14,6 +14,7 @@ mb_wm_atoms_init(MBWindowManager *wm)
     "WM_NAME",
     "WM_STATE",
     "WM_HINTS",
+    "WM_NORMAL_HINTS",
     "WM_CHANGE_STATE",
     "WM_PROTOCOLS",
     "WM_DELETE_WINDOW",

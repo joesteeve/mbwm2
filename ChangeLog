@@ -1,3 +1,14 @@
+2008-09-16  Tomas Frydrych  <tf@linux.intel.com>
+
+	* matchbox/core/mb-window-manager.c:
+	* matchbox/core/mb-wm-atoms.c:
+	* matchbox/core/mb-wm-client-window.c:
+	* matchbox/core/mb-wm-client-window.h:
+	* matchbox/core/mb-wm-types.h:
+	Use WM_NORMAL_HINTS for window gravity (instead of the X
+	attribute) and user position (patch by Aurélien Bauchet
+	<abauchet@comwax.com>).
+
 2008-09-15  Ross Burton  <ross@linux.intel.com>
 
 	* matchbox/core/mb-window-manager.[ch]:

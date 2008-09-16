@@ -32,8 +32,8 @@
 #define MBWM_WINDOW_PROP_GEOMETRY        (1<<1)
 #define MBWM_WINDOW_PROP_ATTR            (1<<2)
 #define MBWM_WINDOW_PROP_NAME            (1<<3)
-#define MBWM_WINDOW_PROP_SIZE_HINTS      (1<<4)
-#define MBWM_WINDOW_PROP_WM_HINTS        (1<<5)
+#define MBWM_WINDOW_PROP_WM_HINTS        (1<<4)
+#define MBWM_WINDOW_PROP_WM_NORMAL_HINTS (1<<5)
 #define MBWM_WINDOW_PROP_NET_ICON        (1<<6)
 #define MBWM_WINDOW_PROP_NET_PID         (1<<7)
 #define MBWM_WINDOW_PROP_PROTOS          (1<<8)
@@ -149,6 +149,8 @@ struct MBWMClientWindow
   int                            window_class;
   Bool                           override_redirect;
   Bool                           undecorated;
+
+  Bool                           user_pos;
 };
 
 struct MBWMClientWindowClass
