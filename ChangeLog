@@ -1,3 +1,8 @@
+2008-09-26  Ross Burton  <ross@linux.intel.com>
+
+	* matchbox/core/mb-window-manager.c:
+	When the root window resizes, update the work area rectangles.
+
 2008-09-16  Tomas Frydrych  <tf@linux.intel.com>
 
 	* matchbox/core/mb-window-manager.c:

@@ -605,6 +605,8 @@ mb_wm_handle_root_config_notify (XConfigureEvent *xev,
   wm->xdpy_width = xev->width;
   wm->xdpy_height = xev->height;
 
+  mb_wm_update_root_win_rectangles (wm);
+
   mb_wm_display_sync_queue (wm, MBWMSyncGeometry);
 }
 
