@@ -279,6 +279,7 @@ void
 mb_wm_stack_remove (MBWindowManagerClient *client)
 {
   MBWindowManager *wm = client->wmref;
+  Bool change = False;
 
   if (wm->stack_top == wm->stack_bottom)
     {
@@ -294,20 +295,31 @@ mb_wm_stack_remove (MBWindowManagerClient *client)
       if (client == wm->stack_top)
 	{
 	  wm->stack_top = client->stacked_below;
+	  change = True;
 	}
 
       if (client == wm->stack_bottom)
-	wm->stack_bottom = client->stacked_above;
+        {
+	  wm->stack_bottom = client->stacked_above;
+	  change = True;
+	}
 
       if (client->stacked_below != NULL)
-	client->stacked_below->stacked_above = client->stacked_above;
+        {
+	  client->stacked_below->stacked_above = client->stacked_above;
+	  change = True;
+	}
       if (client->stacked_above != NULL)
-	client->stacked_above->stacked_below = client->stacked_below;
+        {
+	  client->stacked_above->stacked_below = client->stacked_below;
+	  change = True;
+	}
     }
 
   client->stacked_above = client->stacked_below = NULL;
 
-  wm->stack_n_clients--;
+  if (change)
+    wm->stack_n_clients--;
 }
 
 

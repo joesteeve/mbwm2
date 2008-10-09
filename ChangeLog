@@ -1,3 +1,10 @@
+2008-10-09  Tomas Frydrych  <tf@linux.intel.com>
+
+	* matchbox/core/mb-wm-stack.c:
+	(mb_wm_stack_remove):
+	Fixed bug in stack size accounting (patch by Aurélien Bauchet
+	<abauchet@comwax.com>).
+
 2008-09-26  Ross Burton  <ross@linux.intel.com>
 
 	* matchbox/core/mb-window-manager.c:
