@@ -822,7 +822,7 @@ mb_wm_main_context_handle_timeout (MBWMTimeOutEventInfo *tinfo,
 static Bool
 mb_wm_main_context_check_timeouts (MBWMMainContext *ctx)
 {
-  MBWMList * l = ctx->event_funcs.timeout;
+  MBWMList * l = mb_wm_util_list_get_first(ctx->event_funcs.timeout);
   struct timeval current_time;
 
   if (!l)
@@ -833,29 +833,18 @@ mb_wm_main_context_check_timeouts (MBWMMainContext *ctx)
   while (l)
     {
       MBWMTimeOutEventInfo * tinfo = l->data;
+      unsigned long tid = tinfo->id;
 
       if (!mb_wm_main_context_handle_timeout (tinfo, &current_time))
-	{
-	  MBWMList * prev = l->prev;
-	  MBWMList * next = l->next;
-
-	  if (prev)
-	    prev->next = next;
-	  else
-	    ctx->event_funcs.timeout = next;
-
-	  if (next)
-	    next->prev = prev;
-
-	  free (tinfo);
-	  free (l);
-
-	  l = next;
-	}
+       {
+         /* Timeout handler notified it can be removed, do so now */
+         mb_wm_main_context_timeout_handler_remove (ctx,tid);
+         /* To avoid race condition, restart at front of list */
+         l = mb_wm_util_list_get_first(ctx->event_funcs.timeout);
+       }
       else
-	l = l->next;
+       l = mb_wm_util_list_next(l);
     }
-
   return True;
 }
 #endif /* !USE_GLIB_MAINLOOP */
@@ -904,25 +893,14 @@ mb_wm_main_context_timeout_handler_remove (MBWMMainContext *ctx,
         MBWMTimeOutEventInfo * info = l->data;
 
       if (info->id == id)
-	{
-	  MBWMList * prev = l->prev;
-	  MBWMList * next = l->next;
+       {
+         /* Reset list head after entry removal */
+         ctx->event_funcs.timeout =
+            mb_wm_util_list_remove(ctx->event_funcs.timeout, l->data);
+         return;
+	   }
 
-	  if (prev)
-	    prev->next = next;
-	  else
-	    ctx->event_funcs.timeout = next;
-
-	  if (next)
-	    next->prev = prev;
-
-	  free (info);
-	  free (l);
-
-	  return;
-	}
-
-      l = l->next;
+      l = mb_wm_util_list_next(l);
     }
 #else
   g_source_remove (id);

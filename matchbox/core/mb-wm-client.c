@@ -55,9 +55,11 @@ mb_wm_client_destroy (MBWMObject *obj)
 
   client->sig_prop_change_id = 0;
 
-  if (client->ping_cb_id)
-    mb_wm_main_context_timeout_handler_remove (wm->main_ctx,
-					       client->ping_cb_id);
+  /* Must call mb_wm_client_ping_stop rather than
+   * mb_wm_main_context_timeout_handler_remove() to prevent a race condition
+   * segfault in the timeout list manipulation
+   */
+  mb_wm_client_ping_stop (client);
 
 #if ENABLE_COMPOSITE
   if (mb_wm_compositing_enabled (wm))
