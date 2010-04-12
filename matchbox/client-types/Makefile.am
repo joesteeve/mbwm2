@@ -1,15 +1,15 @@
 if ENABLE_COMPOSITE
-compmgr_libs = libmb-wm-client-override.a
+compmgr_libs = libmb-wm-client-override.la
 compmgr_ltlibs = libmb-wm-client-override.la
 endif
 
-THEME_LIBS = @MBWM_THEME_LIBS@/libmb-theme.a
+THEME_LIBS = $(MBWM_THEME_LIBS)/libmb-theme.la
 
-INCLUDES     = @MBWM_INCS@ @MBWM_CFLAGS@
+INCLUDES     = $(MBWM_INCS) $(MBWM_CFLAGS)
 LDADD        =$(THEME_LIBS)
 DEPENDENCIES = $(THEME_LIBS)
 
-pkgincludedir = $(includedir)/@MBWM2_INCDIR@/client-types
+pkgincludedir = $(includedir)/$(MBWM2_INCDIR)/client-types
 
 if ENABLE_LIBMATCHBOX
 pkginclude_HEADERS = mb-wm-client-app.h \

@@ -7,7 +7,7 @@ endif
 
 MAINTAINERCLEANFILES = Makefile.in
 
-pkgincludedir = $(includedir)/@MBWM2_INCDIR@
+pkgincludedir = $(includedir)/$(MBWM2_INCDIR)
 
 SUBDIRS = core client-types theme-engines $(comp) managers
 
