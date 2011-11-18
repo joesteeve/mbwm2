@@ -1408,7 +1408,7 @@ mb_wm_update_root_win_rectangles (MBWindowManager *wm)
   Display * dpy = wm->xdpy;
   Window    root = wm->root_win->xwindow;
   MBGeometry d_geom;
-  CARD32 val[4];
+  long val[4];
 
   mb_wm_get_desktop_geometry (wm, &d_geom);
 
