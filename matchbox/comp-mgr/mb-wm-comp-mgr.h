@@ -22,6 +22,7 @@
 #define _HAVE_MB_WM_COMP_MGR_H
 
 #include <X11/extensions/Xdamage.h>
+#include <matchbox/core/mb-wm-types.h>
 
 #define MB_WM_COMP_MGR(c) ((MBWMCompMgr*)(c))
 #define MB_WM_COMP_MGR_CLASS(c) ((MBWMCompMgrClass*)(c))
@@ -137,7 +138,7 @@ struct MBWMCompMgrClientClass
   void (*show)      (MBWMCompMgrClient * client);
   void (*hide)      (MBWMCompMgrClient * client);
   void (*repair)    (MBWMCompMgrClient * client);
-  void (*configure) (MBWMCompMgrClient * client);
+  void (*configure) (MBWMCompMgrClient * client, MBGeometry * geometry);
 };
 
 int
@@ -153,7 +154,8 @@ void
 mb_wm_comp_mgr_client_repair (MBWMCompMgrClient * client);
 
 void
-mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client,
+                                 MBGeometry * geometry);
 
 
 #endif

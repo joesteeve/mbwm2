@@ -413,7 +413,8 @@ move_resize_client_xwin (MBWindowManagerClient *client, int x, int y, int w, int
 #if ENABLE_COMPOSITE
       if (mb_wm_comp_mgr_enabled (wm->comp_mgr))
 	{
-	  mb_wm_comp_mgr_client_configure (client->cm_client);
+	  mb_wm_comp_mgr_client_configure (client->cm_client,
+                                           &client->window->x_geometry);
 	}
 #endif
     }

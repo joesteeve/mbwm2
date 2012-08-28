@@ -586,7 +586,14 @@ mb_wm_handle_composite_config_notify (XConfigureEvent *xev,
       client = mb_wm_managed_client_from_frame (wm, xev->window);
 
       if (client)
-	mb_wm_comp_mgr_client_configure (client->cm_client);
+        {
+          MBGeometry new_geometry;
+          new_geometry.x = xev->x;
+          new_geometry.y = xev->y;
+          new_geometry.width = xev->width;
+          new_geometry.height = xev->height;
+          mb_wm_comp_mgr_client_configure (client->cm_client, &new_geometry);
+        }
     }
   return True;
 }

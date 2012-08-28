@@ -134,7 +134,8 @@ mb_wm_comp_mgr_client_show (MBWMCompMgrClient * client)
 }
 
 void
-mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client,
+                                 MBGeometry * geometry)
 {
   MBWMCompMgrClientClass *klass;
 
@@ -144,7 +145,7 @@ mb_wm_comp_mgr_client_configure (MBWMCompMgrClient * client)
   klass = MB_WM_COMP_MGR_CLIENT_CLASS (MB_WM_OBJECT_GET_CLASS (client));
 
   MBWM_ASSERT (klass->configure != NULL);
-  klass->configure (client);
+  klass->configure (client, geometry);
 }
 
 void

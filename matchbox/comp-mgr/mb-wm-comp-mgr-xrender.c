@@ -60,7 +60,8 @@ static void
 mb_wm_comp_mgr_xrender_client_repair_real (MBWMCompMgrClient * client);
 
 static void
-mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client,
+                                              MBGeometry * geometry);
 
 static void
 mb_wm_comp_mgr_xrender_client_class_init (MBWMObjectClass *klass)
@@ -1314,7 +1315,8 @@ mb_wm_comp_mgr_xrender_client_repair_real (MBWMCompMgrClient * client)
 }
 
 static void
-mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client,
+                                              MBGeometry * geometry)
 {
   MBWMCompMgrDefaultClient * dclient  = MB_WM_COMP_MGR_DEFAULT_CLIENT (client);
   MBWindowManagerClient    * wm_client = client->wm_client;
@@ -1322,13 +1324,32 @@ mb_wm_comp_mgr_xrender_client_configure_real (MBWMCompMgrClient * client)
   MBWMCompMgr              * mgr       = wm->comp_mgr;
   XserverRegion              damage    = None;
   XserverRegion              extents;
+  MBGeometry                 old_geom;
+  XRenderPictureAttributes   pa;
 
   extents = mb_wm_comp_mgr_xrender_client_extents (client);
 
-  if (dclient->picture)
+  mb_wm_client_get_coverage (wm_client, &old_geom);
+  if ((dclient->picture) &&
+      ((old_geom.x != geometry->x) || (old_geom.y != geometry->y) ||
+       (old_geom.width != geometry->width) ||
+       (old_geom.height != geometry->height)))
     {
       XRenderFreePicture (wm->xdpy, dclient->picture);
       dclient->picture = None;
+    }
+
+  if (!dclient->picture)
+    {
+      pa.subwindow_mode = IncludeInferiors;
+      dclient->picture = XRenderCreatePicture
+        (wm->xdpy,
+         wm_client->xwin_frame ?
+         wm_client->xwin_frame : wm_client->window->xwindow,
+         client->is_argb32 ?
+         XRenderFindStandardFormat (wm->xdpy, PictStandardARGB32)
+         : XRenderFindVisualFormat (wm->xdpy, wm_client->window->visual),
+         CPSubwindowMode, &pa);
     }
 
   damage = XFixesCreateRegion (wm->xdpy, 0, 0);

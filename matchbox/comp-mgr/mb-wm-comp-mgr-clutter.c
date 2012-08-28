@@ -83,7 +83,8 @@ static void
 mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client);
 
 static void
-mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client);
+mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client,
+                                              MBWMGeometry * geometry);
 
 static void
 mb_wm_comp_mgr_clutter_client_class_init (MBWMObjectClass *klass)
@@ -772,7 +773,8 @@ mb_wm_comp_mgr_clutter_client_repair_real (MBWMCompMgrClient * client)
 }
 
 static void
-mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client)
+mb_wm_comp_mgr_clutter_client_configure_real (MBWMCompMgrClient * client,
+                                              MBWMGeometry * geometry)
 {
   MBWindowManagerClient    * wm_client = client->wm_client;
   MBWMCompMgrClutterClient * cclient = MB_WM_COMP_MGR_CLUTTER_CLIENT (client);
