@@ -17,6 +17,8 @@ AC_CONFIG_SRCDIR([matchbox/core/mb-window-manager.c])
 
 AM_INIT_AUTOMAKE()
 
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 MBWM2_API_VERSION=mbwm2_api_version
 AC_SUBST(MBWM2_API_VERSION)
 
