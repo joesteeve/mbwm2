@@ -1859,7 +1859,7 @@ mb_wm_theme_simple_paint_decor (MBWMTheme *theme, MBWMDecor *decor)
 
   XFillRectangle (xdpy, dd->xpix, gc, 0, 0, w, h);
 
-  if (d->show_title &&
+  if (d && d->show_title &&
       (mb_wm_decor_get_type(decor) == MBWMDecorTypeNorth &&
        (title = mb_wm_client_get_name (client))))
     {
