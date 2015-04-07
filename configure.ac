@@ -96,7 +96,7 @@ if test "x$use_gtk" = "xyes"; then
 fi
 
 if test "x$png_theme" = "xyes"; then
-  needed_pkgs="$needed_pkgs libpng12 "
+  needed_pkgs="$needed_pkgs libpng12 expat"
 fi
 
 if test "x$composite_managers" != xno -a \
@@ -134,7 +134,7 @@ for composite_manager in $included_composite_managers; do
  fi
  case $composite_manager in
       xrender )
-        needed_pkgs="$needed_pkgs xcomposite xdamage "
+        needed_pkgs="$needed_pkgs xcomposite xdamage xrender"
 	MBWM_EXTRA_LIBS="$MBWM_EXTRA_LIBS -lm"
         ;;
       clutter )
