@@ -40,7 +40,7 @@ AC_CHECK_HEADERS([stdlib.h string.h])
 AC_C_CONST
 AC_CHECK_FUNCS([memset strdup strncasecmp])
 
-needed_pkgs="x11 "
+needed_pkgs="x11 expat "
 
 AC_ARG_ENABLE(debug,
   [  --enable-debug          Enable verbose debugging output],
@@ -96,7 +96,7 @@ if test "x$use_gtk" = "xyes"; then
 fi
 
 if test "x$png_theme" = "xyes"; then
-  needed_pkgs="$needed_pkgs libpng12 expat"
+  needed_pkgs="$needed_pkgs libpng12 "
 fi
 
 if test "x$composite_managers" != xno -a \
@@ -151,7 +151,7 @@ IFS="$save_ifs"
 
 AC_SUBST(COMPOSITE_MANAGER_DEFINE)
 
-
+MBWM_DEBUG_CFLAGS="-g "
 MBWM_WANT_DEBUG=0
 if test "x$want_debug" = "xyes"; then
   MBWM_WANT_DEBUG=1
